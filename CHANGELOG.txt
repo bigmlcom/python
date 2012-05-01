@@ -1,2 +1,0 @@
-BigML.io Python binding 0.1 - April 30, 2012
-    * Initial Release

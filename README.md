@@ -187,145 +187,10 @@ You will get a dictionary keyed by each field id.
                                    u'splits': [   4.51526,
                                                   4.67252,
                                                   4.81113,
-                                                  4.89582,
-                                                  4.96139,
-                                                  5.01131,
-                                                  5.05992,
-                                                  5.11148,
-                                                  5.18177,
-                                                  5.35681,
-                                                  5.44129,
-                                                  5.5108,
-                                                  5.58255,
-                                                  5.65532,
-                                                  5.71658,
-                                                  5.77889,
-                                                  5.85381,
-                                                  5.97078,
-                                                  6.05104,
-                                                  6.13074,
-                                                  6.23023,
-                                                  6.29578,
-                                                  6.35078,
-                                                  6.41459,
-                                                  6.49383,
-                                                  6.63013,
-                                                  6.70719,
-                                                  6.79218,
-                                                  6.92597,
-                                                  7.20423,
-                                                  7.64746],
-                                   u'sum': 876.5,
-                                   u'sum_squares': 5223.85}},
-    u'000001': {   u'column_number': 1,
-                   u'datatype': u'double',
-                   u'name': u'sepal width',
-                   u'optype': u'numeric',
-                   u'summary': {   u'counts': [   [2, 1],
-                                                  [2.2, 3],
-                                                  [2.3, 4],
-                                                  [2.4, 3],
-                                                  [2.5, 8],
-                                                  [2.6, 5],
-                                                  [2.7, 9],
-                                                  [2.8, 14],
-                                                  [2.9, 10],
-                                                  [3, 26],
-                                                  [3.1, 11],
-                                                  [3.2, 13],
-                                                  [3.3, 6],
-                                                  [3.4, 12],
-                                                  [3.5, 6],
-                                                  [3.6, 4],
-                                                  [3.7, 3],
-                                                  [3.8, 6],
-                                                  [3.9, 2],
-                                                  [4, 1],
-                                                  [4.1, 1],
-                                                  [4.2, 1],
-                                                  [4.4, 1]],
-                                   u'maximum': 4.4,
-                                   u'median': 3.02044,
-                                   u'minimum': 2,
-                                   u'missing_count': 0,
-                                   u'population': 150,
-                                   u'sum': 458.6,
-                                   u'sum_squares': 1430.4}},
-    u'000002': {   u'column_number': 2,
-                   u'datatype': u'double',
-                   u'name': u'petal length',
-                   u'optype': u'numeric',
-                   u'summary': {   u'maximum': 6.9,
-                                   u'median': 4.34142,
-                                   u'minimum': 1,
-                                   u'missing_count': 0,
-                                   u'population': 150,
-                                   u'splits': [   1.25138,
-                                                  1.32426,
-                                                  1.37171,
-                                                  1.40962,
-                                                  1.44567,
-                                                  1.48173,
-                                                  1.51859,
-                                                  1.56301,
-                                                  1.6255,
-                                                  1.74645,
-                                                  3.23033,
-                                                  3.675,
-                                                  3.94203,
-                                                  4.0469,
-                                                  4.18243,
-                                                  4.34142,
-                                                  4.45309,
-                                                  4.51823,
-                                                  4.61771,
-                                                  4.72566,
-                                                  4.83445,
-                                                  4.93363,
-                                                  5.03807,
-                                                  5.1064,
-                                                  5.20938,
-                                                  5.43979,
-                                                  5.5744,
-                                                  5.6646,
-                                                  5.81496,
-                                                  6.02913,
-                                                  6.38125],
-                                   u'sum': 563.7,
-                                   u'sum_squares': 2582.71}},
-    u'000003': {   u'column_number': 3,
-                   u'datatype': u'double',
-                   u'name': u'petal width',
-                   u'optype': u'numeric',
-                   u'summary': {   u'counts': [   [0.1, 5],
-                                                  [0.2, 29],
-                                                  [0.3, 7],
-                                                  [0.4, 7],
-                                                  [0.5, 1],
-                                                  [0.6, 1],
-                                                  [1, 7],
-                                                  [1.1, 3],
-                                                  [1.2, 5],
-                                                  [1.3, 13],
-                                                  [1.4, 8],
-                                                  [1.5, 12],
-                                                  [1.6, 4],
-                                                  [1.7, 2],
-                                                  [1.8, 12],
-                                                  [1.9, 5],
-                                                  [2, 6],
-                                                  [2.1, 6],
-                                                  [2.2, 3],
-                                                  [2.3, 8],
-                                                  [2.4, 3],
-                                                  [2.5, 3]],
-                                   u'maximum': 2.5,
-                                   u'median': 1.32848,
-                                   u'minimum': 0.1,
-                                   u'missing_count': 0,
-                                   u'population': 150,
-                                   u'sum': 179.9,
-                                   u'sum_squares': 302.33}},
+
+                     [... snip ... ]
+
+
     u'000004': {   u'column_number': 4,
                    u'datatype': u'string',
                    u'name': u'species',
@@ -351,152 +216,35 @@ api.pprint(model['object']['model']['root'])
 You will get a explicit tree-like predictive model:
 
 ```python
-{   u'children': [   {   u'children': [   {   u'children': [   {   u'count': 38,
-                                                                   u'distribution': [   [   u'Iris-virginica',
-                                                                                            38]],
-                                                                   u'output': u'Iris-virginica',
-                                                                   u'predicate': {   u'field': u'000002',
-                                                                                     u'operator': u'>',
-                                                                                     u'value': 5.05}},
-                                                               {   u'children': [   {   u'children': [   {   u'children': [   {   u'count': 1,
-                                                                                                                                  u'distribution': [   [   u'Iris-versicolor',
-                                                                                                                                                           1]],
-                                                                                                                                  u'output': u'Iris-versicolor',
-                                                                                                                                  u'predicate': {   u'field': u'000002',
-                                                                                                                                                    u'operator': u'>',
-                                                                                                                                                    u'value': 4.95}},
-                                                                                                                              {   u'count': 2,
-                                                                                                                                  u'distribution': [   [   u'Iris-virginica',
-                                                                                                                                                           2]],
-                                                                                                                                  u'output': u'Iris-virginica',
-                                                                                                                                  u'predicate': {   u'field': u'000002',
-                                                                                                                                                    u'operator': u'<=',
-                                                                                                                                                    u'value': 4.95}}],
-                                                                                                             u'count': 3,
-                                                                                                             u'distribution': [   [   u'Iris-virginica',
-                                                                                                                                      2],
-                                                                                                                                  [   u'Iris-versicolor',
-                                                                                                                                      1]],
-                                                                                                             u'output': u'Iris-virginica',
-                                                                                                             u'predicate': {   u'field': u'000000',
-                                                                                                                               u'operator': u'>',
-                                                                                                                               u'value': 5.95}},
-                                                                                                         {   u'count': 1,
-                                                                                                             u'distribution': [   [   u'Iris-versicolor',
-                                                                                                                                      1]],
-                                                                                                             u'output': u'Iris-versicolor',
-                                                                                                             u'predicate': {   u'field': u'000000',
-                                                                                                                               u'operator': u'<=',
-                                                                                                                               u'value': 5.95}}],
-                                                                                        u'count': 4,
-                                                                                        u'distribution': [   [   u'Iris-virginica',
-                                                                                                                 2],
-                                                                                                             [   u'Iris-versicolor',
-                                                                                                                 2]],
-                                                                                        u'output': u'Iris-virginica',
-                                                                                        u'predicate': {   u'field': u'000001',
-                                                                                                          u'operator': u'>',
-                                                                                                          u'value': 2.9}},
-                                                                                    {   u'count': 6,
-                                                                                        u'distribution': [   [   u'Iris-virginica',
-                                                                                                                 6]],
-                                                                                        u'output': u'Iris-virginica',
-                                                                                        u'predicate': {   u'field': u'000001',
-                                                                                                          u'operator': u'<=',
-                                                                                                          u'value': 2.9}}],
-                                                                   u'count': 10,
-                                                                   u'distribution': [   [   u'Iris-virginica',
-                                                                                            8],
-                                                                                        [   u'Iris-versicolor',
-                                                                                            2]],
-                                                                   u'output': u'Iris-virginica',
-                                                                   u'predicate': {   u'field': u'000002',
-                                                                                     u'operator': u'<=',
-                                                                                     u'value': 5.05}}],
-                                              u'count': 48,
-                                              u'distribution': [   [   u'Iris-virginica',
-                                                                       46],
-                                                                   [   u'Iris-versicolor',
-                                                                       2]],
-                                              u'output': u'Iris-virginica',
-                                              u'predicate': {   u'field': u'000003',
-                                                                u'operator': u'>',
-                                                                u'value': 1.65}},
-                                          {   u'children': [   {   u'children': [   {   u'count': 3,
-                                                                                        u'distribution': [   [   u'Iris-virginica',
-                                                                                                                 3]],
-                                                                                        u'output': u'Iris-virginica',
-                                                                                        u'predicate': {   u'field': u'000000',
-                                                                                                          u'operator': u'>',
-                                                                                                          u'value': 6.05}},
-                                                                                    {   u'children': [   {   u'count': 1,
-                                                                                                             u'distribution': [   [   u'Iris-versicolor',
-                                                                                                                                      1]],
-                                                                                                             u'output': u'Iris-versicolor',
-                                                                                                             u'predicate': {   u'field': u'000001',
-                                                                                                                               u'operator': u'>',
-                                                                                                                               u'value': 2.45}},
-                                                                                                         {   u'count': 1,
-                                                                                                             u'distribution': [   [   u'Iris-virginica',
-                                                                                                                                      1]],
-                                                                                                             u'output': u'Iris-virginica',
-                                                                                                             u'predicate': {   u'field': u'000001',
-                                                                                                                               u'operator': u'<=',
-                                                                                                                               u'value': 2.45}}],
-                                                                                        u'count': 2,
-                                                                                        u'distribution': [   [   u'Iris-virginica',
-                                                                                                                 1],
-                                                                                                             [   u'Iris-versicolor',
-                                                                                                                 1]],
-                                                                                        u'output': u'Iris-virginica',
-                                                                                        u'predicate': {   u'field': u'000000',
-                                                                                                          u'operator': u'<=',
-                                                                                                          u'value': 6.05}}],
-                                                                   u'count': 5,
-                                                                   u'distribution': [   [   u'Iris-virginica',
-                                                                                            4],
-                                                                                        [   u'Iris-versicolor',
-                                                                                            1]],
-                                                                   u'output': u'Iris-virginica',
-                                                                   u'predicate': {   u'field': u'000002',
-                                                                                     u'operator': u'>',
-                                                                                     u'value': 4.95}},
-                                                               {   u'count': 47,
-                                                                   u'distribution': [   [   u'Iris-versicolor',
-                                                                                            47]],
-                                                                   u'output': u'Iris-versicolor',
-                                                                   u'predicate': {   u'field': u'000002',
-                                                                                     u'operator': u'<=',
-                                                                                     u'value': 4.95}}],
-                                              u'count': 52,
-                                              u'distribution': [   [   u'Iris-virginica',
-                                                                       4],
-                                                                   [   u'Iris-versicolor',
-                                                                       48]],
-                                              u'output': u'Iris-versicolor',
-                                              u'predicate': {   u'field': u'000003',
-                                                                u'operator': u'<=',
-                                                                u'value': 1.65}}],
-                         u'count': 100,
-                         u'distribution': [   [u'Iris-virginica', 50],
-                                              [u'Iris-versicolor', 50]],
-                         u'output': u'Iris-virginica',
-                         u'predicate': {   u'field': u'000002',
-                                           u'operator': u'>',
-                                           u'value': 2.45}},
-                     {   u'count': 50,
-                         u'distribution': [[u'Iris-setosa', 50]],
-                         u'output': u'Iris-setosa',
-                         u'predicate': {   u'field': u'000002',
-                                           u'operator': u'<=',
-                                           u'value': 2.45}}],
-    u'count': 150,
-    u'distribution': [   [u'Iris-virginica', 50],
-                         [u'Iris-versicolor', 50],
-                         [u'Iris-setosa', 50]],
-    u'output': u'Iris-virginica',
-    u'predicate': True}
+{u'children': [
+  {u'children': [
+    {u'children': [{u'count': 38,
+                    u'distribution': [[u'Iris-virginica', 38]],
+                    u'output': u'Iris-virginica',
+                    u'predicate': {u'field': u'000002',
+                    u'operator': u'>',
+                    u'value': 5.05}},
+                    u'children': [
+
+                        [ ... ]
+
+                       {u'count': 50,
+                        u'distribution': [[u'Iris-setosa', 50]],
+                        u'output': u'Iris-setosa',
+                        u'predicate': {u'field': u'000002',
+                                       u'operator': u'<=',
+                                       u'value': 2.45}}]},
+                    {u'count': 150,
+                     u'distribution': [[u'Iris-virginica', 50],
+                                       [u'Iris-versicolor', 50],
+                                       [u'Iris-setosa', 50]],
+                     u'output': u'Iris-virginica',
+                     u'predicate': True}]}}}
 ```
+
+(Note that we have abbreviated the output in the snippet above for
+readability: the full predictive model you'll get i going to contain
+much more nodes).
 
 ## Creating Resources
 
@@ -623,7 +371,10 @@ parameters to ask for predictions, using the `create_prediction`
 method. You can also give the prediction a name.
 
 ```python
-prediction = api.create_prediction(model, {"sepal length": 5, "sepal width": 2.5}, {"name": "my prediction"})
+prediction = api.create_prediction(model,
+                                   {"sepal length": 5,
+                                    "sepal width": 2.5},
+                                    {"name": "my prediction"})
 ```
 
 To see the prediction you can use `pprint`:
@@ -685,13 +436,15 @@ A few examples:
 #### Ids of the first 5 sources created before April 1st, 2012
 
 ```python
-[source['resource'] for source in api.list_sources("limit=5;created__lt=2012-04-1")['objects']]
+[source['resource'] for source in
+  api.list_sources("limit=5;created__lt=2012-04-1")['objects']]
 ```
 
 #### Name of the first 10 datasets bigger than 1MB
 
 ```python
-[dataset['name'] for dataset in api.list_datasets("limit=10;size__gt=1048576")['objects']]
+[dataset['name'] for dataset in
+  api.list_datasets("limit=10;size__gt=1048576")['objects']]
 ```
 
 #### Name of models with more than 5 fields (columns)
@@ -703,7 +456,8 @@ A few examples:
 #### Ids of predictions whose model has not been deleted
 
 ```python
-[prediction['resource'] for prediction in api.list_predictions("model_status=true")['objects']]
+[prediction['resource'] for prediction in
+  api.list_predictions("model_status=true")['objects']]
 ```
 
 
@@ -724,19 +478,22 @@ A few examples:
 #### Number of instances in datasets created before April 1st, 2012 ordered by size
 
 ```python
-[dataset['rows'] for dataset in api.list_datasets("created__lt=2012-04-1;order_by=size")['objects']]
+[dataset['rows'] for dataset in
+  api.list_datasets("created__lt=2012-04-1;order_by=size")['objects']]
 ```
 
 #### Model ids ordered by number of predictions (in descending order).
 
 ```python
-[model['resource'] for model in api.list_models("order_by=-number_of_predictions")['objects']]
+[model['resource'] for model in
+  api.list_models("order_by=-number_of_predictions")['objects']]
 ```
 
 #### Name of predictions ordered by name.
 
 ```python
-[prediction['name'] for prediction in api.list_predictions("order_by=name")['objects']]
+[prediction['name'] for prediction in
+  api.list_predictions("order_by=name")['objects']]
 ```
 
 ## Updating Resources

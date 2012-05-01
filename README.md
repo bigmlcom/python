@@ -11,12 +11,8 @@ This module is licensed under the Apache Licence, Version 2.0
 
 ## Requirements
 
-The Python bindings use:
-
-- [requests](https://github.com/kennethreitz/requests)
-- [simplejson](http://pypi.python.org/pypi/simplejson/)
-- [lettuce](http://packages.python.org/lettuce/tutorial/simple.html),
-  only needed if you want to run the tests.
+The Python bindings use the
+[requests](https://github.com/kennethreitz/requests) library.
 
 ## Installation
 
@@ -74,8 +70,9 @@ api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
 ## Running the Tests
 
-To run the tests you will need to get lettuce installed and set up
-your authentication first as explained above.
+To run the tests you will need to get
+[lettuce](http://packages.python.org/lettuce/tutorial/simple.html)
+installed and set up your authentication first as explained above.
 
 ```bash
 $ cd tests

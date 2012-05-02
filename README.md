@@ -1,6 +1,6 @@
 # BigML.io Python bindings
 
-In this directory you'll find an open source Python module that gives
+In this repository you'll find an open source Python module that gives
 you a simple binding to interact with [BigML](https://bigml.io). You
 can use it to easily create, retrieve, list, update, and delete BigML
 resources (i.e., sources, datasets, models and, predictions).
@@ -222,8 +222,9 @@ You will get a dictionary keyed by each field id.
 
 ## Model
 
-One of the greatest things of BigML is that the models that it generates for
-you are fully white-boxed. To get the model for the example above you can retrieve it as follows:
+One of the greatest things about BigML is that the models that it
+generates for you are fully white-boxed. To get the model for the
+example above you can retrieve it as follows:
 
 ```python
 model = api.get_model(model)
@@ -285,7 +286,7 @@ following keys:
 Please, bear in mind that resource creation is asynchronous except for
 **predictions**. Therefore when you create a new source, a new dataset
 or a new model even if you receive an immediate response from the
-BigML servers, the fully creation of the resource can take from a few
+BigML servers, the full creation of the resource can take from a few
 seconds to a few days depending on the size of the resource and
 BigML's load. A resource is not fully created until its status is
 `bigml.api.FINISHED`. See
@@ -317,7 +318,7 @@ api.status(prediction)
 By default, before invoking the creation of a new resource the binding
 checks that the status of resource that is passed as a parameter is
 `FINISHED`. You can change how often the status will be checked with
-the `wait_time` argument. By default it is setup to 3 seconds.
+the `wait_time` argument. By default, it is set to 3 seconds.
 
 ### Creating sources
 
@@ -371,7 +372,7 @@ and documented [here](https://bigml.com/developers/models).
 
 
 For example, to create a model only including the first to fields and
-the first 10 instances you can perform the following invokation.
+the first 10 instances you can perform the following invocation.
 
 ```python
 model = api.create_model(dataset, {
@@ -428,9 +429,9 @@ you will receive a dictionary with the following keys:
     for more info.
 * **meta**: A dictionary including the following keys that can help
   you paginate listings:
-    * **previous**: Path to get the previous page or None if there is
+    * **previous**: Path to get the previous page or `None` if there is
         no previous page.
-    * **next**: Path to get the next page or None if there is no next
+    * **next**: Path to get the next page or `None` if there is no next
         page.
     * **offset**: How far off from the first resource in the resources
         is the first resource listed in the resources key.
@@ -548,5 +549,5 @@ the following keys:
   [BigML documentation on status codes](https://bigml.com/developers/status_codes)
   for more info.
 * **error** If the request does not succeed it will contain a
-  dictionary with an error code and a message. It will be None
+  dictionary with an error code and a message. It will be `None`
   otherwise.

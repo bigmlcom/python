@@ -72,7 +72,14 @@ api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
 To run the tests you will need to get
 [lettuce](http://packages.python.org/lettuce/tutorial/simple.html)
-installed and set up your authentication first as explained above.
+installed:
+
+```bash
+$ pip install lettuce
+```
+
+and set up your authentication first as explained above.  Then, you
+can run the test suite simply by:
 
 ```bash
 $ cd tests

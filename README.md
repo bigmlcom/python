@@ -12,7 +12,12 @@ This module is licensed under the Apache Licence, Version 2.0
 ## Requirements
 
 The Python bindings use the
-[requests](https://github.com/kennethreitz/requests) library.
+[requests](https://github.com/kennethreitz/requests) library.  This
+library is automatically installed during the setup.
+
+The bindings will also use `simplejson` if you happen to have it
+installed, but that is optional: we fallback to Python's buit-in JSON
+libraries by default.
 
 ## Installation
 

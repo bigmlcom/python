@@ -37,5 +37,5 @@ distutils.core.setup(
     setup_requires = [],
     packages = ['bigml'],
     include_package_data = True,
-    install_requires = ['simplejson', 'requests'],
+    install_requires = ['requests'],
 )

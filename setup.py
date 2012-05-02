@@ -27,7 +27,7 @@ version = "0.1"
 
 distutils.core.setup(
     name="bigml",
-    description="This is an open source binding to BigML.io, the public BigML API",
+    description="An open source binding to BigML.io, the public BigML API",
     version=version,
     author="The BigML Team",
     author_email="bigml@bigml.com",

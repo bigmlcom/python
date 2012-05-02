@@ -24,10 +24,15 @@ libraries by default.
 To install:
 
 ```bash
-python setup.py install
+$ python setup.py install
 ```
 
-This command will also fetch and install any needed dependencies.
+You can also install the bindings directly from this git repository
+with the command:
+
+```bash
+$ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
+```
 
 ## Importing the module
 

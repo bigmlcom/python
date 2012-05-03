@@ -1,0 +1,17 @@
+.DS_Store
+*.pyc
+*.swl
+*.swm
+*.swn
+*.swo
+*.swp
+*.log
+*.log.*
+dist/
+.cache
+build
+*pip-log.txt
+*.egg-info
+*.egg
+*.coverage
+

@@ -8,6 +8,14 @@ resources (i.e., sources, datasets, models and, predictions).
 This module is licensed under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
+## Support
+
+Please, report problems and bugs to our
+[BigML.io issue tracker](https://github.com/bigmlcom/io/issues)
+
+Discussions about the different bindings take place in the general
+[BigML mailing list](http://groups.google.com/group/bigml). Or join us
+in our [Campfire chatroom](https://bigmlinc.campfirenow.com/f20a0)
 
 ## Requirements
 

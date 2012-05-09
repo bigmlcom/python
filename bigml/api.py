@@ -25,7 +25,7 @@ BIGML_API_KEY environment variables):
 from bigml.api import BigML
 
 api = BigML()
-source = api.create_source('../data/iris.csv')
+source = api.create_source('./data/iris.csv')
 dataset = api.create_dataset(source)
 model = api.create_model(dataset)
 prediction = api.create_prediction(model, {'sepal width': 1})
@@ -272,7 +272,7 @@ class BigML(object):
         try:
             response = requests.put(url + self.auth,
                 headers=SEND_JSON,
-                body=body)
+                data=body)
 
             code = response.status_code
 
@@ -434,6 +434,8 @@ class BigML(object):
         """Create a new source."""
         if args is None:
             args = {}
+        elif 'source_parser' in args:
+            args['source_parser'] = json.dumps(args['source_parser'])
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
         location = None

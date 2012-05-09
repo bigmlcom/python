@@ -5,19 +5,27 @@ you a simple binding to interact with [BigML](https://bigml.io). You
 can use it to easily create, retrieve, list, update, and delete BigML
 resources (i.e., sources, datasets, models and, predictions).
 
-This module is licensed under the Apache Licence, Version 2.0
-(http://www.apache.org/licenses/LICENSE-2.0.html).
+This module is licensed under the
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
+## Support
+
+Please, report problems and bugs to our
+[BigML.io issue tracker](https://github.com/bigmlcom/io/issues)
+
+Discussions about the different bindings take place in the general
+[BigML mailing list](http://groups.google.com/group/bigml). Or join us
+in our [Campfire chatroom](https://bigmlinc.campfirenow.com/f20a0)
 
 ## Requirements
 
-The Python bindings use the
+The only mandatory dependency is the
 [requests](https://github.com/kennethreitz/requests) library.  This
 library is automatically installed during the setup.
 
 The bindings will also use `simplejson` if you happen to have it
-installed, but that is optional: we fallback to Python's buit-in JSON
-libraries by default.
+installed, but that is optional: we fall back to Python's built-in
+JSON libraries is `simplejson` is not found.
 
 ## Installation
 
@@ -28,7 +36,7 @@ $ python setup.py install
 ```
 
 You can also install the bindings directly from this git repository
-with the command:
+using `pip`:
 
 ```bash
 $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
@@ -40,7 +48,7 @@ $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
 import bigml.api
 ```
 
-Alternatively you can just import the BigML class.
+Alternatively you can just import the BigML class:
 
 ```python
 from bigml.api import BigML
@@ -62,15 +70,14 @@ export BIGML_USERNAME=myusername
 export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
 ```
 
-If you do so, just with the following snippet you are connected to
-BigML.
+With that environment set up, connecting to BigML is a breeze:
 
 ```python
 from bigml.api import BigML
 api = BigML()
 ```
 
-Otherwise, you can can initialize directly when instantaiting the
+Otherwise, you can can initialize directly when instantiating the
 BigML class as follows.
 
 
@@ -80,16 +87,15 @@ api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
 ## Running the Tests
 
-To run the tests you will need to get
-[lettuce](http://packages.python.org/lettuce/tutorial/simple.html)
-installed:
+To run the tests you will need to install
+[lettuce](http://packages.python.org/lettuce/tutorial/simple.html):
 
 ```bash
 $ pip install lettuce
 ```
 
-and set up your authentication first as explained above.  Then, you
-can run the test suite simply by:
+and set up your authentication via environment variables, as explained
+above.  With that in place, you can run the test suite simply by:
 
 ```bash
 $ cd tests
@@ -99,7 +105,7 @@ $ lettuce
 ## Quick Start
 
 Imagine that you want to use
-[this csv file](https://static.bigml.com/csv/iris.csv ) containing the
+[this csv file](https://static.bigml.com/csv/iris.csv) containing the
 [Iris flower dataset](http://en.wikipedia.org/wiki/Iris_flower_data_set)
 to predict the species of a flower whose `sepal length` is `5` and
 whose `sepal width` is `2.5`. A preview of the dataset is shown
@@ -123,14 +129,14 @@ sepal length,sepal width,petal length,petal width,species
 5.8,2.8,5.1,2.4,Iris-virginica
 ```
 
-You can easily generate a prediction following the next steps.
+You can easily generate a prediction following these steps:
 
 ```python
 from bigml.api import BigML
 
 api = BigML()
 
-source = api.create_source('../data/iris.csv')
+source = api.create_source('./data/iris.csv')
 dataset = api.create_dataset(source)
 model = api.create_model(dataset)
 prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
@@ -150,9 +156,9 @@ species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
 ## Fields
 
-BigML automatically generates ids for each field. To see the fields
-and their corresponding ids and types that that have been assigned to
-a source you can use:
+BigML automatically generates idenfiers for each field. To see the
+fields and the ids and types that have been assigned to a source you
+can use `get_fields`:
 
 ```python
 source = api.get_source(source)
@@ -182,14 +188,14 @@ and you'll get:
 ## Dataset
 
 If you want to get some basic statistics for each field you can
-retrieve the `fields` from the dataset as follows.
+retrieve the `fields` from the dataset as follows:
 
 ```python
 dataset = api.get_dataset(dataset)
 api.pprint(api.get_fields(dataset))
 ```
 
-You will get a dictionary keyed by each field id.
+You will get a dictionary keyed by field id:
 
 ```python
 {   u'000000': {   u'column_number': 0,
@@ -261,8 +267,8 @@ You will get a explicit tree-like predictive model:
 ```
 
 (Note that we have abbreviated the output in the snippet above for
-readability: the full predictive model you'll get i going to contain
-much more nodes).
+readability: the full predictive model you'll get is going to contain
+much more details).
 
 ## Creating Resources
 
@@ -271,26 +277,25 @@ following keys:
 
 * **code**: If the request is successful you will get a
     `bigml.api.HTTP_CREATED` (201) status code. Otherwise, it will be
-    one of the standard HTTP error codes. See
-    [BigML documentation on status codes](https://bigml.com/developers/status_codes)
-    for more info.
-* **resource**: The id of the new resource.
+    one of the standard HTTP error codes
+    [detailed in the documentation](https://bigml.com/developers/status_codes).
+* **resource**: The identifier of the new resource.
 * **location**: The location of the new resource.
-* **object**: The resource itself as returned by BigML.
+* **object**: The resource itself, as computed by BigML.
 * **error**: If an error occurs and the resource cannot be created, it
     will contain an additional code and a description of the error. In
     this case, **location**, and **resource** will be `None`.
 
 ### Statuses
 
-Please, bear in mind that resource creation is asynchronous except for
-**predictions**. Therefore when you create a new source, a new dataset
-or a new model even if you receive an immediate response from the
-BigML servers, the full creation of the resource can take from a few
-seconds to a few days depending on the size of the resource and
-BigML's load. A resource is not fully created until its status is
-`bigml.api.FINISHED`. See
-[BigML documentation on status codes](https://bigml.com/developers/status_codes)
+Please, bear in mind that resource creation is almost always
+asynchronous (**predictions** are the only exception). Therefore, when
+you create a new source, a new dataset or a new model, even if you
+receive an immediate response from the BigML servers, the full
+creation of the resource can take from a few seconds to a few days,
+depending on the size of the resource and BigML's load. A resource is
+not fully created until its status is `bigml.api.FINISHED`. See the
+[documentation on status codes](https://bigml.com/developers/status_codes)
 for the listing of potential states and their semantics.  So depending
 on your application you might need to import the following constants.
 
@@ -315,8 +320,8 @@ api.status(model)
 api.status(prediction)
 ```
 
-By default, before invoking the creation of a new resource the binding
-checks that the status of resource that is passed as a parameter is
+Before invoking the creation of a new resource, the library checks
+that the status of the resource that is passed as a parameter is
 `FINISHED`. You can change how often the status will be checked with
 the `wait_time` argument. By default, it is set to 3 seconds.
 
@@ -326,7 +331,7 @@ To create a source from a local data file, you can use the
 `create_source` method. The only required parameter is the path to the
 data file. You can use a second optional parameter to specify any of
 the options for source creation described in the
-[BigML documentation](https://bigml.com/developers/sources).
+[BigML API documentation](https://bigml.com/developers/sources).
 
 Here's a sample invocation:
 
@@ -335,13 +340,14 @@ Here's a sample invocation:
 from bigml.api import BigML
 api = BigML()
 
-source = api.create_source('../data/iris.csv',
+source = api.create_source('./data/iris.csv',
     {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}})
 ```
 
-Souce creation is asynchronous: the initial resource status code will
-be `WAITING` or `QUEUED`. You can retrieve the updated status at any
-time using the corresponding get method. For example to get the status
+As already mentioned, source creation is asynchronous: the initial
+resource status code will be either `WAITING` or `QUEUED`. You can
+retrieve the updated status at any time using the corresponding get
+method. For example, to get the status of our source we would use:
 
 ```python
 api.status(source)
@@ -355,13 +361,14 @@ the additional arguments accepted by BigML and documented
 [here](https://bigml.com/developers/datasets).
 
 For example, to create a dataset named "my dataset" with the first
-1024 bytes of a source. You can do the following request.
+1024 bytes of a source, you can submit the following request:
 
 ```python
 dataset = api.create_dataset(source, {"name": "my dataset", "size": 1024})
 ```
 
-By default the
+Upon success, the dataset creation job will be queued for execution,
+and you can follow its evolution using `api.status(dataset)`.
 
 ### Creating models
 
@@ -370,9 +377,9 @@ required argument to create a model is a dataset id. You can also
 include in the request all the additional arguments accepted by BigML
 and documented [here](https://bigml.com/developers/models).
 
-
-For example, to create a model only including the first to fields and
-the first 10 instances you can perform the following invocation.
+For example, to create a model only including the first two fields and
+the first 10 instances in the dataset, you can use the following
+invocation:
 
 ```python
 model = api.create_model(dataset, {
@@ -403,15 +410,15 @@ api.pprint(prediction)
 
 ## Reading Resources
 
-When you retrieve an individual resource it is returned in a
-dictionary exactly like the one you get when you create a new
-resource. However the status code will be `bigml.api.HTTP_OK` if the
-resource can be retrieved without problems or one of the HTTP standard
-error codes otherwise.
+When retrieved individually, resources are returned as a dictionary
+identical to the one you get when you create a new resource. However,
+the status code will be `bigml.api.HTTP_OK` if the resource can be
+retrieved without problems, or one of the HTTP standard error codes
+otherwise.
 
 ## Listing Resources
 
-You can list resources with the appropiate api method:
+You can list resources with the appropriate api method:
 
 ```python
 api.list_sources()
@@ -433,10 +440,10 @@ you will receive a dictionary with the following keys:
         no previous page.
     * **next**: Path to get the next page or `None` if there is no next
         page.
-    * **offset**: How far off from the first resource in the resources
-        is the first resource listed in the resources key.
+    * **offset**: How far off from the first entry in the resources is
+        the first one listed in the resources key.
     * **limit**: Maximum number of resources that you will get listed
-      in the resources key.
+        in the resources key.
     * **total_count**: The total number of resources in BigML.
 * **objects**: A list of resources as returned by BigML.
 * **error**: If an error occurs and the resource cannot be created, it
@@ -516,14 +523,14 @@ A few examples:
 
 ## Updating Resources
 
-When you update a resource it is returned in a dictionary exactly like
-the one you get when you create a new resource. However the status
+When you update a resource, it is returned in a dictionary exactly
+like the one you get when you create a new one. However the status
 code will be `bigml.api.HTTP_ACCEPTED` if the resource can be updated
 without problems or one of the HTTP standard error codes otherwise.
 
 ```python
 api.update_source(source, {"name": "new name"})
-api.update_dataset(detaset, {"name": "new name"})
+api.update_dataset(dataset, {"name": "new name"})
 api.update_model(model, {"name": "new name"})
 api.update_prediction(prediction, {"name": "new name"})
 ```
@@ -540,14 +547,14 @@ api.delete_model(model)
 api.delete_prediction(prediction)
 ```
 
-Each of the delete method calls above will return a dictionary with
-the following keys:
+Each of the calls above will return a dictionary with the following
+keys:
 
 * **code** If the request is successful, the code will be a
   `bigml.api.HTTP_NO_CONTENT` (204) status code. Otherwise, it wil be
-  one of the standard HTTP error codes. See
-  [BigML documentation on status codes](https://bigml.com/developers/status_codes)
+  one of the standard HTTP error codes. See the
+  [documentation on status codes](https://bigml.com/developers/status_codes)
   for more info.
-* **error** If the request does not succeed it will contain a
+* **error** If the request does not succeed, it will contain a
   dictionary with an error code and a message. It will be `None`
   otherwise.

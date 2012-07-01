@@ -15,7 +15,9 @@
 # under the License.
 
 import distutils.core
-import sys
+import os
+import re
+
 # Importing setuptools adds some features like "setup.py develop", but
 # it's optional so swallow the error if it's not there.
 try:
@@ -23,7 +25,15 @@ try:
 except ImportError:
     pass
 
-version = "0.3"
+# Get the path to this project
+project_path = os.path.dirname(__file__)
+
+# Read the version from bigml.__version__ without importing the package
+# (and thus attempting to import packages it depends on that may not be
+# installed yet)
+init_py_path = os.path.join(project_path, 'bigml', '__init__.py')
+version = re.search("__version__ = '([^']+)'",
+                    open(init_py_path).read()).group(1)
 
 distutils.core.setup(
     name="bigml",

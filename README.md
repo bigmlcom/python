@@ -104,6 +104,20 @@ $ cd tests
 $ lettuce
 ```
 
+Additionally, [Tox](http://tox.testrun.org/) can be used to automatically
+run the test suite in virtual environments for all supported Python
+versions. To install Tox:
+
+```bash
+$ pip install tox
+```
+
+Then run the tests from the top-level project directory:
+
+```bash
+$ tox
+```
+
 ## Quick Start
 
 Imagine that you want to use

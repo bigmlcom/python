@@ -19,7 +19,9 @@ in our [Campfire chatroom](https://bigmlinc.campfirenow.com/f20a0)
 
 ## Requirements
 
-The only mandatory dependency is the
+Python 2.6 and Python 2.7 are currently supported by these bindings.
+
+The only mandatory third-party dependency is the
 [requests](https://github.com/kennethreitz/requests) library.  This
 library is automatically installed during the setup.
 

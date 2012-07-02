@@ -138,10 +138,10 @@ Imagine that you want to use
 [Iris flower dataset](http://en.wikipedia.org/wiki/Iris_flower_data_set)
 to predict the species of a flower whose `sepal length` is `5` and
 whose `sepal width` is `2.5`. A preview of the dataset is shown
-below. It has 4 numeric fields: `sepal length`, `sepal width`, `petal
-length`, `petal width` and a categorical field: `species`. By default,
-BigML considers the last field in the dataset as the objective field
-(i.e., the field that you want to generate predictions for).
+below. It has 4 numeric fields: `sepal length`, `sepal width`,
+`petal length`, `petal width` and a categorical field: `species`. By
+default, BigML considers the last field in the dataset as the objective
+field (i.e., the field that you want to generate predictions for).
 
 ```csv
 sepal length,sepal width,petal length,petal width,species
@@ -329,15 +329,15 @@ for the listing of potential states and their semantics.  So depending
 on your application you might need to import the following constants.
 
 ```python
-bigml.api import WAITING
-bigml.api import QUEUED
-bigml.api import STARTED
-bigml.api import IN_PROGRESS
-bigml.api import SUMMARIZED
-bigml.api import FINISHED
-bigml.api import FAULTY
-bigml.api import UNKNOWN
-bigml.api import RUNNABLE
+from bigml.api import WAITING
+from bigml.api import QUEUED
+from bigml.api import STARTED
+from bigml.api import IN_PROGRESS
+from bigml.api import SUMMARIZED
+from bigml.api import FINISHED
+from bigml.api import FAULTY
+from bigml.api import UNKNOWN
+from bigml.api import RUNNABLE
 ```
 
 You can query the status of any resource with the `status` method.

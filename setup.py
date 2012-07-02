@@ -35,9 +35,18 @@ init_py_path = os.path.join(project_path, 'bigml', '__init__.py')
 version = re.search("__version__ = '([^']+)'",
                     open(init_py_path).read()).group(1)
 
+# Concatenate files into the long description
+file_contents = []
+for file_name in ('README.rst', 'HISTORY.rst'):
+    path = os.path.join(os.path.dirname(__file__), file_name)
+    file_contents.append(open(path).read())
+long_description = '\n\n'.join(file_contents)
+
+
 distutils.core.setup(
     name="bigml",
     description="An open source binding to BigML.io, the public BigML API",
+    long_description=long_description,
     version=version,
     author="The BigML Team",
     author_email="bigml@bigml.com",

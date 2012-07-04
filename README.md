@@ -19,7 +19,9 @@ in our [Campfire chatroom](https://bigmlinc.campfirenow.com/f20a0)
 
 ## Requirements
 
-The only mandatory dependency is the
+Python 2.6 and Python 2.7 are currently supported by these bindings.
+
+The only mandatory third-party dependency is the
 [requests](https://github.com/kennethreitz/requests) library.  This
 library is automatically installed during the setup.
 
@@ -101,6 +103,27 @@ above.  With that in place, you can run the test suite simply by:
 $ cd tests
 $ lettuce
 ```
+
+Additionally, [Tox](http://tox.testrun.org/) can be used to automatically
+run the test suite in virtual environments for all supported Python
+versions. To install Tox:
+
+```bash
+$ pip install tox
+```
+
+Then run the tests from the top-level project directory:
+
+```bash
+$ tox
+```
+
+Note that tox checks the exit status from the test command (lettuce) to
+determine pass/fail, but the latest version of lettuce (0.2.5)
+erroneously exits with a non-zero exit status indicating an error. So,
+tox will report failures even if the test suite is passing. This
+[should be fixed](https://github.com/gabrielfalcao/lettuce/pull/270) in
+the next release of lettuce.
 
 ## Quick Start
 

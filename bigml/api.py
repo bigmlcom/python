@@ -512,9 +512,11 @@ class BigML(object):
             'error': error}
 
     def create_source(self, path, args=None):
-        """Create a new source."""
+        """Create a new source.
+           The souce can be provided as a local file
+           path or as a URL."""
         if not path:
-            raise Exception('Source local path or a URL must be informed')
+            raise Exception('Source local path or a URL must be provided.')
         
         if _is_valid_remote_url(path):
             return self._create_remote_source(url=path, args=args)

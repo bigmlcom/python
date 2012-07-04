@@ -16,4 +16,4 @@ build
 *.coverage
 .tox/
 set_credentials.sh
-
+docs/_build/*

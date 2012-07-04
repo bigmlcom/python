@@ -109,15 +109,17 @@ STATUSES = {
     RUNNABLE: "RUNNABLE"
 }
 
-def is_valid_remote_url(value):
+def _is_valid_remote_url(value):
+    """Says if given value is an URL
+        with scheme, netloc and path
+        or not."""
     if not isinstance(value, basestring):
         # Must be a string
         return False
-    else:
-        url = urlparse(value)
-        if not url.scheme or not url.netloc or not url.path:
-            # Invalid URL: a host address or path is missed.
-            return False
+    url = urlparse(value)
+    if not url.scheme or not url.netloc or not url.path:
+        # Invalid URL: a host address or path is missed.
+        return False
     return True
 
 ##############################################################################
@@ -443,7 +445,7 @@ class BigML(object):
     # https://bigml.com/developers/sources
     #
     ##########################################################################
-    def create_remote_source(self, url, args=None):
+    def _create_remote_source(self, url, args=None):
         """Create a new source. The source is available
            in the given URL instead of being a file
            in a local path."""
@@ -453,14 +455,9 @@ class BigML(object):
         body = json.dumps(args)
         return self._create(SOURCE_URL, body)
     
-    def create_source(self, path, args=None):
-        """Create a new source."""
-        if not path:
-            raise Exception('Source local path or a URL must be informed')
-        
-        if is_valid_remote_url(path):
-            return self.create_remote_source(url=path, args=args)
-
+    def _create_local_source(self, file_name, args=None):
+        """Create a new source. The souce is a file in
+           a local path."""
         if args is None:
             args = {}        
         elif 'source_parser' in args:
@@ -475,7 +472,7 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be deleted"}}
 
-        files = {os.path.basename(path): open(path, "rb")}
+        files = {os.path.basename(file_name): open(file_name, "rb")}
         try:
             response = requests.post(SOURCE_URL + self.auth,
                                 files=files,
@@ -514,6 +511,15 @@ class BigML(object):
             'object': resource,
             'error': error}
 
+    def create_source(self, path, args=None):
+        """Create a new source."""
+        if not path:
+            raise Exception('Source local path or a URL must be informed')
+        
+        if _is_valid_remote_url(path):
+            return self._create_remote_source(url=path, args=args)
+        else:
+            return self._create_local_source(file_name=path, args=args)
 
     def get_source(self, source):
         """Retrieve a source."""

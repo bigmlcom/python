@@ -1,10 +1,17 @@
-BigML.io Python Bindings
-========================
+BigML Python Bindings
+=====================
 
-In this repository you'll find an open source Python module that gives
-you a simple binding to interact with `BigML <https://bigml.io>`_. You
-can use it to easily create, retrieve, list, update, and delete BigML
-resources (i.e., sources, datasets, models and, predictions).
+`BigML <https://bigml.com>`_ makes machine learning easy by taking care
+of the details required to add data-driven decisions and predictive
+power to your company. Unlike other machine learning services, BigML
+creates
+`beautiful predictive models <https://bigml.com/gallery/models>`_ that
+can be easily understood and interacted with.
+
+These BigML Python bindings allow you to interact with BigML.io, the API
+for BigML. You can use it to easily create, retrieve, list, update, and
+delete BigML resources (i.e., sources, datasets, models and,
+predictions).
 
 This module is licensed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0.html>`_.
@@ -12,7 +19,7 @@ This module is licensed under the `Apache License, Version
 Support
 -------
 
-Please, report problems and bugs to our `BigML.io issue
+Please report problems and bugs to our `BigML.io issue
 tracker <https://github.com/bigmlcom/io/issues>`_.
 
 Discussions about the different bindings take place in the general
@@ -86,37 +93,6 @@ passing the parameter ``dev_mode``::
 
     api = BigML(dev_mode=True)
 
-Running the Tests
------------------
-
-To run the tests you will need to install
-`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
-
-    $ pip install lettuce
-
-and set up your authentication via environment variables, as explained
-above. With that in place, you can run the test suite simply by::
-
-    $ cd tests
-    $ lettuce
-
-Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
-automatically run the test suite in virtual environments for all
-supported Python versions.  To install Tox::
-
-    $ pip install tox
-
-Then run the tests from the top-level project directory::
-
-    $ tox
-
-Note that tox checks the exit status from the test command (lettuce) to
-determine pass/fail, but the latest version of lettuce (0.2.5)
-erroneously exits with a non-zero exit status indicating an error. So,
-tox will report failures even if the test suite is passing. This
-`should be fixed <https://github.com/gabrielfalcao/lettuce/pull/270>`_
-in the next release of lettuce.
-
 Quick Start
 -----------
 
@@ -161,6 +137,37 @@ You can then print the prediction using the ``pprint`` method::
 
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
+
+Running the Tests
+-----------------
+
+To run the tests you will need to install
+`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
+
+    $ pip install lettuce
+
+and set up your authentication via environment variables, as explained
+above. With that in place, you can run the test suite simply by::
+
+    $ cd tests
+    $ lettuce
+
+Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
+automatically run the test suite in virtual environments for all
+supported Python versions.  To install Tox::
+
+    $ pip install tox
+
+Then run the tests from the top-level project directory::
+
+    $ tox
+
+Note that tox checks the exit status from the test command (lettuce) to
+determine pass/fail, but the latest version of lettuce (0.2.5)
+erroneously exits with a non-zero exit status indicating an error. So,
+tox will report failures even if the test suite is passing. This
+`should be fixed <https://github.com/gabrielfalcao/lettuce/pull/270>`_
+in the next release of lettuce.
 
 Fields
 ------

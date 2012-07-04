@@ -484,6 +484,15 @@ class BigML(object):
             'object': resource,
             'error': error}
 
+    def create_source_from_url(self, url, args=None):
+        """Create a new source."""
+        if args is None:
+            args = {}
+        args.update({
+            "remote": url})
+        body = json.dumps(args)
+        return self._create(SOURCE_URL, body)
+
     def get_source(self, source):
         """Retrieve a source."""
         if isinstance(source, dict) and 'resource' in source:

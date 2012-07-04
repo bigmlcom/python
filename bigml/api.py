@@ -484,12 +484,13 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source_from_url(self, url, args=None):
-        """Create a new source."""
+    def create_remote_source(self, url, args=None):
+        """Create a new source. The source is available
+           in the given URL instead of being a file
+           in local."""
         if args is None:
             args = {}
-        args.update({
-            "remote": url})
+        args.update({"remote": url})
         body = json.dumps(args)
         return self._create(SOURCE_URL, body)
 

@@ -38,7 +38,7 @@ def i_upload_a_file(step, file):
 
 @step(r'I create a data source using the url "(.*)"')
 def i_create_using_url(step, url):
-    resource = world.api.create_source_from_url(url)
+    resource = world.api.create_remote_source(url)
     # update status
     world.status = resource['code']
     world.location = resource['location']

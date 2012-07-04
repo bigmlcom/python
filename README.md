@@ -344,6 +344,17 @@ source = api.create_source('./data/iris.csv',
     {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}})
 ```
 
+or you may want to create a source from a file in a remote location:
+
+```python
+
+from bigml.api import BigML
+api = BigML()
+
+source = api.create_remote_source('s3://bigml-public/csv/iris.csv',
+    {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
+```
+
 As already mentioned, source creation is asynchronous: the initial
 resource status code will be either `WAITING` or `QUEUED`. You can
 retrieve the updated status at any time using the corresponding get

@@ -110,7 +110,7 @@ STATUSES = {
 }
 
 def _is_valid_remote_url(value):
-    """Says if given value is an URL
+    """Says if given value is a URL
         with scheme, netloc and path
         or not."""
     if not isinstance(value, basestring):

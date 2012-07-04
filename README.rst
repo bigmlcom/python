@@ -35,12 +35,13 @@ libraries is ``simplejson`` is not found.
 Installation
 ------------
 
-To install::
+To install the latest stable release with
+`pip <http://www.pip-installer.org/>`_::
 
-    $ python setup.py install
+    $ pip install bigml
 
-You can also install the bindings directly from the Git repository
-using `pip <http://www.pip-installer.org/>`_::
+You can also install the development version of the bindings directly
+from the Git repository::
 
     $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
 

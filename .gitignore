@@ -14,4 +14,4 @@ build
 *.egg-info
 *.egg
 *.coverage
-
+set_credentials.sh

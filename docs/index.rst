@@ -138,37 +138,6 @@ You can then print the prediction using the ``pprint`` method::
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
-Running the Tests
------------------
-
-To run the tests you will need to install
-`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
-
-    $ pip install lettuce
-
-and set up your authentication via environment variables, as explained
-above. With that in place, you can run the test suite simply by::
-
-    $ cd tests
-    $ lettuce
-
-Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
-automatically run the test suite in virtual environments for all
-supported Python versions.  To install Tox::
-
-    $ pip install tox
-
-Then run the tests from the top-level project directory::
-
-    $ tox
-
-Note that tox checks the exit status from the test command (lettuce) to
-determine pass/fail, but the latest version of lettuce (0.2.5)
-erroneously exits with a non-zero exit status indicating an error. So,
-tox will report failures even if the test suite is passing. This
-`should be fixed <https://github.com/gabrielfalcao/lettuce/pull/270>`_
-in the next release of lettuce.
-
 Fields
 ------
 
@@ -563,6 +532,51 @@ keys:
 -  **error** If the request does not succeed, it will contain a
    dictionary with an error code and a message. It will be ``None``
    otherwise.
+
+Running the Tests
+-----------------
+
+To run the tests you will need to install
+`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
+
+    $ pip install lettuce
+
+and set up your authentication via environment variables, as explained
+above. With that in place, you can run the test suite simply by::
+
+    $ cd tests
+    $ lettuce
+
+Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
+automatically run the test suite in virtual environments for all
+supported Python versions.  To install Tox::
+
+    $ pip install tox
+
+Then run the tests from the top-level project directory::
+
+    $ tox
+
+Note that tox checks the exit status from the test command (lettuce) to
+determine pass/fail, but the latest version of lettuce (0.2.5)
+erroneously exits with a non-zero exit status indicating an error. So,
+tox will report failures even if the test suite is passing. This
+`should be fixed <https://github.com/gabrielfalcao/lettuce/pull/270>`_
+in the next release of lettuce.
+
+Building the Documentation
+--------------------------
+
+Install the tools required to build the documentation::
+
+    $ pip install sphinx
+
+To build the HTML version of the documentation::
+
+    $ cd docs/
+    $ make html
+
+Then launch ``docs/_build/html/index.html`` in your browser.
 
 Additional Information
 ----------------------

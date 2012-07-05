@@ -36,6 +36,16 @@ def i_upload_a_file(step, file):
     # save reference
     world.sources.append(resource['resource'])
 
+@step(r'I create a data source using the url "(.*)"')
+def i_create_using_url(step, url):
+    resource = world.api.create_source(url)
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
+
 @step(r'the source has been created')
 def the_source_has_been_created(step):
     assert world.status == HTTP_CREATED

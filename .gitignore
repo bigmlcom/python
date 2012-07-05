@@ -15,3 +15,5 @@ build
 *.egg
 *.coverage
 .tox/
+set_credentials.sh
+

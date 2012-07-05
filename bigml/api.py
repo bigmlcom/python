@@ -47,6 +47,8 @@ try:
 except ImportError:
     import json
 
+from urlparse import urlparse
+
 # Base URL
 BIGML_URL = "https://bigml.io/andromeda/"
 
@@ -106,6 +108,13 @@ STATUSES = {
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
+
+def _is_valid_remote_url(value):
+    """Says if given value is a URL
+        with scheme, netloc and path
+        or not."""
+    url = isinstance(value, basestring) and urlparse(value)
+    return url and url.scheme and url.netloc and url.path
 
 ##############################################################################
 #
@@ -430,12 +439,24 @@ class BigML(object):
     # https://bigml.com/developers/sources
     #
     ##########################################################################
-    def create_source(self, file_name, args=None):
-        """Create a new source."""
+    def _create_remote_source(self, url, args=None):
+        """Create a new source. The source is available
+           in the given URL instead of being a file
+           in a local path."""
         if args is None:
             args = {}
+        args.update({"remote": url})
+        body = json.dumps(args)
+        return self._create(SOURCE_URL, body)
+    
+    def _create_local_source(self, file_name, args=None):
+        """Create a new source. The souce is a file in
+           a local path."""
+        if args is None:
+            args = {}        
         elif 'source_parser' in args:
             args['source_parser'] = json.dumps(args['source_parser'])
+
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
         location = None
@@ -448,8 +469,8 @@ class BigML(object):
         files = {os.path.basename(file_name): open(file_name, "rb")}
         try:
             response = requests.post(SOURCE_URL + self.auth,
-                                     files=files,
-                                     data=args)
+                                files=files,
+                                data=args)
 
             code = response.status_code
 
@@ -483,6 +504,18 @@ class BigML(object):
             'location': location,
             'object': resource,
             'error': error}
+
+    def create_source(self, path, args=None):
+        """Create a new source.
+           The souce can be provided as a local file
+           path or as a URL."""
+        if not path:
+            raise Exception('Source local path or a URL must be provided.')
+        
+        if _is_valid_remote_url(path):
+            return self._create_remote_source(url=path, args=args)
+        else:
+            return self._create_local_source(file_name=path, args=args)
 
     def get_source(self, source):
         """Retrieve a source."""

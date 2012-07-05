@@ -12,6 +12,7 @@ def setup_resources(feature):
     assert world.USERNAME is not None
     assert world.API_KEY is not None
     world.api = BigML(world.USERNAME, world.API_KEY)
+    world.api_dev_mode = BigML(world.USERNAME, world.API_KEY, dev_mode=True)
 
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK

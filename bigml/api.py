@@ -57,9 +57,9 @@ PREDICTION_PATH = 'prediction'
 
 # Base Resource URLs
 SOURCE_URL = BIGML_URL + SOURCE_PATH
-DATASET_URL = BIGML_URL + DATASET_PATH
-MODEL_URL = BIGML_URL + MODEL_PATH
-PREDICTION_URL = BIGML_URL + PREDICTION_PATH
+
+#Development Mode URL
+BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
 
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
@@ -121,10 +121,23 @@ class BigML(object):
     Full API documentation on the API can be found from BigML at:
         https://bigml.com/developers
     """
+    URL = ''
     def __init__(self, username=os.environ['BIGML_USERNAME'],
-        api_key=os.environ['BIGML_API_KEY']):
+        api_key=os.environ['BIGML_API_KEY'], dev_mode=False):
         """Initialize httplib and set up username and api_key."""
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
+        self.dev_mode = dev_mode
+        
+        if dev_mode:
+            self.URL = BIGML_DEV_URL
+        else:
+            self.URL = BIGML_URL
+
+        # Base Resource URLs
+        self.SOURCE_URL = self.URL + SOURCE_PATH
+        self.DATASET_URL = self.URL + DATASET_PATH
+        self.MODEL_URL = self.URL + MODEL_PATH
+        self.PREDICTION_URL = self.URL + PREDICTION_PATH
 
     def _create(self, url, body):
         """Create a new resource. """
@@ -360,7 +373,7 @@ class BigML(object):
             LOGGER.error("Wrong resource id")
             return
 
-        resource = self._get("%s%s" % (BIGML_URL, resource_id))
+        resource = self._get("%s%s" % (self.URL, resource_id))
         if resource['code'] == HTTP_OK:
             if  MODEL_RE.match(resource_id):
                 return resource['object']['model']['fields']
@@ -417,7 +430,7 @@ class BigML(object):
             LOGGER.error("Wrong resource id")
             return
 
-        resource = self._get("%s%s" % (BIGML_URL, resource_id))
+        resource = self._get("%s%s" % (self.URL, resource_id))
         code = resource['object']['status']['code']
         if code in STATUSES:
             return STATUSES[code]
@@ -447,7 +460,7 @@ class BigML(object):
 
         files = {os.path.basename(file_name): open(file_name, "rb")}
         try:
-            response = requests.post(SOURCE_URL + self.auth,
+            response = requests.post(self.SOURCE_URL + self.auth,
                                      files=files,
                                      data=args)
 
@@ -502,7 +515,7 @@ class BigML(object):
         else:
             LOGGER.error("Wrong source id")
             return
-        return self._get("%s%s" % (BIGML_URL, source_id))
+        return self._get("%s%s" % (self.URL, source_id))
 
     def source_is_ready(self, source):
         """Check whether a source' status is FINISHED."""
@@ -512,7 +525,7 @@ class BigML(object):
 
     def list_sources(self, query_string=''):
         """List all your sources."""
-        return self._list(SOURCE_URL, query_string)
+        return self._list(self.SOURCE_URL, query_string)
 
     def update_source(self, source, changes):
         """Update a source."""
@@ -525,7 +538,7 @@ class BigML(object):
             return
 
         body = json.dumps(changes)
-        return self._update("%s%s" % (BIGML_URL, source_id), body)
+        return self._update("%s%s" % (self.URL, source_id), body)
 
     def delete_source(self, source):
         """Delete a source."""
@@ -537,7 +550,7 @@ class BigML(object):
             LOGGER.error("Wrong source id")
             return
 
-        return self._delete("%s%s" % (BIGML_URL, source_id))
+        return self._delete("%s%s" % (self.URL, source_id))
 
     ##########################################################################
     #
@@ -564,7 +577,7 @@ class BigML(object):
         args.update({
             "source": source_id})
         body = json.dumps(args)
-        return self._create(DATASET_URL, body)
+        return self._create(self.DATASET_URL, body)
 
     def get_dataset(self, dataset):
         """Retrieve a dataset."""
@@ -575,7 +588,7 @@ class BigML(object):
         else:
             LOGGER.error("Wrong dataset id")
             return
-        return self._get("%s%s" % (BIGML_URL, dataset_id))
+        return self._get("%s%s" % (self.URL, dataset_id))
 
     def dataset_is_ready(self, dataset):
         """Check whether a dataset' status is FINISHED."""
@@ -585,7 +598,7 @@ class BigML(object):
 
     def list_datasets(self, query_string=''):
         """List all your datasets."""
-        return self._list(DATASET_URL, query_string)
+        return self._list(self.DATASET_URL, query_string)
 
     def update_dataset(self, dataset, changes):
         """Update a dataset."""
@@ -598,7 +611,7 @@ class BigML(object):
             return
 
         body = json.dumps(changes)
-        return self._update("%s%s" % (BIGML_URL, dataset_id), body)
+        return self._update("%s%s" % (self.URL, dataset_id), body)
 
     def delete_dataset(self, dataset):
         """Delete a dataset."""
@@ -610,7 +623,7 @@ class BigML(object):
             LOGGER.error("Wrong dataset id")
             return
 
-        return self._delete("%s%s" % (BIGML_URL, dataset_id))
+        return self._delete("%s%s" % (self.URL, dataset_id))
 
     ##########################################################################
     #
@@ -637,7 +650,7 @@ class BigML(object):
         args.update({
             "dataset": dataset_id})
         body = json.dumps(args)
-        return self._create(MODEL_URL, body)
+        return self._create(self.MODEL_URL, body)
 
     def get_model(self, model):
         """Retrieve a model."""
@@ -649,7 +662,7 @@ class BigML(object):
             LOGGER.error("Wrong model id")
             return
 
-        return self._get("%s%s" % (BIGML_URL, model_id))
+        return self._get("%s%s" % (self.URL, model_id))
 
     def model_is_ready(self, model):
         """Check whether a model' status is FINISHED."""
@@ -659,7 +672,7 @@ class BigML(object):
 
     def list_models(self, query_string=''):
         """List all your models."""
-        return self._list(MODEL_URL, query_string)
+        return self._list(self.MODEL_URL, query_string)
 
     def update_model(self, model, changes):
         """Update a model."""
@@ -672,7 +685,7 @@ class BigML(object):
             return
 
         body = json.dumps(changes)
-        return self._update("%s%s" % (BIGML_URL, model_id), body)
+        return self._update("%s%s" % (self.URL, model_id), body)
 
     def delete_model(self, model):
         """Delete a model."""
@@ -684,7 +697,7 @@ class BigML(object):
             LOGGER.error("Wrong model id")
             return
 
-        return self._delete("%s%s" % (BIGML_URL, model_id))
+        return self._delete("%s%s" % (self.URL, model_id))
 
     ##########################################################################
     #
@@ -725,7 +738,7 @@ class BigML(object):
             "model": model_id,
             "input_data": input_data})
         body = json.dumps(args)
-        return self._create(PREDICTION_URL, body)
+        return self._create(self.PREDICTION_URL, body)
 
     def get_prediction(self, prediction):
         """Retrieve a prediction."""
@@ -738,11 +751,11 @@ class BigML(object):
             LOGGER.error("Wrong prediction id")
             return
 
-        return self._get("%s%s" % (BIGML_URL, prediction_id))
+        return self._get("%s%s" % (self.URL, prediction_id))
 
     def list_predictions(self, query_string=''):
         """List all your predictions."""
-        return self._list(PREDICTION_URL, query_string)
+        return self._list(self.PREDICTION_URL, query_string)
 
     def update_prediction(self, prediction, changes):
         """Update a prediction."""
@@ -756,7 +769,7 @@ class BigML(object):
             return
 
         body = json.dumps(changes)
-        return self._update("%s%s" % (BIGML_URL, prediction_id), body)
+        return self._update("%s%s" % (self.URL, prediction_id), body)
 
     def delete_prediction(self, prediction):
         """Delete a prediction."""
@@ -770,4 +783,4 @@ class BigML(object):
             return
 
         return self._delete("%s%s" %
-            (BIGML_URL, prediction_id))
+            (self.URL, prediction_id))

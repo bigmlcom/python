@@ -79,12 +79,18 @@ from bigml.api import BigML
 api = BigML()
 ```
 
-Otherwise, you can can initialize directly when instantiating the
+Otherwise, you can initialize directly when instantiating the
 BigML class as follows.
-
 
 ```python
 api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
+```
+
+Also, you can initialize the library to work in the Sandbox
+environment by passing the parameter `dev_mode`:
+
+```
+api = BigML(dev_mode=True)
 ```
 
 ## Running the Tests

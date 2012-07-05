@@ -24,3 +24,11 @@ def i_get_the_source(step, resource):
     world.status = resource['code']
     assert world.status == HTTP_OK
     world.source = resource['object']
+
+@step(r'the source has DEV (True|False)')
+def source_has_dev(step, boolean):
+    if boolean == 'False':
+        boolean = ''
+    boolean = bool(boolean)
+    dev = world.source['dev']
+    assert dev == boolean

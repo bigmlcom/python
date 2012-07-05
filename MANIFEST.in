@@ -1,0 +1,6 @@
+include LICENSE
+include HISTORY.rst
+include README.rst
+recursive-include data *
+recursive-include tests *.py
+recursive-exclude tests *.pyc

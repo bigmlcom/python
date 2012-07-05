@@ -325,8 +325,9 @@ Creating datasets
 
 Once you have created a source, you can create a dataset. The only
 required argument to create a dataset is a source id. You can add all
-the additional arguments accepted by BigML and documented
-`here <https://bigml.com/developers/datasets>`_.
+the additional arguments accepted by BigML and documented in the
+`Datasets section of the Developer's
+documentation <https://bigml.com/developers/datasets>`_.
 
 For example, to create a dataset named "my dataset" with the first 1024
 bytes of a source, you can submit the following request::
@@ -342,7 +343,8 @@ Creating models
 Once you have created a dataset, you can create a model. The only
 required argument to create a model is a dataset id. You can also
 include in the request all the additional arguments accepted by BigML
-and documented `here <https://bigml.com/developers/models>`_.
+and documented in the `Models section of the Developer's
+documentation <https://bigml.com/developers/models>`_.
 
 For example, to create a model only including the first two fields and
 the first 10 instances in the dataset, you can use the following
@@ -582,4 +584,4 @@ Additional Information
 ----------------------
 
 For additional information about the API, see the
-`BigML API documentation <https://bigml.com/developers>`_.
+`BigML developer's documentation <https://bigml.com/developers>`_.

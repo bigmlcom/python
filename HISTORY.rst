@@ -3,7 +3,7 @@
 History
 -------
 
-X.Y.Z (YYYY-MM-DD)
+0.3.1 (2012-07-05)
 ~~~~~~~~~~~~~~~~~~
 
-- TODO
+- Initial release for the "andromeda" version of BigML.io.

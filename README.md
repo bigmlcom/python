@@ -86,8 +86,8 @@ BigML class as follows.
 api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 ```
 
-Also, you can initialize BigML binding to work in the Sandbox 
-environtment by passing the parameter `dev_mode`:
+Also, you can initialize the library to work in the Sandbox
+environment by passing the parameter `dev_mode`:
 
 ```
 api = BigML(dev_mode=True)

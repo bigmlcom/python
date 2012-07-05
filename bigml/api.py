@@ -113,16 +113,8 @@ def _is_valid_remote_url(value):
     """Says if given value is a URL
         with scheme, netloc and path
         or not."""
-    #if not isinstance(value, basestring):
-    #    # Must be a string
-    #    return False
-    #url = urlparse(value)
-    #if not url.scheme or not url.netloc or not url.path:
-    #    # Invalid URL: a host address or path is missed.
-    #    return False
-    #return True
     url = isinstance(value, basestring) and urlparse(value)
-    return url and (url.scheme and url.netloc and url.path)
+    return url and url.scheme and url.netloc and url.path
 
 ##############################################################################
 #

@@ -143,5 +143,15 @@ Additional Information
 
 We've just barely scratched the surface. For additional information, see
 the `full documentation for the Python
-bindings <http://bigml.readthedocs.org>`_ and the
+bindings on Read the Docs <http://bigml.readthedocs.org>`_.
+Alternatively, the same documentation can be built from a local checkout
+of the source by installing `Sphinx <http://sphinx.pocoo.org>`_
+(``$ pip install sphinx``) and then running::
+
+    $ cd docs
+    $ make html
+
+Then launch ``docs/_build/html/index.html`` in your browser.
+
+For details on the underlying API, see the
 `BigML API documentation <https://bigml.com/developers>`_.

@@ -28,4 +28,4 @@ Feature: Create Predictions
 
         Examples:
         | url                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
-        | s3://bigml-public/csv/iris.csv | 10      | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa | 
+        | s3://bigml-public/csv/iris.csv | 10      | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa |

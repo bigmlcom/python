@@ -50,7 +50,7 @@ distutils.core.setup(
     version=version,
     author="The BigML Team",
     author_email="bigml@bigml.com",
-    url="https:/bigml.com/developers",
+    url="https://bigml.com/developers",
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = [],

@@ -57,9 +57,6 @@ DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 
-# Base Resource URLs
-SOURCE_URL = BIGML_URL + SOURCE_PATH
-
 #Development Mode URL
 BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
 
@@ -459,7 +456,7 @@ class BigML(object):
             args = {}
         args.update({"remote": url})
         body = json.dumps(args)
-        return self._create(SOURCE_URL, body)
+        return self._create(self.SOURCE_URL, body)
     
     def _create_local_source(self, file_name, args=None):
         """Create a new source. The souce is a file in

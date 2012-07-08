@@ -127,12 +127,16 @@ class BigML(object):
     Full API documentation on the API can be found from BigML at:
         https://bigml.com/developers
     """
-    def __init__(self, username=os.environ['BIGML_USERNAME'],
-        api_key=os.environ['BIGML_API_KEY'], dev_mode=False):
+    def __init__(self, username=None, api_key=None, dev_mode=False):
         """Initialize httplib and set up username and api_key."""
+        if username is None:
+            username = os.environ['BIGML_USERNAME']
+        if api_key is None:
+            api_key = os.environ['BIGML_API_KEY']
+
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
-        
+
         if dev_mode:
             self.URL = BIGML_DEV_URL
         else:

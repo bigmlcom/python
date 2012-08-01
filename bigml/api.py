@@ -487,7 +487,7 @@ class BigML(object):
         error = {
             "status": {
                 "code": code,
-                "message": "The resource couldn't be deleted"}}
+                "message": "The resource couldn't be created"}}
 
         files = {os.path.basename(file_name): open(file_name, "rb")}
         try:

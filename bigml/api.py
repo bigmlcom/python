@@ -36,11 +36,16 @@ FORMAT = '%(asctime)-15s: %(message)s'
 logging.basicConfig(format=FORMAT)
 LOGGER = logging.getLogger('BigML')
 
+import sys
 import time
 import os
 import re
 import pprint
 import requests
+
+import urllib2
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
 
 try:
     import simplejson as json
@@ -48,6 +53,8 @@ except ImportError:
     import json
 
 from urlparse import urlparse
+
+register_openers()
 
 # Base URL
 BIGML_URL = "https://bigml.io/andromeda/"
@@ -106,10 +113,11 @@ STATUSES = {
     RUNNABLE: "RUNNABLE"
 }
 
+PROGRESS_BAR_WIDTH = 50
+
 def _is_valid_remote_url(value):
-    """Says if given value is a URL
-        with scheme, netloc and path
-        or not."""
+    """Return True if value is a valid URL.
+    """
     url = isinstance(value, basestring) and urlparse(value)
     return url and url.scheme and url.netloc and url.path
 
@@ -463,20 +471,17 @@ class BigML(object):
     #
     ##########################################################################
     def _create_remote_source(self, url, args=None):
-        """Create a new source. The source is available
-           in the given URL instead of being a file
-           in a local path."""
+        """Create a new source using a URL"""
         if args is None:
             args = {}
         args.update({"remote": url})
         body = json.dumps(args)
         return self._create(self.SOURCE_URL, body)
-    
+
     def _create_local_source(self, file_name, args=None):
-        """Create a new source. The souce is a file in
-           a local path."""
+        """Create a new source using a local path."""
         if args is None:
-            args = {}        
+            args = {}
         elif 'source_parser' in args:
             args['source_parser'] = json.dumps(args['source_parser'])
 
@@ -528,17 +533,90 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path, args=None):
+    def clear_progress_bar(self):
+        sys.stdout.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+        sys.stdout.flush()
+
+    def reset_progress_bar(self):
+        sys.stdout.write("\b" * (PROGRESS_BAR_WIDTH+1))
+        sys.stdout.flush()
+
+    def progress_callback(self, param, current, total):
+        pct = 100 - ((total - current ) * 100 ) / (total)
+        self.clear_progress_bar()
+        self.reset_progress_bar()
+        sys.stdout.write("%s out of %s [%s%%]" % (current, total, pct))
+        self.reset_progress_bar()
+        sys.stdout.flush()
+
+    def _stream_source(self, file_name, args=None):
+        """Create a new source
+        """
+        if args is None:
+            args = {}
+        elif 'source_parser' in args:
+            args['source_parser'] = json.dumps(args['source_parser'])
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        resource_id = None
+        location = None
+        resource = None
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+
+        args.update({os.path.basename(file_name): open(file_name, "rb")})
+        body, headers = multipart_encode(args, cb=self.progress_callback)
+        request = urllib2.Request(self.SOURCE_URL + self.auth, body, headers)
+        self.clear_progress_bar()
+        self.reset_progress_bar()
+        try:
+            response = urllib2.urlopen(request)
+            code = response.getcode()
+            if code == HTTP_CREATED:
+                location = response.headers['location']
+                content = response.read()
+                resource = json.loads(content, 'utf-8')
+                resource_id = resource['resource']
+                error = {}
+        except ValueError:
+            LOGGER.error("Malformed response")
+        except urllib2.HTTPError, exception:
+            LOGGER.error("Error %s", exception.code)
+            code = exception.code
+            if code in [
+                HTTP_BAD_REQUEST,
+                HTTP_UNAUTHORIZED,
+                HTTP_PAYMENT_REQUIRED,
+                HTTP_NOT_FOUND]:
+                content = exception.read()
+                error = json.loads(content, 'utf-8')
+            else:
+                LOGGER.error("Unexpected error (%s)" % code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+
+        except urllib2.URLError, exception:
+            LOGGER.error("Error establishing connection")
+            error = exception.args
+        return {
+            'code': code,
+            'resource': resource_id,
+            'location': location,
+            'object': resource,
+            'error': error}
+
+    def create_source(self, path=None, **kwargs):
         """Create a new source.
            The souce can be provided as a local file
            path or as a URL."""
-        if not path:
-            raise Exception('Source local path or a URL must be provided.')
-        
+        if path is None:
+            raise Exception('A local path or a valid URL must be provided.')
+
         if _is_valid_remote_url(path):
-            return self._create_remote_source(url=path, args=args)
+            return self._create_remote_source(url=path, **kwargs)
         else:
-            return self._create_local_source(file_name=path, args=args)
+            return self._stream_source(file_name=path, **kwargs)
 
     def get_source(self, source):
         """Retrieve a source."""

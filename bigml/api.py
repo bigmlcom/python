@@ -569,10 +569,10 @@ class BigML(object):
         args.update({os.path.basename(file_name): open(file_name, "rb")})
         body, headers = multipart_encode(args, cb=draw_progress_bar)
         request = urllib2.Request(self.SOURCE_URL + self.auth, body, headers)
-        clear_progress_bar()
-        reset_progress_bar()
         try:
             response = urllib2.urlopen(request)
+            clear_progress_bar()
+            reset_progress_bar()
             code = response.getcode()
             if code == HTTP_CREATED:
                 location = response.headers['location']

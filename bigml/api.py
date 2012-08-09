@@ -608,8 +608,8 @@ class BigML(object):
 
     def create_source(self, path=None, args=None):
         """Create a new source.
-           The souce can be provided as a local file
-           path or as a URL."""
+           The source can be a local file path or a URL."""
+
         if path is None:
             raise Exception('A local path or a valid URL must be provided.')
 
@@ -625,14 +625,12 @@ class BigML(object):
             return source
         else:
             LOGGER.error("Wrong source id")
-            return
 
     def get_source(self, source):
         """Retrieve a source."""
         source_id = self._get_source_id(source)
         if source_id:
             return self._get("%s%s" % (self.URL, source_id))
-        return
 
     def source_is_ready(self, source):
         """Check whether a source' status is FINISHED."""
@@ -650,14 +648,12 @@ class BigML(object):
         if source_id:
             body = json.dumps(changes)
             return self._update("%s%s" % (self.URL, source_id), body)
-        return
 
     def delete_source(self, source):
         """Delete a source."""
         source_id = self._get_source_id(source)
         if source_id:
             return self._delete("%s%s" % (self.URL, source_id))
-        return
 
     ##########################################################################
     #
@@ -667,24 +663,18 @@ class BigML(object):
     ##########################################################################
     def create_dataset(self, source, args=None, wait_time=3):
         """Create a dataset."""
-        if isinstance(source, dict) and 'resource' in source:
-            source_id = source['resource']
-        elif isinstance(source, basestring) and SOURCE_RE.match(source):
-            source_id = source
-        else:
-            LOGGER.error("Wrong source id")
-            return
+        source_id = self._get_source_id(source):
+        if source_id:
+            if wait_time > 0:
+                while not self.source_is_ready(source_id):
+                    time.sleep(wait_time)
 
-        if wait_time > 0:
-            while not self.source_is_ready(source_id):
-                time.sleep(wait_time)
-
-        if args is None:
-            args = {}
-        args.update({
-            "source": source_id})
-        body = json.dumps(args)
-        return self._create(self.DATASET_URL, body)
+            if args is None:
+                args = {}
+            args.update({
+                "source": source_id})
+            body = json.dumps(args)
+            return self._create(self.DATASET_URL, body)
 
     def _get_dataset_id(self, dataset):
         if isinstance(dataset, dict) and 'resource' in dataset:
@@ -693,14 +683,12 @@ class BigML(object):
             return dataset
         else:
             LOGGER.error("Wrong dataset id")
-            return
 
     def get_dataset(self, dataset):
         """Retrieve a dataset."""
         dataset_id = self._get_dataset_id(dataset)
         if dataset_id:
             return self._get("%s%s" % (self.URL, dataset_id))
-        return
 
     def dataset_is_ready(self, dataset):
         """Check whether a dataset' status is FINISHED."""
@@ -718,14 +706,12 @@ class BigML(object):
         if dataset_id:
             body = json.dumps(changes)
             return self._update("%s%s" % (self.URL, dataset_id), body)
-        return
 
     def delete_dataset(self, dataset):
         """Delete a dataset."""
         dataset_id = self._get_dataset_id(dataset)
         if dataset_id:
             return self._delete("%s%s" % (self.URL, dataset_id))
-        return
 
     ##########################################################################
     #
@@ -735,24 +721,20 @@ class BigML(object):
     ##########################################################################
     def create_model(self, dataset, args=None, wait_time=3):
         """Create a model."""
-        if isinstance(dataset, dict) and 'resource' in dataset:
-            dataset_id = dataset['resource']
-        elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-            dataset_id = dataset
-        else:
-            LOGGER.error("Wrong dataset id")
-            return
 
-        if wait_time > 0:
-            while not self.dataset_is_ready(dataset_id):
-                time.sleep(wait_time)
+        dataset_id = self._get_dataset_id(dataset)
 
-        if args is None:
-            args = {}
-        args.update({
-            "dataset": dataset_id})
-        body = json.dumps(args)
-        return self._create(self.MODEL_URL, body)
+        if dataset_id:
+            if wait_time > 0:
+                while not self.dataset_is_ready(dataset_id):
+                    time.sleep(wait_time)
+
+            if args is None:
+                args = {}
+            args.update({
+                "dataset": dataset_id})
+            body = json.dumps(args)
+            return self._create(self.MODEL_URL, body)
 
     def _get_model_id(self, model):
         if isinstance(model, dict) and 'resource' in model:
@@ -761,14 +743,12 @@ class BigML(object):
             return model
         else:
             LOGGER.error("Wrong model id")
-            return
 
     def get_model(self, model):
         """Retrieve a model."""
         model_id = self._get_model_id(model)
         if model_id:
             return self._get("%s%s" % (self.URL, model_id))
-        return
 
     def model_is_ready(self, model):
         """Check whether a model' status is FINISHED."""
@@ -786,14 +766,12 @@ class BigML(object):
         if model_id:
             body = json.dumps(changes)
             return self._update("%s%s" % (self.URL, model_id), body)
-        return
 
     def delete_model(self, model):
         """Delete a model."""
         model_id = self._get_model_id(model)
         if model_id:
             return self._delete("%s%s" % (self.URL, model_id))
-        return
 
     ##########################################################################
     #
@@ -804,37 +782,32 @@ class BigML(object):
     def create_prediction(self, model, input_data=None, args=None,
             wait_time=3):
         """Create a new prediction."""
-        if isinstance(model, dict) and 'resource' in model:
-            model_id = model['resource']
-        elif isinstance(model, basestring) and MODEL_RE.match(model):
-            model_id = model
-        else:
-            LOGGER.error("Wrong model id")
-            return
+        model_id = self._get_model_id(model)
 
-        if wait_time > 0:
-            while not self.model_is_ready(model_id):
-                time.sleep(wait_time)
+        if model_id:
+            if wait_time > 0:
+                while not self.model_is_ready(model_id):
+                    time.sleep(wait_time)
 
-        if input_data is None:
-            input_data = {}
-        else:
-            fields = self.get_fields(model_id)
-            inverted_fields = self.invert_dictionary(fields)
-            try:
-                input_data = dict(
-                    [[inverted_fields[key], value]
-                     for key, value in input_data.items()])
-            except KeyError, field:
-                LOGGER.error("Wrong field name %s" % field)
+            if input_data is None:
+                input_data = {}
+            else:
+                fields = self.get_fields(model_id)
+                inverted_fields = self.invert_dictionary(fields)
+                try:
+                    input_data = dict(
+                        [[inverted_fields[key], value]
+                         for key, value in input_data.items()])
+                except KeyError, field:
+                    LOGGER.error("Wrong field name %s" % field)
 
-        if args is None:
-            args = {}
-        args.update({
-            "model": model_id,
-            "input_data": input_data})
-        body = json.dumps(args)
-        return self._create(self.PREDICTION_URL, body)
+            if args is None:
+                args = {}
+            args.update({
+                "model": model_id,
+                "input_data": input_data})
+            body = json.dumps(args)
+            return self._create(self.PREDICTION_URL, body)
 
     def _get_prediction_id(self, prediction):
         if isinstance(prediction, dict) and 'resource' in prediction:
@@ -844,14 +817,12 @@ class BigML(object):
             return prediction
         else:
             LOGGER.error("Wrong prediction id")
-            return
 
     def get_prediction(self, prediction):
         """Retrieve a prediction."""
         prediction_id = self._get_prediction_id(prediction)
         if prediction_id:
             return self._get("%s%s" % (self.URL, prediction_id))
-        return
 
     def list_predictions(self, query_string=''):
         """List all your predictions."""
@@ -863,7 +834,6 @@ class BigML(object):
         if prediction_id:
             body = json.dumps(changes)
             return self._update("%s%s" % (self.URL, prediction_id), body)
-        return
 
     def delete_prediction(self, prediction):
         """Delete a prediction."""
@@ -871,4 +841,3 @@ class BigML(object):
         if prediction_id:
             return self._delete("%s%s" %
                 (self.URL, prediction_id))
-        return

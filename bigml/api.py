@@ -663,7 +663,7 @@ class BigML(object):
     ##########################################################################
     def create_dataset(self, source, args=None, wait_time=3):
         """Create a dataset."""
-        source_id = self._get_source_id(source):
+        source_id = self._get_source_id(source)
         if source_id:
             if wait_time > 0:
                 while not self.source_is_ready(source_id):

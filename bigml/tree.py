@@ -40,24 +40,59 @@ class Predicate(object):
 
 class Node(object):
 
-    def __init__(self, output, predicate, children, count, distribution):
-
-        self.output = output
-        if predicate == True:
+    def __init__(self, node):
+        self.output = node['output']
+        if node['predicate'] == True:
             self.predicate = True
         else:
-            self.predicate = Predicate(predicate['operator'], predicate['field'], predicate['value'])
-        self.children = children
-        self.count = count
-        self.distribution = distribution
-
-class Tree(object):
-
-    def __init__(self, node):
+            self.predicate = Predicate(
+                node['predicate']['operator'],
+                node['predicate']['field'],
+                node['predicate']['value'])
         children = []
         if 'children' in node:
             for child in node['children']:
-                children.append(Tree(child))
-        self.node =  Node(node['output'], node['predicate'], children, node['count'], node['distribution'])
+                children.append(Node(child))
+        self.children = children
+        self.count = node['count']
+        self.distribution = node['distribution']
 
 
+class Prediction(object):
+    def split(self, node):
+        field = set([child.predicate.field for child in node.children])
+        if len(field) == 1:
+            return field.pop()
+
+    def __init__(self, node, input):
+        self.node = node
+        self.input = input
+
+    def predict(self):
+        if self.node.children and self.split(self.node) in self.input:
+            for child in self.node.children:
+                if apply(OPERATOR[child.predicate.operator], [self.input[child.predicate.field], child.predicate.value]):
+                    return Prediction(child, self.input).predict()
+                    break;
+        else:
+            return self.node.output
+
+
+class Rule(object):
+
+    def __init__(self, _if, _then):
+        self._if = _if
+        self._then = _then
+
+    def pprint(self):
+        print "IF %s THEN %s" % (self._if, self._then)
+
+
+# from bigml.api import BigML
+# api = BigML()
+# from bigml.tree import Node
+# from bigml.tree import Prediction
+
+# model = api.get_model('model/5026965515526876630001b2')
+
+# t = Node(model['object']['model']['root'])

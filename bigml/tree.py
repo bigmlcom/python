@@ -85,8 +85,13 @@ class Tree(object):
     def predict(self, input):
         if self.children and self.split(self.children) in input:
             for child in self.children:
-                if apply(OPERATOR[child.predicate.operator], [input[child.predicate.field], child.predicate.value]):
-                    print("%s %s %s\n" % (self.fields[child.predicate.field]['name'], child.predicate.operator, child.predicate.value))
+                if apply(OPERATOR[child.predicate.operator],
+                        [input[child.predicate.field],
+                        child.predicate.value]):
+                    print("%s %s %s\n" % (
+                        self.fields[child.predicate.field]['name'],
+                        child.predicate.operator,
+                        child.predicate.value))
                     return child.predict(input)
                     break;
         else:
@@ -103,16 +108,7 @@ class Tree(object):
                     "AND" if child.children else "THEN"))
                 child.rules(depth+1)
         else:
-            if self.predicate == True:
-                print("%s %s = %s" % (
-                    '   ' * depth,
-                    self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
-                    self.output))
-            else:
-                print("%s %s = %s" % (
-                    '   ' * depth,
-                    self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
-                    self.output))
-
-
-
+            print("%s %s = %s" % (
+                '   ' * depth,
+                self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
+                self.output))

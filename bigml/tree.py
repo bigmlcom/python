@@ -25,16 +25,20 @@ from bigml.tree import Tree
 api = BigML()
 
 model = api.get_model('model/5026965515526876630001b2')
+model = api.get_model('model/5026a3c315526876630001b5')
 
 tree = Tree(model['object']['model']['root'], model['object']['model']['fields'], model['object']['objective_fields'])
 tree.predict({"000002": 2.46, "000003": 1})
 tree.rules()
+tree.python()
 
 """
 import logging
 LOGGER = logging.getLogger('BigML')
 
 import operator
+import unidecode
+import re
 
 OPERATOR = {
     "<": operator.lt,
@@ -51,11 +55,16 @@ class Predicate(object):
         self.field = field
         self.value = value
 
+def slugify(str):
+    str = unidecode.unidecode(str).lower()
+    return re.sub(r'\W+', '_', str)
+
 class Tree(object):
 
     def __init__(self, tree, fields, objective_field=None):
 
         self.fields = fields
+
         if objective_field and isinstance(objective_field, list):
             self.objective_field = objective_field[0]
         else:
@@ -72,7 +81,7 @@ class Tree(object):
         children = []
         if 'children' in tree:
             for child in tree['children']:
-                children.append(Tree(child, fields, objective_field))
+                children.append(Tree(child, self.fields, objective_field))
         self.children = children
         self.count = tree['count']
         self.distribution = tree['distribution']
@@ -112,3 +121,33 @@ class Tree(object):
                 '   ' * depth,
                 self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
                 self.output))
+
+
+    def python_body(self, depth=1):
+        if self.children:
+            for child in self.children:
+                print("%sif (%s %s %s)%s" %
+                    ('    ' * depth,
+                    self.fields[child.predicate.field]['slug'],
+                    child.predicate.operator,
+                    child.predicate.value,
+                    ":" if child.children else ":"))
+                child.python_body(depth+1)
+        else:
+            if self.fields[self.objective_field]['optype'] == 'numeric':
+                print("%s return %s" % ('    ' * depth, self.output))
+            else:
+                print("%s return '%s'" % ('    ' * depth, self.output))
+
+    def python(self):
+        args = []
+        for key in self.fields.iterkeys():
+            slug = slugify(self.fields[key]['name'])
+            self.fields[key].update(slug=slug)
+            if key != self.objective_field:
+                args.append(slug)
+        print("def predict_%s(%s):" % (self.fields[self.objective_field]['slug'], ", ".join(args)))
+        self.python_body()
+
+
+

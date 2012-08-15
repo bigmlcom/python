@@ -67,6 +67,10 @@ PREDICTION_PATH = 'prediction'
 # Development Mode URL
 BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
 
+# Check BigML.io host’s SSL certificate
+# DO NOT CHANGE IT.
+VERIFY = True
+
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
@@ -184,7 +188,7 @@ class BigML(object):
                 "message": "The resource couldn't be created"}}
         try:
             response = requests.post(url + self.auth, headers=SEND_JSON,
-                data=body)
+                data=body, verify=VERIFY)
 
             code = response.status_code
 
@@ -232,7 +236,8 @@ class BigML(object):
                 "message": "The resource couldn't be retrieved"}}
 
         try:
-            response = requests.get(url + self.auth, headers=ACCEPT_JSON)
+            response = requests.get(url + self.auth, headers=ACCEPT_JSON,
+                verify=VERIFY)
             code = response.status_code
 
             if code == HTTP_OK:
@@ -273,7 +278,7 @@ class BigML(object):
                 "message": "The resource couldn't be listed"}}
         try:
             response = requests.get(url + self.auth + query_string,
-                headers=ACCEPT_JSON)
+                headers=ACCEPT_JSON, verify=VERIFY)
 
             code = response.status_code
 
@@ -318,7 +323,7 @@ class BigML(object):
         try:
             response = requests.put(url + self.auth,
                 headers=SEND_JSON,
-                data=body)
+                data=body, verify=VERIFY)
 
             code = response.status_code
 
@@ -362,7 +367,7 @@ class BigML(object):
                 "message": "The resource couldn't be deleted"}}
 
         try:
-            response = requests.delete(url + self.auth)
+            response = requests.delete(url + self.auth, verify=VERIFY)
 
             code = response.status_code
 
@@ -509,7 +514,7 @@ class BigML(object):
         try:
             response = requests.post(self.SOURCE_URL + self.auth,
                                      files=files,
-                                     data=args)
+                                     data=args, verify=VERIFY)
 
             code = response.status_code
 

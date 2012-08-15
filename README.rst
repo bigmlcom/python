@@ -153,5 +153,15 @@ of the source by installing `Sphinx <http://sphinx.pocoo.org>`_
 
 Then launch ``docs/_build/html/index.html`` in your browser.
 
+How to Contribute
+-----------------
+
+How to contribute to BigML's python bindings:
+  1. Fork the project on github.com
+  2. Create a new branch
+  3. Commit changes to this branch
+  4. Send a pull request
+
+
 For details on the underlying API, see the
 `BigML API documentation <https://bigml.com/developers>`_.

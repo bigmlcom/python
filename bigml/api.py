@@ -64,9 +64,10 @@ DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 
-#Development Mode URL
+# Development Mode URL
 BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
 
+# Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
 MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % MODEL_PATH)
@@ -76,7 +77,7 @@ PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
 ACCEPT_JSON = {'Accept': 'application/json;charset=utf-8'}
 
-# HTTP Status Codes
+# HTTP Status Codes from https://bigml.com/developers/status_codes
 HTTP_OK = 200
 HTTP_CREATED = 201
 HTTP_ACCEPTED = 202
@@ -101,6 +102,7 @@ FAULTY = -1
 UNKNOWN = -2
 RUNNABLE = -3
 
+# Map status codes to labels
 STATUSES = {
     WAITING: "WAITING",
     QUEUED: "QUEUED",
@@ -116,7 +118,12 @@ STATUSES = {
 PROGRESS_BAR_WIDTH = 50
 
 def invert_dictionary(dictionary):
-    """Invert a dictionary"""
+    """Invert a dictionary.
+
+    Useful to make predictions using fields' names instead of Ids.
+    It does not check whether new keys are duplicated though.
+
+    """
     return dict([[value['name'], key]
         for key, value in dictionary.items()])
 
@@ -478,7 +485,12 @@ class BigML(object):
         return self._create(self.SOURCE_URL, body)
 
     def _create_local_source(self, file_name, args=None):
-        """Create a new source using a local path."""
+        """Create a new source using a local file.
+
+        This function is now DEPRECATED as "requests" do not stream the file
+        content what limited the size of local files to a small number of GBs.
+
+        """
         if args is None:
             args = {}
         elif 'source_parser' in args:
@@ -608,7 +620,10 @@ class BigML(object):
 
     def create_source(self, path=None, args=None):
         """Create a new source.
-           The source can be a local file path or a URL."""
+
+           The source can be a local file path or a URL.
+
+        """
 
         if path is None:
             raise Exception('A local path or a valid URL must be provided.')

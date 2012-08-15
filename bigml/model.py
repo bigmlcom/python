@@ -15,9 +15,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""BigML.io Local Predictive Model.
+"""A local Predictive Model.
 
-This is a simple implementation of a local Predictive Model
+This module defines a Model to make predictions locally or
+embedded into your application without needing to send requests to
+BigML.io.
+
+This module cannot only save you a few credits but also enormously
+reduce the latency for each prediction.
+
+You can also visualize your predictive model in IF-THEN rule format
+and even generate a python function that implements the model.
+
+Example usage (assuming that you have previously set up the BIGML_USERNAME and
+BIGML_API_KEY environment variables):
 
 from bigml.api import BigML
 from bigml.model import Model
@@ -25,20 +36,28 @@ from bigml.model import Model
 api = BigML()
 
 model = Model(api.get_model('model/5026965515526876630001b2'))
-model.predict({"sepal length": 2.46, "sepal width": 1})
+model.predict({"petal length": 3, "petal width": 1})
+
+
+You can also see model in a IF-THEN rule format with:
+
 model.rules()
+
+Or auto-generate a python function with:
 model.python()
 
 """
 import logging
 LOGGER = logging.getLogger('BigML')
 
+import sys
 import operator
 import unidecode
 import re
 
 from api import invert_dictionary
 
+# Map operator str to its corresponding function
 OPERATOR = {
     "<": operator.lt,
     "<=": operator.le,
@@ -48,18 +67,22 @@ OPERATOR = {
     ">": operator.gt
 }
 
+def slugify(str):
+    """Translates a field name into a variable name."""
+
+    str = unidecode.unidecode(str).lower()
+    return re.sub(r'\W+', '_', str)
+
 class Predicate(object):
+    """A predicate to be evaluated in a tree node"""
+
     def __init__(self, operator, field, value):
         self.operator = operator
         self.field = field
         self.value = value
 
-def slugify(str):
-    str = unidecode.unidecode(str).lower()
-    return re.sub(r'\W+', '_', str)
-
 class Tree(object):
-
+    """A tree-like predictive model"""
     def __init__(self, tree, fields, objective_field=None):
 
         self.fields = fields
@@ -95,7 +118,7 @@ class Tree(object):
                 if apply(OPERATOR[child.predicate.operator],
                         [input[child.predicate.field],
                         child.predicate.value]):
-                    print("%s %s %s\n" % (
+                    print("%s %s %s" % (
                         self.fields[child.predicate.field]['name'],
                         child.predicate.operator,
                         child.predicate.value))
@@ -104,49 +127,56 @@ class Tree(object):
         else:
             return self.output
 
-    def rules(self, depth=0):
+    def generate_rules(self, depth=0):
+        rules = ""
         if self.children:
             for child in self.children:
-                print("%s IF %s %s %s %s" %
-                    ('   ' * depth,
+                rules += "%s IF %s %s %s %s\n" % ('   ' * depth,
                     self.fields[child.predicate.field]['name'],
                     child.predicate.operator,
                     child.predicate.value,
-                    "AND" if child.children else "THEN"))
-                child.rules(depth+1)
+                    "AND" if child.children else "THEN")
+                rules += child.generate_rules(depth+1)
         else:
-            print("%s %s = %s" % (
-                '   ' * depth,
+            rules += "%s %s = %s\n" % ('   ' * depth,
                 self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
-                self.output))
+                self.output)
+        return rules
+
+    def rules(self, out):
+        out.write(self.generate_rules())
+        out.flush()
 
     def python_body(self, depth=1):
+        body = ""
         if self.children:
             for child in self.children:
-                print("%sif (%s %s %s)%s" %
-                    ('    ' * depth,
+                body += "%sif (%s %s %s)%s\n" % ('    ' * depth,
                     self.fields[child.predicate.field]['slug'],
                     child.predicate.operator,
                     child.predicate.value,
-                    ":" if child.children else ":"))
-                child.python_body(depth+1)
+                    ":" if child.children else ":")
+                body += child.python_body(depth+1)
         else:
             if self.fields[self.
 
             objective_field]['optype'] == 'numeric':
-                print("%s return %s" % ('    ' * depth, self.output))
+                body = "%s return %s\n" % ('    ' * depth, self.output)
             else:
-                print("%s return '%s'" % ('    ' * depth, self.output))
+                body = "%s return '%s'\n" % ('    ' * depth, self.output)
+        return body
 
-    def python(self):
+    def python(self, out):
         args = []
         for key in self.fields.iterkeys():
             slug = slugify(self.fields[key]['name'])
             self.fields[key].update(slug=slug)
             if key != self.objective_field:
                 args.append(slug)
-        print("def predict_%s(%s):" % (self.fields[self.objective_field]['slug'], ", ".join(args)))
-        self.python_body()
+        predictor = "def predict_%s(%s):\n" % (self.fields[self.objective_field]['slug'], ", ".join(args))
+        predictor += self.python_body()
+        out.write(predictor)
+        out.flush()
 
 
 class Model(object):
@@ -169,9 +199,9 @@ class Model(object):
             return
         return self.tree.predict(input_data)
 
-    def rules(self):
-        return self.tree.rules()
+    def rules(self, out=sys.stdout):
+        return self.tree.rules(out)
 
-    def python(self):
-        return self.tree.python()
+    def python(self, out=sys.stdout):
+        return self.tree.python(out)
 

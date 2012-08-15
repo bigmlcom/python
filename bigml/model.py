@@ -15,22 +15,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""BigML.io Python bindings.
+"""BigML.io Local Predictive Model.
 
-This is a simple implementation of a Tree-like Predictive Model
+This is a simple implementation of a local Predictive Model
 
 from bigml.api import BigML
-from bigml.tree import Tree
+from bigml.model import Model
 
 api = BigML()
 
-model = api.get_model('model/5026965515526876630001b2')
-model = api.get_model('model/5026a3c315526876630001b5')
-
-tree = Tree(model['object']['model']['root'], model['object']['model']['fields'], model['object']['objective_fields'])
-tree.predict({"000002": 2.46, "000003": 1})
-tree.rules()
-tree.python()
+model = Model(api.get_model('model/5026965515526876630001b2'))
+model.predict({"sepal length": 2.46, "sepal width": 1})
+model.rules()
+model.python()
 
 """
 import logging
@@ -39,6 +36,8 @@ LOGGER = logging.getLogger('BigML')
 import operator
 import unidecode
 import re
+
+from api import invert_dictionary
 
 OPERATOR = {
     "<": operator.lt,
@@ -64,7 +63,6 @@ class Tree(object):
     def __init__(self, tree, fields, objective_field=None):
 
         self.fields = fields
-
         if objective_field and isinstance(objective_field, list):
             self.objective_field = objective_field[0]
         else:
@@ -122,7 +120,6 @@ class Tree(object):
                 self.fields[self.objective_field]['name'] if self.objective_field else "Prediction",
                 self.output))
 
-
     def python_body(self, depth=1):
         if self.children:
             for child in self.children:
@@ -134,7 +131,9 @@ class Tree(object):
                     ":" if child.children else ":"))
                 child.python_body(depth+1)
         else:
-            if self.fields[self.objective_field]['optype'] == 'numeric':
+            if self.fields[self.
+
+            objective_field]['optype'] == 'numeric':
                 print("%s return %s" % ('    ' * depth, self.output))
             else:
                 print("%s return '%s'" % ('    ' * depth, self.output))
@@ -150,4 +149,29 @@ class Tree(object):
         self.python_body()
 
 
+class Model(object):
+
+    def __init__(self, model):
+        fields = model['object']['model']['fields']
+        self.inverted_fields = invert_dictionary(fields)
+        self.tree = Tree(
+            model['object']['model']['root'],
+            fields,
+            model['object']['objective_fields'])
+
+    def predict(self, input):
+        try:
+            input_data = dict(
+                [[self.inverted_fields[key], value]
+                    for key, value in input.items()])
+        except KeyError, field:
+            LOGGER.error("Wrong field name %s" % field)
+            return
+        return self.tree.predict(input_data)
+
+    def rules(self):
+        return self.tree.rules()
+
+    def python(self):
+        return self.tree.python()
 

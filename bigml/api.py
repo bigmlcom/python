@@ -115,6 +115,11 @@ STATUSES = {
 
 PROGRESS_BAR_WIDTH = 50
 
+def invert_dictionary(dictionary):
+    """Invert a dictionary"""
+    return dict([[value['name'], key]
+        for key, value in dictionary.items()])
+
 ##############################################################################
 #
 # BigML class
@@ -406,11 +411,6 @@ class BigML(object):
             else:
                 return resource['object']['fields']
         return None
-
-    def invert_dictionary(self, dictionary):
-        """Invert a dictionary"""
-        return dict([[value['name'], key]
-            for key, value in dictionary.items()])
 
     def pprint(self, resource):
         """Pretty prints a resource or part of it"""
@@ -793,7 +793,7 @@ class BigML(object):
                 input_data = {}
             else:
                 fields = self.get_fields(model_id)
-                inverted_fields = self.invert_dictionary(fields)
+                inverted_fields = invert_dictionary(fields)
                 try:
                     input_data = dict(
                         [[inverted_fields[key], value]

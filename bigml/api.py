@@ -30,6 +30,7 @@ dataset = api.create_dataset(source)
 model = api.create_model(dataset)
 prediction = api.create_prediction(model, {'sepal width': 1})
 api.pprint(prediction)
+
 """
 import logging
 FORMAT = '%(asctime)-15s: %(message)s'
@@ -130,6 +131,12 @@ def invert_dictionary(dictionary):
     """
     return dict([[value['name'], key]
         for key, value in dictionary.items()])
+
+def slugify(str):
+    """Translate a field name into a variable name."""
+
+    str = unidecode.unidecode(str).lower()
+    return re.sub(r'\W+', '_', str)
 
 ##############################################################################
 #

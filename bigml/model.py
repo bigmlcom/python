@@ -28,7 +28,7 @@ You can also visualize your predictive model in IF-THEN rule format
 and even generate a python function that implements the model.
 
 Example usage (assuming that you have previously set up the BIGML_USERNAME and
-BIGML_API_KEY environment variables):
+BIGML_API_KEY environment variables and that you own the model/id below):
 
 from bigml.api import BigML
 from bigml.model import Model
@@ -43,7 +43,8 @@ You can also see model in a IF-THEN rule format with:
 
 model.rules()
 
-Or auto-generate a python function with:
+Or auto-generate a python function code for the model with:
+
 model.python()
 
 """
@@ -55,7 +56,7 @@ import operator
 import unidecode
 import re
 
-from api import invert_dictionary
+from api import invert_dictionary, slugify
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -66,12 +67,6 @@ OPERATOR = {
     ">=": operator.ge,
     ">": operator.gt
 }
-
-def slugify(str):
-    """Translates a field name into a variable name."""
-
-    str = unidecode.unidecode(str).lower()
-    return re.sub(r'\W+', '_', str)
 
 class Predicate(object):
     """A predicate to be evaluated in a tree node"""

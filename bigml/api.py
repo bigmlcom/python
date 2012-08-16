@@ -46,6 +46,7 @@ import requests
 import urllib2
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+from threading import Thread
 
 try:
     import simplejson as json
@@ -549,10 +550,95 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def _stream_source(self, file_name, args=None):
+
+    def _upload_source(self, url, args, source):
+
+        def update_progress(param, current, total):
+            progress = round(current * 1.0 / total, 2)
+            if progress < 1.0:
+                source['progress'] = progress
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+
+        body, headers = multipart_encode(args, cb=update_progress)
+        request = urllib2.Request(url, body, headers)
+
+        try:
+            response = urllib2.urlopen(request)
+            code = response.getcode()
+            if code == HTTP_CREATED:
+                location = response.headers['location']
+                content = response.read()
+                resource = json.loads(content, 'utf-8')
+                resource_id = resource['resource']
+                error = None
+        except ValueError:
+            LOGGER.error("Malformed response")
+        except urllib2.HTTPError, exception:
+            LOGGER.error("Error %s", exception.code)
+            code = exception.code
+            if code in [
+                HTTP_BAD_REQUEST,
+                HTTP_UNAUTHORIZED,
+                HTTP_PAYMENT_REQUIRED,
+                HTTP_NOT_FOUND]:
+                content = exception.read()
+                error = json.loads(content, 'utf-8')
+            else:
+                LOGGER.error("Unexpected error (%s)" % code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+
+        except urllib2.URLError, exception:
+            LOGGER.error("Error establishing connection")
+            error = exception.args
+        source['code'] = code
+        source['resource'] = resource_id
+        source['location'] = location
+        source['object'] = resource
+        source['error'] = error
+        source['progress'] = 1.0
+
+
+    def _stream_source(self, file_name, args=None, async=False):
         """Create a new source
         """
 
+        if args is None:
+            args = {}
+        elif 'source_parser' in args:
+            args['source_parser'] = json.dumps(args['source_parser'])
+        # FIXME: code for uploading sources?
+        code = HTTP_NO_CONTENT
+        resource_id = None
+        location = None
+        resource = None
+        error = None
+
+        source = {
+            'code': code,
+            'resource': resource_id,
+            'location': location,
+            'object': resource,
+            'error': error,
+            'progress': 0.0}
+
+        if async:      
+            args.update({os.path.basename(file_name): open(file_name, "rb")})
+            upload_args = (self.SOURCE_URL + self.auth, args, source)
+            t = Thread(target=self._upload_source, args=upload_args, kwargs={})
+            t.start()
+            return source
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+            
         def clear_progress_bar():
             sys.stdout.write("%s" % (" " * PROGRESS_BAR_WIDTH))
             sys.stdout.flush()
@@ -563,25 +649,16 @@ class BigML(object):
 
         def draw_progress_bar(param, current, total):
             pct = 100 - ((total - current ) * 100 ) / (total)
-            clear_progress_bar()
-            reset_progress_bar()
-            sys.stdout.write("Uploaded %s out of %s [%s%%]" % (current, total, pct))
-            reset_progress_bar()
-            sys.stdout.flush()
-
-        if args is None:
-            args = {}
-        elif 'source_parser' in args:
-            args['source_parser'] = json.dumps(args['source_parser'])
-
-        code = HTTP_INTERNAL_SERVER_ERROR
-        resource_id = None
-        location = None
-        resource = None
-        error = {
-            "status": {
-                "code": code,
-                "message": "The resource couldn't be created"}}
+            progress = round(pct * 1.0 / 100, 2)
+            # FIXME: leave if you want it to be celery-ready or remove
+            if 'celery_task' in args:
+                args['celery_task'].update_state(state='UPLOADING', meta={'progress': progress})
+            else:
+                clear_progress_bar()
+                reset_progress_bar()
+                sys.stdout.write("Uploaded %s out of %s [%s%%]" % (current, total, pct))
+                reset_progress_bar()
+                sys.stdout.flush()
 
         args.update({os.path.basename(file_name): open(file_name, "rb")})
         body, headers = multipart_encode(args, cb=draw_progress_bar)
@@ -621,9 +698,10 @@ class BigML(object):
             'resource': resource_id,
             'location': location,
             'object': resource,
-            'error': error}
+            'error': error,
+            'process': 1.0}
 
-    def create_source(self, path=None, args=None):
+    def create_source(self, path=None, args=None, async=False):
         """Create a new source.
 
            The source can be a local file path or a URL.
@@ -636,7 +714,7 @@ class BigML(object):
         if self._is_valid_remote_url(path):
             return self._create_remote_source(url=path, args=args)
         else:
-            return self._stream_source(file_name=path, args=args)
+            return self._stream_source(file_name=path, args=args, async=async)
 
     def _get_source_id(self, source):
         if isinstance(source, dict) and 'resource' in source:

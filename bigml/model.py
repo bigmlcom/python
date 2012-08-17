@@ -53,7 +53,6 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import operator
-import unidecode
 import re
 
 from api import invert_dictionary, slugify
@@ -103,26 +102,37 @@ class Tree(object):
         self.distribution = tree['distribution']
 
     def split(self, children):
+        """Return the field that is used by the node to make a decision.
+
+        """
         field = set([child.predicate.field for child in children])
         if len(field) == 1:
             return field.pop()
 
-    def predict(self, input):
+    def predict(self, input, path=[]):
+        """Make a prediction based on a number of field values.
+
+        The input fields must be keyed by Id.
+
+        """
         if self.children and self.split(self.children) in input:
             for child in self.children:
                 if apply(OPERATOR[child.predicate.operator],
                         [input[child.predicate.field],
                         child.predicate.value]):
-                    print("%s %s %s" % (
+                    path.append("%s %s %s" % (
                         self.fields[child.predicate.field]['name'],
                         child.predicate.operator,
                         child.predicate.value))
-                    return child.predict(input)
+                    return child.predict(input, path)
                     break;
         else:
-            return self.output
+            return self.output, path
 
     def generate_rules(self, depth=0):
+        """Translate a tree model into a set of IF-THEN rules.
+
+        """
         rules = ""
         if self.children:
             for child in self.children:
@@ -139,10 +149,16 @@ class Tree(object):
         return rules
 
     def rules(self, out):
+        """Print out an IF-THEN rule version of the tree.
+
+        """
         out.write(self.generate_rules())
         out.flush()
 
     def python_body(self, depth=1):
+        """Translate the model into a set of "if" python statements.
+
+        """
         body = ""
         if self.children:
             for child in self.children:
@@ -162,12 +178,14 @@ class Tree(object):
         return body
 
     def python(self, out):
+        """Writes a python function that implements the model.
+        """
         args = []
         for key in self.fields.iterkeys():
             slug = slugify(self.fields[key]['name'])
             self.fields[key].update(slug=slug)
             if key != self.objective_field:
-                args.append(slug)
+                args.append("%s=None" % slug)
         predictor = "def predict_%s(%s):\n" % (self.fields[self.objective_field]['slug'], ", ".join(args))
         predictor += self.python_body()
         out.write(predictor)
@@ -175,6 +193,12 @@ class Tree(object):
 
 
 class Model(object):
+    """ A lightwheight wrapper around a Tree model.
+
+    Uses a BigML remote model to build a local version that can be used
+    to generate prediction locally.
+
+    """
 
     def __init__(self, model):
         fields = model['object']['model']['fields']
@@ -184,7 +208,12 @@ class Model(object):
             fields,
             model['object']['objective_fields'])
 
-    def predict(self, input):
+    def predict(self, input, out=sys.stdout):
+        """Makes a prediction based on a number of field values.
+
+        The input fields must be keyed by field name.
+
+        """
         try:
             input_data = dict(
                 [[self.inverted_fields[key], value]
@@ -192,11 +221,13 @@ class Model(object):
         except KeyError, field:
             LOGGER.error("Wrong field name %s" % field)
             return
-        return self.tree.predict(input_data)
+        prediction, path = self.tree.predict(input_data)
+        out.write(' AND '.join(path) + ' => %s \n' % prediction)
+        out.flush()
+        return prediction
 
     def rules(self, out=sys.stdout):
         return self.tree.rules(out)
 
     def python(self, out=sys.stdout):
         return self.tree.python(out)
-

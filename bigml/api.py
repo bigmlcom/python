@@ -731,7 +731,8 @@ class BigML(object):
                 'code': HTTP_ACCEPTED,
                 'resource': resource_id,
                 'location': location,
-                'object': resource,
+                'object': {'status': {'message': 'The upload is in progress',
+                                      'code': IN_PROGRESS}},
                 'error': error,
                 'progress': 0.0}
             upload_args = (self.SOURCE_URL + self.auth, args, source)

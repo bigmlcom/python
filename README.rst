@@ -31,9 +31,11 @@ Requirements
 
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
-The only mandatory third-party dependency is the
-`requests <https://github.com/kennethreitz/requests>`_ library. This
-library is automatically installed during the setup.
+The only mandatory third-party dependencies are the
+`requests <https://github.com/kennethreitz/requests>`_,  
+`poster <http://atlee.ca/software/poster/#download>`_ and 
+`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ libraries. These
+libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON

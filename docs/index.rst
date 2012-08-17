@@ -31,9 +31,9 @@ Requirements
 
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
-The only mandatory third-party dependency is the
-`requests <https://github.com/kennethreitz/requests>`_ library. This
-library is automatically installed during the setup.
+The only mandatory third-party dependencies are the
+`requests <https://github.com/kennethreitz/requests>`_  and `poster <http://atlee.ca/software/poster/#download>` libraries. These
+libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
@@ -244,7 +244,9 @@ Newly-created resources are returned in a dictionary with the following
 keys:
 
 -  **code**: If the request is successful you will get a
-   ``bigml.api.HTTP_CREATED`` (201) status code. Otherwise, it will be
+   ``bigml.api.HTTP_CREATED`` (201) status code. In asynchronous file uploading
+   `api.create_source` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
+   status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
    documentation <https://bigml.com/developers/status_codes>`_.
 -  **resource**: The identifier of the new resource.
@@ -253,6 +255,7 @@ keys:
 -  **error**: If an error occurs and the resource cannot be created, it
    will contain an additional code and a description of the error. In
    this case, **location**, and **resource** will be ``None``.
+-  **progress**: For source resources only, it contains file upload progress.
 
 Statuses
 ~~~~~~~~
@@ -313,9 +316,32 @@ or you may want to create a source from a file in a remote location::
     source = api.create_source('s3://bigml-public/csv/iris.csv',
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
 
-As already mentioned, source creation is asynchronous: the initial
-resource status code will be either ``WAITING`` or ``QUEUED``. You can
-retrieve the updated status at any time using the corresponding get
+As already mentioned, source creation is asynchronous. In both these examples, 
+the `api.create_source` call returns once the file is uploaded. 
+Then `source` will contain a resource whose status code will be either 
+``WAITING`` or ``QUEUED``.
+
+For local data files you can go one step further and use asynchronous 
+uploading::
+
+    source = api.create_source('./data/iris.csv',
+        {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}}, 
+        async=True)
+
+In this case, the call fills `source` immediately with a primary resource like::
+
+    {'code': 202, 
+     'resource': None, 
+     'object': {'status': {'message': 'The upload is in progress', 'code': 3}}, 
+     'location': None, 
+     'error': None, 
+     'progress': 0.99}
+
+where `source['progress']` is periodically updated with the current uploading 
+progress ranging from 0 to 1. When upload completes the rest of the resource's
+info is also updated.
+
+You can retrieve the updated status at any time using the corresponding get
 method. For example, to get the status of our source we would use::
 
     api.status(source)

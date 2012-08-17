@@ -32,7 +32,8 @@ Requirements
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
 The only mandatory third-party dependencies are the
-`requests <https://github.com/kennethreitz/requests>`_  and `poster <http://atlee.ca/software/poster/#download>` libraries. These
+`requests <https://github.com/kennethreitz/requests>`_  and 
+`poster <http://atlee.ca/software/poster/#download>` libraries. These
 libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it

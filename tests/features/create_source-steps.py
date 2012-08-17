@@ -25,6 +25,7 @@ from lettuce import step, world
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
+from bigml.api import UPLOADING
 
 @step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
@@ -45,6 +46,25 @@ def i_create_using_url(step, url):
     world.source = resource['object']
     # save reference
     world.sources.append(resource['resource'])
+
+@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
+def i_upload_a_file_async(step, file):
+    resource = world.api.create_source(file, async=True)
+    world.resource = resource
+
+@step(r'I wait until the source has been created less than (\d+) secs')
+def the_source_has_been_created(step, secs):
+    start = datetime.utcnow()
+    while world.resource['object']['status']['code'] == UPLOADING:
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+    assert world.resource['code'] == HTTP_CREATED
+    # update status
+    world.status = world.resource['code']
+    world.location = world.resource['location']
+    world.source = world.resource['object']
+    # save reference
+    world.sources.append(world.resource['resource'])
 
 @step(r'the source has been created')
 def the_source_has_been_created(step):

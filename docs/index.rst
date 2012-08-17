@@ -256,7 +256,6 @@ keys:
 -  **error**: If an error occurs and the resource cannot be created, it
    will contain an additional code and a description of the error. In
    this case, **location**, and **resource** will be ``None``.
--  **progress**: For source resources only, it contains file upload progress.
 
 Statuses
 ~~~~~~~~
@@ -279,6 +278,7 @@ you might need to import the following constants::
     from bigml.api import IN_PROGRESS
     from bigml.api import SUMMARIZED
     from bigml.api import FINISHED
+    from bigml.api import UPLOADING
     from bigml.api import FAULTY
     from bigml.api import UNKNOWN
     from bigml.api import RUNNABLE
@@ -331,16 +331,21 @@ uploading::
 
 In this case, the call fills `source` immediately with a primary resource like::
 
-    {'code': 202, 
-     'resource': None, 
-     'object': {'status': {'message': 'The upload is in progress', 'code': 3}}, 
-     'location': None, 
-     'error': None, 
-     'progress': 0.99}
+    {'code': 202,
+     'resource': None,
+     'location': None,
+     'object': {'status': 
+                   {'progress': 0.99, 
+                    'message': 'The upload is in progress', 
+                    'code': 6}},
+     'error': None}
 
-where `source['progress']` is periodically updated with the current uploading 
-progress ranging from 0 to 1. When upload completes the rest of the resource's
-info is also updated.
+where the `source['object']` status is set to `UPLOADING` and  its `progress` 
+is periodically updated with the current uploading 
+progress ranging from 0 to 1. When upload completes, this structure will be 
+replaced by the real resource info as computed by BigML. Therefore source's 
+status will eventually be (as it is in the synchronous upload case) ``WAITING``
+ or ``QUEUED``.
 
 You can retrieve the updated status at any time using the corresponding get
 method. For example, to get the status of our source we would use::

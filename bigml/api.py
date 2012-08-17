@@ -107,6 +107,7 @@ STARTED = 2
 IN_PROGRESS = 3
 SUMMARIZED = 4
 FINISHED = 5
+UPLOADING = 6
 FAULTY = -1
 UNKNOWN = -2
 RUNNABLE = -3
@@ -119,6 +120,7 @@ STATUSES = {
     IN_PROGRESS: "IN_PROGRESS",
     SUMMARIZED: "SUMMARIZED",
     FINISHED: "FINISHED",
+    UPLOADING: "UPLOADING",
     FAULTY: "FAULTY",
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
@@ -647,7 +649,7 @@ class BigML(object):
         def update_progress(param, current, total):
             progress = round(current * 1.0 / total, 2)
             if progress < 1.0:
-                source['progress'] = progress
+                source['object']['status']['progress'] = progress
 
         code = HTTP_INTERNAL_SERVER_ERROR
         error = {
@@ -691,7 +693,6 @@ class BigML(object):
         source['location'] = location
         source['object'] = resource
         source['error'] = error
-        source['progress'] = 1.0
 
     def _stream_source(self, file_name, args=None, async=False):
         """Creates a new source.
@@ -732,9 +733,9 @@ class BigML(object):
                 'resource': resource_id,
                 'location': location,
                 'object': {'status': {'message': 'The upload is in progress',
-                                      'code': IN_PROGRESS}},
-                'error': error,
-                'progress': 0.0}
+                                      'code': UPLOADING,
+                                      'progress': 0.0}},
+                'error': error}
             upload_args = (self.SOURCE_URL + self.auth, args, source)
             t = Thread(target=self._upload_source, args=upload_args, kwargs={})
             t.start()
@@ -783,8 +784,7 @@ class BigML(object):
             'resource': resource_id,
             'location': location,
             'object': resource,
-            'error': error,
-            'progress': 1.0}
+            'error': error}
 
     def create_source(self, path=None, args=None, async=False):
         """Creates a new source.

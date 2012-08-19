@@ -367,16 +367,17 @@ class Model(object):
         for category in categories:
             path = [prediction.to_rule(self.tree.fields) for prediction in categories[category]['total'][0]]
             
-            print "\n%s : %.2f%%, %s" % (category,
+            out.write("\n%s : %.2f%%, %s\n" % (category,
                                    round(categories[category]['total'][1]*1.0/self.tree.count, 4) * 100,
-                                   " and ".join(path))
+                                   " and ".join(path)))
             details = categories[category]['details']
             for j in range(0, len(details)):
                 group = details[j]
                 path = [prediction.to_rule(self.tree.fields) for prediction in group[0]]
-                print "    · %.2f%%: %s" % (
+                out.write("    · %.2f%%: %s\n" % (
                                    round(group[1]*1.0/categories[category]['total'][1], 4) * 100,
-                                   " and ".join(path))
+                                   " and ".join(path)))
+        out.flush()
 
 
 

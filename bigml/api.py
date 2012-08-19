@@ -41,11 +41,12 @@ import sys
 import time
 import os
 import re
+import locale
 import pprint
-import requests
 
 from threading import Thread
 
+import requests
 import urllib2
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
@@ -144,6 +145,9 @@ def slugify(str):
     str = unidecode.unidecode(str).lower()
     return re.sub(r'\W+', '_', str)
 
+def localize(number):
+    return locale.format("%d", number, grouping=True)
+
 ##############################################################################
 #
 # BigML class
@@ -196,6 +200,8 @@ class BigML(object):
         self.DATASET_URL = self.URL + DATASET_PATH
         self.MODEL_URL = self.URL + MODEL_PATH
         self.PREDICTION_URL = self.URL + PREDICTION_PATH
+
+        locale.setlocale(locale.LC_ALL, 'en_US')
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -711,7 +717,8 @@ class BigML(object):
             progress = round(pct * 1.0 / 100, 2)
             clear_progress_bar()
             reset_progress_bar()
-            sys.stdout.write("Uploaded %s out of %s [%s%%]" % (current, total, pct))
+            sys.stdout.write("Uploaded %s out of %s bytes [%s%%]" % (
+                localize(current), localize(total), pct))
             reset_progress_bar()
             sys.stdout.flush()
 

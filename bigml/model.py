@@ -78,6 +78,11 @@ class Predicate(object):
         self.operator = operation
         self.field = field
         self.value = value
+    def to_rule(self, fields):
+        return "%s %s %s" % (
+                        fields[self.field]['name'],
+                        self.operator,
+                        self.value)
 
 
 class Tree(object):
@@ -317,3 +322,61 @@ class Model(object):
 
         """
         return self.tree.python(out)
+
+    def summarize(self, out=sys.stdout):
+
+        # categories distribution
+        categories = {}
+
+        for category in self.tree.distribution:
+            categories[category[0]] = {'total': [[], category[1]],
+                                       'details': [] }
+
+        path = []
+
+        def DFS(tree, path, categories):
+
+            if isinstance(tree.predicate, Predicate):
+                path.append(tree.predicate)
+
+            if len(tree.children) == 0:
+                categories[tree.output]['details'].append([path, tree.count])
+                return
+
+            for child in tree.children:
+                DFS(child, path[:], categories)
+
+                  
+        DFS(self.tree, path, categories)
+
+        for category in categories:
+            details = categories[category]['details']
+            mcd_len = min([len(x[0]) for x in details])
+            common_path = []
+            for i in range(0, mcd_len):
+                test_common_path = details[0][0][i]
+                for group in details:
+                    if group[0][i] != test_common_path:
+                        i =  mcd_len
+                        break
+                if i < mcd_len:
+                    common_path.append(test_common_path)
+            categories[category]['total'][0] = common_path     
+            categories[category]['details'] = sorted(details, key=lambda x: x[1], reverse=True)
+
+        for category in categories:
+            path = [prediction.to_rule(self.tree.fields) for prediction in categories[category]['total'][0]]
+            
+            print "\n%s : %.2f%%, %s" % (category,
+                                   round(categories[category]['total'][1]*1.0/self.tree.count, 4) * 100,
+                                   " and ".join(path))
+            details = categories[category]['details']
+            for j in range(0, len(details)):
+                group = details[j]
+                path = [prediction.to_rule(self.tree.fields) for prediction in group[0]]
+                print "    · %.2f%%: %s" % (
+                                   round(group[1]*1.0/categories[category]['total'][1], 4) * 100,
+                                   " and ".join(path))
+
+
+

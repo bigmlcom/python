@@ -53,10 +53,9 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import operator
-import re
 
-from api import invert_dictionary, slugify
-from api import FINISHED
+from bigml.api import FINISHED
+from bigml.util import invert_dictionary, slugify, split
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -70,14 +69,16 @@ OPERATOR = {
 
 INDENT = '    '
 
+
 class Predicate(object):
     """A predicate to be evaluated in a tree's node.
 
     """
-    def __init__(self, operator, field, value):
-        self.operator = operator
+    def __init__(self, operation, field, value):
+        self.operator = operation
         self.field = field
         self.value = value
+
 
 class Tree(object):
     """A tree-like predictive model.
@@ -93,7 +94,7 @@ class Tree(object):
 
         self.output = tree['output']
 
-        if tree['predicate'] == True:
+        if tree['predicate'] is True:
             self.predicate = True
         else:
             self.predicate = Predicate(
@@ -114,41 +115,35 @@ class Tree(object):
         """List a description of the model's fields.
 
         """
-        out.write('<%-32s : %s>\n' % (self.fields[self.objective_field]['name'],
+        out.write('<%-32s : %s>\n' % (
+            self.fields[self.objective_field]['name'],
             self.fields[self.objective_field]['optype']))
         out.flush()
 
-        for field in [(val['name'], val['optype']) for key,val in
-            sorted(self.fields.items(), key=lambda k: k[1]['column_number']) if key != self.objective_field]:
+        for field in [(val['name'], val['optype']) for key, val in
+                      sorted(self.fields.items(),
+                      key=lambda k: k[1]['column_number'])
+                      if key != self.objective_field]:
             out.write('[%-32s : %s]\n' % (field[0], field[1]))
             out.flush()
         return self.fields
 
-    def split(self, children):
-        """Returns the field that is used by the node to make a decision.
-
-        """
-        field = set([child.predicate.field for child in children])
-        if len(field) == 1:
-            return field.pop()
-
-    def predict(self, input, path=[]):
+    def predict(self, input_data, path=[]):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by Id.
 
         """
-        if self.children and self.split(self.children) in input:
+        if self.children and split(self.children) in input_data:
             for child in self.children:
                 if apply(OPERATOR[child.predicate.operator],
-                        [input[child.predicate.field],
-                        child.predicate.value]):
+                         [input_data[child.predicate.field],
+                         child.predicate.value]):
                     path.append("%s %s %s" % (
-                        self.fields[child.predicate.field]['name'],
-                        child.predicate.operator,
-                        child.predicate.value))
-                    return child.predict(input, path)
-                    break;
+                                self.fields[child.predicate.field]['name'],
+                                child.predicate.operator,
+                                child.predicate.value))
+                    return child.predict(input_data, path)
         else:
             return self.output, path
 
@@ -159,17 +154,19 @@ class Tree(object):
         rules = ""
         if self.children:
             for child in self.children:
-                rules += "%s IF %s %s %s %s\n" % (INDENT * depth,
-                    self.fields[child.predicate.field]['name'],
-                    child.predicate.operator,
-                    child.predicate.value,
-                    "AND" if child.children else "THEN")
-                rules += child.generate_rules(depth+1)
+                rules += ("%s IF %s %s %s %s\n" %
+                         (INDENT * depth,
+                          self.fields[child.predicate.field]['name'],
+                          child.predicate.operator,
+                          child.predicate.value,
+                          "AND" if child.children else "THEN"))
+                rules += child.generate_rules(depth + 1)
         else:
-            rules += "%s %s = %s\n" % (INDENT * depth,
-                (self.fields[self.objective_field]['name']
-                if self.objective_field else "Prediction"),
-                self.output)
+            rules += ("%s %s = %s\n" %
+                     (INDENT * depth,
+                      (self.fields[self.objective_field]['name']
+                       if self.objective_field else "Prediction"),
+                      self.output))
         return rules
 
     def rules(self, out):
@@ -191,20 +188,26 @@ class Tree(object):
         body = ""
         if self.children:
             if cmv:
-                split = self.split(self.children)
-                body += "%sif (%s is None):\n " % (INDENT * depth,
-                    self.fields[split]['slug'])
+                field = split(self.children)
+                body += ("%sif (%s is None):\n " %
+                        (INDENT * depth,
+                         self.fields[field]['slug']))
                 if self.fields[self.objective_field]['optype'] == 'numeric':
-                    body += "%s return %s\n" % (INDENT * (depth + 1), self.output)
+                    body += ("%s return %s\n" %
+                            (INDENT * (depth + 1),
+                             self.output))
                 else:
-                    body += "%s return '%s'\n" % (INDENT * (depth + 1), self.output)
+                    body += ("%s return '%s'\n" %
+                            (INDENT * (depth + 1),
+                             self.output))
 
             for child in self.children:
-                body += "%sif (%s %s %s):\n" % (INDENT * depth,
-                    self.fields[child.predicate.field]['slug'],
-                    child.predicate.operator,
-                    child.predicate.value)
-                body += child.python_body(depth+1)
+                body += ("%sif (%s %s %s):\n" %
+                        (INDENT * depth,
+                         self.fields[child.predicate.field]['slug'],
+                         child.predicate.operator,
+                         child.predicate.value))
+                body += child.python_body(depth + 1)
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 body = "%s return %s\n" % (INDENT * depth, self.output)
@@ -218,8 +221,8 @@ class Tree(object):
         """
         args = []
 
-        for field in [(key, val) for key,val in
-            sorted(self.fields.items(), key=lambda k: k[1]['column_number'])]:
+        for field in [(key, val) for key, val in sorted(self.fields.items(),
+                      key=lambda k: k[1]['column_number'])]:
 
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
@@ -234,6 +237,7 @@ class Tree(object):
         out.write(predictor)
         out.flush()
 
+
 class Model(object):
     """ A lightwheight wrapper around a Tree model.
 
@@ -243,18 +247,17 @@ class Model(object):
     """
 
     def __init__(self, model):
-        if (isinstance(model, dict) and
-            'object' in model and
-            isinstance(model['object'], dict)):
+        if (isinstance(model, dict) and 'object' in model and
+                isinstance(model['object'], dict)):
             if ('status' in model['object'] and
-                'code' in model['object']['status']):
+                    'code' in model['object']['status']):
                 if model['object']['status']['code'] == FINISHED:
-                   fields = model['object']['model']['fields']
-                   self.inverted_fields = invert_dictionary(fields)
-                   self.tree = Tree(
-                       model['object']['model']['root'],
-                       fields,
-                       model['object']['objective_fields'])
+                    fields = model['object']['model']['fields']
+                    self.inverted_fields = invert_dictionary(fields)
+                    self.tree = Tree(
+                        model['object']['model']['root'],
+                        fields,
+                        model['object']['objective_fields'])
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -266,7 +269,7 @@ class Model(object):
         """
         self.tree.list_fields(out)
 
-    def predict(self, input, out=sys.stdout):
+    def predict(self, data, out=sys.stdout):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by field name.
@@ -275,7 +278,7 @@ class Model(object):
         try:
             input_data = dict(
                 [[self.inverted_fields[key], value]
-                    for key, value in input.items()])
+                    for key, value in data.items()])
         except KeyError, field:
             LOGGER.error("Wrong field name %s" % field)
             return

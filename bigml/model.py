@@ -110,6 +110,20 @@ class Tree(object):
         self.count = tree['count']
         self.distribution = tree['distribution']
 
+    def list_fields(self, out):
+        """List a description of the model's fields.
+
+        """
+        out.write('<%-32s : %s>\n' % (self.fields[self.objective_field]['name'],
+            self.fields[self.objective_field]['optype']))
+        out.flush()
+
+        for field in [(val['name'], val['optype']) for key,val in
+            sorted(self.fields.items(), key=lambda k: k[1]['column_number']) if key != self.objective_field]:
+            out.write('[%-32s : %s]\n' % (field[0], field[1]))
+            out.flush()
+        return self.fields
+
     def split(self, children):
         """Returns the field that is used by the node to make a decision.
 
@@ -176,7 +190,6 @@ class Tree(object):
         """
         body = ""
         if self.children:
-
             if cmv:
                 split = self.split(self.children)
                 body += "%sif (%s is None):\n " % (INDENT * depth,
@@ -204,13 +217,16 @@ class Tree(object):
 
         """
         args = []
-        for key in self.fields.iterkeys():
-            slug = slugify(self.fields[key]['name'])
-            self.fields[key].update(slug=slug)
-            if key != self.objective_field:
-                default = None
-                if self.fields[key]['optype'] == 'numeric':
-                    default = self.fields[key]['summary']['median']
+
+        for field in [(key, val) for key,val in
+            sorted(self.fields.items(), key=lambda k: k[1]['column_number'])]:
+
+            slug = slugify(self.fields[field[0]]['name'])
+            self.fields[field[0]].update(slug=slug)
+            default = None
+            if self.fields[field[0]]['optype'] == 'numeric':
+                default = self.fields[field[0]]['summary']['median']
+            if field[0] != self.objective_field:
                 args.append("%s=%s" % (slug, default))
         predictor = "def predict_%s(%s):\n" % (
             self.fields[self.objective_field]['slug'], ", ".join(args))
@@ -243,6 +259,12 @@ class Model(object):
                     raise Exception("The model isn't finished yet")
         else:
             raise Exception("Invalid model structure")
+
+    def fields(self, out=sys.stdout):
+        """Describes and return the fields for this model.
+
+        """
+        self.tree.list_fields(out)
 
     def predict(self, input, out=sys.stdout):
         """Makes a prediction based on a number of field values.

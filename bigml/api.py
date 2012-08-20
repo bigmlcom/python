@@ -30,46 +30,64 @@ dataset = api.create_dataset(source)
 model = api.create_model(dataset)
 prediction = api.create_prediction(model, {'sepal width': 1})
 api.pprint(prediction)
+
 """
 import logging
 FORMAT = '%(asctime)-15s: %(message)s'
 logging.basicConfig(format=FORMAT)
 LOGGER = logging.getLogger('BigML')
 
+import sys
 import time
 import os
 import re
+import locale
 import pprint
+
+from threading import Thread
+
 import requests
+import urllib2
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
+
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from urlparse import urlparse
+from bigml.util import invert_dictionary, localize, is_url
+
+register_openers()
 
 # Base URL
 BIGML_URL = "https://bigml.io/andromeda/"
 
+# Basic resources
 SOURCE_PATH = 'source'
 DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 
-#Development Mode URL
-BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
-
+# Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
 MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % MODEL_PATH)
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 
+# Development Mode URL
+BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
+
+# Check BigML.io host’s SSL certificate
+# DO NOT CHANGE IT.
+VERIFY = True
+
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
 ACCEPT_JSON = {'Accept': 'application/json;charset=utf-8'}
 
-# HTTP Status Codes
+# HTTP Status Codes from https://bigml.com/developers/status_codes
 HTTP_OK = 200
 HTTP_CREATED = 201
 HTTP_ACCEPTED = 202
@@ -90,10 +108,12 @@ STARTED = 2
 IN_PROGRESS = 3
 SUMMARIZED = 4
 FINISHED = 5
+UPLOADING = 6
 FAULTY = -1
 UNKNOWN = -2
 RUNNABLE = -3
 
+# Map status codes to labels
 STATUSES = {
     WAITING: "WAITING",
     QUEUED: "QUEUED",
@@ -101,17 +121,51 @@ STATUSES = {
     IN_PROGRESS: "IN_PROGRESS",
     SUMMARIZED: "SUMMARIZED",
     FINISHED: "FINISHED",
+    UPLOADING: "UPLOADING",
     FAULTY: "FAULTY",
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
 
-def _is_valid_remote_url(value):
-    """Says if given value is a URL
-        with scheme, netloc and path
-        or not."""
-    url = isinstance(value, basestring) and urlparse(value)
-    return url and url.scheme and url.netloc and url.path
+PROGRESS_BAR_WIDTH = 50
+
+
+def get_resource(regex, resource):
+    """Returns a resource/id.
+
+    """
+    if isinstance(resource, dict) and 'resource' in resource:
+        return resource['resource']
+    if isinstance(resource, basestring) and regex.match(resource):
+        return resource
+    raise ValueError("Cannot find resource id for %s" % resource)
+
+
+def get_source_id(source):
+    """Returns a source/id.
+    """
+    return get_resource(SOURCE_RE, source)
+
+
+def get_dataset_id(dataset):
+    """Returns a dataset/id.
+
+    """
+    return get_resource(DATASET_RE, dataset)
+
+
+def get_model_id(model):
+    """Returns a model/id.
+
+    """
+    return get_resource(MODEL_RE, model)
+
+
+def get_prediction_id(prediction):
+    """Returns a prediction/id.
+
+    """
+    return get_resource(PREDICTION_RE, prediction)
 
 ##############################################################################
 #
@@ -126,9 +180,17 @@ class BigML(object):
 
     Full API documentation on the API can be found from BigML at:
         https://bigml.com/developers
+
+    Resources are wrapped in a dictionary that includes:
+        code: HTTP status code
+        resource: The resource/id
+        location: Remote location of the resource
+        object: The resource itself
+        error: An error code and message
+
     """
     def __init__(self, username=None, api_key=None, dev_mode=False):
-        """Initialize the BigML API.
+        """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
         values of the `BIGML_USERNAME` and `BIGML_API_KEY` environment
@@ -148,18 +210,31 @@ class BigML(object):
         self.dev_mode = dev_mode
 
         if dev_mode:
-            self.URL = BIGML_DEV_URL
+            self.url = BIGML_DEV_URL
         else:
-            self.URL = BIGML_URL
+            self.url = BIGML_URL
 
         # Base Resource URLs
-        self.SOURCE_URL = self.URL + SOURCE_PATH
-        self.DATASET_URL = self.URL + DATASET_PATH
-        self.MODEL_URL = self.URL + MODEL_PATH
-        self.PREDICTION_URL = self.URL + PREDICTION_PATH
+        self.source_url = self.url + SOURCE_PATH
+        self.dataset_url = self.url + DATASET_PATH
+        self.model_url = self.url + MODEL_PATH
+        self.prediction_url = self.url + PREDICTION_PATH
+
+        locale.setlocale(locale.LC_ALL, 'en_US')
 
     def _create(self, url, body):
-        """Create a new resource. """
+        """Creates a new remote resource.
+
+        Posts `body` in JSON to `url` to create a new remote resource.
+
+        Returns a BigML resource wrapped in a dictionary that includes:
+            code: HTTP status code
+            resource: The resource/id
+            location: Remote location of the resource
+            object: The resource itself
+            error: An error code and message
+
+        """
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
         location = None
@@ -169,8 +244,9 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
         try:
-            response = requests.post(url + self.auth, headers=SEND_JSON,
-                data=body)
+            response = requests.post(url + self.auth,
+                                     headers=SEND_JSON,
+                                     data=body, verify=VERIFY)
 
             code = response.status_code
 
@@ -179,11 +255,10 @@ class BigML(object):
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None
-            elif code in [
-                HTTP_BAD_REQUEST,
-                HTTP_UNAUTHORIZED,
-                HTTP_PAYMENT_REQUIRED,
-                HTTP_NOT_FOUND]:
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_PAYMENT_REQUIRED,
+                          HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
@@ -206,7 +281,17 @@ class BigML(object):
             'error': error}
 
     def _get(self, url):
-        """Retrieve a resource
+        """Retrieves a remote resource.
+
+        Uses HTTP GET to retrieve a BigML `url`.
+
+        Returns a BigML resource wrapped in a dictionary that includes:
+            code: HTTP status code
+            resource: The resource/id
+            location: Remote location of the resource
+            object: The resource itself
+            error: An error code and message
+
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
@@ -218,7 +303,8 @@ class BigML(object):
                 "message": "The resource couldn't be retrieved"}}
 
         try:
-            response = requests.get(url + self.auth, headers=ACCEPT_JSON)
+            response = requests.get(url + self.auth, headers=ACCEPT_JSON,
+                                    verify=VERIFY)
             code = response.status_code
 
             if code == HTTP_OK:
@@ -248,7 +334,27 @@ class BigML(object):
             'error': error}
 
     def _list(self, url, query_string=''):
-        """List resources
+        """Lists all existing remote resources.
+
+        Resources in listings can be filterd using `query_string` formatted
+        according to the syntax and fields labeled as filterable in the BigML
+        documentation for each resource.
+
+        Sufixes:
+            __lt: less than
+            __lte: less than or equal to
+            __gt: greater than
+            __gte: greater than or equal to
+
+        For example:
+
+            'size__gt=1024'
+
+        Resources can also be sortened including a sort_by statement within
+        the `query_sting`. For example:
+
+            'order_by=size'
+
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         meta = None
@@ -259,7 +365,7 @@ class BigML(object):
                 "message": "The resource couldn't be listed"}}
         try:
             response = requests.get(url + self.auth + query_string,
-                headers=ACCEPT_JSON)
+                                    headers=ACCEPT_JSON, verify=VERIFY)
 
             code = response.status_code
 
@@ -290,7 +396,19 @@ class BigML(object):
             'error': error}
 
     def _update(self, url, body):
-        """Update a resource
+        """Updates a remote resource.
+
+        Uses PUT to update a BigML resource. Only the new fields that
+        are going to be updated need to be included in the `body`.
+
+        Returns a resource wrapped in a dictionary:
+            code: HTTP_ACCEPTED if the update has been OK or an error
+                  code otherwise.
+            resource: Resource/id
+            location: Remote location of the resource.
+            object: The new updated resource
+            error: Error code if any. None otherwise
+
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
@@ -303,8 +421,8 @@ class BigML(object):
 
         try:
             response = requests.put(url + self.auth,
-                headers=SEND_JSON,
-                data=body)
+                                    headers=SEND_JSON,
+                                    data=body, verify=VERIFY)
 
             code = response.status_code
 
@@ -313,10 +431,9 @@ class BigML(object):
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None
-            elif code in [
-                HTTP_UNAUTHORIZED,
-                HTTP_PAYMENT_REQUIRED,
-                HTTP_METHOD_NOT_ALLOWED]:
+            elif code in [HTTP_UNAUTHORIZED,
+                          HTTP_PAYMENT_REQUIRED,
+                          HTTP_METHOD_NOT_ALLOWED]:
                 error = json.loads(response.content, 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
@@ -339,7 +456,12 @@ class BigML(object):
             'error': error}
 
     def _delete(self, url):
-        """Delete a resource
+        """Permanently deletes a remote resource.
+
+        If the request is successful the status `code` will be HTTP_NO_CONTENT
+        and `error` will be None. Otherwise, the `code` will be an error code
+        and `error` will be provide a specific code and explanation.
+
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         error = {
@@ -348,7 +470,7 @@ class BigML(object):
                 "message": "The resource couldn't be deleted"}}
 
         try:
-            response = requests.delete(url + self.auth)
+            response = requests.delete(url + self.auth, verify=VERIFY)
 
             code = response.status_code
 
@@ -369,7 +491,6 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-
         return {
             'code': code,
             'error': error}
@@ -381,18 +502,23 @@ class BigML(object):
     ##########################################################################
 
     def get_fields(self, resource):
-        """Return a dictionary of fields"""
+        """Retrieve fields used by a resource.
+
+        Returns a dictionary with the fields that uses
+        the resource keyed by Id.
+
+        """
         if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
-             SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-                MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
+              SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
+              MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
             resource_id = resource
         else:
             LOGGER.error("Wrong resource id")
             return
 
-        resource = self._get("%s%s" % (self.URL, resource_id))
+        resource = self._get("%s%s" % (self.url, resource_id))
         if resource['code'] == HTTP_OK:
             if  MODEL_RE.match(resource_id):
                 return resource['object']['model']['fields']
@@ -400,56 +526,59 @@ class BigML(object):
                 return resource['object']['fields']
         return None
 
-    def invert_dictionary(self, dictionary):
-        """Invert a dictionary"""
-        return dict([[value['name'], key]
-            for key, value in dictionary.items()])
-
     def pprint(self, resource):
-        """Pretty prints a resource or part of it"""
+        """Pretty prints a resource or part of it.
+
+        """
+
         pretty_print = pprint.PrettyPrinter(indent=4)
-        if (isinstance(resource, dict) and
-           'object' in resource and
-           'resource' in resource):
+
+        if (isinstance(resource, dict)
+                and 'object' in resource
+                and 'resource' in resource):
+
             if SOURCE_RE.match(resource['resource']):
                 print "%s (%s bytes)" % (resource['object']['name'],
-                        resource['object']['size'])
+                                         resource['object']['size'])
             elif DATASET_RE.match(resource['resource']):
                 print "%s (%s bytes)" % (resource['object']['name'],
-                        resource['object']['size'])
+                                         resource['object']['size'])
             elif MODEL_RE.match(resource['resource']):
                 print "%s (%s bytes)" % (resource['object']['name'],
-                        resource['object']['size'])
+                                         resource['object']['size'])
             elif PREDICTION_RE.match(resource['resource']):
-                objective_field_name = (
-                    resource['object']['fields']
-                        [resource['object']['objective_fields'][0]]['name'])
-                input_data = dict(
-                    [[resource['object']['fields'][key]['name'], value]
-                        for key, value in
-                            resource['object']['input_data'].items()])
+                objective_field_name = (resource['object']['fields']
+                                                [resource['object']
+                                                 ['objective_fields'][0]]
+                                                ['name'])
+                input_data = (dict([[resource['object']['fields'][key]['name'],
+                                    value]
+                                    for key, value in
+                                    resource['object']['input_data'].items()]))
                 prediction = (
                     resource['object']['prediction']
                             [resource['object']['objective_fields'][0]])
                 print("%s for %s is %s" % (objective_field_name, input_data,
-                    prediction))
+                                           prediction))
         else:
             pretty_print.pprint(resource)
 
     def status(self, resource):
-        "Maps status code to string"
+        """Maps status code to string.
+
+        """
 
         if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
-             SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
+                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
                 MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
             resource_id = resource
         else:
             LOGGER.error("Wrong resource id")
             return
 
-        resource = self._get("%s%s" % (self.URL, resource_id))
+        resource = self._get("%s%s" % (self.url, resource_id))
         code = resource['object']['status']['code']
         if code in STATUSES:
             return STATUSES[code]
@@ -463,20 +592,24 @@ class BigML(object):
     #
     ##########################################################################
     def _create_remote_source(self, url, args=None):
-        """Create a new source. The source is available
-           in the given URL instead of being a file
-           in a local path."""
+        """Creates a new source using a URL
+
+        """
         if args is None:
             args = {}
         args.update({"remote": url})
         body = json.dumps(args)
-        return self._create(self.SOURCE_URL, body)
-    
+        return self._create(self.source_url, body)
+
     def _create_local_source(self, file_name, args=None):
-        """Create a new source. The souce is a file in
-           a local path."""
+        """Creates a new source using a local file.
+
+        This function is now DEPRECATED as "requests" do not stream the file
+        content what limited the size of local files to a small number of GBs.
+
+        """
         if args is None:
-            args = {}        
+            args = {}
         elif 'source_parser' in args:
             args['source_parser'] = json.dumps(args['source_parser'])
 
@@ -491,9 +624,9 @@ class BigML(object):
 
         files = {os.path.basename(file_name): open(file_name, "rb")}
         try:
-            response = requests.post(self.SOURCE_URL + self.auth,
+            response = requests.post(self.source_url + self.auth,
                                      files=files,
-                                     data=args)
+                                     data=args, verify=VERIFY)
 
             code = response.status_code
 
@@ -502,11 +635,10 @@ class BigML(object):
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None
-            elif code in [
-                HTTP_BAD_REQUEST,
-                HTTP_UNAUTHORIZED,
-                HTTP_PAYMENT_REQUIRED,
-                HTTP_NOT_FOUND]:
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_PAYMENT_REQUIRED,
+                          HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
@@ -528,63 +660,220 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path, args=None):
-        """Create a new source.
-           The souce can be provided as a local file
-           path or as a URL."""
-        if not path:
-            raise Exception('Source local path or a URL must be provided.')
-        
-        if _is_valid_remote_url(path):
+    def _upload_source(self, url, args, source):
+        """Uploads a source asynchronously.
+
+        """
+
+        def update_progress(param, current, total):
+            """Updates source's progress.
+
+            """
+            progress = round(current * 1.0 / total, 2)
+            if progress < 1.0:
+                source['object']['status']['progress'] = progress
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+
+        body, headers = multipart_encode(args, cb=update_progress)
+        request = urllib2.Request(url, body, headers)
+
+        try:
+            response = urllib2.urlopen(request)
+            code = response.getcode()
+            if code == HTTP_CREATED:
+                location = response.headers['location']
+                content = response.read()
+                resource = json.loads(content, 'utf-8')
+                resource_id = resource['resource']
+                error = None
+        except ValueError:
+            LOGGER.error("Malformed response")
+        except urllib2.HTTPError, exception:
+            LOGGER.error("Error %s", exception.code)
+            code = exception.code
+            if code in [HTTP_BAD_REQUEST,
+                        HTTP_UNAUTHORIZED,
+                        HTTP_PAYMENT_REQUIRED,
+                        HTTP_NOT_FOUND]:
+                content = exception.read()
+                error = json.loads(content, 'utf-8')
+            else:
+                LOGGER.error("Unexpected error (%s)" % code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+
+        except urllib2.URLError, exception:
+            LOGGER.error("Error establishing connection")
+            error = exception.args
+        source['code'] = code
+        source['resource'] = resource_id
+        source['location'] = location
+        source['object'] = resource
+        source['error'] = error
+
+    def _stream_source(self, file_name, args=None, async=False,
+                       out=sys.stdout):
+        """Creates a new source.
+
+        """
+        def clear_progress_bar():
+            """Fills progress bar with blanks.
+
+            """
+            out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+            out.flush()
+
+        def reset_progress_bar():
+            """Returns cursor to first column.
+
+            """
+            out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
+            out.flush()
+
+        def draw_progress_bar(param, current, total):
+            """Draws a text based progress report.
+
+            """
+            pct = 100 - ((total - current) * 100) / (total)
+            progress = round(pct * 1.0 / 100, 2)
+            clear_progress_bar()
+            reset_progress_bar()
+            out.write("Uploaded %s out of %s bytes [%s%%]" % (
+                localize(current), localize(total), pct))
+            reset_progress_bar()
+
+        if args is None:
+            args = {}
+        elif 'source_parser' in args:
+            args['source_parser'] = json.dumps(args['source_parser'])
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        resource_id = None
+        location = None
+        resource = None
+        error = None
+
+        if async:
+            args.update({os.path.basename(file_name): open(file_name, "rb")})
+            source = {
+                'code': HTTP_ACCEPTED,
+                'resource': resource_id,
+                'location': location,
+                'object': {'status': {'message': 'The upload is in progress',
+                                      'code': UPLOADING,
+                                      'progress': 0.0}},
+                'error': error}
+            upload_args = (self.source_url + self.auth, args, source)
+            thread = Thread(target=self._upload_source,
+                            args=upload_args,
+                            kwargs={})
+            thread.start()
+            return source
+
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+
+        args.update({os.path.basename(file_name): open(file_name, "rb")})
+        body, headers = multipart_encode(args, cb=draw_progress_bar)
+        request = urllib2.Request(self.source_url + self.auth, body, headers)
+        try:
+            response = urllib2.urlopen(request)
+            clear_progress_bar()
+            reset_progress_bar()
+            code = response.getcode()
+            if code == HTTP_CREATED:
+                location = response.headers['location']
+                content = response.read()
+                resource = json.loads(content, 'utf-8')
+                resource_id = resource['resource']
+                error = {}
+        except ValueError:
+            LOGGER.error("Malformed response")
+        except urllib2.HTTPError, exception:
+            LOGGER.error("Error %s", exception.code)
+            code = exception.code
+            if code in [HTTP_BAD_REQUEST,
+                        HTTP_UNAUTHORIZED,
+                        HTTP_PAYMENT_REQUIRED,
+                        HTTP_NOT_FOUND]:
+                content = exception.read()
+                error = json.loads(content, 'utf-8')
+            else:
+                LOGGER.error("Unexpected error (%s)" % code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+
+        except urllib2.URLError, exception:
+            LOGGER.error("Error establishing connection")
+            error = exception.args
+        return {
+            'code': code,
+            'resource': resource_id,
+            'location': location,
+            'object': resource,
+            'error': error}
+
+    def create_source(self, path=None, args=None, async=False, out=sys.stdout):
+        """Creates a new source.
+
+           The source can be a local file path or a URL.
+
+        """
+
+        if path is None:
+            raise Exception('A local path or a valid URL must be provided.')
+
+        if is_url(path):
             return self._create_remote_source(url=path, args=args)
         else:
-            return self._create_local_source(file_name=path, args=args)
+            return self._stream_source(file_name=path, args=args, async=async,
+                                       out=out)
 
     def get_source(self, source):
-        """Retrieve a source."""
-        if isinstance(source, dict) and 'resource' in source:
-            source_id = source['resource']
-        elif isinstance(source, basestring) and SOURCE_RE.match(source):
-            source_id = source
-        else:
-            LOGGER.error("Wrong source id")
-            return
-        return self._get("%s%s" % (self.URL, source_id))
+        """Retrieves a remote source.
+
+        """
+        source_id = get_source_id(source)
+        if source_id:
+            return self._get("%s%s" % (self.url, source_id))
 
     def source_is_ready(self, source):
-        """Check whether a source' status is FINISHED."""
+        """Checks whether a source' status is FINISHED.
+
+        """
         source = self.get_source(source)
         return (source['code'] == HTTP_OK and
-            source['object']['status']['code'] == FINISHED)
+                source['object']['status']['code'] == FINISHED)
 
     def list_sources(self, query_string=''):
-        """List all your sources."""
-        return self._list(self.SOURCE_URL, query_string)
+        """Lists all your remote sources.
+
+        """
+        return self._list(self.source_url, query_string)
 
     def update_source(self, source, changes):
-        """Update a source."""
-        if isinstance(source, dict) and 'resource' in source:
-            source_id = source['resource']
-        elif isinstance(source, basestring) and SOURCE_RE.match(source):
-            source_id = source
-        else:
-            LOGGER.error("Wrong source id")
-            return
+        """Updates a source.
 
-        body = json.dumps(changes)
-        return self._update("%s%s" % (self.URL, source_id), body)
+        Updates remote `source` with `changes'.
+
+        """
+        source_id = get_source_id(source)
+        if source_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, source_id), body)
 
     def delete_source(self, source):
-        """Delete a source."""
-        if isinstance(source, dict) and 'resource' in source:
-            source_id = source['resource']
-        elif isinstance(source, basestring) and SOURCE_RE.match(source):
-            source_id = source
-        else:
-            LOGGER.error("Wrong source id")
-            return
+        """Deletes a remote source permanently.
 
-        return self._delete("%s%s" % (self.URL, source_id))
+        """
+        source_id = get_source_id(source)
+        if source_id:
+            return self._delete("%s%s" % (self.url, source_id))
 
     ##########################################################################
     #
@@ -593,71 +882,64 @@ class BigML(object):
     #
     ##########################################################################
     def create_dataset(self, source, args=None, wait_time=3):
-        """Create a dataset."""
-        if isinstance(source, dict) and 'resource' in source:
-            source_id = source['resource']
-        elif isinstance(source, basestring) and SOURCE_RE.match(source):
-            source_id = source
-        else:
-            LOGGER.error("Wrong source id")
-            return
+        """Creates a remote dataset.
 
-        if wait_time > 0:
-            while not self.source_is_ready(source_id):
-                time.sleep(wait_time)
+        Uses remote `source` to create a new dataset using the arguments in
+        `args`.  If `wait_time` is higgher than 0 then the dataset creation
+        request is not sent until the `source` has been created successfuly.
 
-        if args is None:
-            args = {}
-        args.update({
-            "source": source_id})
-        body = json.dumps(args)
-        return self._create(self.DATASET_URL, body)
+        """
+        source_id = get_source_id(source)
+        if source_id:
+            if wait_time > 0:
+                while not self.source_is_ready(source_id):
+                    time.sleep(wait_time)
+
+            if args is None:
+                args = {}
+            args.update({
+                "source": source_id})
+            body = json.dumps(args)
+            return self._create(self.dataset_url, body)
 
     def get_dataset(self, dataset):
-        """Retrieve a dataset."""
-        if isinstance(dataset, dict) and 'resource' in dataset:
-            dataset_id = dataset['resource']
-        elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-            dataset_id = dataset
-        else:
-            LOGGER.error("Wrong dataset id")
-            return
-        return self._get("%s%s" % (self.URL, dataset_id))
+        """Retrieves a dataset.
+
+        """
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            return self._get("%s%s" % (self.url, dataset_id))
 
     def dataset_is_ready(self, dataset):
-        """Check whether a dataset' status is FINISHED."""
+        """Check whether a dataset' status is FINISHED.
+
+        """
         resource = self.get_dataset(dataset)
         return (resource['code'] == HTTP_OK and
-            resource['object']['status']['code'] == FINISHED)
+                resource['object']['status']['code'] == FINISHED)
 
     def list_datasets(self, query_string=''):
-        """List all your datasets."""
-        return self._list(self.DATASET_URL, query_string)
+        """Lists all your datasets.
+
+        """
+        return self._list(self.dataset_url, query_string)
 
     def update_dataset(self, dataset, changes):
-        """Update a dataset."""
-        if isinstance(dataset, dict) and 'resource' in dataset:
-            dataset_id = dataset['resource']
-        elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-            dataset_id = dataset
-        else:
-            LOGGER.error("Wrong dataset id")
-            return
+        """Updates a dataset.
 
-        body = json.dumps(changes)
-        return self._update("%s%s" % (self.URL, dataset_id), body)
+        """
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, dataset_id), body)
 
     def delete_dataset(self, dataset):
-        """Delete a dataset."""
-        if isinstance(dataset, dict) and 'resource' in dataset:
-            dataset_id = dataset['resource']
-        elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-            dataset_id = dataset
-        else:
-            LOGGER.error("Wrong dataset id")
-            return
+        """Deletes a dataset.
 
-        return self._delete("%s%s" % (self.URL, dataset_id))
+        """
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            return self._delete("%s%s" % (self.url, dataset_id))
 
     ##########################################################################
     #
@@ -666,72 +948,61 @@ class BigML(object):
     #
     ##########################################################################
     def create_model(self, dataset, args=None, wait_time=3):
-        """Create a model."""
-        if isinstance(dataset, dict) and 'resource' in dataset:
-            dataset_id = dataset['resource']
-        elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-            dataset_id = dataset
-        else:
-            LOGGER.error("Wrong dataset id")
-            return
+        """Creates a model.
 
-        if wait_time > 0:
-            while not self.dataset_is_ready(dataset_id):
-                time.sleep(wait_time)
+        """
+        dataset_id = get_dataset_id(dataset)
 
-        if args is None:
-            args = {}
-        args.update({
-            "dataset": dataset_id})
-        body = json.dumps(args)
-        return self._create(self.MODEL_URL, body)
+        if dataset_id:
+            if wait_time > 0:
+                while not self.dataset_is_ready(dataset_id):
+                    time.sleep(wait_time)
+
+            if args is None:
+                args = {}
+            args.update({
+                "dataset": dataset_id})
+            body = json.dumps(args)
+            return self._create(self.model_url, body)
 
     def get_model(self, model):
-        """Retrieve a model."""
-        if isinstance(model, dict) and 'resource' in model:
-            model_id = model['resource']
-        elif isinstance(model, basestring) and MODEL_RE.match(model):
-            model_id = model
-        else:
-            LOGGER.error("Wrong model id")
-            return
+        """Retrieves a model.
 
-        return self._get("%s%s" % (self.URL, model_id))
+        """
+        model_id = get_model_id(model)
+        if model_id:
+            return self._get("%s%s" % (self.url, model_id))
 
     def model_is_ready(self, model):
-        """Check whether a model' status is FINISHED."""
+        """Checks whether a model's status is FINISHED.
+
+        """
         resource = self.get_model(model)
         return (resource['code'] == HTTP_OK and
-            resource['object']['status']['code'] == FINISHED)
+                resource['object']['status']['code'] == FINISHED)
 
     def list_models(self, query_string=''):
-        """List all your models."""
-        return self._list(self.MODEL_URL, query_string)
+        """Lists all your models.
+
+        """
+        return self._list(self.model_url, query_string)
 
     def update_model(self, model, changes):
-        """Update a model."""
-        if isinstance(model, dict) and 'resource' in model:
-            model_id = model['resource']
-        elif isinstance(model, basestring) and MODEL_RE.match(model):
-            model_id = model
-        else:
-            LOGGER.error("Wrong model id")
-            return
+        """Updates a model.
 
-        body = json.dumps(changes)
-        return self._update("%s%s" % (self.URL, model_id), body)
+        """
+        model_id = get_model_id(model)
+        if model_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, model_id), body)
 
     def delete_model(self, model):
-        """Delete a model."""
-        if isinstance(model, dict) and 'resource' in model:
-            model_id = model['resource']
-        elif isinstance(model, basestring) and MODEL_RE.match(model):
-            model_id = model
-        else:
-            LOGGER.error("Wrong model id")
-            return
+        """Deletes a model.
 
-        return self._delete("%s%s" % (self.URL, model_id))
+        """
+        model_id = get_model_id(model)
+        if model_id:
+            return self._delete("%s%s" % (self.url, model_id))
 
     ##########################################################################
     #
@@ -740,81 +1011,64 @@ class BigML(object):
     #
     ##########################################################################
     def create_prediction(self, model, input_data=None, args=None,
-            wait_time=3):
-        """Create a new prediction."""
-        if isinstance(model, dict) and 'resource' in model:
-            model_id = model['resource']
-        elif isinstance(model, basestring) and MODEL_RE.match(model):
-            model_id = model
-        else:
-            LOGGER.error("Wrong model id")
-            return
+                          wait_time=3):
+        """Creates a new prediction.
 
-        if wait_time > 0:
-            while not self.model_is_ready(model_id):
-                time.sleep(wait_time)
+        """
+        model_id = get_model_id(model)
 
-        if input_data is None:
-            input_data = {}
-        else:
-            fields = self.get_fields(model_id)
-            inverted_fields = self.invert_dictionary(fields)
-            try:
-                input_data = dict(
-                    [[inverted_fields[key], value]
-                     for key, value in input_data.items()])
-            except KeyError, field:
-                LOGGER.error("Wrong field name %s" % field)
+        if model_id:
+            if wait_time > 0:
+                while not self.model_is_ready(model_id):
+                    time.sleep(wait_time)
 
-        if args is None:
-            args = {}
-        args.update({
-            "model": model_id,
-            "input_data": input_data})
-        body = json.dumps(args)
-        return self._create(self.PREDICTION_URL, body)
+            if input_data is None:
+                input_data = {}
+            else:
+                fields = self.get_fields(model_id)
+                inverted_fields = invert_dictionary(fields)
+                try:
+                    input_data = dict(
+                        [[inverted_fields[key], value]
+                         for key, value in input_data.items()])
+                except KeyError, field:
+                    LOGGER.error("Wrong field name %s" % field)
+
+            if args is None:
+                args = {}
+            args.update({
+                "model": model_id,
+                "input_data": input_data})
+            body = json.dumps(args)
+            return self._create(self.prediction_url, body)
 
     def get_prediction(self, prediction):
-        """Retrieve a prediction."""
-        if isinstance(prediction, dict) and 'resource' in prediction:
-            prediction_id = prediction['resource']
-        elif (isinstance(prediction, basestring) and
-              PREDICTION_RE.match(prediction)):
-            prediction_id = prediction
-        else:
-            LOGGER.error("Wrong prediction id")
-            return
+        """Retrieves a prediction.
 
-        return self._get("%s%s" % (self.URL, prediction_id))
+        """
+        prediction_id = get_prediction_id(prediction)
+        if prediction_id:
+            return self._get("%s%s" % (self.url, prediction_id))
 
     def list_predictions(self, query_string=''):
-        """List all your predictions."""
-        return self._list(self.PREDICTION_URL, query_string)
+        """Lists all your predictions.
+
+        """
+        return self._list(self.prediction_url, query_string)
 
     def update_prediction(self, prediction, changes):
-        """Update a prediction."""
-        if isinstance(prediction, dict) and 'resource' in prediction:
-            prediction_id = prediction['resource']
-        elif (isinstance(prediction, basestring) and
-              PREDICTION_RE.match(prediction)):
-            prediction_id = prediction
-        else:
-            LOGGER.error("Wrong prediction id")
-            return
+        """Updates a prediction.
 
-        body = json.dumps(changes)
-        return self._update("%s%s" % (self.URL, prediction_id), body)
+        """
+        prediction_id = get_prediction_id(prediction)
+        if prediction_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, prediction_id), body)
 
     def delete_prediction(self, prediction):
-        """Delete a prediction."""
-        if isinstance(prediction, dict) and 'resource' in prediction:
-            prediction_id = prediction['resource']
-        elif (isinstance(prediction, basestring) and
-             PREDICTION_RE.match(prediction)):
-            prediction_id = prediction
-        else:
-            LOGGER.error("Wrong prediction id")
-            return
+        """Deletes a prediction.
 
-        return self._delete("%s%s" %
-            (self.URL, prediction_id))
+        """
+        prediction_id = get_prediction_id(prediction)
+        if prediction_id:
+            return self._delete("%s%s" % (self.url, prediction_id))

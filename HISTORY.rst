@@ -3,10 +3,19 @@
 History
 -------
 
-X.Y.Z (YYYY-MM-DD)
+0.4.0 (2012Y-08-20)
 ~~~~~~~~~~~~~~~~~~
 
-- TODO
+- Development Mode
+- Remote Sources
+- Bigger files streamed with Poster
+- Asynchronous Uploading
+- Local Models
+- Local Predictions
+- Rule Generation
+- Python Generation
+- Overall clean up
+
 
 0.3.1 (2012-07-05)
 ~~~~~~~~~~~~~~~~~~

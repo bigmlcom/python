@@ -31,9 +31,11 @@ Requirements
 
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
-The only mandatory third-party dependency is the
-`requests <https://github.com/kennethreitz/requests>`_ library. This
-library is automatically installed during the setup.
+The only mandatory third-party dependencies are the
+`requests <https://github.com/kennethreitz/requests>`_,
+`poster <http://atlee.ca/software/poster/#download>`_ and
+`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ libraries. These
+libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
@@ -152,6 +154,17 @@ of the source by installing `Sphinx <http://sphinx.pocoo.org>`_
     $ make html
 
 Then launch ``docs/_build/html/index.html`` in your browser.
+
+How to Contribute
+-----------------
+
+Please follow the next steps:
+
+  1. Fork the project on github.com.
+  2. Create a new branch.
+  3. Commit changes to the new branch.
+  4. Send a `pull request <https://github.com/bigmlcom/python/pulls>`_.
+
 
 For details on the underlying API, see the
 `BigML API documentation <https://bigml.com/developers>`_.

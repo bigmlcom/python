@@ -56,7 +56,7 @@ distutils.core.setup(
     setup_requires = [],
     packages = ['bigml'],
     include_package_data = True,
-    install_requires = ['requests'],
+    install_requires = ['requests', 'poster', 'unidecode'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

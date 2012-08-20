@@ -5,7 +5,7 @@ from bigml.api import HTTP_CREATED
 @step(r'I create a prediction for "(.*)"')
 def i_create_a_prediction(step, data=None):
     if data is None:
-        data = {}
+        data = "{}"
     model = world.model['resource']
     data = json.loads(data)
     resource = world.api.create_prediction(model, data)

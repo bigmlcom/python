@@ -67,7 +67,7 @@ def the_source_has_been_created(step, secs):
     world.sources.append(world.resource['resource'])
 
 @step(r'the source has been created')
-def the_source_has_been_created(step):
+def the_source_has_been_created_asynchronously(step):
     assert world.status == HTTP_CREATED
 
 @step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')

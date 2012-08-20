@@ -21,7 +21,7 @@ This module defines a Model to make predictions locally or
 embedded into your application without needing to send requests to
 BigML.io.
 
-This module cannot only save you a few credits but also can enormously
+This module cannot only save you a few credits, but also enormously
 reduce the latency for each prediction and let you use your models
 offline.
 
@@ -239,7 +239,7 @@ class Tree(object):
 
 
 class Model(object):
-    """ A lightwheight wrapper around a Tree model.
+    """ A lightweight wrapper around a Tree model.
 
     Uses a BigML remote model to build a local version that can be used
     to generate prediction locally.
@@ -258,6 +258,18 @@ class Model(object):
                         model['object']['model']['root'],
                         fields,
                         model['object']['objective_fields'])
+                else:
+                    raise Exception("The model isn't finished yet")
+        elif (isinstance(model, dict) and 'model' in model and
+                isinstance(model['model'], dict)):
+            if ('status' in model and 'code' in model['status']):
+                if model['status']['code'] == FINISHED:
+                    fields = model['model']['fields']
+                    self.inverted_fields = invert_dictionary(fields)
+                    self.tree = Tree(
+                        model['model']['root'],
+                        fields,
+                        model['objective_fields'])
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -283,6 +295,8 @@ class Model(object):
             LOGGER.error("Wrong field name %s" % field)
             return
         prediction, path = self.tree.predict(input_data)
+
+        # Prediction path
         out.write(' AND '.join(path) + ' => %s \n' % prediction)
         out.flush()
         return prediction

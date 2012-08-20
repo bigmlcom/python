@@ -130,52 +130,42 @@ STATUSES = {
 PROGRESS_BAR_WIDTH = 50
 
 
+def get_resource(regex, resource):
+    """Returns a resource/id.
+
+    """
+    if isinstance(resource, dict) and 'resource' in resource:
+        return resource['resource']
+    if isinstance(resource, basestring) and regex.match(resource):
+        return resource
+    raise ValueError("Cannot find resource id for %s" % resource)
+
+
 def get_source_id(source):
     """Returns a source/id.
     """
-    if isinstance(source, dict) and 'resource' in source:
-        return source['resource']
-    elif isinstance(source, basestring) and SOURCE_RE.match(source):
-        return source
-    else:
-        raise ValueError("Wrong source id")
+    return get_resource(SOURCE_RE, source)
 
 
 def get_dataset_id(dataset):
     """Returns a dataset/id.
 
     """
-    if isinstance(dataset, dict) and 'resource' in dataset:
-        return dataset['resource']
-    elif isinstance(dataset, basestring) and DATASET_RE.match(dataset):
-        return dataset
-    else:
-        raise ValueError("Wrong dataset id")
+    return get_resource(DATASET_RE, dataset)
 
 
 def get_model_id(model):
     """Returns a model/id.
 
     """
-    if isinstance(model, dict) and 'resource' in model:
-        return model['resource']
-    elif isinstance(model, basestring) and MODEL_RE.match(model):
-        return model
-    else:
-        raise ValueError("Wrong model id")
+    return get_resource(MODEL_RE, model)
 
 
 def get_prediction_id(prediction):
     """Returns a prediction/id.
 
     """
-    if isinstance(prediction, dict) and 'resource' in prediction:
-        return prediction['resource']
-    elif (isinstance(prediction, basestring) and
-          PREDICTION_RE.match(prediction)):
-        return prediction
-    else:
-        raise ValueError("Wrong prediction id")
+    return get_resource(PREDICTION_RE, prediction)
 
 ##############################################################################
 #
@@ -725,7 +715,8 @@ class BigML(object):
         source['object'] = resource
         source['error'] = error
 
-    def _stream_source(self, file_name, args=None, async=False):
+    def _stream_source(self, file_name, args=None, async=False,
+                       out=sys.stdout):
         """Creates a new source.
 
         """
@@ -733,15 +724,15 @@ class BigML(object):
             """Fills progress bar with blanks.
 
             """
-            sys.stdout.write("%s" % (" " * PROGRESS_BAR_WIDTH))
-            sys.stdout.flush()
+            out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+            out.flush()
 
         def reset_progress_bar():
             """Returns cursor to first column.
 
             """
-            sys.stdout.write("\b" * (PROGRESS_BAR_WIDTH + 1))
-            sys.stdout.flush()
+            out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
+            out.flush()
 
         def draw_progress_bar(param, current, total):
             """Draws a text based progress report.
@@ -751,10 +742,9 @@ class BigML(object):
             progress = round(pct * 1.0 / 100, 2)
             clear_progress_bar()
             reset_progress_bar()
-            sys.stdout.write("Uploaded %s out of %s bytes [%s%%]" % (
+            out.write("Uploaded %s out of %s bytes [%s%%]" % (
                 localize(current), localize(total), pct))
             reset_progress_bar()
-            sys.stdout.flush()
 
         if args is None:
             args = {}
@@ -828,7 +818,7 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path=None, args=None, async=False):
+    def create_source(self, path=None, args=None, async=False, out=sys.stdout):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -841,7 +831,8 @@ class BigML(object):
         if is_url(path):
             return self._create_remote_source(url=path, args=args)
         else:
-            return self._stream_source(file_name=path, args=args, async=async)
+            return self._stream_source(file_name=path, args=args, async=async,
+                                       out=out)
 
     def get_source(self, source):
         """Retrieves a remote source.

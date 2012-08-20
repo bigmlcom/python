@@ -31,9 +31,10 @@ Requirements
 
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
-The only mandatory third-party dependency is the
-`requests <https://github.com/kennethreitz/requests>`_ library. This
-library is automatically installed during the setup.
+The only mandatory third-party dependencies are the
+`requests <https://github.com/kennethreitz/requests>`_  and
+`poster <http://pypi.python.org/pypi/poster/>`_ libraries. These
+libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
@@ -244,7 +245,9 @@ Newly-created resources are returned in a dictionary with the following
 keys:
 
 -  **code**: If the request is successful you will get a
-   ``bigml.api.HTTP_CREATED`` (201) status code. Otherwise, it will be
+   ``bigml.api.HTTP_CREATED`` (201) status code. In asynchronous file uploading
+   `api.create_source` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
+   status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
    documentation <https://bigml.com/developers/status_codes>`_.
 -  **resource**: The identifier of the new resource.
@@ -275,6 +278,7 @@ you might need to import the following constants::
     from bigml.api import IN_PROGRESS
     from bigml.api import SUMMARIZED
     from bigml.api import FINISHED
+    from bigml.api import UPLOADING
     from bigml.api import FAULTY
     from bigml.api import UNKNOWN
     from bigml.api import RUNNABLE
@@ -313,9 +317,37 @@ or you may want to create a source from a file in a remote location::
     source = api.create_source('s3://bigml-public/csv/iris.csv',
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
 
-As already mentioned, source creation is asynchronous: the initial
-resource status code will be either ``WAITING`` or ``QUEUED``. You can
-retrieve the updated status at any time using the corresponding get
+As already mentioned, source creation is asynchronous. In both these examples,
+the `api.create_source` call returns once the file is uploaded.
+Then `source` will contain a resource whose status code will be either
+``WAITING`` or ``QUEUED``.
+
+For local data files you can go one step further and use asynchronous
+uploading::
+
+    source = api.create_source('./data/iris.csv',
+        {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}},
+        async=True)
+
+In this case, the call fills `source` immediately with a primary resource like::
+
+    {'code': 202,
+     'resource': None,
+     'location': None,
+     'object': {'status':
+                   {'progress': 0.99,
+                    'message': 'The upload is in progress',
+                    'code': 6}},
+     'error': None}
+
+where the `source['object']` status is set to `UPLOADING` and  its `progress`
+is periodically updated with the current uploading
+progress ranging from 0 to 1. When upload completes, this structure will be
+replaced by the real resource info as computed by BigML. Therefore source's
+status will eventually be (as it is in the synchronous upload case) ``WAITING``
+ or ``QUEUED``.
+
+You can retrieve the updated status at any time using the corresponding get
 method. For example, to get the status of our source we would use::
 
     api.status(source)
@@ -534,6 +566,122 @@ keys:
 -  **error** If the request does not succeed, it will contain a
    dictionary with an error code and a message. It will be ``None``
    otherwise.
+
+Local Models
+------------
+
+You can instantiate a local version of a remote mode.
+
+::
+
+   from bigml.api import BigML
+   from bigml.model import Model
+
+   api = BigML()
+
+   # Use the model/id of one of your models
+   model = api.get_model('model/502fdbff1552687661000261')
+
+   local_model = Model(model)
+
+This will return a Model object that you can use to make local predictions,
+generate IF-THEN rules or a Python function that implements the model.
+
+Local Predictions
+-----------------
+
+Once you have a local model you can use to generate predictions locally.
+
+::
+
+    local_model.predict({"petal length": 3, "petal width": 1})
+    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
+    Iris-versicolor
+
+Local predictions have three clear advantages:
+
+- Removing the dependency from BigML to make new predictions.
+
+- No cost in BigML (i.e., you do not spend BigML credits).
+
+- Extremely low latency to generate predictions for huge volumes of data.
+
+Rule Generation
+---------------
+
+You can also use a local model to generate a IF-THEN rule set that can be very
+helpful to understand how the model works internally.
+
+::
+
+     local_model.rules()
+     IF petal length > 2.45 AND
+         IF petal width > 1.65 AND
+             IF petal length > 5.05 THEN
+                 species = Iris-virginica
+             IF petal length <= 5.05 AND
+                 IF sepal width > 2.9 AND
+                     IF sepal length > 5.95 AND
+                         IF petal length > 4.95 THEN
+                             species = Iris-versicolor
+                         IF petal length <= 4.95 THEN
+                             species = Iris-virginica
+                     IF sepal length <= 5.95 THEN
+                          species = Iris-versicolor
+                 IF sepal width <= 2.9 THEN
+                     species = Iris-virginica
+         IF petal width <= 1.65 AND
+             IF petal length > 4.95 AND
+                 IF sepal length > 6.05 THEN
+                       species = Iris-virginica
+                 IF sepal length <= 6.05 AND
+                     IF sepal width > 2.45 THEN
+                         species = Iris-versicolor
+                     IF sepal width <= 2.45 THEN
+                         species = Iris-virginica
+             IF petal length <= 4.95 THEN
+                 species = Iris-versicolor
+     IF petal length <= 2.45 THEN
+         species = Iris-setosa
+
+Python Generation
+-----------------
+
+If you prefer you can also generate a Python function that implements the model
+and that can be useful to make the model actionable right away with ``local_model.python()``.
+
+::
+
+    local_model.python()
+    def predict_species(sepal_length=5.77889, sepal_width=3.02044, petal_length=4.34142, petal_width=1.32848):
+       if (petal_length > 2.45):
+           if (petal_width > 1.65):
+               if (petal_length > 5.05):
+                   return 'Iris-virginica'
+               if (petal_length <= 5.05):
+                   if (sepal_width > 2.9):
+                       if (sepal_length > 5.95):
+                           if (petal_length > 4.95):
+                               return 'Iris-versicolor'
+                           if (petal_length <= 4.95):
+                               return 'Iris-virginica'
+                       if (sepal_length <= 5.95):
+                            return 'Iris-versicolor'
+                   if (sepal_width <= 2.9):
+                        return 'Iris-virginica'
+           if (petal_width <= 1.65):
+                if (petal_length > 4.95):
+                     if (sepal_length > 6.05):
+                          return 'Iris-virginica'
+                     if (sepal_length <= 6.05):
+                          if (sepal_width > 2.45):
+                               return 'Iris-versicolor'
+                          if (sepal_width <= 2.45):
+                               return 'Iris-virginica'
+                if (petal_length <= 4.95):
+                     return 'Iris-versicolor'
+        if (petal_length <= 2.45):
+             return 'Iris-setosa'
 
 Running the Tests
 -----------------

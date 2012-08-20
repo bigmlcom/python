@@ -29,7 +29,6 @@ def i_create_a_model(step):
     resource = world.api.create_model(dataset)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
-
     world.location = resource['location']
     world.model = resource['object']
     world.models.append(resource['resource'])

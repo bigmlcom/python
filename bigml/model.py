@@ -81,10 +81,9 @@ class Predicate(object):
         self.value = value
 
     def to_rule(self, fields):
-        return "%s %s %s" % (
-                        fields[self.field]['name'],
-                        self.operator,
-                        self.value)
+        return "%s %s %s" % (fields[self.field]['name'],
+                             self.operator,
+                             self.value)
 
 
 class Tree(object):
@@ -116,13 +115,13 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
-        if ('objective_summary' in tree and 
-           'categories' in tree['objective_summary']):
+        if ('objective_summary' in tree and
+                'categories' in tree['objective_summary']):
             self.distribution = tree['objective_summary']['categories']
         else:
             summary = self.fields[self.objective_field]['summary']
             if 'bins' in summary:
-                self.distribution = summary['bins']  
+                self.distribution = summary['bins']
             elif 'counts' in summary:
                 self.distribution = summary['counts']
             elif 'categories' in summary:
@@ -335,27 +334,26 @@ class Model(object):
         """
         return self.tree.python(out)
 
-
     def group_prediction(self):
         """ Groups in categories or bins the predicted data
-         
+
         dict - contains a dict grouping counts in 'total' and 'details' lists.
-                'total' key contains a 3-element list. 
+                'total' key contains a 3-element list.
                        - common segment of the tree for all instances
                        - data count
                        - predictions count
-                'details' key contains a list of elements. Each element is a 
-                          2-element list: 
+                'details' key contains a list of elements. Each element is a
+                          2-element list:
                        - complete path of the tree from the root to the leaf
                        - leaf's count key
-        """  
-        groups = {} 
+        """
+        groups = {}
         tree = self.tree
         distribution = tree.distribution
 
         for group in distribution:
                 groups[group[0]] = {'total': [[], group[1], 0],
-                                    'details': [] }
+                                    'details': []}
         path = []
 
         def DFS(tree, path):
@@ -366,9 +364,8 @@ class Model(object):
             if len(tree.children) == 0:
                 group = tree.output
                 if not tree.output in groups:
-                    
                     groups[group] = {'total': [[], 0, 0],
-                                           'details': [] }
+                                     'details': []}
                 groups[group]['details'].append([path, tree.count])
                 groups[group]['total'][2] += tree.count
                 return
@@ -378,7 +375,7 @@ class Model(object):
 
             for child in children:
                 DFS(child, path[:])
-   
+
         DFS(tree, path)
 
         return groups
@@ -391,17 +388,17 @@ class Model(object):
         tree = self.tree
         distribution = tree.distribution
 
-        # finding distribution 
+        # finding distribution
         out.write("Data distribution:\n")
         out.write(repr(sorted(distribution,  key=lambda x: x[0])))
         out.write("\n\n")
 
         groups = self.group_prediction()
 
-        predictions = [[group, groups[group]['total'][2]] for group in groups] 
+        predictions = [[group, groups[group]['total'][2]] for group in groups]
         # remove groups that are not predicted
-        predictions = filter(lambda x: x[1]>0, predictions)
-    
+        predictions = filter(lambda x: x[1] > 0, predictions)
+
         out.write("Predicted distribution:\n")
         out.write(repr(sorted(predictions,  key=lambda x: x[0])))
         out.write("\n\n")
@@ -415,40 +412,39 @@ class Model(object):
                     test_common_path = details[0][0][i]
                     for subgroup in details:
                         if subgroup[0][i] != test_common_path:
-                            i =  mcd_len
+                            i = mcd_len
                             break
                     if i < mcd_len:
                         common_path.append(test_common_path)
             groups[group]['total'][0] = common_path
             if len(details) > 0:
-                groups[group]['details'] = sorted(details, 
-                                           key=lambda x: x[1], reverse=True)
+                groups[group]['details'] = sorted(details, key=lambda x: x[1],
+                                                  reverse=True)
 
         for group in groups:
             details = groups[group]['details']
-            path = [prediction.to_rule(tree.fields) for 
-                        prediction in groups[group]['total'][0]]
+            path = [prediction.to_rule(tree.fields) for
+                    prediction in groups[group]['total'][0]]
             if len(details) > 0:
                 counts = [subgroup[1] for subgroup in groups[group]['details']]
             else:
                 counts = [0]
-            data_per_group = groups[group]['total'][1]*1.0/tree.count
-            pred_per_group = groups[group]['total'][2]*1.0/tree.count
-            out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" % 
-                   (str(group),
-                   round(data_per_group, 4) * 100,
-                   round(pred_per_group, 4) * 100,
-                   " and ".join(path)))
+            data_per_group = groups[group]['total'][1] * 1.0 / tree.count
+            pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
+            out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+                      (str(group),
+                       round(data_per_group, 4) * 100,
+                       round(pred_per_group, 4) * 100,
+                       " and ".join(path)))
 
             if len(details) == 0:
                 out.write("    The model will never predict this group\n")
             for j in range(0, len(details)):
                 subgroup = details[j]
-                pred_per_sgroup = subgroup[1]*1.0/groups[group]['total'][2]
-                path = [prediction.to_rule(tree.fields) for 
-                                    prediction in subgroup[0]]
-                out.write("    · %.2f%%: %s\n" % 
-                    (round(pred_per_sgroup, 4) * 100,
-                    " and ".join(path)))
+                pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
+                path = [prediction.to_rule(tree.fields) for
+                        prediction in subgroup[0]]
+                out.write("    · %.2f%%: %s\n" %
+                          (round(pred_per_sgroup, 4) * 100,
+                          " and ".join(path)))
         out.flush()
-

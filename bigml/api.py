@@ -258,6 +258,7 @@ class BigML(object):
             elif code in [HTTP_BAD_REQUEST,
                           HTTP_UNAUTHORIZED,
                           HTTP_PAYMENT_REQUIRED,
+                          HTTP_FORBIDDEN,
                           HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
             else:

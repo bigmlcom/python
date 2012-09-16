@@ -115,7 +115,9 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
-        if ('objective_summary' in tree and
+        if 'distribution' in tree:
+            self.distribution = tree['distribution']
+        elif ('objective_summary' in tree and
                 'categories' in tree['objective_summary']):
             self.distribution = tree['objective_summary']['categories']
         else:

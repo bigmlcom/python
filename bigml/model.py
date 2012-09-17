@@ -109,7 +109,7 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
-        self.distribution = tree['distribution']
+        #self.distribution = tree['distribution']
 
     def list_fields(self, out):
         """List a description of the model's fields.
@@ -281,24 +281,27 @@ class Model(object):
         """
         self.tree.list_fields(out)
 
-    def predict(self, data, out=sys.stdout):
+    def predict(self, input_data, by_name=True, print_path=False, out=sys.stdout):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by field name.
 
         """
-        try:
-            input_data = dict(
-                [[self.inverted_fields[key], value]
-                    for key, value in data.items()])
-        except KeyError, field:
-            LOGGER.error("Wrong field name %s" % field)
-            return
+        if by_name:
+            try:
+                input_data = dict(
+                    [[self.inverted_fields[key], value]
+                        for key, value in input_data.items()])
+            except KeyError, field:
+                LOGGER.error("Wrong field name %s" % field)
+                return
+
         prediction, path = self.tree.predict(input_data)
 
         # Prediction path
-        out.write(' AND '.join(path) + ' => %s \n' % prediction)
-        out.flush()
+        if print_path:
+            out.write(' AND '.join(path) + ' => %s \n' % prediction)
+            out.flush()
         return prediction
 
     def rules(self, out=sys.stdout):

@@ -586,6 +586,19 @@ class BigML(object):
         else:
             return "UNKNOWN"
 
+    def check_resource(self, resource, get_method):
+        """Waits until a resource is finshed.
+
+        """
+        while True:
+            status = resource['object']['status']
+            code = status['code']
+            if code == FINISHED:
+                return resource
+            elif code == FAULTY:
+                raise ValueError(status)
+            resource = get_method(resource)
+
     ##########################################################################
     #
     # Sources
@@ -1011,8 +1024,8 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model, input_data=None, args=None,
-                          wait_time=3):
+    def create_prediction(self, model, input_data=None, by_name=True,
+                          args=None, wait_time=3):
         """Creates a new prediction.
 
         """
@@ -1025,7 +1038,7 @@ class BigML(object):
 
             if input_data is None:
                 input_data = {}
-            else:
+            elif by_name:
                 fields = self.get_fields(model_id)
                 inverted_fields = invert_dictionary(fields)
                 try:

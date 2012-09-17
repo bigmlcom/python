@@ -258,6 +258,7 @@ class BigML(object):
             elif code in [HTTP_BAD_REQUEST,
                           HTTP_UNAUTHORIZED,
                           HTTP_PAYMENT_REQUIRED,
+                          HTTP_FORBIDDEN,
                           HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
             else:
@@ -584,6 +585,19 @@ class BigML(object):
             return STATUSES[code]
         else:
             return "UNKNOWN"
+
+    def check_resource(self, resource, get_method):
+        """Waits until a resource is finshed.
+
+        """
+        while True:
+            status = resource['object']['status']
+            code = status['code']
+            if code == FINISHED:
+                return resource
+            elif code == FAULTY:
+                raise ValueError(status)
+            resource = get_method(resource)
 
     ##########################################################################
     #
@@ -1010,8 +1024,8 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model, input_data=None, args=None,
-                          wait_time=3):
+    def create_prediction(self, model, input_data=None, by_name=True,
+                          args=None, wait_time=3):
         """Creates a new prediction.
 
         """
@@ -1024,7 +1038,7 @@ class BigML(object):
 
             if input_data is None:
                 input_data = {}
-            else:
+            elif by_name:
                 fields = self.get_fields(model_id)
                 inverted_fields = invert_dictionary(fields)
                 try:

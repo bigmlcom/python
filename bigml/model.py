@@ -109,7 +109,19 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
-        self.distribution = tree['distribution']
+        if 'distribution' in tree:
+            self.distribution = tree['distribution']
+        elif ('objective_summary' in tree and
+                'categories' in tree['objective_summary']):
+            self.distribution = tree['objective_summary']['categories']
+        else:
+            summary = self.fields[self.objective_field]['summary']
+            if 'bins' in summary:
+                self.distribution = summary['bins']
+            elif 'counts' in summary:
+                self.distribution = summary['counts']
+            elif 'categories' in summary:
+                self.distribution = summary['categories']
 
     def list_fields(self, out):
         """List a description of the model's fields.

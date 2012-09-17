@@ -24,14 +24,14 @@ from urlparse import urlparse
 import locale
 
 
-def invert_dictionary(dictionary):
+def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.
 
     Useful to make predictions using fields' names instead of Ids.
     It does not check whether new keys are duplicated though.
 
     """
-    return dict([[value['name'], key]
+    return dict([[value[field], key]
                 for key, value in dictionary.items()])
 
 

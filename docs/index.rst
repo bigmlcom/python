@@ -32,8 +32,9 @@ Requirements
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
 The only mandatory third-party dependencies are the
-`requests <https://github.com/kennethreitz/requests>`_  and
-`poster <http://pypi.python.org/pypi/poster/>`_ libraries. These
+`requests <https://github.com/kennethreitz/requests>`_,
+`poster <http://pypi.python.org/pypi/poster/>`_, and `unidecode
+<http://http://pypi.python.org/pypi/Unidecode/>`_ libraries. These
 libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
@@ -294,6 +295,13 @@ Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
+
+You can also use the ``check_resource`` method:
+
+    api.check_resource(resource, api.get_source)
+
+that will constantly query the API until the resource gets to a FINISHED or
+FAULTY state.
 
 Creating sources
 ~~~~~~~~~~~~~~~~
@@ -605,6 +613,42 @@ Local predictions have three clear advantages:
 - No cost in BigML (i.e., you do not spend BigML credits).
 
 - Extremely low latency to generate predictions for huge volumes of data.
+
+
+Fields
+------
+
+Once you have a resource you can use the ``Fields`` class to generate a
+representation that will allow you to easily list fields, get fields ids, get a
+field id by name, column number, etc.
+
+::
+
+    from bigml.fields import Fields
+
+    fields = Fields(source['object']['fields'])
+
+    # Internal id of the 'sepal length' field
+    fields.field_id('sepal length')
+
+    # Field name of field with column number 0
+    fields.field_name(0)
+
+    # Column number of field name 'petal length'
+    fields.field_column_number('petal length')
+
+You can also easily ``pair`` a list of values with fields ids what is very
+useful to make predictions.
+
+For example, the following snippet may be useful to create local predictions using
+a csv file as input::
+
+    test_reader = csv.reader(open(dir + test_set))
+    local_model = Model(model)
+    for row in test_reader:
+        input_data = fields.pair([float(val) for val in row], objective_field)
+        prediction = local_model.predict(input_data, by_name=False)
+
 
 Rule Generation
 ---------------

@@ -3,7 +3,14 @@
 History
 -------
 
-0.4.0 (2012Y-08-20)
+0.4.1 (2012-09-17)
+~~~~~~~~~~~~~~~~~~
+- Fix missing distribution field in new models
+- Add new Field class to deal with BigML auto-generated ids
+- Add by_name flag to predict methods to avoid reverse name lookups
+- Add summarize method in models to generate class grouped printed output
+
+0.4.0 (2012-08-20)
 ~~~~~~~~~~~~~~~~~~
 
 - Development Mode

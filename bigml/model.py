@@ -57,6 +57,7 @@ import operator
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split
 
+
 # Map operator str to its corresponding function
 OPERATOR = {
     "<": operator.lt,
@@ -78,6 +79,14 @@ class Predicate(object):
         self.operator = operation
         self.field = field
         self.value = value
+
+    def to_rule(self, fields):
+        """ Builds rule string from a predicate
+
+        """
+        return "%s %s %s" % (fields[self.field]['name'],
+                             self.operator,
+                             self.value)
 
 
 class Tree(object):
@@ -293,24 +302,28 @@ class Model(object):
         """
         self.tree.list_fields(out)
 
-    def predict(self, data, out=sys.stdout):
+    def predict(self, input_data,
+                by_name=True, print_path=False, out=sys.stdout):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by field name.
 
         """
-        try:
-            input_data = dict(
-                [[self.inverted_fields[key], value]
-                    for key, value in data.items()])
-        except KeyError, field:
-            LOGGER.error("Wrong field name %s" % field)
-            return
+        if by_name:
+            try:
+                input_data = dict(
+                    [[self.inverted_fields[key], value]
+                        for key, value in input_data.items()])
+            except KeyError, field:
+                LOGGER.error("Wrong field name %s" % field)
+                return
+
         prediction, path = self.tree.predict(input_data)
 
         # Prediction path
-        out.write(' AND '.join(path) + ' => %s \n' % prediction)
-        out.flush()
+        if print_path:
+            out.write(' AND '.join(path) + ' => %s \n' % prediction)
+            out.flush()
         return prediction
 
     def rules(self, out=sys.stdout):
@@ -329,3 +342,151 @@ class Model(object):
 
         """
         return self.tree.python(out)
+
+    def group_prediction(self):
+        """ Groups in categories or bins the predicted data
+
+        dict - contains a dict grouping counts in 'total' and 'details' lists.
+                'total' key contains a 3-element list.
+                       - common segment of the tree for all instances
+                       - data count
+                       - predictions count
+                'details' key contains a list of elements. Each element is a
+                          2-element list:
+                       - complete path of the tree from the root to the leaf
+                       - leaf predictions count
+        """
+        groups = {}
+        tree = self.tree
+        distribution = tree.distribution
+
+        for group in distribution:
+            groups[group[0]] = {'total': [[], group[1], 0],
+                                'details': []}
+        path = []
+
+        def depth_first_search(tree, path):
+            """ Search for leafs' values and instances
+            """
+            if isinstance(tree.predicate, Predicate):
+                path.append(tree.predicate)
+
+            if len(tree.children) == 0:
+                group = tree.output
+                if not tree.output in groups:
+                    groups[group] = {'total': [[], 0, 0],
+                                     'details': []}
+                groups[group]['details'].append([path, tree.count])
+                groups[group]['total'][2] += tree.count
+                return
+
+            children = tree.children[:]
+            children.reverse()
+
+            for child in children:
+                depth_first_search(child, path[:])
+
+        depth_first_search(tree, path)
+
+        return groups
+
+    def get_data_distribution(self):
+        """ Returns training data distribution
+
+        """
+        tree = self.tree
+        distribution = tree.distribution
+
+        return sorted(distribution,  key=lambda x: x[0])
+
+    def get_prediction_distribution(self, groups=None):
+        """ Returns model predicted distribution
+
+        """
+        if groups is None:
+            groups = self.group_prediction()
+
+        predictions = [[group, groups[group]['total'][2]] for group in groups]
+        # remove groups that are not predicted
+        predictions = filter(lambda x: x[1] > 0, predictions)
+
+        return sorted(predictions,  key=lambda x: x[0])
+
+    def summarize(self, out=sys.stdout):
+        """ Prints summary grouping distribution as class header and details
+
+        """
+        def print_distribution(distribution, out=sys.stdout):
+            """ Prints distribution data
+
+            """
+            total = reduce(lambda x, y: x + y,
+                           [group[1] for group in distribution])
+            for group in distribution:
+                out.write("    %s: %.2f%% (%d instance%s)\n" % (group[0],
+                          round(group[1] * 1.0 / total, 4) * 100,
+                          group[1],
+                          "" if group[1] == 1 else "s"))
+
+        def extract_common_path(groups):
+            """ Extracts the common segment of the prediction path for a group
+
+            """
+            for group in groups:
+                details = groups[group]['details']
+                common_path = []
+                if len(details) > 0:
+                    mcd_len = min([len(x[0]) for x in details])
+                    for i in range(0, mcd_len):
+                        test_common_path = details[0][0][i]
+                        for subgroup in details:
+                            if subgroup[0][i] != test_common_path:
+                                i = mcd_len
+                                break
+                        if i < mcd_len:
+                            common_path.append(test_common_path)
+                groups[group]['total'][0] = common_path
+                if len(details) > 0:
+                    groups[group]['details'] = sorted(details, 
+                                                      key=lambda x: x[1],
+                                                      reverse=True)
+
+        tree = self.tree
+        distribution = self.get_data_distribution()
+
+        out.write("Data distribution:\n")
+        print_distribution(distribution, out=out)
+        out.write("\n\n")
+
+        groups = self.group_prediction()
+        predictions = self.get_prediction_distribution(groups)
+
+        out.write("Predicted distribution:\n")
+        print_distribution(predictions, out=out)
+        out.write("\n\n")
+
+        extract_common_path(groups)
+
+        for group in [x[0] for x in predictions]:
+            details = groups[group]['details']
+            path = [prediction.to_rule(tree.fields) for
+                    prediction in groups[group]['total'][0]]
+            data_per_group = groups[group]['total'][1] * 1.0 / tree.count
+            pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
+            out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+                      (str(group),
+                       round(data_per_group, 4) * 100,
+                       round(pred_per_group, 4) * 100,
+                       " and ".join(path)))
+
+            if len(details) == 0:
+                out.write("    The model will never predict this class\n")
+            for j in range(0, len(details)):
+                subgroup = details[j]
+                pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
+                path = [prediction.to_rule(tree.fields) for
+                        prediction in subgroup[0]]
+                out.write("    · %.2f%%: %s\n" %
+                          (round(pred_per_sgroup, 4) * 100,
+                          " and ".join(path)))
+        out.flush()

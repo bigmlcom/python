@@ -32,8 +32,9 @@ Requirements
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
 The only mandatory third-party dependencies are the
-`requests <https://github.com/kennethreitz/requests>`_  and
-`poster <http://pypi.python.org/pypi/poster/>`_ libraries. These
+`requests <https://github.com/kennethreitz/requests>`_,
+`poster <http://pypi.python.org/pypi/poster/>`_, and `unidecode
+<http://http://pypi.python.org/pypi/Unidecode/>`_ libraries. These
 libraries are automatically installed during the setup.
 
 The bindings will also use ``simplejson`` if you happen to have it
@@ -295,6 +296,13 @@ the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
+You can also use the ``check_resource`` method:
+
+    api.check_resource(resource, api.get_source)
+
+that will constantly query the API until the resource gets to a FINISHED or
+FAULTY state.
+
 Creating sources
 ~~~~~~~~~~~~~~~~
 
@@ -344,8 +352,8 @@ where the `source['object']` status is set to `UPLOADING` and  its `progress`
 is periodically updated with the current uploading
 progress ranging from 0 to 1. When upload completes, this structure will be
 replaced by the real resource info as computed by BigML. Therefore source's
-status will eventually be (as it is in the synchronous upload case) ``WAITING``
- or ``QUEUED``.
+status will eventually be (as it is in the synchronous upload case)
+``WAITING`` or ``QUEUED``.
 
 You can retrieve the updated status at any time using the corresponding get
 method. For example, to get the status of our source we would use::
@@ -606,6 +614,42 @@ Local predictions have three clear advantages:
 
 - Extremely low latency to generate predictions for huge volumes of data.
 
+
+Fields
+------
+
+Once you have a resource you can use the ``Fields`` class to generate a
+representation that will allow you to easily list fields, get fields ids, get a
+field id by name, column number, etc.
+
+::
+
+    from bigml.fields import Fields
+
+    fields = Fields(source['object']['fields'])
+
+    # Internal id of the 'sepal length' field
+    fields.field_id('sepal length')
+
+    # Field name of field with column number 0
+    fields.field_name(0)
+
+    # Column number of field name 'petal length'
+    fields.field_column_number('petal length')
+
+You can also easily ``pair`` a list of values with fields ids what is very
+useful to make predictions.
+
+For example, the following snippet may be useful to create local predictions using
+a csv file as input::
+
+    test_reader = csv.reader(open(dir + test_set))
+    local_model = Model(model)
+    for row in test_reader:
+        input_data = fields.pair([float(val) for val in row], objective_field)
+        prediction = local_model.predict(input_data, by_name=False)
+
+
 Rule Generation
 ---------------
 
@@ -682,6 +726,63 @@ and that can be useful to make the model actionable right away with ``local_mode
                      return 'Iris-versicolor'
         if (petal_length <= 2.45):
              return 'Iris-setosa'
+
+Summary generation
+------------------
+
+You can also print the model from the point of view of the classes it predicts
+with ``local_model.summarize()``.
+It shows a header section with the training data initial distribution per class
+(instances and percentage) and the final predicted distribution per class.
+
+Then each class distribution is detailed. First a header section
+shows the percentage of the total data that belongs to the class (in the
+training set and in the predicted results) and the rules applicable to
+all the
+the instances of that class (if any). Just after that, a detail section shows
+each of the leaves in which the class members are distributed.
+They are sorted in descending
+order by the percentage of predictions of the class that fall into that leaf
+and also show the full rule chain that leads to it.
+
+::
+
+    Data distribution:
+        Iris-setosa: 33.33% (50 instances)
+        Iris-versicolor: 33.33% (50 instances)
+        Iris-virginica: 33.33% (50 instances)
+
+
+    Predicted distribution:
+        Iris-setosa: 33.33% (50 instances)
+        Iris-versicolor: 33.33% (50 instances)
+        Iris-virginica: 33.33% (50 instances)
+
+
+
+
+    Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45
+        · 100.00%: petal length <= 2.45
+
+
+    Iris-versicolor : (data 33.33% / prediction 33.33%) petal length > 2.45
+        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width > 2.45
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 5.95
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length > 4.95
+
+
+    Iris-virginica : (data 33.33% / prediction 33.33%) petal length > 2.45
+        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05
+        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9
+        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05
+        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length <= 4.95
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width <= 2.45
+
+You can also use ``local_model.get_data_distribution()`` and
+``local_model.get_prediction_distribution()`` to obtain the training and
+prediction basic distribution
+information as a list (suitable to draw histograms or any further processing).
 
 Running the Tests
 -----------------

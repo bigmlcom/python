@@ -352,8 +352,8 @@ where the `source['object']` status is set to `UPLOADING` and  its `progress`
 is periodically updated with the current uploading
 progress ranging from 0 to 1. When upload completes, this structure will be
 replaced by the real resource info as computed by BigML. Therefore source's
-status will eventually be (as it is in the synchronous upload case) ``WAITING``
- or ``QUEUED``.
+status will eventually be (as it is in the synchronous upload case)
+``WAITING`` or ``QUEUED``.
 
 You can retrieve the updated status at any time using the corresponding get
 method. For example, to get the status of our source we would use::
@@ -726,6 +726,63 @@ and that can be useful to make the model actionable right away with ``local_mode
                      return 'Iris-versicolor'
         if (petal_length <= 2.45):
              return 'Iris-setosa'
+
+Summary generation
+------------------
+
+You can also print the model from the point of view of the classes it predicts
+with ``local_model.summarize()``.
+It shows a header section with the training data initial distribution per class
+(instances and percentage) and the final predicted distribution per class.
+
+Then each class distribution is detailed. First a header section
+shows the percentage of the total data that belongs to the class (in the
+training set and in the predicted results) and the rules applicable to
+all the
+the instances of that class (if any). Just after that, a detail section shows
+each of the leaves in which the class members are distributed.
+They are sorted in descending
+order by the percentage of predictions of the class that fall into that leaf
+and also show the full rule chain that leads to it.
+
+::
+
+    Data distribution:
+        Iris-setosa: 33.33% (50 instances)
+        Iris-versicolor: 33.33% (50 instances)
+        Iris-virginica: 33.33% (50 instances)
+
+
+    Predicted distribution:
+        Iris-setosa: 33.33% (50 instances)
+        Iris-versicolor: 33.33% (50 instances)
+        Iris-virginica: 33.33% (50 instances)
+
+
+
+
+    Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45
+        · 100.00%: petal length <= 2.45
+
+
+    Iris-versicolor : (data 33.33% / prediction 33.33%) petal length > 2.45
+        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width > 2.45
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 5.95
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length > 4.95
+
+
+    Iris-virginica : (data 33.33% / prediction 33.33%) petal length > 2.45
+        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05
+        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9
+        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05
+        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length <= 4.95
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width <= 2.45
+
+You can also use ``local_model.get_data_distribution()`` and
+``local_model.get_prediction_distribution()`` to obtain the training and
+prediction basic distribution
+information as a list (suitable to draw histograms or any further processing).
 
 Running the Tests
 -----------------

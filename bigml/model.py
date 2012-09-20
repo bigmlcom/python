@@ -270,7 +270,7 @@ class Model(object):
     """ A lightweight wrapper around a Tree model.
 
     Uses a BigML remote model to build a local version that can be used
-    to generate prediction locally.
+    to generate predictions locally.
 
     """
 
@@ -313,7 +313,8 @@ class Model(object):
                 by_name=True, print_path=False, out=sys.stdout):
         """Makes a prediction based on a number of field values.
 
-        The input fields must be keyed by field name.
+        By default the input fields must be keyed by field name but you can use
+        `by_name` to input them directly keyed by id.
 
         """
         if by_name:

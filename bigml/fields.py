@@ -24,11 +24,22 @@ fields of source, dataset, or model.
 import sys
 from bigml.util import invert_dictionary
 
-type_map = {
+TYPE_MAP = {
     "categorical": str,
     "numeric": float,
     "text": str
 }
+
+
+def map_type(value):
+    """Maps a BigML type to a Python type.
+
+    """
+    if value in TYPE_MAP:
+        return TYPE_MAP[value]
+    else:
+        return str
+
 
 class Fields(object):
     """A class to deal with BigML auto-generated ids.
@@ -94,17 +105,17 @@ class Fields(object):
             if objective_field_present:
                 if index != objective_field:
                     pair.update({self.field_id(index):
-                        type_map[self.fields[self.field_id(index)]['optype']]
-                            (row[index])})
+                                map_type(self.fields[self.field_id(index)]
+                                         ['optype'])(row[index])})
             else:
                 if index >= objective_field:
                     pair.update({self.field_id(index + 1):
-                        type_map[self.fields[self.field_id(index +
-                            1)]['optype']](row[index])})
+                                map_type(self.fields[self.field_id(index + 1)]
+                                         ['optype'])(row[index])})
                 else:
                     pair.update({self.field_id(index):
-                        type_map[self.fields[self.field_id(index)]['optype']]
-                            (row[index])})
+                                map_type(self.fields[self.field_id(index)]
+                                         ['optype'])(row[index])})
 
         return pair
 

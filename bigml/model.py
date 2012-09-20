@@ -56,7 +56,6 @@ import operator
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split
-from bigml.fields import type_map
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -238,10 +237,10 @@ class Tree(object):
                         (INDENT * depth,
                          self.fields[child.predicate.field]['slug'],
                          PYTHON_OPERATOR[child.predicate.operator],
-                         `child.predicate.value`))
+                         repr(child.predicate.value)))
                 body += child.python_body(depth + 1)
         else:
-            body = "%s return %s\n" % (INDENT * depth, `self.output`)
+            body = "%s return %s\n" % (INDENT * depth, repr(self.output))
         return body
 
     def python(self, out):

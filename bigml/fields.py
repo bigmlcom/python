@@ -24,6 +24,11 @@ fields of source, dataset, or model.
 import sys
 from bigml.util import invert_dictionary
 
+type_map = {
+    "categorical": str,
+    "numeric": float,
+    "text": str
+}
 
 class Fields(object):
     """A class to deal with BigML auto-generated ids.
@@ -88,12 +93,18 @@ class Fields(object):
         for index in range(len(row)):
             if objective_field_present:
                 if index != objective_field:
-                    pair.update({self.field_id(index): row[index]})
+                    pair.update({self.field_id(index):
+                        type_map[self.fields[self.field_id(index)]['optype']]
+                            (row[index])})
             else:
                 if index >= objective_field:
-                    pair.update({self.field_id(index + 1): row[index]})
+                    pair.update({self.field_id(index + 1):
+                        type_map[self.fields[self.field_id(index +
+                            1)]['optype']](row[index])})
                 else:
-                    pair.update({self.field_id(index): row[index]})
+                    pair.update({self.field_id(index):
+                        type_map[self.fields[self.field_id(index)]['optype']]
+                            (row[index])})
 
         return pair
 

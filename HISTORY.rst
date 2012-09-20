@@ -3,6 +3,12 @@
 History
 -------
 
+0.4.2 (2012-09-19)
+~~~~~~~~~~~~~~~~~~
+- Fix Python generation
+- Adds a debug flag to log https requests and responses
+- Type conversion in fields pairing
+
 0.4.1 (2012-09-17)
 ~~~~~~~~~~~~~~~~~~
 - Fix missing distribution field in new models

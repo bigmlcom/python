@@ -32,12 +32,11 @@ prediction = api.create_prediction(model, {'sepal width': 1})
 api.pprint(prediction)
 
 """
+import sys
 import logging
-FORMAT = '%(asctime)-15s: %(message)s'
-logging.basicConfig(format=FORMAT)
+LOG_FORMAT = '%(asctime)-15s: %(message)s'
 LOGGER = logging.getLogger('BigML')
 
-import sys
 import time
 import os
 import re
@@ -169,6 +168,24 @@ def get_prediction_id(prediction):
 
 ##############################################################################
 #
+# Patch for requests
+#
+##############################################################################
+def patch_requests():
+    """ Monkey patches requests to get debug output.
+
+    """
+    def debug_request(method, url, **kwargs):
+        response = original_request(method, url, **kwargs)
+        logging.debug("Data: {}".format(response.request.data))
+        logging.debug("Response: {}".format(response.content))
+        return response
+    original_request = requests.api.request
+    requests.api.request = debug_request
+
+
+##############################################################################
+#
 # BigML class
 #
 ##############################################################################
@@ -189,7 +206,8 @@ class BigML(object):
         error: An error code and message
 
     """
-    def __init__(self, username=None, api_key=None, dev_mode=False):
+    def __init__(self, username=None, api_key=None, dev_mode=False,
+                 debug=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -201,6 +219,16 @@ class BigML(object):
         charged any credits.
 
         """
+
+        logging_level = logging.ERROR
+        if debug:
+            logging_level = logging.DEBUG
+            patch_requests()
+
+        logging.basicConfig(format=LOG_FORMAT,
+                            level=logging_level,
+                            stream=sys.stdout)
+
         if username is None:
             username = os.environ['BIGML_USERNAME']
         if api_key is None:

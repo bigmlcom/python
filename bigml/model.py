@@ -57,7 +57,6 @@ import operator
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split
 
-
 # Map operator str to its corresponding function
 OPERATOR = {
     "<": operator.lt,
@@ -67,6 +66,17 @@ OPERATOR = {
     ">=": operator.ge,
     ">": operator.gt
 }
+
+# Map operator str to its corresponding python operator
+PYTHON_OPERATOR = {
+    "<": "<",
+    "<=": "<=",
+    "=": "==",
+    "!=": "!=",
+    ">=": ">=",
+    ">": ">"
+}
+
 
 INDENT = '    '
 
@@ -226,14 +236,11 @@ class Tree(object):
                 body += ("%sif (%s %s %s):\n" %
                         (INDENT * depth,
                          self.fields[child.predicate.field]['slug'],
-                         child.predicate.operator,
-                         child.predicate.value))
+                         PYTHON_OPERATOR[child.predicate.operator],
+                         repr(child.predicate.value)))
                 body += child.python_body(depth + 1)
         else:
-            if self.fields[self.objective_field]['optype'] == 'numeric':
-                body = "%s return %s\n" % (INDENT * depth, self.output)
-            else:
-                body = "%s return '%s'\n" % (INDENT * depth, self.output)
+            body = "%s return %s\n" % (INDENT * depth, repr(self.output))
         return body
 
     def python(self, out):
@@ -447,7 +454,7 @@ class Model(object):
                             common_path.append(test_common_path)
                 groups[group]['total'][0] = common_path
                 if len(details) > 0:
-                    groups[group]['details'] = sorted(details, 
+                    groups[group]['details'] = sorted(details,
                                                       key=lambda x: x[1],
                                                       reverse=True)
 

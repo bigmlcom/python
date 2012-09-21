@@ -42,12 +42,28 @@ from bigml.model import Model
 def avg(data):
     return float(sum(data))/len(data) if len(data) > 0 else float('nan')
 
-class MultipleModel(object):
+def combine_predictions(self, predictions):
+    """Reduces a number of predictions voting for classification and averaging
+    predictions for regression.
+
+    """
+    if all([isinstance(prediction, numbers.Number) for prediction in
+        predictions]):
+        return avg(predictions)
+    else:
+        mode = {}
+        for prediction in predictions:
+            if prediction in mode:
+                mode[prediction] = mode[prediction] + 1
+            else:
+                mode[prediction] = 1
+        return max(mode)
+
+class MultiModel(object):
     """A multiple local model.
 
     Uses a numbers of BigML remote models to build a local version that can be
-    used to generate predictions locally using mode voting for classification
-    and average voting for regression.
+    used to generate predictions locally.
 
     """
 
@@ -59,24 +75,14 @@ class MultipleModel(object):
         else:
             self.models.apend(Model(models))
 
-    def predict(self, input_data):
+
+    def predict(self, input_data, by_name=False):
         """Makes a prediction based on the prediction made by every model.
 
         """
 
         predictions = []
         for model in self.models:
-            predictions.append(model.predict(input_data, by_name=False))
+            predictions.append(model.predict(input_data, by_name=by_name))
 
-        if all([isinstance(prediction, numbers.Number) for prediction in
-            predictions]):
-            return avg(predictions)
-        else:
-            mode = {}
-            for prediction in predictions:
-                if prediction in mode:
-                    mode[prediction] = mode[prediction] + 1
-                else:
-                    mode[prediction] = 1
-            return max(mode)
-
+        return combine_predictions(predictions)

@@ -42,7 +42,7 @@ from bigml.model import Model
 def avg(data):
     return float(sum(data))/len(data) if len(data) > 0 else float('nan')
 
-def combine_predictions(self, predictions):
+def combine_predictions(predictions):
     """Reduces a number of predictions voting for classification and averaging
     predictions for regression.
 

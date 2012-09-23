@@ -101,7 +101,7 @@ class Fields(object):
             objective_field_present = len(row) == self.len()
 
         pair = {}
-        for index in range(len(row)):
+        for index in range(self.len()):
             if objective_field_present:
                 if index != objective_field:
                     pair.update({self.field_id(index):

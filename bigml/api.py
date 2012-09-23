@@ -618,6 +618,10 @@ class BigML(object):
         """Waits until a resource is finshed.
 
         """
+
+        if isinstance(resource, basestring):
+            resource = get_method(resource)
+
         while True:
             status = resource['object']['status']
             code = status['code']

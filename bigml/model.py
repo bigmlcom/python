@@ -243,7 +243,7 @@ class Tree(object):
             body = "%s return %s\n" % (INDENT * depth, repr(self.output))
         return body
 
-    def python(self, out):
+    def python(self, out, docstring):
         """Writes a python function that implements the model.
 
         """
@@ -259,9 +259,13 @@ class Tree(object):
                 default = self.fields[field[0]]['summary']['median']
             if field[0] != self.objective_field:
                 args.append("%s=%s" % (slug, default))
-        predictor = "def predict_%s(%s):\n" % (
-            self.fields[self.objective_field]['slug'], ", ".join(args))
-        predictor += self.python_body()
+        predictor_definition = ("def predict_%s" % 
+            self.fields[self.objective_field]['slug'])
+        indent = len(predictor_definition) + 1  
+        predictor = "%s(%s):\n" % (predictor_definition, 
+            (",\n"+" "*indent).join(args))
+        predictor_doc = "    \"\"\" " + docstring + "\n    \"\"\"\n\n"
+        predictor += predictor_doc + self.python_body()
         out.write(predictor)
         out.flush()
 
@@ -275,6 +279,10 @@ class Model(object):
     """
 
     def __init__(self, model):
+
+        if (isinstance(model, dict) and 'resource' in model):
+            self.resource_id = model['resource']
+
         if (isinstance(model, dict) and 'object' in model and
                 isinstance(model['object'], dict)):
             if ('status' in model['object'] and
@@ -286,6 +294,7 @@ class Model(object):
                         model['object']['model']['root'],
                         fields,
                         model['object']['objective_fields'])
+                    self.description = model['object']['description']
                 else:
                     raise Exception("The model isn't finished yet")
         elif (isinstance(model, dict) and 'model' in model and
@@ -298,6 +307,7 @@ class Model(object):
                         model['model']['root'],
                         fields,
                         model['objective_fields'])
+                    self.description = model['description']
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -348,7 +358,12 @@ class Model(object):
         `out` is file descriptor to write the python code.
 
         """
-        return self.tree.python(out)
+        docstring = ("Predictor for %s from %s\n" % (
+            self.tree.fields[self.tree.objective_field]['name'],
+            self.resource_id))
+        if len(self.description):
+            docstring += "\n        %s" % self.description
+        return self.tree.python(out, docstring)
 
     def group_prediction(self):
         """ Groups in categories or bins the predicted data

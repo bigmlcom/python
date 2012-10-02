@@ -697,35 +697,43 @@ and that can be useful to make the model actionable right away with ``local_mode
 ::
 
     local_model.python()
-    def predict_species(sepal_length=5.77889, sepal_width=3.02044, petal_length=4.34142, petal_width=1.32848):
-       if (petal_length > 2.45):
-           if (petal_width > 1.65):
-               if (petal_length > 5.05):
-                   return 'Iris-virginica'
-               if (petal_length <= 5.05):
-                   if (sepal_width > 2.9):
-                       if (sepal_length > 5.95):
-                           if (petal_length > 4.95):
-                               return 'Iris-versicolor'
-                           if (petal_length <= 4.95):
-                               return 'Iris-virginica'
-                       if (sepal_length <= 5.95):
-                            return 'Iris-versicolor'
-                   if (sepal_width <= 2.9):
-                        return 'Iris-virginica'
-           if (petal_width <= 1.65):
+    def predict_species(sepal_length=5.77889,
+                        sepal_width=3.02044,
+                        petal_length=4.34142,
+                        petal_width=1.32848):
+        """ Predictor for species from model/5030e496155268765f000343
+
+        """
+
+        if (petal_length > 2.45):
+            if (petal_width > 1.65):
+                if (petal_length > 5.05):
+                     return 'Iris-virginica'
+                if (petal_length <= 5.05):
+                    if (sepal_width > 2.9):
+                        if (sepal_length > 5.95):
+                            if (petal_length > 4.95):
+                                 return 'Iris-versicolor'
+                            if (petal_length <= 4.95):
+                                 return 'Iris-virginica'
+                        if (sepal_length <= 5.95):
+                             return 'Iris-versicolor'
+                    if (sepal_width <= 2.9):
+                         return 'Iris-virginica'
+            if (petal_width <= 1.65):
                 if (petal_length > 4.95):
-                     if (sepal_length > 6.05):
-                          return 'Iris-virginica'
-                     if (sepal_length <= 6.05):
-                          if (sepal_width > 2.45):
-                               return 'Iris-versicolor'
-                          if (sepal_width <= 2.45):
-                               return 'Iris-virginica'
+                    if (sepal_length > 6.05):
+                         return 'Iris-virginica'
+                    if (sepal_length <= 6.05):
+                        if (sepal_width > 2.45):
+                             return 'Iris-versicolor'
+                        if (sepal_width <= 2.45):
+                             return 'Iris-virginica'
                 if (petal_length <= 4.95):
                      return 'Iris-versicolor'
         if (petal_length <= 2.45):
              return 'Iris-setosa'
+
 
 Summary generation
 ------------------

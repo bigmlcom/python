@@ -187,7 +187,7 @@ class Tree(object):
             for child in self.children:
                 rules += ("%s IF %s %s %s %s\n" %
                          (INDENT * depth,
-                          self.fields[child.predicate.field]['name'],
+                          self.fields[child.predicate.field]['slug'],
                           child.predicate.operator,
                           child.predicate.value,
                           "AND" if child.children else "THEN"))
@@ -195,7 +195,7 @@ class Tree(object):
         else:
             rules += ("%s %s = %s\n" %
                      (INDENT * depth,
-                      (self.fields[self.objective_field]['name']
+                      (self.fields[self.objective_field]['slug']
                        if self.objective_field else "Prediction"),
                       self.output))
         return rules
@@ -204,6 +204,11 @@ class Tree(object):
         """Prints out an IF-THEN rule version of the tree.
 
         """
+        for field in [(key, val) for key, val in sorted(self.fields.items(),
+                      key=lambda k: k[1]['column_number'])]:
+
+            slug = slugify(self.fields[field[0]]['name'])
+            self.fields[field[0]].update(slug=slug)
         out.write(self.generate_rules())
         out.flush()
 
@@ -261,10 +266,11 @@ class Tree(object):
                 args.append("%s=%s" % (slug, default))
         predictor_definition = ("def predict_%s" % 
             self.fields[self.objective_field]['slug'])
-        indent = len(predictor_definition) + 1  
+        depth = len(predictor_definition) + 1  
         predictor = "%s(%s):\n" % (predictor_definition, 
-            (",\n"+" "*indent).join(args))
-        predictor_doc = "    \"\"\" " + docstring + "\n    \"\"\"\n\n"
+            (",\n"+" "*depth).join(args))
+        predictor_doc = (INDENT + "\"\"\" " + docstring + 
+            "\n" + INDENT +"\"\"\"\n\n")
         predictor += predictor_doc + self.python_body()
         out.write(predictor)
         out.flush()
@@ -362,7 +368,7 @@ class Model(object):
             self.tree.fields[self.tree.objective_field]['name'],
             self.resource_id))
         if len(self.description):
-            docstring += "\n        %s" % self.description
+            docstring += "\n" + INDENT*2 + ("%s" % self.description)
         return self.tree.python(out, docstring)
 
     def group_prediction(self):

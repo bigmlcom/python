@@ -659,34 +659,35 @@ helpful to understand how the model works internally.
 ::
 
      local_model.rules()
-     IF petal length > 2.45 AND
-         IF petal width > 1.65 AND
-             IF petal length > 5.05 THEN
+     IF petal_length > 2.45 AND
+         IF petal_width > 1.65 AND
+             IF petal_length > 5.05 THEN
                  species = Iris-virginica
-             IF petal length <= 5.05 AND
-                 IF sepal width > 2.9 AND
-                     IF sepal length > 5.95 AND
-                         IF petal length > 4.95 THEN
+             IF petal_length <= 5.05 AND
+                 IF sepal_width > 2.9 AND
+                     IF sepal_length > 5.95 AND
+                         IF petal_length > 4.95 THEN
                              species = Iris-versicolor
-                         IF petal length <= 4.95 THEN
+                         IF petal_length <= 4.95 THEN
                              species = Iris-virginica
-                     IF sepal length <= 5.95 THEN
-                          species = Iris-versicolor
-                 IF sepal width <= 2.9 THEN
-                     species = Iris-virginica
-         IF petal width <= 1.65 AND
-             IF petal length > 4.95 AND
-                 IF sepal length > 6.05 THEN
-                       species = Iris-virginica
-                 IF sepal length <= 6.05 AND
-                     IF sepal width > 2.45 THEN
+                     IF sepal_length <= 5.95 THEN
                          species = Iris-versicolor
-                     IF sepal width <= 2.45 THEN
+                 IF sepal_width <= 2.9 THEN
+                     species = Iris-virginica
+         IF petal_width <= 1.65 AND
+             IF petal_length > 4.95 AND
+                 IF sepal_length > 6.05 THEN
+                     species = Iris-virginica
+                 IF sepal_length <= 6.05 AND
+                     IF sepal_width > 2.45 THEN
+                         species = Iris-versicolor
+                     IF sepal_width <= 2.45 THEN
                          species = Iris-virginica
-             IF petal length <= 4.95 THEN
+             IF petal_length <= 4.95 THEN
                  species = Iris-versicolor
-     IF petal length <= 2.45 THEN
+     IF petal_length <= 2.45 THEN
          species = Iris-setosa
+
 
 Python Generation
 -----------------

@@ -264,13 +264,13 @@ class Tree(object):
                 default = self.fields[field[0]]['summary']['median']
             if field[0] != self.objective_field:
                 args.append("%s=%s" % (slug, default))
-        predictor_definition = ("def predict_%s" % 
-            self.fields[self.objective_field]['slug'])
-        depth = len(predictor_definition) + 1  
-        predictor = "%s(%s):\n" % (predictor_definition, 
-            (",\n"+" "*depth).join(args))
-        predictor_doc = (INDENT + "\"\"\" " + docstring + 
-            "\n" + INDENT +"\"\"\"\n\n")
+        predictor_definition = ("def predict_%s" %
+                                self.fields[self.objective_field]['slug'])
+        depth = len(predictor_definition) + 1
+        predictor = "%s(%s):\n" % (predictor_definition,
+                                   (",\n" + " " * depth).join(args))
+        predictor_doc = (INDENT + "\"\"\" " + docstring +
+                         "\n" + INDENT + "\"\"\"\n\n")
         predictor += predictor_doc + self.python_body()
         out.write(predictor)
         out.flush()
@@ -368,7 +368,7 @@ class Model(object):
             self.tree.fields[self.tree.objective_field]['name'],
             self.resource_id))
         if len(self.description):
-            docstring += "\n" + INDENT*2 + ("%s" % self.description)
+            docstring += "\n" + INDENT * 2 + ("%s" % self.description)
         return self.tree.python(out, docstring)
 
     def group_prediction(self):

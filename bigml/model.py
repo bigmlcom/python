@@ -55,7 +55,7 @@ import sys
 import operator
 
 from bigml.api import FINISHED
-from bigml.util import invert_dictionary, slugify, split
+from bigml.util import invert_dictionary, slugify, split, markdown_cleanup
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -367,8 +367,11 @@ class Model(object):
         docstring = ("Predictor for %s from %s\n" % (
             self.tree.fields[self.tree.objective_field]['name'],
             self.resource_id))
-        if len(self.description):
-            docstring += "\n" + INDENT * 2 + ("%s" % self.description)
+        self.description = (markdown_cleanup(
+                self.description).strip()
+                or 'Predictive model by BigML - Machine Learning Made Easy' )
+        docstring += "\n" + INDENT * 2 + ("%s" %
+                     self.description)
         return self.tree.python(out, docstring)
 
     def group_prediction(self):
@@ -502,7 +505,7 @@ class Model(object):
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
             out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
-                      (str(group),
+                      (Unicode(group),
                        round(data_per_group, 4) * 100,
                        round(pred_per_group, 4) * 100,
                        " and ".join(path)))

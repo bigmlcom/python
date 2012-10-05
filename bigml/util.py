@@ -23,6 +23,9 @@ import unidecode
 from urlparse import urlparse
 import locale
 
+BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
+ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
+LINKS_REGEX = re.compile(r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))''', re.MULTILINE)
 
 def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.
@@ -66,3 +69,30 @@ def split(children):
 
     if len(field) == 1:
         return field.pop()
+
+def markdown_cleanup(text):
+    """Returns the text without markdown codes
+
+    """
+    def cleanup_bold_and_italic(text):
+        """Removes from text bold and italic markdowns
+
+        """
+        text = BOLD_REGEX.sub(r'''\2''', text)
+        text = ITALIC_REGEX.sub(r'''\2''', text)
+        return text
+
+    def links_to_footer(text):
+        """Removes from text links and adds them as footer
+
+        """
+        links_found = re.findall(LINKS_REGEX, text)
+        text = LINKS_REGEX.sub(r'''\2[*]''', text)
+        text ='%s\n%s' % (text, '\n'.join(['[*]%s: %s' % (link[1], link[3]) for link in links_found]))
+        return text
+
+    new_line_regex = re.compile('(\n{2,})', re.DOTALL)
+    text = new_line_regex.sub('\n', text)
+    text = cleanup_bold_and_italic(text)
+    text = links_to_footer(text)
+    return text

@@ -25,7 +25,10 @@ import locale
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
-LINKS_REGEX = re.compile(r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))''', re.MULTILINE)
+LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''
+                          r'''<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))'''),
+                         re.MULTILINE)
+
 
 def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.
@@ -70,6 +73,7 @@ def split(children):
     if len(field) == 1:
         return field.pop()
 
+
 def markdown_cleanup(text):
     """Returns the text without markdown codes
 
@@ -88,7 +92,8 @@ def markdown_cleanup(text):
         """
         links_found = re.findall(LINKS_REGEX, text)
         text = LINKS_REGEX.sub(r'''\2[*]''', text)
-        text ='%s\n%s' % (text, '\n'.join(['[*]%s: %s' % (link[1], link[3]) for link in links_found]))
+        text = '%s\n%s' % (text, '\n'.join(['[*]%s: %s' % (link[1], link[3])
+                           for link in links_found]))
         return text
 
     new_line_regex = re.compile('(\n{2,})', re.DOTALL)
@@ -97,18 +102,24 @@ def markdown_cleanup(text):
     text = links_to_footer(text)
     return text
 
+
 def prefix_as_comment(comment_prefix, text):
     """Adds comment prefixes to new lines in comments
 
     """
     return text.replace('\n', '\n' + comment_prefix)
 
+
 def sort_fields(fields):
-    """Sort fields by their column_number but put together parents and children.
+    """Sort fields by their column_number but put children after parents.
 
     """
-    fathers = [(key, val) for key, val in sorted(fields.items(), key=lambda k:k[1]['column_number']) if not 'auto_generated' in val]
-    children = [(key, val) for key, val in sorted(fields.items(), key=lambda k:k[1]['column_number']) if 'auto_generated' in val]
+    fathers = [(key, val) for key, val in
+               sorted(fields.items(), key=lambda k:k[1]['column_number'])
+               if not 'auto_generated' in val]
+    children = [(key, val) for key, val in
+                sorted(fields.items(), key=lambda k:k[1]['column_number'])
+                if 'auto_generated' in val]
     children.reverse()
     fathers_keys = [father[0] for father in fathers]
     for child in children:

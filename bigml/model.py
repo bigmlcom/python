@@ -377,8 +377,8 @@ class Model(object):
             self.tree.fields[self.tree.objective_field]['name'],
             self.resource_id))
         self.description = (unicode(markdown_cleanup(
-                self.description).strip())
-                or u'Predictive model by BigML - Machine Learning Made Easy' )
+            self.description).strip())
+            or u'Predictive model by BigML - Machine Learning Made Easy')
         docstring += u"\n" + INDENT * 2 + (u"%s" %
                      prefix_as_comment(INDENT * 2, self.description))
         return self.tree.python(out, docstring)

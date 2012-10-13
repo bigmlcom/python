@@ -55,7 +55,11 @@ import sys
 import operator
 
 from bigml.api import FINISHED
-from bigml.util import invert_dictionary, slugify, split, markdown_cleanup
+from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
+    prefix_as_comment, sort_fields
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -63,6 +67,7 @@ OPERATOR = {
     "<=": operator.le,
     "=": operator.eq,
     "!=": operator.ne,
+    "/=": operator.ne,
     ">=": operator.ge,
     ">": operator.gt
 }
@@ -73,12 +78,13 @@ PYTHON_OPERATOR = {
     "<=": "<=",
     "=": "==",
     "!=": "!=",
+    "/=": "!=",
     ">=": ">=",
     ">": ">"
 }
 
 
-INDENT = '    '
+INDENT = u'    '
 
 
 class Predicate(object):
@@ -94,9 +100,9 @@ class Predicate(object):
         """ Builds rule string from a predicate
 
         """
-        return "%s %s %s" % (fields[self.field]['name'],
-                             self.operator,
-                             self.value)
+        return u"%s %s %s" % (fields[self.field]['name'],
+                              self.operator,
+                              self.value)
 
 
 class Tree(object):
@@ -130,9 +136,14 @@ class Tree(object):
         self.count = tree['count']
         if 'distribution' in tree:
             self.distribution = tree['distribution']
-        elif ('objective_summary' in tree and
-                'categories' in tree['objective_summary']):
-            self.distribution = tree['objective_summary']['categories']
+        elif ('objective_summary' in tree):
+            summary = tree['objective_summary']
+            if 'bins' in summary:
+                self.distribution = summary['bins']
+            elif 'counts' in summary:
+                self.distribution = summary['counts']
+            elif 'categories' in summary:
+                self.distribution = summary['categories']
         else:
             summary = self.fields[self.objective_field]['summary']
             if 'bins' in summary:
@@ -146,16 +157,15 @@ class Tree(object):
         """List a description of the model's fields.
 
         """
-        out.write('<%-32s : %s>\n' % (
+        out.write(u'<%-32s : %s>\n' % (
             self.fields[self.objective_field]['name'],
             self.fields[self.objective_field]['optype']))
         out.flush()
 
         for field in [(val['name'], val['optype']) for key, val in
-                      sorted(self.fields.items(),
-                      key=lambda k: k[1]['column_number'])
+                      sort_fields(self.fields)
                       if key != self.objective_field]:
-            out.write('[%-32s : %s]\n' % (field[0], field[1]))
+            out.write(u'[%-32s : %s]\n' % (field[0], field[1]))
             out.flush()
         return self.fields
 
@@ -170,7 +180,7 @@ class Tree(object):
                 if apply(OPERATOR[child.predicate.operator],
                          [input_data[child.predicate.field],
                          child.predicate.value]):
-                    path.append("%s %s %s" % (
+                    path.append(u"%s %s %s" % (
                                 self.fields[child.predicate.field]['name'],
                                 child.predicate.operator,
                                 child.predicate.value))
@@ -182,18 +192,19 @@ class Tree(object):
         """Translates a tree model into a set of IF-THEN rules.
 
         """
-        rules = ""
+        rules = u""
         if self.children:
             for child in self.children:
-                rules += ("%s IF %s %s %s %s\n" %
+                rules += (u"%s IF %s %s %s %s\n" %
                          (INDENT * depth,
                           self.fields[child.predicate.field]['slug'],
                           child.predicate.operator,
                           child.predicate.value,
                           "AND" if child.children else "THEN"))
+                print rules
                 rules += child.generate_rules(depth + 1)
         else:
-            rules += ("%s %s = %s\n" %
+            rules += (u"%s %s = %s\n" %
                      (INDENT * depth,
                       (self.fields[self.objective_field]['slug']
                        if self.objective_field else "Prediction"),
@@ -204,8 +215,7 @@ class Tree(object):
         """Prints out an IF-THEN rule version of the tree.
 
         """
-        for field in [(key, val) for key, val in sorted(self.fields.items(),
-                      key=lambda k: k[1]['column_number'])]:
+        for field in [(key, val) for key, val in sort_fields(self.fields)]:
 
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
@@ -221,31 +231,31 @@ class Tree(object):
         further evaluation.
 
         """
-        body = ""
+        body = u""
         if self.children:
             if cmv:
                 field = split(self.children)
-                body += ("%sif (%s is None):\n " %
+                body += (u"%sif (%s is None):\n " %
                         (INDENT * depth,
                          self.fields[field]['slug']))
                 if self.fields[self.objective_field]['optype'] == 'numeric':
-                    body += ("%s return %s\n" %
+                    body += (u"%sreturn %s\n" %
                             (INDENT * (depth + 1),
                              self.output))
                 else:
-                    body += ("%s return '%s'\n" %
+                    body += (u"%sreturn '%s'\n" %
                             (INDENT * (depth + 1),
                              self.output))
 
             for child in self.children:
-                body += ("%sif (%s %s %s):\n" %
+                body += (u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
                          self.fields[child.predicate.field]['slug'],
                          PYTHON_OPERATOR[child.predicate.operator],
                          repr(child.predicate.value)))
                 body += child.python_body(depth + 1)
         else:
-            body = "%s return %s\n" % (INDENT * depth, repr(self.output))
+            body = u"%sreturn %s\n" % (INDENT * depth, repr(self.output))
         return body
 
     def python(self, out, docstring):
@@ -254,8 +264,7 @@ class Tree(object):
         """
         args = []
 
-        for field in [(key, val) for key, val in sorted(self.fields.items(),
-                      key=lambda k: k[1]['column_number'])]:
+        for field in [(key, val) for key, val in sort_fields(self.fields)]:
 
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
@@ -264,13 +273,13 @@ class Tree(object):
                 default = self.fields[field[0]]['summary']['median']
             if field[0] != self.objective_field:
                 args.append("%s=%s" % (slug, default))
-        predictor_definition = ("def predict_%s" %
+        predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
-        predictor = "%s(%s):\n" % (predictor_definition,
+        predictor = u"%s(%s):\n" % (predictor_definition,
                                    (",\n" + " " * depth).join(args))
-        predictor_doc = (INDENT + "\"\"\" " + docstring +
-                         "\n" + INDENT + "\"\"\"\n\n")
+        predictor_doc = (INDENT + u"\"\"\" " + docstring +
+                         u"\n" + INDENT + u"\"\"\"\n")
         predictor += predictor_doc + self.python_body()
         out.write(predictor)
         out.flush()
@@ -345,7 +354,7 @@ class Model(object):
 
         # Prediction path
         if print_path:
-            out.write(' AND '.join(path) + ' => %s \n' % prediction)
+            out.write(u' AND '.join(path) + u' => %s \n' % prediction)
             out.flush()
         return prediction
 
@@ -364,14 +373,14 @@ class Model(object):
         `out` is file descriptor to write the python code.
 
         """
-        docstring = ("Predictor for %s from %s\n" % (
+        docstring = (u"Predictor for %s from %s\n" % (
             self.tree.fields[self.tree.objective_field]['name'],
             self.resource_id))
-        self.description = (markdown_cleanup(
-                self.description).strip()
-                or 'Predictive model by BigML - Machine Learning Made Easy' )
-        docstring += "\n" + INDENT * 2 + ("%s" %
-                     self.description)
+        self.description = (unicode(markdown_cleanup(
+                self.description).strip())
+                or u'Predictive model by BigML - Machine Learning Made Easy' )
+        docstring += u"\n" + INDENT * 2 + (u"%s" %
+                     prefix_as_comment(INDENT * 2, self.description))
         return self.tree.python(out, docstring)
 
     def group_prediction(self):
@@ -454,7 +463,7 @@ class Model(object):
             total = reduce(lambda x, y: x + y,
                            [group[1] for group in distribution])
             for group in distribution:
-                out.write("    %s: %.2f%% (%d instance%s)\n" % (group[0],
+                out.write(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
                           round(group[1] * 1.0 / total, 4) * 100,
                           group[1],
                           "" if group[1] == 1 else "s"))
@@ -485,16 +494,16 @@ class Model(object):
         tree = self.tree
         distribution = self.get_data_distribution()
 
-        out.write("Data distribution:\n")
+        out.write(u"Data distribution:\n")
         print_distribution(distribution, out=out)
-        out.write("\n\n")
+        out.write(u"\n\n")
 
         groups = self.group_prediction()
         predictions = self.get_prediction_distribution(groups)
 
-        out.write("Predicted distribution:\n")
+        out.write(u"Predicted distribution:\n")
         print_distribution(predictions, out=out)
-        out.write("\n\n")
+        out.write(u"\n\n")
 
         extract_common_path(groups)
 
@@ -504,20 +513,20 @@ class Model(object):
                     prediction in groups[group]['total'][0]]
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
-                      (Unicode(group),
+            out.write(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+                      (group,
                        round(data_per_group, 4) * 100,
                        round(pred_per_group, 4) * 100,
                        " and ".join(path)))
 
             if len(details) == 0:
-                out.write("    The model will never predict this class\n")
+                out.write(u"    The model will never predict this class\n")
             for j in range(0, len(details)):
                 subgroup = details[j]
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
                 path = [prediction.to_rule(tree.fields) for
                         prediction in subgroup[0]]
-                out.write("    · %.2f%%: %s\n" %
+                out.write(u"    · %.2f%%: %s\n" %
                           (round(pred_per_sgroup, 4) * 100,
                           " and ".join(path)))
         out.flush()

@@ -405,26 +405,37 @@ class Model(object):
                                 'details': []}
         path = []
 
+        def add_to_groups(groups, output, path, count):
+            """ Add instances to groups array
+
+            """
+            group = output
+            if not output in groups:
+                groups[group] = {'total': [[], 0, 0],
+                                 'details': []}
+            groups[group]['details'].append([path, count])
+            groups[group]['total'][2] += count
+
         def depth_first_search(tree, path):
             """ Search for leafs' values and instances
+
             """
             if isinstance(tree.predicate, Predicate):
                 path.append(tree.predicate)
 
             if len(tree.children) == 0:
-                group = tree.output
-                if not tree.output in groups:
-                    groups[group] = {'total': [[], 0, 0],
-                                     'details': []}
-                groups[group]['details'].append([path, tree.count])
-                groups[group]['total'][2] += tree.count
-                return
+                add_to_groups(groups, tree.output, path, tree.count)
+                return tree.count
+            else:
+                children = tree.children[:]
+                children.reverse()
 
-            children = tree.children[:]
-            children.reverse()
-
-            for child in children:
-                depth_first_search(child, path[:])
+                children_sum = 0
+                for child in children:
+                    children_sum += depth_first_search(child, path[:])
+                if children_sum < tree.count:
+                    add_to_groups(groups,tree.output, path, tree.count - children_sum)
+                return tree.count
 
         depth_first_search(tree, path)
 
@@ -526,7 +537,8 @@ class Model(object):
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
                 path = [prediction.to_rule(tree.fields) for
                         prediction in subgroup[0]]
+                path_chain = " and ".join(path) if len(path) else "(root node)"
                 out.write(u"    · %.2f%%: %s\n" %
                           (round(pred_per_sgroup, 4) * 100,
-                          " and ".join(path)))
+                          path_chain))
         out.flush()

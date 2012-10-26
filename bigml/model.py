@@ -63,6 +63,7 @@ OPERATOR = {
     "<=": operator.le,
     "=": operator.eq,
     "!=": operator.ne,
+    "/=": operator.ne,
     ">=": operator.ge,
     ">": operator.gt
 }
@@ -73,6 +74,7 @@ PYTHON_OPERATOR = {
     "<=": "<=",
     "=": "==",
     "!=": "!=",
+    "/=": "!=",
     ">=": ">=",
     ">": ">"
 }

@@ -83,6 +83,24 @@ PYTHON_OPERATOR = {
     ">": ">"
 }
 
+PYTHON_CONV = {
+    "double": "locale.atof",
+    "float": "locale.atof",
+    "integer": "lambda x: int(locale.atof(x))",
+    "int8": "lambda x: int(locale.atof(x))",
+    "int16": "lambda x: int(locale.atof(x))",
+    "int32": "lambda x: int(locale.atof(x))",
+    "int64": "lambda x: long(locale.atof(x))",
+    "day": "lambda x: int(locale.atof(x))",
+    "month": "lambda x: int(locale.atof(x))",
+    "year": "lambda x: int(locale.atof(x))",
+    "hour": "lambda x: int(locale.atof(x))",
+    "minute": "lambda x: int(locale.atof(x))",
+    "second": "lambda x: int(locale.atof(x))",
+    "millisecond": "lambda x: int(locale.atof(x))",
+    "day-of-week": "lambda x: int(locale.atof(x))",
+    "day-of-month": "lambda x: int(locale.atof(x))"
+}
 
 INDENT = u'    '
 
@@ -235,17 +253,16 @@ class Tree(object):
         if self.children:
             if cmv:
                 field = split(self.children)
-                body += (u"%sif (%s is None):\n " %
+                body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
                          self.fields[field]['slug']))
                 if self.fields[self.objective_field]['optype'] == 'numeric':
-                    body += (u"%sreturn %s\n" %
-                            (INDENT * (depth + 1),
-                             self.output))
+                    value = self.output
                 else:
-                    body += (u"%sreturn '%s'\n" %
-                            (INDENT * (depth + 1),
-                             self.output))
+                    value = repr(self.output)
+                body += (u"%sreturn %s\n" %
+                        (INDENT * (depth + 1),
+                         value))
 
             for child in self.children:
                 body += (u"%sif (%s %s %s):\n" %
@@ -253,26 +270,36 @@ class Tree(object):
                          self.fields[child.predicate.field]['slug'],
                          PYTHON_OPERATOR[child.predicate.operator],
                          repr(child.predicate.value)))
-                body += child.python_body(depth + 1)
+                body += child.python_body(depth + 1, cmv=cmv)
         else:
-            body = u"%sreturn %s\n" % (INDENT * depth, repr(self.output))
+            if self.fields[self.objective_field]['optype'] == 'numeric':
+                value = self.output
+            else:
+                value = repr(self.output)
+            body = u"%sreturn %s\n" % (INDENT * depth, value)
         return body
 
-    def python(self, out, docstring):
+    def python(self, out, docstring, cmv=False, input_fields=None):
         """Writes a python function that implements the model.
 
         """
         args = []
 
-        for field in [(key, val) for key, val in sort_fields(self.fields)]:
-
+        if input_fields is None:
+            parameters = sort_fields(self.fields)
+        else:
+            parameters = input_fields
+        for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
             default = None
             if self.fields[field[0]]['optype'] == 'numeric':
                 default = self.fields[field[0]]['summary']['median']
             if field[0] != self.objective_field:
-                args.append("%s=%s" % (slug, default))
+                if input_fields is None:
+                    args.append("%s=%s" % (slug, default))
+                else:
+                    args.append("%s" % slug)
         predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
@@ -280,7 +307,7 @@ class Tree(object):
                                    (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        predictor += predictor_doc + self.python_body()
+        predictor += predictor_doc + self.python_body(cmv=cmv)
         out.write(predictor)
         out.flush()
 
@@ -358,19 +385,8 @@ class Model(object):
             out.flush()
         return prediction
 
-    def rules(self, out=sys.stdout):
-        """Returns a IF-THEN rule set that implements the model.
-
-        `out` is file descriptor to write the rules.
-
-        """
-
-        return self.tree.rules(out)
-
-    def python(self, out=sys.stdout):
-        """Returns a basic python function that implements the model.
-
-        `out` is file descriptor to write the python code.
+    def docstring(self):
+        """Returns the docstring describing the model.
 
         """
         docstring = (u"Predictor for %s from %s\n" % (
@@ -381,7 +397,28 @@ class Model(object):
             or u'Predictive model by BigML - Machine Learning Made Easy')
         docstring += u"\n" + INDENT * 2 + (u"%s" %
                      prefix_as_comment(INDENT * 2, self.description))
-        return self.tree.python(out, docstring)
+        return docstring
+
+    def rules(self, out=sys.stdout):
+        """Returns a IF-THEN rule set that implements the model.
+
+        `out` is file descriptor to write the rules.
+
+        """
+
+        return self.tree.rules(out)
+
+    def python(self, out=sys.stdout, hadoop=False):
+        """Returns a basic python function that implements the model.
+
+        `out` is file descriptor to write the python code.
+
+        """
+        if hadoop:
+            return (self.hadoop_python_mapper(out=out) or
+                    self.hadoop_python_reducer(out=out))
+        else:
+            return self.tree.python(out, self.docstring())
 
     def group_prediction(self):
         """ Groups in categories or bins the predicted data
@@ -541,4 +578,205 @@ class Model(object):
                 out.write(u"    · %.2f%%: %s\n" %
                           (round(pred_per_sgroup, 4) * 100,
                           path_chain))
+        out.flush()
+
+    def hadoop_python_mapper(self, out=sys.stdout):
+        """Returns a hadoop mapper header to make predictions in python
+
+        """
+        input_fields = [(value, key) for (key, value) in
+                        sorted(self.inverted_fields.items(),
+                               key=lambda x: x[1])]
+        parameters = [value for (key, value) in
+                      input_fields if key != self.tree.objective_field]
+        output = \
+u"""#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+import csv
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US')
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+
+class CSVInput(object):
+    \"\"\"Reads and parses csv input from stdin
+
+       Expects a data section (without headers) with the following fields:
+       %s
+
+       Data is processed to fall into the corresponding input type by applying
+       INPUT_TYPES, and per field PREFIXES and SUFFIXES are removed. You can
+       also provide strings to be considered as no content markers in
+       MISSING_TOKENS.
+    \"\"\"
+    def __init__(self, input=sys.stdin):
+        \"\"\" Opens stdin and defines parsing constants
+
+        \"\"\"
+        try:
+            self.reader = csv.reader(input, delimiter=',', quotechar='\"')
+""" % ",".join(parameters)
+
+        output += u"\n%sself.INPUT_FIELDS = %s\n" % ((INDENT * 3),
+                                                     len(parameters))
+
+        input_types = []
+        prefixes = []
+        suffixes = []
+        count = 0
+        fields = self.tree.fields
+        for key in [key for (key, val) in input_fields
+                    if key != self.tree.objective_field]:
+            input_type = ('None' if not fields[key]['datatype'] in
+                          PYTHON_CONV
+                          else PYTHON_CONV[fields[key]['datatype']])
+            input_types.append(input_type)
+            if 'prefix' in fields[key]:
+                prefixes.append("%s: %s" % (count,
+                                            repr(fields[key]['prefix'])))
+            if 'suffix' in fields[key]:
+                suffixes.append("%s: %s" % (count,
+                                            repr(fields[key]['suffix'])))
+            count += 1
+        static_content = "%sself.INPUT_TYPES = [" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(input_types),
+                                 "]\n")
+        static_content = "%sself.PREFIXES = {" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(prefixes),
+                                 "}\n")
+        static_content = "%sself.SUFFIXES = {" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(suffixes),
+                                 "}\n")
+        output += \
+u"""            self.MISSING_TOKENS = ['?']
+        except Exception, exc:
+            sys.stderr.write(\"Cannot read csv\"
+                             \" input. %s\\n\" % str(exc))
+
+    def __iter__(self):
+        \"\"\" Iterator method
+
+        \"\"\"
+        return self
+
+    def next(self):
+        \"\"\" Returns processed data in a list structure
+
+        \"\"\"
+        def normalize(value):
+            \"\"\"Transforms to unicode and cleans missing tokens
+            \"\"\"
+            value = unicode(value.decode('utf-8'))
+            return \"\" if value in self.MISSING_TOKENS else value
+
+        def cast(function_value):
+            \"\"\"Type related transformations
+            \"\"\"
+            function, value = function_value
+            if not len(value):
+                return None
+            if function is None:
+                return value
+            else:
+                return function(value)
+
+        try:
+            values = self.reader.next()
+        except StopIteration:
+            raise StopIteration()
+        if len(values) < self.INPUT_FIELDS:
+            sys.stderr.write(\"Found %s fields when %s were expected.\\n\" %
+                             (len(values), self.INPUT_FIELDS))
+            raise StopIteration()
+        else:
+            values = values[0:self.INPUT_FIELDS]
+        try:
+            values = map(normalize, values)
+            for key in self.PREFIXES:
+                prefix_len = len(self.PREFIXES[key])
+                if values[key][0:prefix_len] == self.PREFIXES[key]:
+                    values[key] = values[key][prefix_len:]
+            for key in self.SUFFIXES:
+                suffix_len = len(self.SUFFIXES[key])
+                if values[key][-suffix_len:] == self.SUFFIXES[key]:
+                    values[key] = values[key][0:-suffix_len]
+            function_tuples = zip(self.INPUT_TYPES, values)
+            values = map(cast, function_tuples)
+            return values
+        except Exception, exc:
+            sys.stderr.write(\"Error in data transformations. %s\\n\" % str(exc))
+            return False
+\n\n
+"""
+        out.write(output)
+        out.flush()
+
+        self.tree.python(out, self.docstring(),
+                         cmv=True,
+                         input_fields=input_fields)
+        output = \
+u"""
+csv = CSVInput()
+for values in csv:
+    if not isinstance(values, bool):
+        print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(*values)))
+\n\n
+""" % fields[self.tree.objective_field]['slug']
+        out.write(output)
+        out.flush()
+
+    def hadoop_python_reducer(self, out=sys.stdout):
+        """Returns a hadoop reducer to make predictions in python
+
+        """
+
+        input_fields = [(value, key) for (key, value) in
+                        sorted(self.inverted_fields.items(),
+                               key=lambda x: x[1])]
+        parameters = [value for (key, value) in
+                      input_fields if key != self.tree.objective_field]
+        fields = self.tree.fields
+        output = \
+u"""#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+count = 0
+previous = None
+
+def print_result(values, prediction, count):
+    \"\"\"Prints input data and predicted value as an ordered list.
+
+          The list contains the input fields and the prediction in the
+          following order:
+          [%s, %s]
+    \"\"\"
+    result = \"%%s, %%s]\" %% (values.strip(']'), prediction)
+    print u\"%%s\\t%%s\" %% (result, count)
+
+for line in sys.stdin:
+    values, prediction = line.strip().split('\\t')
+    if previous is None:
+        previous = (values, prediction)
+    if values != previous[0]:
+        print_result(previous[0], previous[1], count)
+        previous = (values, prediction)
+        count = 0
+    count += 1
+if count > 0:
+    print_result(previous[0], previous[1], count)
+""" % (", ".join(parameters), fields[self.tree.objective_field]['name'])
+        out.write(output)
         out.flush()

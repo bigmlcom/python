@@ -689,8 +689,8 @@ helpful to understand how the model works internally.
          species = Iris-setosa
 
 
-Python Generation
------------------
+Python and Hadoop-ready Generation
+----------------------------------
 
 If you prefer you can also generate a Python function that implements the model
 and that can be useful to make the model actionable right away with ``local_model.python()``.
@@ -734,6 +734,28 @@ and that can be useful to make the model actionable right away with ``local_mode
                      return 'Iris-versicolor'
         if (petal_length <= 2.45):
              return 'Iris-setosa'
+
+The ``local.python(hadoop=True)`` call will generate the code that you need
+for the Hadoop map-reduce engine to produce batch predictions using `Hadoop
+streaming<http://hadoop.apache.org/docs/r0.15.2/streaming.html>`_.
+Saving the mapper and reducer generated functions in their corresponding files
+(let's say ``/home/hduser/hadoop_mapper.py`` and
+``/home/hduser/hadoop_reducer.py``) you can start a Hadoop job
+to generate predictions by issuing
+the following Hadoop command in your system console:
+
+::
+
+    bin/hadoop jar contrib/streaming/hadoop-*streaming*.jar \
+    -file /home/hduser/hadoop_mapper.py -mapper hadoop_mapper.py \
+    -file /home/hduser/hadoop_reducer.py -reducer hadoop_reducer.py \
+    -input /home/hduser/hadoop/input.csv \
+    -output /home/hduser/hadoop/output_dir
+
+assuming you are in the Hadoop home directory, your input file is in the
+corresponding dfs directory
+(``/home/hduser/hadoop/input.csv`` in this example) and the output will
+be placed at ``/home/hduser/hadoop/output_dir`` (inside the dfs directory).
 
 
 Summary generation

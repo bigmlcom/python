@@ -108,11 +108,11 @@ class Fields(object):
                                 map_type(self.fields[self.field_id(index)]
                                          ['optype'])(row[index])})
             else:
-                if index >= objective_field:
+                if index >= objective_field and index + 1 < self.len():
                     pair.update({self.field_id(index + 1):
                                 map_type(self.fields[self.field_id(index + 1)]
                                          ['optype'])(row[index])})
-                else:
+                elif index < len(row):
                     pair.update({self.field_id(index):
                                 map_type(self.fields[self.field_id(index)]
                                          ['optype'])(row[index])})

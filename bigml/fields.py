@@ -96,6 +96,8 @@ class Fields(object):
         """
         if objective_field is None:
             objective_field = self.len() - 1
+        elif isinstance(objective_field, basestring):
+            objective_field = self.field_column_number[objective_field]
 
         if objective_field_present is None:
             objective_field_present = len(row) == self.len()

@@ -73,7 +73,7 @@ class MultiModel(object):
             for model in models:
                 self.models.append(Model(model))
         else:
-            self.models.apend(Model(models))
+            self.models.append(Model(models))
 
 
     def predict(self, input_data, by_name=False):

@@ -177,6 +177,8 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
+                else:
+                    return self.output, path
         else:
             return self.output, path
 
@@ -327,7 +329,6 @@ class Model(object):
             except KeyError, field:
                 LOGGER.error("Wrong field name %s" % field)
                 return
-
         prediction, path = self.tree.predict(input_data)
 
         # Prediction path

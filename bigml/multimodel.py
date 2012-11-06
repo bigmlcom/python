@@ -29,7 +29,10 @@ from bigml.multimodel import MultiModel
 
 api = BigML()
 
-model = MultiModel([api.get_model('model/5026965515526876630001b2')])
+model = MultiModel([api.get_model(model['resource']) for model in
+                    api.list_models(query_string="tags__in=my_tag")
+                    ['objects']])
+
 model.predict({"petal length": 3, "petal width": 1})
 
 """
@@ -80,6 +83,12 @@ class MultiModel(object):
                 self.models.append(Model(model))
         else:
             self.models.append(Model(models))
+
+    def list_models(self):
+        """Lists all the model/ids that compound the multi model.
+
+        """
+        return [model['resource'] for model in self.models]
 
     def predict(self, input_data, by_name=False):
         """Makes a prediction based on the prediction made by every model.

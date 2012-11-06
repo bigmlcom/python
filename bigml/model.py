@@ -201,8 +201,7 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-                else:
-                    return self.output, path
+            return self.output, path
         else:
             return self.output, path
 
@@ -325,9 +324,10 @@ class Model(object):
 
         if (isinstance(model, dict) and 'resource' in model):
             self.resource_id = model['resource']
+        else:
+            raise Exception("Invalid model structure")
 
-        if (isinstance(model, dict) and 'object' in model and
-                isinstance(model['object'], dict)):
+        if ('object' in model and isinstance(model['object'], dict)):
             if ('status' in model['object'] and
                     'code' in model['object']['status']):
                 if model['object']['status']['code'] == FINISHED:
@@ -340,8 +340,7 @@ class Model(object):
                     self.description = model['object']['description']
                 else:
                     raise Exception("The model isn't finished yet")
-        elif (isinstance(model, dict) and 'model' in model and
-                isinstance(model['model'], dict)):
+        elif ('model' in model and isinstance(model['model'], dict)):
             if ('status' in model and 'code' in model['status']):
                 if model['status']['code'] == FINISHED:
                     fields = model['model']['fields']

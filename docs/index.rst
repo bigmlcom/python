@@ -578,7 +578,7 @@ keys:
 Local Models
 ------------
 
-You can instantiate a local version of a remote mode.
+You can instantiate a local version of a remote model.
 
 ::
 
@@ -594,6 +594,30 @@ You can instantiate a local version of a remote mode.
 
 This will return a Model object that you can use to make local predictions,
 generate IF-THEN rules or a Python function that implements the model.
+
+Multi Models
+------------
+
+Multi Models use a numbers of BigML remote models to build a local version
+that can be used to generate predictions locally. Predictions are generated
+combining the outputs of each model.
+
+::
+
+    from bigml.api import BigML
+    from bigml.multimodel import MultiModel
+
+    api = BigML()
+
+    model = MultiModel([api.get_model(model['resource']) for model in
+                       api.list_models(query_string="tags__in=my_tag")
+                       ['objects']])
+
+    model.predict({"petal length": 3, "petal width": 1})
+
+This will create a multi model using all the models that been previously tagged
+with `my_tag`.
+
 
 Local Predictions
 -----------------

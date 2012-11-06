@@ -39,8 +39,13 @@ LOGGER = logging.getLogger('BigML')
 import numbers
 from bigml.model import Model
 
+
 def avg(data):
-    return float(sum(data))/len(data) if len(data) > 0 else float('nan')
+    """Returns the average of a list of numeric values.
+
+    """
+    return float(sum(data)) / len(data) if len(data) > 0 else float('nan')
+
 
 def combine_predictions(predictions):
     """Reduces a number of predictions voting for classification and averaging
@@ -48,7 +53,7 @@ def combine_predictions(predictions):
 
     """
     if all([isinstance(prediction, numbers.Number) for prediction in
-        predictions]):
+           predictions]):
         return avg(predictions)
     else:
         mode = {}
@@ -57,7 +62,8 @@ def combine_predictions(predictions):
                 mode[prediction] = mode[prediction] + 1
             else:
                 mode[prediction] = 1
-        return max(mode, key=lambda x:mode[x[0]])
+        return max(mode, key=lambda x: mode[x[0]])
+
 
 class MultiModel(object):
     """A multiple local model.
@@ -74,7 +80,6 @@ class MultiModel(object):
                 self.models.append(Model(model))
         else:
             self.models.append(Model(models))
-
 
     def predict(self, input_data, by_name=False):
         """Makes a prediction based on the prediction made by every model.

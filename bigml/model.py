@@ -474,7 +474,8 @@ class Model(object):
                 for child in children:
                     children_sum += depth_first_search(child, path[:])
                 if children_sum < tree.count:
-                    add_to_groups(groups,tree.output, path, tree.count - children_sum)
+                    add_to_groups(groups, tree.output, path,
+                                  tree.count - children_sum)
                 return tree.count
 
         depth_first_search(tree, path)

@@ -56,10 +56,8 @@ import operator
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields
+    prefix_as_comment, sort_fields, utf8
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -175,15 +173,15 @@ class Tree(object):
         """List a description of the model's fields.
 
         """
-        out.write(u'<%-32s : %s>\n' % (
+        out.write(utf8(u'<%-32s : %s>\n' % (
             self.fields[self.objective_field]['name'],
-            self.fields[self.objective_field]['optype']))
+            self.fields[self.objective_field]['optype'])))
         out.flush()
 
         for field in [(val['name'], val['optype']) for key, val in
                       sort_fields(self.fields)
                       if key != self.objective_field]:
-            out.write(u'[%-32s : %s]\n' % (field[0], field[1]))
+            out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
 
@@ -239,7 +237,7 @@ class Tree(object):
 
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
-        out.write(self.generate_rules())
+        out.write(utf8(self.generate_rules()))
         out.flush()
 
     def python_body(self, depth=1, cmv=False):
@@ -311,7 +309,7 @@ class Tree(object):
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
         predictor += predictor_doc + self.python_body(cmv=cmv)
-        out.write(predictor)
+        out.write(utf8(predictor))
         out.flush()
 
 
@@ -384,7 +382,7 @@ class Model(object):
 
         # Prediction path
         if print_path:
-            out.write(u' AND '.join(path) + u' => %s \n' % prediction)
+            out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
         return prediction
 
@@ -515,10 +513,10 @@ class Model(object):
             total = reduce(lambda x, y: x + y,
                            [group[1] for group in distribution])
             for group in distribution:
-                out.write(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
-                          round(group[1] * 1.0 / total, 4) * 100,
-                          group[1],
-                          "" if group[1] == 1 else "s"))
+                out.write(utf8(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
+                               round(group[1] * 1.0 / total, 4) * 100,
+                               group[1],
+                               "" if group[1] == 1 else "s")))
 
         def extract_common_path(groups):
             """ Extracts the common segment of the prediction path for a group
@@ -565,11 +563,11 @@ class Model(object):
                     prediction in groups[group]['total'][0]]
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
-                      (group,
-                       round(data_per_group, 4) * 100,
-                       round(pred_per_group, 4) * 100,
-                       " and ".join(path)))
+            out.write(utf8(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+                           (group,
+                            round(data_per_group, 4) * 100,
+                            round(pred_per_group, 4) * 100,
+                            " and ".join(path))))
 
             if len(details) == 0:
                 out.write(u"    The model will never predict this class\n")
@@ -579,9 +577,9 @@ class Model(object):
                 path = [prediction.to_rule(tree.fields) for
                         prediction in subgroup[0]]
                 path_chain = " and ".join(path) if len(path) else "(root node)"
-                out.write(u"    · %.2f%%: %s\n" %
-                          (round(pred_per_sgroup, 4) * 100,
-                          path_chain))
+                out.write(utf8(u"    · %.2f%%: %s\n" %
+                               (round(pred_per_sgroup, 4) * 100,
+                               path_chain)))
         out.flush()
 
     def hadoop_python_mapper(self, out=sys.stdout):
@@ -721,7 +719,7 @@ u"""            self.MISSING_TOKENS = ['?']
             return False
 \n\n
 """
-        out.write(output)
+        out.write(utf8(output))
         out.flush()
 
         self.tree.python(out, self.docstring(),
@@ -735,7 +733,7 @@ for values in csv:
         print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(*values)))
 \n\n
 """ % fields[self.tree.objective_field]['slug']
-        out.write(output)
+        out.write(utf8(output))
         out.flush()
 
     def hadoop_python_reducer(self, out=sys.stdout):
@@ -782,5 +780,5 @@ for line in sys.stdin:
 if count > 0:
     print_result(previous[0], previous[1], count)
 """ % (", ".join(parameters), fields[self.tree.objective_field]['name'])
-        out.write(output)
+        out.write(utf8(output))
         out.flush()

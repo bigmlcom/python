@@ -133,3 +133,9 @@ def sort_fields(fields):
         else:
             fathers.append(child)
     return fathers
+
+def utf8(text):
+    """Returns text in utf-8 encoding
+
+    """
+    return text.encode("utf-8")

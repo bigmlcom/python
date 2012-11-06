@@ -25,11 +25,11 @@ reduce the latency for each prediction and let you use your models
 offline.
 
 from bigml.api import BigML
-from bigml.model import MultipleModel
+from bigml.multimodel import MultiModel
 
 api = BigML()
 
-model = MultipleModel([api.get_model('model/5026965515526876630001b2')])
+model = MultiModel([api.get_model('model/5026965515526876630001b2')])
 model.predict({"petal length": 3, "petal width": 1})
 
 """
@@ -57,7 +57,7 @@ def combine_predictions(predictions):
                 mode[prediction] = mode[prediction] + 1
             else:
                 mode[prediction] = 1
-        return max(mode)
+        return max(mode, key=lambda x:mode[x[0]])
 
 class MultiModel(object):
     """A multiple local model.

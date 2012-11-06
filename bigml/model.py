@@ -55,7 +55,11 @@ import sys
 import operator
 
 from bigml.api import FINISHED
-from bigml.util import invert_dictionary, slugify, split
+from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
+    prefix_as_comment, sort_fields
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 # Map operator str to its corresponding function
 OPERATOR = {
@@ -79,8 +83,26 @@ PYTHON_OPERATOR = {
     ">": ">"
 }
 
+PYTHON_CONV = {
+    "double": "locale.atof",
+    "float": "locale.atof",
+    "integer": "lambda x: int(locale.atof(x))",
+    "int8": "lambda x: int(locale.atof(x))",
+    "int16": "lambda x: int(locale.atof(x))",
+    "int32": "lambda x: int(locale.atof(x))",
+    "int64": "lambda x: long(locale.atof(x))",
+    "day": "lambda x: int(locale.atof(x))",
+    "month": "lambda x: int(locale.atof(x))",
+    "year": "lambda x: int(locale.atof(x))",
+    "hour": "lambda x: int(locale.atof(x))",
+    "minute": "lambda x: int(locale.atof(x))",
+    "second": "lambda x: int(locale.atof(x))",
+    "millisecond": "lambda x: int(locale.atof(x))",
+    "day-of-week": "lambda x: int(locale.atof(x))",
+    "day-of-month": "lambda x: int(locale.atof(x))"
+}
 
-INDENT = '    '
+INDENT = u'    '
 
 
 class Predicate(object):
@@ -96,9 +118,9 @@ class Predicate(object):
         """ Builds rule string from a predicate
 
         """
-        return "%s %s %s" % (fields[self.field]['name'],
-                             self.operator,
-                             self.value)
+        return u"%s %s %s" % (fields[self.field]['name'],
+                              self.operator,
+                              self.value)
 
 
 class Tree(object):
@@ -132,9 +154,14 @@ class Tree(object):
         self.count = tree['count']
         if 'distribution' in tree:
             self.distribution = tree['distribution']
-        elif ('objective_summary' in tree and
-                'categories' in tree['objective_summary']):
-            self.distribution = tree['objective_summary']['categories']
+        elif ('objective_summary' in tree):
+            summary = tree['objective_summary']
+            if 'bins' in summary:
+                self.distribution = summary['bins']
+            elif 'counts' in summary:
+                self.distribution = summary['counts']
+            elif 'categories' in summary:
+                self.distribution = summary['categories']
         else:
             summary = self.fields[self.objective_field]['summary']
             if 'bins' in summary:
@@ -148,16 +175,15 @@ class Tree(object):
         """List a description of the model's fields.
 
         """
-        out.write('<%-32s : %s>\n' % (
+        out.write(u'<%-32s : %s>\n' % (
             self.fields[self.objective_field]['name'],
             self.fields[self.objective_field]['optype']))
         out.flush()
 
         for field in [(val['name'], val['optype']) for key, val in
-                      sorted(self.fields.items(),
-                      key=lambda k: k[1]['column_number'])
+                      sort_fields(self.fields)
                       if key != self.objective_field]:
-            out.write('[%-32s : %s]\n' % (field[0], field[1]))
+            out.write(u'[%-32s : %s]\n' % (field[0], field[1]))
             out.flush()
         return self.fields
 
@@ -172,7 +198,7 @@ class Tree(object):
                 if apply(OPERATOR[child.predicate.operator],
                          [input_data[child.predicate.field],
                          child.predicate.value]):
-                    path.append("%s %s %s" % (
+                    path.append(u"%s %s %s" % (
                                 self.fields[child.predicate.field]['name'],
                                 child.predicate.operator,
                                 child.predicate.value))
@@ -186,20 +212,21 @@ class Tree(object):
         """Translates a tree model into a set of IF-THEN rules.
 
         """
-        rules = ""
+        rules = u""
         if self.children:
             for child in self.children:
-                rules += ("%s IF %s %s %s %s\n" %
+                rules += (u"%s IF %s %s %s %s\n" %
                          (INDENT * depth,
-                          self.fields[child.predicate.field]['name'],
+                          self.fields[child.predicate.field]['slug'],
                           child.predicate.operator,
                           child.predicate.value,
                           "AND" if child.children else "THEN"))
+                print rules
                 rules += child.generate_rules(depth + 1)
         else:
-            rules += ("%s %s = %s\n" %
+            rules += (u"%s %s = %s\n" %
                      (INDENT * depth,
-                      (self.fields[self.objective_field]['name']
+                      (self.fields[self.objective_field]['slug']
                        if self.objective_field else "Prediction"),
                       self.output))
         return rules
@@ -208,6 +235,10 @@ class Tree(object):
         """Prints out an IF-THEN rule version of the tree.
 
         """
+        for field in [(key, val) for key, val in sort_fields(self.fields)]:
+
+            slug = slugify(self.fields[field[0]]['name'])
+            self.fields[field[0]].update(slug=slug)
         out.write(self.generate_rules())
         out.flush()
 
@@ -220,52 +251,66 @@ class Tree(object):
         further evaluation.
 
         """
-        body = ""
+        body = u""
         if self.children:
             if cmv:
                 field = split(self.children)
-                body += ("%sif (%s is None):\n " %
+                body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
                          self.fields[field]['slug']))
                 if self.fields[self.objective_field]['optype'] == 'numeric':
-                    body += ("%s return %s\n" %
-                            (INDENT * (depth + 1),
-                             self.output))
+                    value = self.output
                 else:
-                    body += ("%s return '%s'\n" %
-                            (INDENT * (depth + 1),
-                             self.output))
+                    value = repr(self.output)
+                body += (u"%sreturn %s\n" %
+                        (INDENT * (depth + 1),
+                         value))
 
             for child in self.children:
-                body += ("%sif (%s %s %s):\n" %
+                body += (u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
                          self.fields[child.predicate.field]['slug'],
                          PYTHON_OPERATOR[child.predicate.operator],
                          repr(child.predicate.value)))
-                body += child.python_body(depth + 1)
+                body += child.python_body(depth + 1, cmv=cmv)
         else:
-            body = "%s return %s\n" % (INDENT * depth, repr(self.output))
+            if self.fields[self.objective_field]['optype'] == 'numeric':
+                value = self.output
+            else:
+                value = repr(self.output)
+            body = u"%sreturn %s\n" % (INDENT * depth, value)
+
         return body
 
-    def python(self, out):
+    def python(self, out, docstring, cmv=False, input_fields=None):
         """Writes a python function that implements the model.
 
         """
         args = []
 
-        for field in [(key, val) for key, val in sorted(self.fields.items(),
-                      key=lambda k: k[1]['column_number'])]:
-
+        if input_fields is None:
+            parameters = sort_fields(self.fields)
+        else:
+            parameters = input_fields
+        for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
             default = None
             if self.fields[field[0]]['optype'] == 'numeric':
                 default = self.fields[field[0]]['summary']['median']
             if field[0] != self.objective_field:
-                args.append("%s=%s" % (slug, default))
-        predictor = "def predict_%s(%s):\n" % (
-            self.fields[self.objective_field]['slug'], ", ".join(args))
-        predictor += self.python_body()
+                if input_fields is None:
+                    args.append("%s=%s" % (slug, default))
+                else:
+                    args.append("%s" % slug)
+        predictor_definition = (u"def predict_%s" %
+                                self.fields[self.objective_field]['slug'])
+        depth = len(predictor_definition) + 1
+        predictor = u"%s(%s):\n" % (predictor_definition,
+                                   (",\n" + " " * depth).join(args))
+        predictor_doc = (INDENT + u"\"\"\" " + docstring +
+                         u"\n" + INDENT + u"\"\"\"\n")
+        predictor += predictor_doc + self.python_body(cmv=cmv)
         out.write(predictor)
         out.flush()
 
@@ -279,6 +324,10 @@ class Model(object):
     """
 
     def __init__(self, model):
+
+        if (isinstance(model, dict) and 'resource' in model):
+            self.resource_id = model['resource']
+
         if (isinstance(model, dict) and 'object' in model and
                 isinstance(model['object'], dict)):
             if ('status' in model['object'] and
@@ -290,6 +339,7 @@ class Model(object):
                         model['object']['model']['root'],
                         fields,
                         model['object']['objective_fields'])
+                    self.description = model['object']['description']
                 else:
                     raise Exception("The model isn't finished yet")
         elif (isinstance(model, dict) and 'model' in model and
@@ -302,6 +352,7 @@ class Model(object):
                         model['model']['root'],
                         fields,
                         model['objective_fields'])
+                    self.description = model['description']
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -333,9 +384,23 @@ class Model(object):
 
         # Prediction path
         if print_path:
-            out.write(' AND '.join(path) + ' => %s \n' % prediction)
+            out.write(u' AND '.join(path) + u' => %s \n' % prediction)
             out.flush()
         return prediction
+
+    def docstring(self):
+        """Returns the docstring describing the model.
+
+        """
+        docstring = (u"Predictor for %s from %s\n" % (
+            self.tree.fields[self.tree.objective_field]['name'],
+            self.resource_id))
+        self.description = (unicode(markdown_cleanup(
+            self.description).strip())
+            or u'Predictive model by BigML - Machine Learning Made Easy')
+        docstring += u"\n" + INDENT * 2 + (u"%s" %
+                     prefix_as_comment(INDENT * 2, self.description))
+        return docstring
 
     def rules(self, out=sys.stdout):
         """Returns a IF-THEN rule set that implements the model.
@@ -346,13 +411,17 @@ class Model(object):
 
         return self.tree.rules(out)
 
-    def python(self, out=sys.stdout):
+    def python(self, out=sys.stdout, hadoop=False):
         """Returns a basic python function that implements the model.
 
         `out` is file descriptor to write the python code.
 
         """
-        return self.tree.python(out)
+        if hadoop:
+            return (self.hadoop_python_mapper(out=out) or
+                    self.hadoop_python_reducer(out=out))
+        else:
+            return self.tree.python(out, self.docstring())
 
     def group_prediction(self):
         """ Groups in categories or bins the predicted data
@@ -376,26 +445,37 @@ class Model(object):
                                 'details': []}
         path = []
 
+        def add_to_groups(groups, output, path, count):
+            """ Add instances to groups array
+
+            """
+            group = output
+            if not output in groups:
+                groups[group] = {'total': [[], 0, 0],
+                                 'details': []}
+            groups[group]['details'].append([path, count])
+            groups[group]['total'][2] += count
+
         def depth_first_search(tree, path):
             """ Search for leafs' values and instances
+
             """
             if isinstance(tree.predicate, Predicate):
                 path.append(tree.predicate)
 
             if len(tree.children) == 0:
-                group = tree.output
-                if not tree.output in groups:
-                    groups[group] = {'total': [[], 0, 0],
-                                     'details': []}
-                groups[group]['details'].append([path, tree.count])
-                groups[group]['total'][2] += tree.count
-                return
+                add_to_groups(groups, tree.output, path, tree.count)
+                return tree.count
+            else:
+                children = tree.children[:]
+                children.reverse()
 
-            children = tree.children[:]
-            children.reverse()
-
-            for child in children:
-                depth_first_search(child, path[:])
+                children_sum = 0
+                for child in children:
+                    children_sum += depth_first_search(child, path[:])
+                if children_sum < tree.count:
+                    add_to_groups(groups,tree.output, path, tree.count - children_sum)
+                return tree.count
 
         depth_first_search(tree, path)
 
@@ -434,7 +514,7 @@ class Model(object):
             total = reduce(lambda x, y: x + y,
                            [group[1] for group in distribution])
             for group in distribution:
-                out.write("    %s: %.2f%% (%d instance%s)\n" % (group[0],
+                out.write(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
                           round(group[1] * 1.0 / total, 4) * 100,
                           group[1],
                           "" if group[1] == 1 else "s"))
@@ -465,16 +545,16 @@ class Model(object):
         tree = self.tree
         distribution = self.get_data_distribution()
 
-        out.write("Data distribution:\n")
+        out.write(u"Data distribution:\n")
         print_distribution(distribution, out=out)
-        out.write("\n\n")
+        out.write(u"\n\n")
 
         groups = self.group_prediction()
         predictions = self.get_prediction_distribution(groups)
 
-        out.write("Predicted distribution:\n")
+        out.write(u"Predicted distribution:\n")
         print_distribution(predictions, out=out)
-        out.write("\n\n")
+        out.write(u"\n\n")
 
         extract_common_path(groups)
 
@@ -484,20 +564,222 @@ class Model(object):
                     prediction in groups[group]['total'][0]]
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write("\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
-                      (str(group),
+            out.write(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+                      (group,
                        round(data_per_group, 4) * 100,
                        round(pred_per_group, 4) * 100,
                        " and ".join(path)))
 
             if len(details) == 0:
-                out.write("    The model will never predict this class\n")
+                out.write(u"    The model will never predict this class\n")
             for j in range(0, len(details)):
                 subgroup = details[j]
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
                 path = [prediction.to_rule(tree.fields) for
                         prediction in subgroup[0]]
-                out.write("    · %.2f%%: %s\n" %
+                path_chain = " and ".join(path) if len(path) else "(root node)"
+                out.write(u"    · %.2f%%: %s\n" %
                           (round(pred_per_sgroup, 4) * 100,
-                          " and ".join(path)))
+                          path_chain))
+        out.flush()
+
+    def hadoop_python_mapper(self, out=sys.stdout):
+        """Returns a hadoop mapper header to make predictions in python
+
+        """
+        input_fields = [(value, key) for (key, value) in
+                        sorted(self.inverted_fields.items(),
+                               key=lambda x: x[1])]
+        parameters = [value for (key, value) in
+                      input_fields if key != self.tree.objective_field]
+        output = \
+u"""#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+import csv
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US')
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+
+class CSVInput(object):
+    \"\"\"Reads and parses csv input from stdin
+
+       Expects a data section (without headers) with the following fields:
+       %s
+
+       Data is processed to fall into the corresponding input type by applying
+       INPUT_TYPES, and per field PREFIXES and SUFFIXES are removed. You can
+       also provide strings to be considered as no content markers in
+       MISSING_TOKENS.
+    \"\"\"
+    def __init__(self, input=sys.stdin):
+        \"\"\" Opens stdin and defines parsing constants
+
+        \"\"\"
+        try:
+            self.reader = csv.reader(input, delimiter=',', quotechar='\"')
+""" % ",".join(parameters)
+
+        output += u"\n%sself.INPUT_FIELDS = %s\n" % ((INDENT * 3),
+                                                     len(parameters))
+
+        input_types = []
+        prefixes = []
+        suffixes = []
+        count = 0
+        fields = self.tree.fields
+        for key in [key for (key, val) in input_fields
+                    if key != self.tree.objective_field]:
+            input_type = ('None' if not fields[key]['datatype'] in
+                          PYTHON_CONV
+                          else PYTHON_CONV[fields[key]['datatype']])
+            input_types.append(input_type)
+            if 'prefix' in fields[key]:
+                prefixes.append("%s: %s" % (count,
+                                            repr(fields[key]['prefix'])))
+            if 'suffix' in fields[key]:
+                suffixes.append("%s: %s" % (count,
+                                            repr(fields[key]['suffix'])))
+            count += 1
+        static_content = "%sself.INPUT_TYPES = [" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(input_types),
+                                 "]\n")
+        static_content = "%sself.PREFIXES = {" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(prefixes),
+                                 "}\n")
+        static_content = "%sself.SUFFIXES = {" % (INDENT * 3)
+        formatter = ",\n%s" % (" " * len(static_content))
+        output += u"\n%s%s%s" % (static_content,
+                                 formatter.join(suffixes),
+                                 "}\n")
+        output += \
+u"""            self.MISSING_TOKENS = ['?']
+        except Exception, exc:
+            sys.stderr.write(\"Cannot read csv\"
+                             \" input. %s\\n\" % str(exc))
+
+    def __iter__(self):
+        \"\"\" Iterator method
+
+        \"\"\"
+        return self
+
+    def next(self):
+        \"\"\" Returns processed data in a list structure
+
+        \"\"\"
+        def normalize(value):
+            \"\"\"Transforms to unicode and cleans missing tokens
+            \"\"\"
+            value = unicode(value.decode('utf-8'))
+            return \"\" if value in self.MISSING_TOKENS else value
+
+        def cast(function_value):
+            \"\"\"Type related transformations
+            \"\"\"
+            function, value = function_value
+            if not len(value):
+                return None
+            if function is None:
+                return value
+            else:
+                return function(value)
+
+        try:
+            values = self.reader.next()
+        except StopIteration:
+            raise StopIteration()
+        if len(values) < self.INPUT_FIELDS:
+            sys.stderr.write(\"Found %s fields when %s were expected.\\n\" %
+                             (len(values), self.INPUT_FIELDS))
+            raise StopIteration()
+        else:
+            values = values[0:self.INPUT_FIELDS]
+        try:
+            values = map(normalize, values)
+            for key in self.PREFIXES:
+                prefix_len = len(self.PREFIXES[key])
+                if values[key][0:prefix_len] == self.PREFIXES[key]:
+                    values[key] = values[key][prefix_len:]
+            for key in self.SUFFIXES:
+                suffix_len = len(self.SUFFIXES[key])
+                if values[key][-suffix_len:] == self.SUFFIXES[key]:
+                    values[key] = values[key][0:-suffix_len]
+            function_tuples = zip(self.INPUT_TYPES, values)
+            values = map(cast, function_tuples)
+            return values
+        except Exception, exc:
+            sys.stderr.write(\"Error in data transformations. %s\\n\" % str(exc))
+            return False
+\n\n
+"""
+        out.write(output)
+        out.flush()
+
+        self.tree.python(out, self.docstring(),
+                         cmv=True,
+                         input_fields=input_fields)
+        output = \
+u"""
+csv = CSVInput()
+for values in csv:
+    if not isinstance(values, bool):
+        print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(*values)))
+\n\n
+""" % fields[self.tree.objective_field]['slug']
+        out.write(output)
+        out.flush()
+
+    def hadoop_python_reducer(self, out=sys.stdout):
+        """Returns a hadoop reducer to make predictions in python
+
+        """
+
+        input_fields = [(value, key) for (key, value) in
+                        sorted(self.inverted_fields.items(),
+                               key=lambda x: x[1])]
+        parameters = [value for (key, value) in
+                      input_fields if key != self.tree.objective_field]
+        fields = self.tree.fields
+        output = \
+u"""#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+count = 0
+previous = None
+
+def print_result(values, prediction, count):
+    \"\"\"Prints input data and predicted value as an ordered list.
+
+          The list contains the input fields and the prediction in the
+          following order:
+          [%s, %s]
+    \"\"\"
+    result = \"%%s, %%s]\" %% (values.strip(']'), prediction)
+    print u\"%%s\\t%%s\" %% (result, count)
+
+for line in sys.stdin:
+    values, prediction = line.strip().split('\\t')
+    if previous is None:
+        previous = (values, prediction)
+    if values != previous[0]:
+        print_result(previous[0], previous[1], count)
+        previous = (values, prediction)
+        count = 0
+    count += 1
+if count > 0:
+    print_result(previous[0], previous[1], count)
+""" % (", ".join(parameters), fields[self.tree.objective_field]['name'])
+        out.write(output)
         out.flush()

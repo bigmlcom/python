@@ -39,6 +39,7 @@ model.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
+import operator
 import numbers
 from bigml.model import Model
 
@@ -65,7 +66,7 @@ def combine_predictions(predictions):
                 mode[prediction] = mode[prediction] + 1
             else:
                 mode[prediction] = 1
-        return max(mode, key=lambda x: mode[x[0]])
+        return max(mode.iteritems(), key=operator.itemgetter(1))[0]
 
 
 class MultiModel(object):

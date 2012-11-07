@@ -72,7 +72,8 @@ PREDICTION_PATH = 'prediction'
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
-MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % MODEL_PATH)
+MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
+                      (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 
 # Development Mode URL
@@ -165,6 +166,7 @@ def get_prediction_id(prediction):
 
     """
     return get_resource(PREDICTION_RE, prediction)
+
 
 ##############################################################################
 #
@@ -618,6 +620,10 @@ class BigML(object):
         """Waits until a resource is finshed.
 
         """
+
+        if isinstance(resource, basestring):
+            resource = get_method(resource)
+
         while True:
             status = resource['object']['status']
             code = status['code']

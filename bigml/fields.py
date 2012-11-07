@@ -94,25 +94,28 @@ class Fields(object):
            is present in the row.
 
         """
+
         if objective_field is None:
             objective_field = self.len() - 1
+        elif isinstance(objective_field, basestring):
+            objective_field = self.field_column_number(objective_field)
 
         if objective_field_present is None:
             objective_field_present = len(row) == self.len()
 
         pair = {}
-        for index in range(len(row)):
+        for index in range(self.len()):
             if objective_field_present:
                 if index != objective_field:
                     pair.update({self.field_id(index):
                                 map_type(self.fields[self.field_id(index)]
                                          ['optype'])(row[index])})
             else:
-                if index >= objective_field:
+                if index >= objective_field and index + 1 < self.len():
                     pair.update({self.field_id(index + 1):
                                 map_type(self.fields[self.field_id(index + 1)]
                                          ['optype'])(row[index])})
-                else:
+                elif index < len(row):
                     pair.update({self.field_id(index):
                                 map_type(self.fields[self.field_id(index)]
                                          ['optype'])(row[index])})

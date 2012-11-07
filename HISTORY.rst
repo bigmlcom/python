@@ -3,14 +3,24 @@
 History
 -------
 
+0.4.3 (2012-11-07)
+~~~~~~~~~~~~~~~~~~
+
+- A fewe tiny fixes
+- Multi models to generate predictions from multiple local models
+- Adds hadoop-python code generation to create local predictions
+
+
 0.4.2 (2012-09-19)
 ~~~~~~~~~~~~~~~~~~
+
 - Fix Python generation
-- Adds a debug flag to log https requests and responses
+- Add a debug flag to log https requests and responses
 - Type conversion in fields pairing
 
 0.4.1 (2012-09-17)
 ~~~~~~~~~~~~~~~~~~
+
 - Fix missing distribution field in new models
 - Add new Field class to deal with BigML auto-generated ids
 - Add by_name flag to predict methods to avoid reverse name lookups

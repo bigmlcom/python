@@ -6,7 +6,7 @@ History
 0.4.3 (2012-11-07)
 ~~~~~~~~~~~~~~~~~~
 
-- A fewe tiny fixes
+- A few tiny fixes
 - Multi models to generate predictions from multiple local models
 - Adds hadoop-python code generation to create local predictions
 

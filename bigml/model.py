@@ -597,9 +597,7 @@ u"""#!/usr/bin/env python
 import sys
 import csv
 import locale
-locale.setlocale(locale.LC_ALL, 'en_US')
-reload(sys)
-sys.setdefaultencoding('utf-8')
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 
 class CSVInput(object):
@@ -751,8 +749,6 @@ u"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 count = 0
 previous = None

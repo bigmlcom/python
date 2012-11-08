@@ -761,7 +761,7 @@ and that can be useful to make the model actionable right away with ``local_mode
 
 The ``local.python(hadoop=True)`` call will generate the code that you need
 for the Hadoop map-reduce engine to produce batch predictions using `Hadoop
-streaming<http://hadoop.apache.org/docs/r0.15.2/streaming.html>`_.
+streaming <http://hadoop.apache.org/docs/r0.15.2/streaming.html>`_ .
 Saving the mapper and reducer generated functions in their corresponding files
 (let's say ``/home/hduser/hadoop_mapper.py`` and
 ``/home/hduser/hadoop_reducer.py``) you can start a Hadoop job

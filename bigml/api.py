@@ -128,7 +128,7 @@ STATUSES = {
 }
 
 PROGRESS_BAR_WIDTH = 50
-
+LOCALE = 'en_US.UTF-8'
 
 def get_resource(regex, resource):
     """Returns a resource/id.
@@ -209,7 +209,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False):
+                 debug=False, set_locale=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -250,7 +250,8 @@ class BigML(object):
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
 
-        locale.setlocale(locale.LC_ALL, 'en_US')
+        if set_locale:
+            locale.setlocale(locale.LC_ALL, LOCALE)
 
     def _create(self, url, body):
         """Creates a new remote resource.

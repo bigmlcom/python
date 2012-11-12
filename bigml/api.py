@@ -232,9 +232,16 @@ class BigML(object):
                             stream=sys.stdout)
 
         if username is None:
-            username = os.environ['BIGML_USERNAME']
+            try:
+                username = os.environ['BIGML_USERNAME']
+            except KeyError:
+                sys.exit("Cannot find BIGML_USERNAME in your environment")
+
         if api_key is None:
-            api_key = os.environ['BIGML_API_KEY']
+            try:
+                api_key = os.environ['BIGML_API_KEY']
+            except KeyError:
+                sys.exit("Cannot find BIGML_API_KEY in your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode

@@ -57,18 +57,34 @@ class Fields(object):
         """
 
         if isinstance(key, basestring):
-            return self.fields_by_name[key]
+            try:
+                id = self.fields_by_name[key]
+            except KeyError:
+                sys.exit("Error: field name '%s' does not exist" % key)
+            return id
         elif isinstance(key, int):
-            return self.fields_by_column_number[key]
+            try:
+                id = self.fields_by_column_number[key]
+            except KeyError:
+                sys.exit("Error: field column number '%s' does not exist" % key)
+            return id
 
     def field_name(self, key):
         """Returns a field name.
 
         """
         if isinstance(key, basestring):
-            return self.fields[key]['name']
+            try:
+                name = self.fields[key]['name']
+            except KeyError:
+                sys.exit("Error: field id '%s' does not exist" % key)
+            return name
         elif isinstance(key, int):
-            return self.fields[self.fields_by_column_number[key]]['name']
+            try:
+                name = self.fields[self.fields_by_column_number[key]]['name']
+            except KeyError:
+                sys.exit("Error: field column number '%s' does not exist" % key)
+            return name
 
     def field_column_number(self, key):
         """Returns a field column number.

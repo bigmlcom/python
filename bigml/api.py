@@ -57,6 +57,7 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url
+from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
@@ -128,7 +129,6 @@ STATUSES = {
 }
 
 PROGRESS_BAR_WIDTH = 50
-LOCALE = 'en_US.UTF-8'
 
 def get_resource(regex, resource):
     """Returns a resource/id.
@@ -258,7 +258,7 @@ class BigML(object):
         self.prediction_url = self.url + PREDICTION_PATH
 
         if set_locale:
-            locale.setlocale(locale.LC_ALL, LOCALE)
+            locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -772,10 +772,11 @@ class BigML(object):
         source['error'] = error
 
     def _stream_source(self, file_name, args=None, async=False,
-                       out=sys.stdout):
+                       progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
         """
+
         def clear_progress_bar():
             """Fills progress bar with blanks.
 
@@ -836,7 +837,12 @@ class BigML(object):
                 "message": "The resource couldn't be created"}}
 
         args.update({os.path.basename(file_name): open(file_name, "rb")})
-        body, headers = multipart_encode(args, cb=draw_progress_bar)
+
+        if progress_bar:
+            body, headers = multipart_encode(args, cb=draw_progress_bar)
+        else:
+            body, headers = multipart_encode(args)
+
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
@@ -874,7 +880,8 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path=None, args=None, async=False, out=sys.stdout):
+    def create_source(self, path=None, args=None, async=False,
+            progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -888,8 +895,7 @@ class BigML(object):
             return self._create_remote_source(url=path, args=args)
         else:
             return self._stream_source(file_name=path, args=args, async=async,
-                                       out=out)
-
+                                       progress_bar=progress_bar, out=out)
     def get_source(self, source):
         """Retrieves a remote source.
 

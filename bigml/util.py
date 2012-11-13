@@ -23,12 +23,13 @@ import unidecode
 from urlparse import urlparse
 import locale
 
+DEFAULT_LOCALE = 'en_US.UTF-8'
+
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
 LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''
                           r'''<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))'''),
                          re.MULTILINE)
-
 
 def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.

@@ -678,7 +678,11 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        files = {os.path.basename(file_name): open(file_name, "rb")}
+        try:
+            files = {os.path.basename(file_name): open(file_name, "rb")}
+        except IOError:
+            sys.exit("ERROR: cannot read training set")
+
         try:
             response = requests.post(self.source_url + self.auth,
                                      files=files,
@@ -836,7 +840,10 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        args.update({os.path.basename(file_name): open(file_name, "rb")})
+        try:
+            args.update({os.path.basename(file_name): open(file_name, "rb")})
+        except IOError:
+            sys.exit("Error: cannot read training set")
 
         if progress_bar:
             body, headers = multipart_encode(args, cb=draw_progress_bar)

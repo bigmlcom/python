@@ -22,11 +22,12 @@ fields of source, dataset, or model.
 
 """
 import sys
+import locale
 from bigml.util import invert_dictionary
 
 TYPE_MAP = {
     "categorical": str,
-    "numeric": float,
+    "numeric": locale.atof,
     "text": str
 }
 
@@ -45,11 +46,13 @@ class Fields(object):
     """A class to deal with BigML auto-generated ids.
 
     """
-    def __init__(self, fields):
+    def __init__(self, fields, missing_tokens=[''], data_locale='en_US.UTF-8'):
+        locale.setlocale(locale.LC_ALL, data_locale)
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')
         self.fields_by_column_number = invert_dictionary(fields,
                                                          'column_number')
+        self.missing_tokens = missing_tokens
 
     def field_id(self, key):
         """Returns a field id.
@@ -120,26 +123,29 @@ class Fields(object):
             objective_field_present = len(row) == self.len()
 
         pair = {}
+
         for index in range(self.len()):
-            if objective_field_present:
-                if index != objective_field:
-                    pair.update({self.field_id(index):
-                                map_type(self.fields[self.field_id(index)]
-                                         ['optype'])(row[index])})
-            else:
-                if index >= objective_field and index + 1 < self.len():
-                    pair.update({self.field_id(index + 1):
-                                map_type(self.fields[self.field_id(index + 1)]
-                                         ['optype'])(row[index])})
-                elif index < len(row):
-                    pair.update({self.field_id(index):
-                                map_type(self.fields[self.field_id(index)]
-                                         ['optype'])(row[index])})
+            field_index = None
+            if index < len(row) and not row[index] in self.missing_tokens:
+                if objective_field_present:
+                    if index != objective_field:
+                        field_index = index
+                else:
+                    if index >= objective_field and index + 1 < self.len():
+                        field_index = index + 1
+                    else:
+                        field_index = index
+
+                if not field_index is None:
+                    field = self.fields[self.field_id(field_index)]
+                    row[index] = self.strip_affixes(row[index], field)
+                    pair.update({self.field_id(field_index):
+                                map_type(field['optype'])(row[index])})
 
         return pair
 
     def list_fields(self, out=sys.stdout):
-        """Lists a description of the felds.
+        """Lists a description of the fields.
 
         """
         for field in [(val['name'], val['optype'], val['column_number'])
@@ -149,3 +155,14 @@ class Fields(object):
             out.write('[%-32s : %-16s: %-8s]\n' % (field[0],
                                                    field[1], field[2]))
             out.flush()
+
+    def strip_affixes(self, value, field):
+        """Strips prefixes and suffixes if present
+
+        """
+        value = unicode(value, "utf-8")
+        if 'prefix' in field and value.startswith(field['prefix']):
+            value = value[len(field['prefix']):]
+        if 'suffix' in field and value.endswith(field['suffix']):
+            value = value[0:-len(field['suffix'])]
+        return value

@@ -145,8 +145,20 @@ class Fields(object):
                 if not field_index is None:
                     field = self.fields[self.field_id(field_index)]
                     row[index] = self.strip_affixes(row[index], field)
-                    pair.update({self.field_id(field_index):
-                                map_type(field['optype'])(row[index])})
+                    try:
+                        pair.update({self.field_id(field_index):
+                                    map_type(field['optype'])(row[index])})
+                    except:
+                        fields_names = [self.fields[self.field_id(i)]
+                                        ['name'] for i in range(self.len())
+                                        if objective_field_present or
+                                        i != objective_field]
+                        raise Exception(u"Mismatch input data type in field "
+                                        u"\"%s\" for value %s. The expected "
+                                        u"fields are: \n%s" %
+                                        (field['name'],
+                                         row[index],
+                                         ",".join(fields_names)))
 
         return pair
 

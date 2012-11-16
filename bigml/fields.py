@@ -24,6 +24,8 @@ fields of source, dataset, or model.
 import sys
 import locale
 from bigml.util import invert_dictionary
+from bigml.util import DEFAULT_LOCALE
+from bigml.util import LOCALE_MAP
 
 TYPE_MAP = {
     "categorical": str,
@@ -46,7 +48,11 @@ class Fields(object):
     """A class to deal with BigML auto-generated ids.
 
     """
-    def __init__(self, fields, missing_tokens=[''], data_locale='en_US.UTF-8'):
+    def __init__(self, fields, missing_tokens=[''], data_locale=DEFAULT_LOCALE):
+        if data_locale in LOCALE_MAP:
+            data_locale = LOCALE_MAP[data_locale]
+        else:
+            data_locale = DEFAULT_LOCALE
         locale.setlocale(locale.LC_ALL, data_locale)
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')

@@ -25,6 +25,11 @@ import locale
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 
+LOCALE_MAP = {
+    'en_US.UTF-8': DEFAULT_LOCALE,
+    'en_US': DEFAULT_LOCALE,
+    'en-US': DEFAULT_LOCALE}
+
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
 LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''

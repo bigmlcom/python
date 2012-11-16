@@ -18,7 +18,27 @@
 """A class to deal with the fields of a resource.
 
 This module helps to map between ids, names, and column_numbers in the
-fields of source, dataset, or model.
+fields of source, dataset, or model. Also to validate your input data
+for predictions or to list all the fields from a resource.
+
+from bigml.api import BigML
+from bigml.fields import Fields
+
+api = BigML()
+
+source = api.get_source("source/50a6bb94eabcb404d3000174")
+fields = Fields(source['object']['fields'])
+
+dataset = api.get_dataset("dataset/50a6bb96eabcb404cd000342")
+fields = Fields(dataset['object']['fields'])
+
+# Note that the fields in a model come one level deeper
+model = api.get_model("model/50a6bbac035d0706db0008f8")
+fields = Fields(model['object']['model']['fields'])
+
+prediction = api.get_prediction("prediction/50a69688035d0706dd00044d")
+fields =  Fields(prediction['object']['fields'])
+
 
 """
 import sys
@@ -33,15 +53,31 @@ TYPE_MAP = {
     "text": str
 }
 
-
 def map_type(value):
-    """Maps a BigML type to a Python type.
+    """Maps a BigML type to a Python type converter.
 
     """
     if value in TYPE_MAP:
         return TYPE_MAP[value]
     else:
         return str
+
+
+PYTHON_TYPE_MAP = {
+    "categorical": [unicode, str],
+    "numeric": [int, float],
+    "text": [unicode, str]
+}
+
+
+def python_map_type(value):
+    """Maps a BigML type to equivalent Python types.
+
+    """
+    if value in PYTHON_TYPE_MAP:
+        return PYTHON_TYPE_MAP[value]
+    else:
+        return [unicode, str]
 
 
 class Fields(object):
@@ -170,9 +206,31 @@ class Fields(object):
                       for key, val in sorted(self.fields.items(),
                                              key=lambda k:
                                              k[1]['column_number'])]:
-            out.write('[%-32s : %-16s: %-8s]\n' % (field[0],
+            out.write('[%-32s: %-16s: %-8s]\n' % (field[0],
                                                    field[1], field[2]))
             out.flush()
+
+    def validate_input_data(self, input_data, out=sys.stdout):
+        """Validates whether types for input data match types in the
+        fields definition.
+
+        """
+        if isinstance(input_data, dict):
+            for name in input_data:
+                if name in self.fields_by_name:
+                    out.write('[%-32s: %-16s: %-16s: ' %
+                            (name, type(input_data[name]),
+                             self.fields[self.fields_by_name[name]]['optype']))
+                    if (type(input_data[name]) in
+                        python_map_type(self.fields[self.fields_by_name[name]]['optype'])):
+                        out.write('OK\n')
+                    else:
+                        out.write('WRONG\n')
+                else:
+                    out.write("Field '%s' does not exist\n" % name)
+        else:
+            out.write("Input data must be a dictionary")
+
 
     def strip_affixes(self, value, field):
         """Strips prefixes and suffixes if present

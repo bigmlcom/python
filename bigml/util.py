@@ -35,6 +35,11 @@ ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
 LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''
                           r'''<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))'''),
                          re.MULTILINE)
+TYPE_MAP = {
+    "categorical": str,
+    "numeric": locale.atof,
+    "text": str
+}
 
 def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.
@@ -145,3 +150,12 @@ def utf8(text):
 
     """
     return text.encode("utf-8")
+
+def map_type(value):
+    """Maps a BigML type to a Python type.
+
+    """
+    if value in TYPE_MAP:
+        return TYPE_MAP[value]
+    else:
+        return str

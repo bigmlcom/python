@@ -43,24 +43,10 @@ fields =  Fields(prediction['object']['fields'])
 """
 import sys
 import locale
-from bigml.util import invert_dictionary
+
+from bigml.util import invert_dictionary, map_type
 from bigml.util import DEFAULT_LOCALE
 from bigml.util import LOCALE_MAP
-
-TYPE_MAP = {
-    "categorical": str,
-    "numeric": locale.atof,
-    "text": str
-}
-
-def map_type(value):
-    """Maps a BigML type to a Python type converter.
-
-    """
-    if value in TYPE_MAP:
-        return TYPE_MAP[value]
-    else:
-        return str
 
 
 PYTHON_TYPE_MAP = {
@@ -146,7 +132,8 @@ class Fields(object):
         """
         return len(self.fields)
 
-    def pair(self, row, objective_field=None, objective_field_present=None):
+    def pair(self, row, headers=None,
+             objective_field=None, objective_field_present=None):
         """Pairs a list of values with their respective field ids.
 
             objective_field is the column_number of the objective field.
@@ -163,38 +150,54 @@ class Fields(object):
 
         if objective_field_present is None:
             objective_field_present = len(row) == self.len()
+        fields_names = [self.fields[self.field_id(i)]
+                        ['name'] for i in range(self.len())
+                        if i != objective_field]
 
         pair = {}
 
-        for index in range(self.len()):
-            field_index = None
-            if index < len(row) and not row[index] in self.missing_tokens:
-                if objective_field_present:
-                    if index != objective_field:
-                        field_index = index
-                else:
-                    if index >= objective_field and index + 1 < self.len():
-                        field_index = index + 1
+        if headers is None:
+            for index in range(self.len()):
+                field_index = None
+                if index < len(row) and not row[index] in self.missing_tokens:
+                    if objective_field_present:
+                        if index != objective_field:
+                            field_index = index
                     else:
-                        field_index = index
+                        if index >= objective_field and index + 1 < self.len():
+                            field_index = index + 1
+                        else:
+                            field_index = index
 
-                if not field_index is None:
-                    field = self.fields[self.field_id(field_index)]
-                    row[index] = self.strip_affixes(row[index], field)
-                    try:
-                        pair.update({self.field_id(field_index):
-                                    map_type(field['optype'])(row[index])})
+                    if not field_index is None:
+                        field = self.fields[self.field_id(field_index)]
+                        row[index] = self.strip_affixes(row[index], field)
+                        try:
+                            pair.update({self.field_id(field_index):
+                                        map_type(field['optype'])(row[index])})
+                        except:
+                            message = u"Mismatch input data type in field "
+                                      u"\"%s\" for value %s. The expected "
+                                      u"fields are: \n%s" %
+                                      (field['name'],
+                                       row[index],
+                                       ",".join(fields_names))
+                            raise Exception(message)
+        else:
+            for index in range(len(row)):
+                if index < len(row) and not row[index] in self.missing_tokens:
+                    field = self.fields[self.fields_by_name[headers[index]]]
+                    try: 
+                        pair.update({headers[index]:
+                                     map_type(field['optype'])(row[index])})
                     except:
-                        fields_names = [self.fields[self.field_id(i)]
-                                        ['name'] for i in range(self.len())
-                                        if objective_field_present or
-                                        i != objective_field]
-                        raise Exception(u"Mismatch input data type in field "
-                                        u"\"%s\" for value %s. The expected "
-                                        u"fields are: \n%s" %
-                                        (field['name'],
-                                         row[index],
-                                         ",".join(fields_names)))
+                        message = u"Mismatch input data type in field "
+                                  u"\"%s\" for value %s. The expected "
+                                  u"fields are: \n%s" %
+                                  (field['name'],
+                                   row[index],
+                                   ",".join(fields_names))
+                        raise Exception(message)
 
         return pair
 

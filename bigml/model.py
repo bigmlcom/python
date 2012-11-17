@@ -56,7 +56,7 @@ import operator
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields, utf8
+    prefix_as_comment, sort_fields, utf8, map_type
 
 
 # Map operator str to its corresponding function
@@ -377,6 +377,17 @@ class Model(object):
             except KeyError, field:
                 LOGGER.error("Wrong field name %s" % field)
                 return
+        for (key, value) in input_data.items():
+            try:
+                input_data.update({key:
+                                   map_type(self.tree.fields[key]
+                                            ['optype'])(value)})
+            except:
+                raise Exception(u"Mismatch input data type in field "
+                                  u"\"%s\" for value %s." %
+                                  (self.tree.fields[key]['name'],
+                                   value))
+
         prediction, path = self.tree.predict(input_data)
 
         # Prediction path

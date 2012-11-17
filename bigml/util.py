@@ -41,6 +41,23 @@ TYPE_MAP = {
     "text": str
 }
 
+PYTHON_TYPE_MAP = {
+    "categorical": [unicode, str],
+    "numeric": [int, float],
+    "text": [unicode, str]
+}
+
+
+def python_map_type(value):
+    """Maps a BigML type to equivalent Python types.
+
+    """
+    if value in PYTHON_TYPE_MAP:
+        return PYTHON_TYPE_MAP[value]
+    else:
+        return [unicode, str]
+
+
 def invert_dictionary(dictionary, field='name'):
     """Inverts a dictionary.
 

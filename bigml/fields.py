@@ -47,23 +47,7 @@ import locale
 from bigml.util import invert_dictionary, map_type
 from bigml.util import DEFAULT_LOCALE
 from bigml.util import LOCALE_MAP
-
-
-PYTHON_TYPE_MAP = {
-    "categorical": [unicode, str],
-    "numeric": [int, float],
-    "text": [unicode, str]
-}
-
-
-def python_map_type(value):
-    """Maps a BigML type to equivalent Python types.
-
-    """
-    if value in PYTHON_TYPE_MAP:
-        return PYTHON_TYPE_MAP[value]
-    else:
-        return [unicode, str]
+from bigml.util import python_map_type
 
 
 class Fields(object):
@@ -187,7 +171,7 @@ class Fields(object):
             for index in range(len(row)):
                 if index < len(row) and not row[index] in self.missing_tokens:
                     field = self.fields[self.fields_by_name[headers[index]]]
-                    try: 
+                    try:
                         pair.update({headers[index]:
                                      map_type(field['optype'])(row[index])})
                     except:

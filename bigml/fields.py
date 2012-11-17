@@ -176,12 +176,12 @@ class Fields(object):
                             pair.update({self.field_id(field_index):
                                         map_type(field['optype'])(row[index])})
                         except:
-                            message = u"Mismatch input data type in field "
-                                      u"\"%s\" for value %s. The expected "
-                                      u"fields are: \n%s" %
-                                      (field['name'],
-                                       row[index],
-                                       ",".join(fields_names))
+                            message = (u"Mismatch input data type in field "
+                                       u"\"%s\" for value %s. The expected "
+                                       u"fields are: \n%s" %
+                                       (field['name'],
+                                        row[index],
+                                        ",".join(fields_names)))
                             raise Exception(message)
         else:
             for index in range(len(row)):
@@ -191,12 +191,12 @@ class Fields(object):
                         pair.update({headers[index]:
                                      map_type(field['optype'])(row[index])})
                     except:
-                        message = u"Mismatch input data type in field "
-                                  u"\"%s\" for value %s. The expected "
-                                  u"fields are: \n%s" %
-                                  (field['name'],
-                                   row[index],
-                                   ",".join(fields_names))
+                        message = (u"Mismatch input data type in field "
+                                   u"\"%s\" for value %s. The expected "
+                                   u"fields are: \n%s" %
+                                   (field['name'],
+                                    row[index],
+                                    ",".join(fields_names)))
                         raise Exception(message)
 
         return pair

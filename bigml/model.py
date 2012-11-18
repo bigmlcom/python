@@ -378,15 +378,19 @@ class Model(object):
                 LOGGER.error("Wrong field name %s" % field)
                 return
         for (key, value) in input_data.items():
-            try:
-                input_data.update({key:
-                                   map_type(self.tree.fields[key]
-                                            ['optype'])(value)})
-            except:
-                raise Exception(u"Mismatch input data type in field "
-                                  u"\"%s\" for value %s." %
-                                  (self.tree.fields[key]['name'],
-                                   value))
+            if ((self.tree.fields[key]['optype'] == 'numeric' and
+                isinstance(value, basestring)) or (
+                self.tree.fields[key]['optype'] != 'numeric' and
+                not isinstance(value, basestring))):
+                try:
+                    input_data.update({key:
+                                       map_type(self.tree.fields[key]
+                                                ['optype'])(value)})
+                except:
+                    raise Exception(u"Mismatch input data type in field "
+                                      u"\"%s\" for value %s." %
+                                      (self.tree.fields[key]['name'],
+                                       value))
 
         prediction, path = self.tree.predict(input_data)
 

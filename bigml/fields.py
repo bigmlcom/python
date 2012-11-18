@@ -59,7 +59,11 @@ class Fields(object):
             data_locale = LOCALE_MAP[data_locale]
         else:
             data_locale = DEFAULT_LOCALE
-        locale.setlocale(locale.LC_ALL, data_locale)
+        try:
+            locale.setlocale(locale.LC_ALL, data_locale)
+        except:
+            locale.setlocale(locale.LC_ALL, '')
+
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')
         self.fields_by_column_number = invert_dictionary(fields,

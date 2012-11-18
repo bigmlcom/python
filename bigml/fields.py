@@ -132,49 +132,25 @@ class Fields(object):
         """
 
         if objective_field is None:
-            objective_field = self.len() - 1
-        elif isinstance(objective_field, basestring):
-            objective_field = self.field_column_number(objective_field)
+            objective_field = sorted(self.fields_by_column_number.keys())[-1]
 
-        if objective_field_present is None:
-            objective_field_present = len(row) == self.len()
         fields_names = [self.fields[self.field_id(i)]
-                        ['name'] for i in range(self.len())
+                        ['name'] for i in sorted(self.fields_by_column_number.keys())
                         if i != objective_field]
 
         pair = {}
 
-        if headers is None:
-            for index in range(self.len()):
-                field_index = None
-                if index < len(row) and not row[index] in self.missing_tokens:
-                    if objective_field_present:
-                        if index != objective_field:
-                            field_index = index
-                    else:
-                        if index >= objective_field and index + 1 < self.len():
-                            field_index = index + 1
-                        else:
-                            field_index = index
-
-                    if not field_index is None:
-                        field = self.fields[self.field_id(field_index)]
-                        row[index] = self.strip_affixes(row[index], field)
-                        try:
-                            pair.update({self.field_id(field_index):
-                                        map_type(field['optype'])(row[index])})
-                        except:
-                            message = (u"Mismatch input data type in field "
-                                       u"\"%s\" for value %s. The expected "
-                                       u"fields are: \n%s" %
-                                       (field['name'],
-                                        row[index],
-                                        ",".join(fields_names)))
-                            raise Exception(message)
-        else:
+        if headers:
+            if not isinstance(objective_field, basestring):
+                objective_field = self.field_name(objective_field)
+            if objective_field_present is None:
+                objective_field_present = objective_field in headers
             for index in range(len(row)):
                 if index < len(row) and not row[index] in self.missing_tokens:
+                    if objective_field_present and headers[index] == objective_field:
+                        continue
                     field = self.fields[self.fields_by_name[headers[index]]]
+                    row[index] = self.strip_affixes(row[index], field)
                     try:
                         pair.update({headers[index]:
                                      map_type(field['optype'])(row[index])})
@@ -183,9 +159,37 @@ class Fields(object):
                                    u"\"%s\" for value %s. The expected "
                                    u"fields are: \n%s" %
                                    (field['name'],
-                                    row[index],
-                                    ",".join(fields_names)))
+                                    row[count],
+                                    ",".join(fields_names))).encode("utf-8")
                         raise Exception(message)
+        else:
+            if isinstance(objective_field, basestring):
+                objective_field = self.field_column_number(objective_field)
+            if objective_field_present is None:
+                objective_field_present = len(row) == self.len()
+            column_numbers = sorted(self.fields_by_column_number.keys())
+            index = 0
+            for column_number in column_numbers:
+                if index < len(row) and not row[index] in self.missing_tokens:
+                    if column_number == objective_field:
+                        if objective_field_present:
+                            index += 1
+                        continue
+
+                    field = self.fields[self.field_id(column_number)]
+                    row[index] = self.strip_affixes(row[index], field)
+                    try:
+                        pair.update({self.field_id(column_number):
+                                    map_type(field['optype'])(row[index])})
+                    except:
+                        message = (u"Mismatch input data type in field "
+                                   u"\"%s\" for value %s. The expected "
+                                   u"fields are: \n%s" %
+                                   (field['name'],
+                                    row[index],
+                                    ",".join(fields_names))).encode("utf-8")
+                        raise Exception(message)
+                index += 1
 
         return pair
 

@@ -814,25 +814,31 @@ and also show the full rule chain that leads to it.
         Iris-virginica: 33.33% (50 instances)
 
 
+    Field importance:
+        1. petal length: 53.16%
+        2. petal width: 46.33%
+        3. sepal length: 0.51%
+        4. sepal width: 0.00%
 
 
     Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45
-        · 100.00%: petal length <= 2.45
+        · 100.00%: petal length <= 2.45 [Confidence: 92.86%]
 
 
     Iris-versicolor : (data 33.33% / prediction 33.33%) petal length > 2.45
-        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95
-        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width > 2.45
-        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 5.95
-        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length > 4.95
+        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95 [Confidence: 92.44%]
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and petal width > 1.55 [Confidence: 20.65%]
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 6.4 [Confidence: 20.65%]
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 6.4 and sepal length <= 5.95 [Confidence: 20.65%]
 
 
     Iris-virginica : (data 33.33% / prediction 33.33%) petal length > 2.45
-        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05
-        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9
-        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05
-        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length <= 4.95
-        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width <= 2.45
+        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05 [Confidence: 90.82%]
+        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9 [Confidence: 60.97%]
+        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05 [Confidence: 43.85%]
+        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 6.4 and sepal length > 5.95 [Confidence: 34.24%]
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and petal width <= 1.55 [Confidence: 20.65%]
+
 
 You can also use ``local_model.get_data_distribution()`` and
 ``local_model.get_prediction_distribution()`` to obtain the training and

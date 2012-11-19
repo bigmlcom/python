@@ -150,6 +150,8 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
+        self.confidence = (None if not 'confidence' in tree
+                           else tree['confidence'])
         if 'distribution' in tree:
             self.distribution = tree['distribution']
         elif ('objective_summary' in tree):
@@ -328,19 +330,9 @@ class Model(object):
             raise Exception("Invalid model structure")
 
         if ('object' in model and isinstance(model['object'], dict)):
-            if ('status' in model['object'] and
-                    'code' in model['object']['status']):
-                if model['object']['status']['code'] == FINISHED:
-                    fields = model['object']['model']['fields']
-                    self.inverted_fields = invert_dictionary(fields)
-                    self.tree = Tree(
-                        model['object']['model']['root'],
-                        fields,
-                        model['object']['objective_fields'])
-                    self.description = model['object']['description']
-                else:
-                    raise Exception("The model isn't finished yet")
-        elif ('model' in model and isinstance(model['model'], dict)):
+            model = model['object']
+
+        if ('model' in model and isinstance(model['model'], dict)):
             if ('status' in model and 'code' in model['status']):
                 if model['status']['code'] == FINISHED:
                     fields = model['model']['fields']
@@ -350,6 +342,9 @@ class Model(object):
                         fields,
                         model['objective_fields'])
                     self.description = model['description']
+                    self.field_importance = (None if not 'importance'
+                                             in model['model']
+                                             else model['model']['importance'])
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -379,18 +374,18 @@ class Model(object):
                 return
         for (key, value) in input_data.items():
             if ((self.tree.fields[key]['optype'] == 'numeric' and
-                isinstance(value, basestring)) or (
-                self.tree.fields[key]['optype'] != 'numeric' and
-                not isinstance(value, basestring))):
+                    isinstance(value, basestring)) or (
+                    self.tree.fields[key]['optype'] != 'numeric' and
+                    not isinstance(value, basestring))):
                 try:
                     input_data.update({key:
                                        map_type(self.tree.fields[key]
                                                 ['optype'])(value)})
                 except:
                     raise Exception(u"Mismatch input data type in field "
-                                      u"\"%s\" for value %s." %
-                                      (self.tree.fields[key]['name'],
-                                       value))
+                                    u"\"%s\" for value %s." %
+                                    (self.tree.fields[key]['name'],
+                                     value))
 
         prediction, path = self.tree.predict(input_data)
 
@@ -436,7 +431,7 @@ class Model(object):
             return self.tree.python(out, self.docstring())
 
     def group_prediction(self):
-        """ Groups in categories or bins the predicted data
+        """Groups in categories or bins the predicted data
 
         dict - contains a dict grouping counts in 'total' and 'details' lists.
                 'total' key contains a 3-element list.
@@ -444,9 +439,10 @@ class Model(object):
                        - data count
                        - predictions count
                 'details' key contains a list of elements. Each element is a
-                          2-element list:
+                          3-element list:
                        - complete path of the tree from the root to the leaf
                        - leaf predictions count
+                       - confidence
         """
         groups = {}
         tree = self.tree
@@ -457,26 +453,27 @@ class Model(object):
                                 'details': []}
         path = []
 
-        def add_to_groups(groups, output, path, count):
-            """ Add instances to groups array
+        def add_to_groups(groups, output, path, count, confidence):
+            """Adds instances to groups array
 
             """
             group = output
             if not output in groups:
                 groups[group] = {'total': [[], 0, 0],
                                  'details': []}
-            groups[group]['details'].append([path, count])
+            groups[group]['details'].append([path, count, confidence])
             groups[group]['total'][2] += count
 
         def depth_first_search(tree, path):
-            """ Search for leafs' values and instances
+            """Search for leafs' values and instances
 
             """
             if isinstance(tree.predicate, Predicate):
                 path.append(tree.predicate)
 
             if len(tree.children) == 0:
-                add_to_groups(groups, tree.output, path, tree.count)
+                add_to_groups(groups, tree.output,
+                              path, tree.count, tree.confidence)
                 return tree.count
             else:
                 children = tree.children[:]
@@ -487,7 +484,7 @@ class Model(object):
                     children_sum += depth_first_search(child, path[:])
                 if children_sum < tree.count:
                     add_to_groups(groups, tree.output, path,
-                                  tree.count - children_sum)
+                                  tree.count - children_sum, tree.confidence)
                 return tree.count
 
         depth_first_search(tree, path)
@@ -495,7 +492,7 @@ class Model(object):
         return groups
 
     def get_data_distribution(self):
-        """ Returns training data distribution
+        """Returns training data distribution
 
         """
         tree = self.tree
@@ -504,7 +501,7 @@ class Model(object):
         return sorted(distribution,  key=lambda x: x[0])
 
     def get_prediction_distribution(self, groups=None):
-        """ Returns model predicted distribution
+        """Returns model predicted distribution
 
         """
         if groups is None:
@@ -517,11 +514,13 @@ class Model(object):
         return sorted(predictions,  key=lambda x: x[0])
 
     def summarize(self, out=sys.stdout):
-        """ Prints summary grouping distribution as class header and details
+        """Prints summary grouping distribution as class header and details
 
         """
+        tree = self.tree
+
         def print_distribution(distribution, out=sys.stdout):
-            """ Prints distribution data
+            """Prints distribution data
 
             """
             total = reduce(lambda x, y: x + y,
@@ -532,8 +531,19 @@ class Model(object):
                                group[1],
                                "" if group[1] == 1 else "s")))
 
+        def print_importance(out=sys.stdout):
+            """Prints field importance
+
+            """
+            count = 1
+            for [field, importance] in self.field_importance:
+                out.write(u"    %s. %s: %.2f%%\n" % (count,
+                          self.tree.fields[field]['name'],
+                          round(importance, 4) * 100))
+                count += 1
+
         def extract_common_path(groups):
-            """ Extracts the common segment of the prediction path for a group
+            """Extracts the common segment of the prediction path for a group
 
             """
             for group in groups:
@@ -555,7 +565,18 @@ class Model(object):
                                                       key=lambda x: x[1],
                                                       reverse=True)
 
-        tree = self.tree
+        def confidence_error(value):
+            """Returns confidence for categoric objective fields
+               and error for numeric objective fields
+            """
+            if value is None:
+                return ""
+            objective_type = tree.fields[tree.objective_field]['optype']
+            if objective_type == 'numeric':
+                return u" [Error: +/-%s]" % value
+            else:
+                return u" [Confidence: %.2f%%]" % (round(value, 4) * 100)
+
         distribution = self.get_data_distribution()
 
         out.write(u"Data distribution:\n")
@@ -568,6 +589,10 @@ class Model(object):
         out.write(u"Predicted distribution:\n")
         print_distribution(predictions, out=out)
         out.write(u"\n\n")
+
+        if self.field_importance:
+            out.write(u"Field importance:\n")
+            print_importance(out=out)
 
         extract_common_path(groups)
 
@@ -591,9 +616,10 @@ class Model(object):
                 path = [prediction.to_rule(tree.fields) for
                         prediction in subgroup[0]]
                 path_chain = " and ".join(path) if len(path) else "(root node)"
-                out.write(utf8(u"    · %.2f%%: %s\n" %
+                out.write(utf8(u"    · %.2f%%: %s%s\n" %
                                (round(pred_per_sgroup, 4) * 100,
-                               path_chain)))
+                                path_chain,
+                                confidence_error(subgroup[2]))))
         out.flush()
 
     def hadoop_python_mapper(self, out=sys.stdout):

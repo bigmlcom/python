@@ -54,7 +54,8 @@ class Fields(object):
     """A class to deal with BigML auto-generated ids.
 
     """
-    def __init__(self, fields, missing_tokens=[''], data_locale=DEFAULT_LOCALE):
+    def __init__(self, fields, missing_tokens=[''],
+                 data_locale=DEFAULT_LOCALE):
         if data_locale in LOCALE_MAP:
             data_locale = LOCALE_MAP[data_locale]
         else:
@@ -85,7 +86,8 @@ class Fields(object):
             try:
                 id = self.fields_by_column_number[key]
             except KeyError:
-                sys.exit("Error: field column number '%s' does not exist" % key)
+                sys.exit("Error: field column number '%s' does not exist" %
+                         key)
             return id
 
     def field_name(self, key):
@@ -102,7 +104,8 @@ class Fields(object):
             try:
                 name = self.fields[self.fields_by_column_number[key]]['name']
             except KeyError:
-                sys.exit("Error: field column number '%s' does not exist" % key)
+                sys.exit("Error: field column number '%s' does not exist" %
+                         key)
             return name
 
     def field_column_number(self, key):
@@ -134,8 +137,8 @@ class Fields(object):
         if objective_field is None:
             objective_field = sorted(self.fields_by_column_number.keys())[-1]
 
-        fields_names = [self.fields[self.field_id(i)]
-                        ['name'] for i in sorted(self.fields_by_column_number.keys())
+        fields_names = [self.fields[self.field_id(i)]['name'] for i in
+                        sorted(self.fields_by_column_number.keys())
                         if i != objective_field]
 
         pair = {}
@@ -147,7 +150,8 @@ class Fields(object):
                 objective_field_present = objective_field in headers
             for index in range(len(row)):
                 if index < len(row) and not row[index] in self.missing_tokens:
-                    if objective_field_present and headers[index] == objective_field:
+                    if (objective_field_present and
+                            headers[index] == objective_field):
                         continue
                     field = self.fields[self.fields_by_name[headers[index]]]
                     row[index] = self.strip_affixes(row[index], field)
@@ -202,7 +206,7 @@ class Fields(object):
                                              key=lambda k:
                                              k[1]['column_number'])]:
             out.write('[%-32s: %-16s: %-8s]\n' % (field[0],
-                                                   field[1], field[2]))
+                                                  field[1], field[2]))
             out.flush()
 
     def validate_input_data(self, input_data, out=sys.stdout):
@@ -214,10 +218,12 @@ class Fields(object):
             for name in input_data:
                 if name in self.fields_by_name:
                     out.write('[%-32s: %-16s: %-16s: ' %
-                            (name, type(input_data[name]),
-                             self.fields[self.fields_by_name[name]]['optype']))
+                              (name, type(input_data[name]),
+                               self.fields[self.fields_by_name[name]]
+                               ['optype']))
                     if (type(input_data[name]) in
-                        python_map_type(self.fields[self.fields_by_name[name]]['optype'])):
+                        python_map_type(self.fields[self.fields_by_name[name]]
+                                        ['optype'])):
                         out.write('OK\n')
                     else:
                         out.write('WRONG\n')
@@ -225,7 +231,6 @@ class Fields(object):
                     out.write("Field '%s' does not exist\n" % name)
         else:
             out.write("Input data must be a dictionary")
-
 
     def strip_affixes(self, value, field):
         """Strips prefixes and suffixes if present

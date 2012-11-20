@@ -578,7 +578,7 @@ keys:
 Local Models
 ------------
 
-You can instantiate a local version of a remote mode.
+You can instantiate a local version of a remote model.
 
 ::
 
@@ -594,6 +594,30 @@ You can instantiate a local version of a remote mode.
 
 This will return a Model object that you can use to make local predictions,
 generate IF-THEN rules or a Python function that implements the model.
+
+Multi Models
+------------
+
+Multi Models use a numbers of BigML remote models to build a local version
+that can be used to generate predictions locally. Predictions are generated
+combining the outputs of each model.
+
+::
+
+    from bigml.api import BigML
+    from bigml.multimodel import MultiModel
+
+    api = BigML()
+
+    model = MultiModel([api.get_model(model['resource']) for model in
+                       api.list_models(query_string="tags__in=my_tag")
+                       ['objects']])
+
+    model.predict({"petal length": 3, "petal width": 1})
+
+This will create a multi model using all the models that been previously tagged
+with `my_tag`.
+
 
 Local Predictions
 -----------------
@@ -659,37 +683,38 @@ helpful to understand how the model works internally.
 ::
 
      local_model.rules()
-     IF petal length > 2.45 AND
-         IF petal width > 1.65 AND
-             IF petal length > 5.05 THEN
+     IF petal_length > 2.45 AND
+         IF petal_width > 1.65 AND
+             IF petal_length > 5.05 THEN
                  species = Iris-virginica
-             IF petal length <= 5.05 AND
-                 IF sepal width > 2.9 AND
-                     IF sepal length > 5.95 AND
-                         IF petal length > 4.95 THEN
+             IF petal_length <= 5.05 AND
+                 IF sepal_width > 2.9 AND
+                     IF sepal_length > 5.95 AND
+                         IF petal_length > 4.95 THEN
                              species = Iris-versicolor
-                         IF petal length <= 4.95 THEN
+                         IF petal_length <= 4.95 THEN
                              species = Iris-virginica
-                     IF sepal length <= 5.95 THEN
-                          species = Iris-versicolor
-                 IF sepal width <= 2.9 THEN
-                     species = Iris-virginica
-         IF petal width <= 1.65 AND
-             IF petal length > 4.95 AND
-                 IF sepal length > 6.05 THEN
-                       species = Iris-virginica
-                 IF sepal length <= 6.05 AND
-                     IF sepal width > 2.45 THEN
+                     IF sepal_length <= 5.95 THEN
                          species = Iris-versicolor
-                     IF sepal width <= 2.45 THEN
+                 IF sepal_width <= 2.9 THEN
+                     species = Iris-virginica
+         IF petal_width <= 1.65 AND
+             IF petal_length > 4.95 AND
+                 IF sepal_length > 6.05 THEN
+                     species = Iris-virginica
+                 IF sepal_length <= 6.05 AND
+                     IF sepal_width > 2.45 THEN
+                         species = Iris-versicolor
+                     IF sepal_width <= 2.45 THEN
                          species = Iris-virginica
-             IF petal length <= 4.95 THEN
+             IF petal_length <= 4.95 THEN
                  species = Iris-versicolor
-     IF petal length <= 2.45 THEN
+     IF petal_length <= 2.45 THEN
          species = Iris-setosa
 
-Python Generation
------------------
+
+Python and Hadoop-ready Generation
+----------------------------------
 
 If you prefer you can also generate a Python function that implements the model
 and that can be useful to make the model actionable right away with ``local_model.python()``.
@@ -697,35 +722,65 @@ and that can be useful to make the model actionable right away with ``local_mode
 ::
 
     local_model.python()
-    def predict_species(sepal_length=5.77889, sepal_width=3.02044, petal_length=4.34142, petal_width=1.32848):
-       if (petal_length > 2.45):
-           if (petal_width > 1.65):
-               if (petal_length > 5.05):
-                   return 'Iris-virginica'
-               if (petal_length <= 5.05):
-                   if (sepal_width > 2.9):
-                       if (sepal_length > 5.95):
-                           if (petal_length > 4.95):
-                               return 'Iris-versicolor'
-                           if (petal_length <= 4.95):
-                               return 'Iris-virginica'
-                       if (sepal_length <= 5.95):
-                            return 'Iris-versicolor'
-                   if (sepal_width <= 2.9):
-                        return 'Iris-virginica'
-           if (petal_width <= 1.65):
+    def predict_species(sepal_length=5.77889,
+                        sepal_width=3.02044,
+                        petal_length=4.34142,
+                        petal_width=1.32848):
+        """ Predictor for species from model/5030e496155268765f000343
+
+        """
+
+        if (petal_length > 2.45):
+            if (petal_width > 1.65):
+                if (petal_length > 5.05):
+                     return 'Iris-virginica'
+                if (petal_length <= 5.05):
+                    if (sepal_width > 2.9):
+                        if (sepal_length > 5.95):
+                            if (petal_length > 4.95):
+                                 return 'Iris-versicolor'
+                            if (petal_length <= 4.95):
+                                 return 'Iris-virginica'
+                        if (sepal_length <= 5.95):
+                             return 'Iris-versicolor'
+                    if (sepal_width <= 2.9):
+                         return 'Iris-virginica'
+            if (petal_width <= 1.65):
                 if (petal_length > 4.95):
-                     if (sepal_length > 6.05):
-                          return 'Iris-virginica'
-                     if (sepal_length <= 6.05):
-                          if (sepal_width > 2.45):
-                               return 'Iris-versicolor'
-                          if (sepal_width <= 2.45):
-                               return 'Iris-virginica'
+                    if (sepal_length > 6.05):
+                         return 'Iris-virginica'
+                    if (sepal_length <= 6.05):
+                        if (sepal_width > 2.45):
+                             return 'Iris-versicolor'
+                        if (sepal_width <= 2.45):
+                             return 'Iris-virginica'
                 if (petal_length <= 4.95):
                      return 'Iris-versicolor'
         if (petal_length <= 2.45):
              return 'Iris-setosa'
+
+The ``local.python(hadoop=True)`` call will generate the code that you need
+for the Hadoop map-reduce engine to produce batch predictions using `Hadoop
+streaming <http://hadoop.apache.org/docs/r0.15.2/streaming.html>`_ .
+Saving the mapper and reducer generated functions in their corresponding files
+(let's say ``/home/hduser/hadoop_mapper.py`` and
+``/home/hduser/hadoop_reducer.py``) you can start a Hadoop job
+to generate predictions by issuing
+the following Hadoop command in your system console:
+
+::
+
+    bin/hadoop jar contrib/streaming/hadoop-*streaming*.jar \
+    -file /home/hduser/hadoop_mapper.py -mapper hadoop_mapper.py \
+    -file /home/hduser/hadoop_reducer.py -reducer hadoop_reducer.py \
+    -input /home/hduser/hadoop/input.csv \
+    -output /home/hduser/hadoop/output_dir
+
+assuming you are in the Hadoop home directory, your input file is in the
+corresponding dfs directory
+(``/home/hduser/hadoop/input.csv`` in this example) and the output will
+be placed at ``/home/hduser/hadoop/output_dir`` (inside the dfs directory).
+
 
 Summary generation
 ------------------
@@ -759,25 +814,31 @@ and also show the full rule chain that leads to it.
         Iris-virginica: 33.33% (50 instances)
 
 
+    Field importance:
+        1. petal length: 53.16%
+        2. petal width: 46.33%
+        3. sepal length: 0.51%
+        4. sepal width: 0.00%
 
 
     Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45
-        · 100.00%: petal length <= 2.45
+        · 100.00%: petal length <= 2.45 [Confidence: 92.86%]
 
 
     Iris-versicolor : (data 33.33% / prediction 33.33%) petal length > 2.45
-        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95
-        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width > 2.45
-        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 5.95
-        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length > 4.95
+        · 94.00%: petal length > 2.45 and petal width <= 1.65 and petal length <= 4.95 [Confidence: 92.44%]
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and petal width > 1.55 [Confidence: 20.65%]
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 6.4 [Confidence: 20.65%]
+        · 2.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 6.4 and sepal length <= 5.95 [Confidence: 20.65%]
 
 
     Iris-virginica : (data 33.33% / prediction 33.33%) petal length > 2.45
-        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05
-        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9
-        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05
-        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length > 5.95 and petal length <= 4.95
-        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and sepal width <= 2.45
+        · 76.00%: petal length > 2.45 and petal width > 1.65 and petal length > 5.05 [Confidence: 90.82%]
+        · 12.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width <= 2.9 [Confidence: 60.97%]
+        · 6.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length > 6.05 [Confidence: 43.85%]
+        · 4.00%: petal length > 2.45 and petal width > 1.65 and petal length <= 5.05 and sepal width > 2.9 and sepal length <= 6.4 and sepal length > 5.95 [Confidence: 34.24%]
+        · 2.00%: petal length > 2.45 and petal width <= 1.65 and petal length > 4.95 and sepal length <= 6.05 and petal width <= 1.55 [Confidence: 20.65%]
+
 
 You can also use ``local_model.get_data_distribution()`` and
 ``local_model.get_prediction_distribution()`` to obtain the training and

@@ -57,6 +57,7 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url
+from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
@@ -72,7 +73,8 @@ PREDICTION_PATH = 'prediction'
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
 DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
-MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % MODEL_PATH)
+MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
+                      (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 
 # Development Mode URL
@@ -128,7 +130,6 @@ STATUSES = {
 
 PROGRESS_BAR_WIDTH = 50
 
-
 def get_resource(regex, resource):
     """Returns a resource/id.
 
@@ -165,6 +166,7 @@ def get_prediction_id(prediction):
 
     """
     return get_resource(PREDICTION_RE, prediction)
+
 
 ##############################################################################
 #
@@ -207,7 +209,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False):
+                 debug=False, set_locale=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -230,9 +232,16 @@ class BigML(object):
                             stream=sys.stdout)
 
         if username is None:
-            username = os.environ['BIGML_USERNAME']
+            try:
+                username = os.environ['BIGML_USERNAME']
+            except KeyError:
+                sys.exit("Cannot find BIGML_USERNAME in your environment")
+
         if api_key is None:
-            api_key = os.environ['BIGML_API_KEY']
+            try:
+                api_key = os.environ['BIGML_API_KEY']
+            except KeyError:
+                sys.exit("Cannot find BIGML_API_KEY in your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
@@ -248,7 +257,8 @@ class BigML(object):
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
 
-        locale.setlocale(locale.LC_ALL, 'en_US')
+        if set_locale:
+            locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -618,6 +628,10 @@ class BigML(object):
         """Waits until a resource is finshed.
 
         """
+
+        if isinstance(resource, basestring):
+            resource = get_method(resource)
+
         while True:
             status = resource['object']['status']
             code = status['code']
@@ -664,7 +678,11 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        files = {os.path.basename(file_name): open(file_name, "rb")}
+        try:
+            files = {os.path.basename(file_name): open(file_name, "rb")}
+        except IOError:
+            sys.exit("ERROR: cannot read training set")
+
         try:
             response = requests.post(self.source_url + self.auth,
                                      files=files,
@@ -758,10 +776,11 @@ class BigML(object):
         source['error'] = error
 
     def _stream_source(self, file_name, args=None, async=False,
-                       out=sys.stdout):
+                       progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
         """
+
         def clear_progress_bar():
             """Fills progress bar with blanks.
 
@@ -821,8 +840,16 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        args.update({os.path.basename(file_name): open(file_name, "rb")})
-        body, headers = multipart_encode(args, cb=draw_progress_bar)
+        try:
+            args.update({os.path.basename(file_name): open(file_name, "rb")})
+        except IOError:
+            sys.exit("Error: cannot read training set")
+
+        if progress_bar:
+            body, headers = multipart_encode(args, cb=draw_progress_bar)
+        else:
+            body, headers = multipart_encode(args)
+
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
@@ -860,7 +887,8 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path=None, args=None, async=False, out=sys.stdout):
+    def create_source(self, path=None, args=None, async=False,
+            progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -874,8 +902,7 @@ class BigML(object):
             return self._create_remote_source(url=path, args=args)
         else:
             return self._stream_source(file_name=path, args=args, async=async,
-                                       out=out)
-
+                                       progress_bar=progress_bar, out=out)
     def get_source(self, source):
         """Retrieves a remote source.
 

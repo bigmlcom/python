@@ -16,6 +16,7 @@
 # under the License.
 
 import time
+import json
 from datetime import datetime, timedelta
 from lettuce import step, world
 
@@ -47,3 +48,12 @@ def wait_until_model_status_code_is(step, code1, code2, secs):
 @step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs):
     wait_until_model_status_code_is(step, FINISHED, FAULTY, secs)
+
+@step(r'I create a model with "(.*)"')
+def i_create_a_model_with(step, data="{}"):
+    resource = world.api.create_model(world.dataset.get('resource'), json.loads(data))
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.model = resource['object']
+    world.models.append(resource['resource'])

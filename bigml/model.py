@@ -253,8 +253,8 @@ class Tree(object):
 
         """
         def map_data(field, missing=False):
-            """Returns the subject of the condition if there are
-               more than MAX_ARGS_LENGTH arguments
+            """Returns the subject of the condition in map format when
+               more than MAX_ARGS_LENGTH arguments are used.
             """
             if input_map:
                 if missing:

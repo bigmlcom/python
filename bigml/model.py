@@ -253,6 +253,9 @@ class Tree(object):
 
         """
         def map_data(field, missing=False):
+            """Returns the subject of the condition if there are
+               more than MAX_ARGS_LENGTH arguments
+            """
             if input_map:
                 if missing:
                     return "not '%s' in data or data['%s']" % (field, field)
@@ -302,7 +305,7 @@ class Tree(object):
             parameters = sort_fields(self.fields)
         else:
             parameters = input_fields
-        input_map = len(parameters) > MAX_ARGS_LENGTH
+        input_map = len(parameters) > MAX_ARGS_LENGTH and not input_fields
         for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)

@@ -260,10 +260,11 @@ class Tree(object):
                 if missing:
                     return "not '%s' in data or data['%s']" % (field, field)
                 else:
-                    return "'%s' in data and data['%s']" % (field, field)
+                    return "data['%s']" % field
             return field
 
         body = u""
+        alternate = ""
         if self.children:
             if cmv:
                 field = split(self.children)
@@ -277,16 +278,20 @@ class Tree(object):
                 body += (u"%sreturn %s\n" %
                         (INDENT * (depth + 1),
                          value))
+                alternate = "el" if input_map else ""
 
             for child in self.children:
-                body += (u"%sif (%s %s %s):\n" %
+                body += (u"%s%sif (%s %s %s):\n" %
                         (INDENT * depth,
+                         alternate,
                          map_data(self.fields[child.predicate.field]['slug'],
                                   False),
                          PYTHON_OPERATOR[child.predicate.operator],
                          repr(child.predicate.value)))
                 body += child.python_body(depth + 1, cmv=cmv,
                                           input_map=input_map)
+                alternate = "el" if input_map else ""
+                    
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output

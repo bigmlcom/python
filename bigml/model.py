@@ -102,6 +102,8 @@ PYTHON_CONV = {
 
 INDENT = u'    '
 
+MAX_ARGS_LENGTH = 10
+
 
 class Predicate(object):
     """A predicate to be evaluated in a tree's node.
@@ -241,7 +243,7 @@ class Tree(object):
         out.write(utf8(self.generate_rules()))
         out.flush()
 
-    def python_body(self, depth=1, cmv=False):
+    def python_body(self, depth=1, cmv=False, input_map=False):
         """Translate the model into a set of "if" python statements.
 
         `depth` controls the size of indentation. If `cmv` (control missing
@@ -250,13 +252,21 @@ class Tree(object):
         further evaluation.
 
         """
+        def map_data(field, missing=False):
+            if input_map:
+                if missing:
+                    return "not '%s' in data or data['%s']" % (field, field)
+                else:
+                    return "'%s' in data and data['%s']" % (field, field)
+            return field
+
         body = u""
         if self.children:
             if cmv:
                 field = split(self.children)
                 body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
-                         self.fields[field]['slug']))
+                         map_data(self.fields[field]['slug'], True)))
                 if self.fields[self.objective_field]['optype'] == 'numeric':
                     value = self.output
                 else:
@@ -268,10 +278,12 @@ class Tree(object):
             for child in self.children:
                 body += (u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
-                         self.fields[child.predicate.field]['slug'],
+                         map_data(self.fields[child.predicate.field]['slug'],
+                                  False),
                          PYTHON_OPERATOR[child.predicate.operator],
                          repr(child.predicate.value)))
-                body += child.python_body(depth + 1, cmv=cmv)
+                body += child.python_body(depth + 1, cmv=cmv,
+                                          input_map=input_map)
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output
@@ -286,22 +298,26 @@ class Tree(object):
 
         """
         args = []
-
         if input_fields is None:
             parameters = sort_fields(self.fields)
         else:
             parameters = input_fields
+        input_map = len(parameters) > MAX_ARGS_LENGTH
         for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
             default = None
             if self.fields[field[0]]['optype'] == 'numeric':
                 default = self.fields[field[0]]['summary']['median']
-            if field[0] != self.objective_field:
-                if input_fields is None:
-                    args.append("%s=%s" % (slug, default))
-                else:
-                    args.append("%s" % slug)
+            if not input_map:
+                if field[0] != self.objective_field:
+                    if input_fields is None:
+                        args.append("%s=%s" % (slug, default))
+                    else:
+                        args.append("%s" % slug)
+        if input_map:
+            args.append("data={}")
+            cmv = True
         predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
@@ -309,7 +325,8 @@ class Tree(object):
                                    (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        predictor += predictor_doc + self.python_body(cmv=cmv)
+        predictor += predictor_doc + self.python_body(cmv=cmv,
+                                                      input_map=input_map)
         out.write(utf8(predictor))
         out.flush()
 

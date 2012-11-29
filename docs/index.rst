@@ -722,42 +722,52 @@ and that can be useful to make the model actionable right away with ``local_mode
 ::
 
     local_model.python()
-    def predict_species(sepal_length=5.77889,
-                        sepal_width=3.02044,
-                        petal_length=4.34142,
-                        petal_width=1.32848):
-        """ Predictor for species from model/5030e496155268765f000343
+    def predict_species(sepal_length=None,
+                        sepal_width=None,
+                        petal_length=None,
+                        petal_width=None):
+        """ Predictor for species from model/50a8e2d9eabcb404d2000293
 
+            Predictive model by BigML - Machine Learning Made Easy
         """
-
-        if (petal_length > 2.45):
-            if (petal_width > 1.65):
-                if (petal_length > 5.05):
-                     return 'Iris-virginica'
-                if (petal_length <= 5.05):
-                    if (sepal_width > 2.9):
-                        if (sepal_length > 5.95):
-                            if (petal_length > 4.95):
-                                 return 'Iris-versicolor'
-                            if (petal_length <= 4.95):
-                                 return 'Iris-virginica'
-                        if (sepal_length <= 5.95):
-                             return 'Iris-versicolor'
-                    if (sepal_width <= 2.9):
-                         return 'Iris-virginica'
-            if (petal_width <= 1.65):
-                if (petal_length > 4.95):
-                    if (sepal_length > 6.05):
-                         return 'Iris-virginica'
-                    if (sepal_length <= 6.05):
-                        if (sepal_width > 2.45):
-                             return 'Iris-versicolor'
-                        if (sepal_width <= 2.45):
-                             return 'Iris-virginica'
-                if (petal_length <= 4.95):
-                     return 'Iris-versicolor'
+        if (petal_length is None):
+            return 'Iris-virginica'
         if (petal_length <= 2.45):
-             return 'Iris-setosa'
+            return 'Iris-setosa'
+        if (petal_length > 2.45):
+            if (petal_width is None):
+                return 'Iris-virginica'
+            if (petal_width <= 1.65):
+                if (petal_length <= 4.95):
+                    return 'Iris-versicolor'
+                if (petal_length > 4.95):
+                    if (sepal_length is None):
+                        return 'Iris-virginica'
+                    if (sepal_length <= 6.05):
+                        if (petal_width <= 1.55):
+                            return 'Iris-virginica'
+                        if (petal_width > 1.55):
+                            return 'Iris-versicolor'
+                    if (sepal_length > 6.05):
+                        return 'Iris-virginica'
+            if (petal_width > 1.65):
+                if (petal_length <= 5.05):
+                    if (sepal_width is None):
+                        return 'Iris-virginica'
+                    if (sepal_width <= 2.9):
+                        return 'Iris-virginica'
+                    if (sepal_width > 2.9):
+                        if (sepal_length is None):
+                            return 'Iris-virginica'
+                        if (sepal_length <= 6.4):
+                            if (sepal_length <= 5.95):
+                                return 'Iris-versicolor'
+                            if (sepal_length > 5.95):
+                                return 'Iris-virginica'
+                        if (sepal_length > 6.4):
+                            return 'Iris-versicolor'
+                if (petal_length > 5.05):
+                    return 'Iris-virginica'
 
 The ``local.python(hadoop=True)`` call will generate the code that you need
 for the Hadoop map-reduce engine to produce batch predictions using `Hadoop

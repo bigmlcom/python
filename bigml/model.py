@@ -152,8 +152,7 @@ class Tree(object):
 
         self.children = children
         self.count = tree['count']
-        self.confidence = (None if not 'confidence' in tree
-                           else tree['confidence'])
+        self.confidence = tree.get('confidence', None)
         if 'distribution' in tree:
             self.distribution = tree['distribution']
         elif ('objective_summary' in tree):
@@ -189,12 +188,14 @@ class Tree(object):
             out.flush()
         return self.fields
 
-    def predict(self, input_data, path=[]):
+    def predict(self, input_data, path=None):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by Id.
 
         """
+        if not path:
+            path = []
         if self.children and split(self.children) in input_data:
             for child in self.children:
                 if apply(OPERATOR[child.predicate.operator],
@@ -243,15 +244,14 @@ class Tree(object):
         out.write(utf8(self.generate_rules()))
         out.flush()
 
-    def python_body(self, depth=1, cmv=False, input_map=False):
+    def python_body(self, depth=1, cmv=None, input_map=False):
         """Translate the model into a set of "if" python statements.
 
-        `depth` controls the size of indentation. If `cmv` (control missing
-        values) is set to True then as soon as a value is missing to
-        evaluate a predicate the output at that node is returned without
-        further evaluation.
+        `depth` controls the size of indentation. As soon as a value is missing
+        that node is returned without further evaluation.
 
         """
+
         def map_data(field, missing=False):
             """Returns the subject of the condition in map format when
                more than MAX_ARGS_LENGTH arguments are used.
@@ -262,12 +262,12 @@ class Tree(object):
                 else:
                     return "data['%s']" % field
             return field
-
+        if cmv is None:
+            cmv = []
         body = u""
-        alternate = ""
         if self.children:
-            if cmv:
-                field = split(self.children)
+            field = split(self.children)
+            if not self.fields[field]['slug'] in cmv:
                 body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
                          map_data(self.fields[field]['slug'], True)))
@@ -278,54 +278,44 @@ class Tree(object):
                 body += (u"%sreturn %s\n" %
                         (INDENT * (depth + 1),
                          value))
-                alternate = "el" if input_map else ""
+                cmv.append(self.fields[field]['slug'])
 
             for child in self.children:
-                body += (u"%s%sif (%s %s %s):\n" %
+                if self.fields[child.predicate.field]['optype'] == 'numeric':
+                    value = child.predicate.value
+                else:
+                    value = repr(child.predicate.value)
+                body += (u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
-                         alternate,
-                         map_data(self.fields[child.predicate.field]['slug'],
-                                  False),
+                         map_data(self.fields[child.predicate.field]['slug'], False),
                          PYTHON_OPERATOR[child.predicate.operator],
-                         repr(child.predicate.value)))
-                body += child.python_body(depth + 1, cmv=cmv,
+                         value))
+                body += child.python_body(depth + 1, cmv=cmv[:],
                                           input_map=input_map)
-                alternate = "el" if input_map else ""
-                    
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output
             else:
                 value = repr(self.output)
             body = u"%sreturn %s\n" % (INDENT * depth, value)
-
         return body
 
-    def python(self, out, docstring, cmv=False, input_fields=None):
+    def python(self, out, docstring, input_map=False):
         """Writes a python function that implements the model.
 
         """
         args = []
-        if input_fields is None:
-            parameters = sort_fields(self.fields)
-        else:
-            parameters = input_fields
-        input_map = len(parameters) > MAX_ARGS_LENGTH and not input_fields
+        parameters = sort_fields(self.fields)
+        if not input_map:
+            input_map = len(parameters) > MAX_ARGS_LENGTH
         for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
-            default = None
-            if self.fields[field[0]]['optype'] == 'numeric':
-                default = self.fields[field[0]]['summary']['median']
             if not input_map:
                 if field[0] != self.objective_field:
-                    if input_fields is None:
-                        args.append("%s=%s" % (slug, default))
-                    else:
-                        args.append("%s" % slug)
+                    args.append("%s=None" % (slug))
         if input_map:
             args.append("data={}")
-            cmv = True
         predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
@@ -333,8 +323,7 @@ class Tree(object):
                                    (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        predictor += predictor_doc + self.python_body(cmv=cmv,
-                                                      input_map=input_map)
+        predictor += predictor_doc + self.python_body(input_map=input_map)
         out.write(utf8(predictor))
         out.flush()
 
@@ -360,16 +349,26 @@ class Model(object):
         if ('model' in model and isinstance(model['model'], dict)):
             if ('status' in model and 'code' in model['status']):
                 if model['status']['code'] == FINISHED:
-                    fields = model['model']['fields']
+                    if 'model_fields' in model['model']:
+                        fields = model['model']['model_fields']
+                        for field in fields:
+                            field_info = model['model']['fields'][field] 
+                            fields[field]['summary'] = field_info['summary']
+                            fields[field]['name'] = field_info['name']
+                    else:
+                        fields = model['model']['fields']
                     self.inverted_fields = invert_dictionary(fields)
                     self.tree = Tree(
                         model['model']['root'],
                         fields,
                         model['objective_fields'])
                     self.description = model['description']
-                    self.field_importance = (None if not 'importance'
-                                             in model['model']
-                                             else model['model']['importance'])
+                    self.field_importance = model['model'].get('importance',
+                                                               None)
+                    if self.field_importance:
+                        self.field_importance = [element for element
+                                                 in self.field_importance
+                                                 if element[0] in fields]
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -389,6 +388,11 @@ class Model(object):
         `by_name` to input them directly keyed by id.
 
         """
+        remove = [(key, value) for (key, value) in input_data.items()
+                  if value is None]
+        for (key, value) in remove:
+            del input_data[key]
+
         if by_name:
             try:
                 input_data = dict(
@@ -598,7 +602,7 @@ class Model(object):
                 return ""
             objective_type = tree.fields[tree.objective_field]['optype']
             if objective_type == 'numeric':
-                return u" [Error: +/-%s]" % value
+                return u" [Error: %s]" % value
             else:
                 return u" [Confidence: %.2f%%]" % (round(value, 4) * 100)
 
@@ -656,6 +660,12 @@ class Model(object):
                                key=lambda x: x[1])]
         parameters = [value for (key, value) in
                       input_fields if key != self.tree.objective_field]
+        args = []
+        for field in input_fields:
+            slug = slugify(self.tree.fields[field[0]]['name'])
+            self.tree.fields[field[0]].update(slug=slug)
+            if field[0] != self.tree.objective_field:
+                args.append("\"" + self.tree.fields[field[0]]['slug'] + "\"")
         output = \
 u"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -685,8 +695,8 @@ class CSVInput(object):
             self.reader = csv.reader(input, delimiter=',', quotechar='\"')
 """ % ",".join(parameters)
 
-        output += u"\n%sself.INPUT_FIELDS = %s\n" % ((INDENT * 3),
-                                                     len(parameters))
+        output += u"\n%sself.INPUT_FIELDS = [%s]\n" % ((INDENT * 3),
+                                                       (",\n " + INDENT * 8).join(args))
 
         input_types = []
         prefixes = []
@@ -758,12 +768,12 @@ u"""            self.MISSING_TOKENS = ['?']
             values = self.reader.next()
         except StopIteration:
             raise StopIteration()
-        if len(values) < self.INPUT_FIELDS:
+        if len(values) < len(self.INPUT_FIELDS):
             sys.stderr.write(\"Found %s fields when %s were expected.\\n\" %
-                             (len(values), self.INPUT_FIELDS))
+                             (len(values), len(self.INPUT_FIELDS)))
             raise StopIteration()
         else:
-            values = values[0:self.INPUT_FIELDS]
+            values = values[0:len(self.INPUT_FIELDS)]
         try:
             values = map(normalize, values)
             for key in self.PREFIXES:
@@ -776,7 +786,10 @@ u"""            self.MISSING_TOKENS = ['?']
                     values[key] = values[key][0:-suffix_len]
             function_tuples = zip(self.INPUT_TYPES, values)
             values = map(cast, function_tuples)
-            return values
+            data = {}
+            for i in range(len(values)):
+                data.update({self.INPUT_FIELDS[i]: values[i]})
+            return data
         except Exception, exc:
             sys.stderr.write(\"Error in data transformations. %s\\n\" % str(exc))
             return False
@@ -786,14 +799,13 @@ u"""            self.MISSING_TOKENS = ['?']
         out.flush()
 
         self.tree.python(out, self.docstring(),
-                         cmv=True,
-                         input_fields=input_fields)
+                         input_map=True)
         output = \
 u"""
 csv = CSVInput()
 for values in csv:
     if not isinstance(values, bool):
-        print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(*values)))
+        print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(values)))
 \n\n
 """ % fields[self.tree.objective_field]['slug']
         out.write(utf8(output))
@@ -822,12 +834,9 @@ previous = None
 def print_result(values, prediction, count):
     \"\"\"Prints input data and predicted value as an ordered list.
 
-          The list contains the input fields and the prediction in the
-          following order:
-          [%s, %s]
     \"\"\"
-    result = \"%%s, %%s]\" %% (values.strip(']'), prediction)
-    print u\"%%s\\t%%s\" %% (result, count)
+    result = \"[%s, %s]\" % (values, prediction)
+    print u\"%s\\t%s\" % (result, count)
 
 for line in sys.stdin:
     values, prediction = line.strip().split('\\t')
@@ -840,6 +849,6 @@ for line in sys.stdin:
     count += 1
 if count > 0:
     print_result(previous[0], previous[1], count)
-""" % (", ".join(parameters), fields[self.tree.objective_field]['name'])
+"""
         out.write(utf8(output))
         out.flush()

@@ -165,6 +165,13 @@ use ``get_fields``::
                        u'name': u'species',
                        u'optype': u'categorical'}}
 
+When the number of fields becomes very large, it can be useful to exclude or
+filter them. This can be done using a query string expression, for instance::
+
+    >>> source = api.get_source(source, "limit=10&order_by=name")
+
+would include in the retrieved dictionary the first 10 fields sorted by name.
+
 Dataset
 -------
 
@@ -200,6 +207,13 @@ field id::
                                                           [   u'Iris-virginica',
                                                               50]],
                                        u'missing_count': 0}}}
+
+The field filtering options are also available using a query string expression,
+ for instance::
+
+    >>> dataset = api.get_dataset(dataset, "limit=20")
+
+limits the number of fields that will be included in `dataset` to 20.
 
 Model
 -----
@@ -238,6 +252,13 @@ predictive model for the example above::
 (Note that we have abbreviated the output in the snippet above for
 readability: the full predictive model you'll get is going to contain
 much more details).
+
+Again, filtering options are also available using a query string expression,
+ for instance::
+
+    >>> model = api.get_model(model, "limit=5")
+
+limits the number of fields that will be included in `model` to 5.
 
 Creating Resources
 ------------------
@@ -594,6 +615,11 @@ You can instantiate a local version of a remote model.
 
 This will return a Model object that you can use to make local predictions,
 generate IF-THEN rules or a Python function that implements the model.
+
+Beware of using filtered fields models to instantiate a local model. The local
+model methods need the important fields in the `model` parameter to be
+ available. If an important field is missing (because it has been excluded or
+filtered), an exception will arise.
 
 Multi Models
 ------------

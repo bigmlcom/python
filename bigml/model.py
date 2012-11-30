@@ -351,6 +351,14 @@ class Model(object):
                 if model['status']['code'] == FINISHED:
                     if 'model_fields' in model['model']:
                         fields = model['model']['model_fields']
+                        # pagination or exclusion might cause a field not to
+                        # be in available fields dict
+                        if not all(key in model['model']['fields']
+                                   for key in fields.keys()):
+                            raise Exception("Some fields are missing"
+                                            " to generate a local model."
+                                            " Please, provide a model with"
+                                            " the complete list of fields.")
                         for field in fields:
                             field_info = model['model']['fields'][field] 
                             fields[field]['summary'] = field_info['summary']

@@ -319,7 +319,7 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def _get(self, url):
+    def _get(self, url, query_string=''):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -342,7 +342,7 @@ class BigML(object):
                 "message": "The resource couldn't be retrieved"}}
 
         try:
-            response = requests.get(url + self.auth, headers=ACCEPT_JSON,
+            response = requests.get(url + self.auth + query_string, headers=ACCEPT_JSON,
                                     verify=VERIFY)
             code = response.status_code
 
@@ -903,13 +903,14 @@ class BigML(object):
         else:
             return self._stream_source(file_name=path, args=args, async=async,
                                        progress_bar=progress_bar, out=out)
-    def get_source(self, source):
+    def get_source(self, source, query_string=''):
         """Retrieves a remote source.
 
         """
         source_id = get_source_id(source)
         if source_id:
-            return self._get("%s%s" % (self.url, source_id))
+            return self._get("%s%s" % (self.url, source_id),
+                             query_string=query_string)
 
     def source_is_ready(self, source):
         """Checks whether a source' status is FINISHED.
@@ -971,13 +972,14 @@ class BigML(object):
             body = json.dumps(args)
             return self._create(self.dataset_url, body)
 
-    def get_dataset(self, dataset):
+    def get_dataset(self, dataset, query_string=''):
         """Retrieves a dataset.
 
         """
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
-            return self._get("%s%s" % (self.url, dataset_id))
+            return self._get("%s%s" % (self.url, dataset_id),
+                             query_string=query_string)
 
     def dataset_is_ready(self, dataset):
         """Check whether a dataset' status is FINISHED.
@@ -1034,13 +1036,14 @@ class BigML(object):
             body = json.dumps(args)
             return self._create(self.model_url, body)
 
-    def get_model(self, model):
+    def get_model(self, model, query_string=''):
         """Retrieves a model.
 
         """
         model_id = get_model_id(model)
         if model_id:
-            return self._get("%s%s" % (self.url, model_id))
+            return self._get("%s%s" % (self.url, model_id),
+                             query_string=query_string)
 
     def model_is_ready(self, model):
         """Checks whether a model's status is FINISHED.

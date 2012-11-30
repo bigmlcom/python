@@ -91,7 +91,7 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=False):
+    def predict(self, input_data, by_name=True):
         """Makes a prediction based on the prediction made by every model.
 
         """

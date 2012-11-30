@@ -57,6 +57,7 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url
+from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
@@ -128,7 +129,6 @@ STATUSES = {
 }
 
 PROGRESS_BAR_WIDTH = 50
-
 
 def get_resource(regex, resource):
     """Returns a resource/id.
@@ -209,7 +209,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False):
+                 debug=False, set_locale=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -232,9 +232,16 @@ class BigML(object):
                             stream=sys.stdout)
 
         if username is None:
-            username = os.environ['BIGML_USERNAME']
+            try:
+                username = os.environ['BIGML_USERNAME']
+            except KeyError:
+                sys.exit("Cannot find BIGML_USERNAME in your environment")
+
         if api_key is None:
-            api_key = os.environ['BIGML_API_KEY']
+            try:
+                api_key = os.environ['BIGML_API_KEY']
+            except KeyError:
+                sys.exit("Cannot find BIGML_API_KEY in your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
@@ -250,7 +257,8 @@ class BigML(object):
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
 
-        locale.setlocale(locale.LC_ALL, 'en_US')
+        if set_locale:
+            locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -311,7 +319,7 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def _get(self, url):
+    def _get(self, url, query_string=''):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -334,7 +342,7 @@ class BigML(object):
                 "message": "The resource couldn't be retrieved"}}
 
         try:
-            response = requests.get(url + self.auth, headers=ACCEPT_JSON,
+            response = requests.get(url + self.auth + query_string, headers=ACCEPT_JSON,
                                     verify=VERIFY)
             code = response.status_code
 
@@ -670,7 +678,11 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        files = {os.path.basename(file_name): open(file_name, "rb")}
+        try:
+            files = {os.path.basename(file_name): open(file_name, "rb")}
+        except IOError:
+            sys.exit("ERROR: cannot read training set")
+
         try:
             response = requests.post(self.source_url + self.auth,
                                      files=files,
@@ -764,10 +776,11 @@ class BigML(object):
         source['error'] = error
 
     def _stream_source(self, file_name, args=None, async=False,
-                       out=sys.stdout):
+                       progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
         """
+
         def clear_progress_bar():
             """Fills progress bar with blanks.
 
@@ -827,8 +840,16 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        args.update({os.path.basename(file_name): open(file_name, "rb")})
-        body, headers = multipart_encode(args, cb=draw_progress_bar)
+        try:
+            args.update({os.path.basename(file_name): open(file_name, "rb")})
+        except IOError:
+            sys.exit("Error: cannot read training set")
+
+        if progress_bar:
+            body, headers = multipart_encode(args, cb=draw_progress_bar)
+        else:
+            body, headers = multipart_encode(args)
+
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
@@ -866,7 +887,8 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def create_source(self, path=None, args=None, async=False, out=sys.stdout):
+    def create_source(self, path=None, args=None, async=False,
+            progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -880,15 +902,15 @@ class BigML(object):
             return self._create_remote_source(url=path, args=args)
         else:
             return self._stream_source(file_name=path, args=args, async=async,
-                                       out=out)
-
-    def get_source(self, source):
+                                       progress_bar=progress_bar, out=out)
+    def get_source(self, source, query_string=''):
         """Retrieves a remote source.
 
         """
         source_id = get_source_id(source)
         if source_id:
-            return self._get("%s%s" % (self.url, source_id))
+            return self._get("%s%s" % (self.url, source_id),
+                             query_string=query_string)
 
     def source_is_ready(self, source):
         """Checks whether a source' status is FINISHED.
@@ -950,13 +972,14 @@ class BigML(object):
             body = json.dumps(args)
             return self._create(self.dataset_url, body)
 
-    def get_dataset(self, dataset):
+    def get_dataset(self, dataset, query_string=''):
         """Retrieves a dataset.
 
         """
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
-            return self._get("%s%s" % (self.url, dataset_id))
+            return self._get("%s%s" % (self.url, dataset_id),
+                             query_string=query_string)
 
     def dataset_is_ready(self, dataset):
         """Check whether a dataset' status is FINISHED.
@@ -1013,13 +1036,14 @@ class BigML(object):
             body = json.dumps(args)
             return self._create(self.model_url, body)
 
-    def get_model(self, model):
+    def get_model(self, model, query_string=''):
         """Retrieves a model.
 
         """
         model_id = get_model_id(model)
         if model_id:
-            return self._get("%s%s" % (self.url, model_id))
+            return self._get("%s%s" % (self.url, model_id),
+                             query_string=query_string)
 
     def model_is_ready(self, model):
         """Checks whether a model's status is FINISHED.

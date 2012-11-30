@@ -23,11 +23,39 @@ import unidecode
 from urlparse import urlparse
 import locale
 
+DEFAULT_LOCALE = 'en_US.UTF-8'
+
+LOCALE_MAP = {
+    'en_US.UTF-8': DEFAULT_LOCALE,
+    'en_US': DEFAULT_LOCALE,
+    'en-US': DEFAULT_LOCALE}
+
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
 LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''
                           r'''<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))'''),
                          re.MULTILINE)
+TYPE_MAP = {
+    "categorical": str,
+    "numeric": locale.atof,
+    "text": str
+}
+
+PYTHON_TYPE_MAP = {
+    "categorical": [unicode, str],
+    "numeric": [int, float],
+    "text": [unicode, str]
+}
+
+
+def python_map_type(value):
+    """Maps a BigML type to equivalent Python types.
+
+    """
+    if value in PYTHON_TYPE_MAP:
+        return PYTHON_TYPE_MAP[value]
+    else:
+        return [unicode, str]
 
 
 def invert_dictionary(dictionary, field='name'):
@@ -139,3 +167,12 @@ def utf8(text):
 
     """
     return text.encode("utf-8")
+
+def map_type(value):
+    """Maps a BigML type to a Python type.
+
+    """
+    if value in TYPE_MAP:
+        return TYPE_MAP[value]
+    else:
+        return str

@@ -407,7 +407,7 @@ class Model(object):
         if by_name:
             wrong_keys = [key for key in input_data.keys() if not key
                           in self.all_inverted_fields]
-            if len(wrong_keys):
+            if wrong_keys:
                 LOGGER.error("Wrong field names in input data: %s" %
                              ", ".join(wrong_keys))
             input_data = dict(

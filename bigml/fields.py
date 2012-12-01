@@ -163,7 +163,7 @@ class Fields(object):
                                    u"\"%s\" for value %s. The expected "
                                    u"fields are: \n%s" %
                                    (field['name'],
-                                    row[count],
+                                    row[index],
                                     ",".join(fields_names))).encode("utf-8")
                         raise Exception(message)
         else:

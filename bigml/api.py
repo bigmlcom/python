@@ -130,6 +130,7 @@ STATUSES = {
 
 PROGRESS_BAR_WIDTH = 50
 
+
 def get_resource(regex, resource):
     """Returns a resource/id.
 
@@ -342,7 +343,8 @@ class BigML(object):
                 "message": "The resource couldn't be retrieved"}}
 
         try:
-            response = requests.get(url + self.auth + query_string, headers=ACCEPT_JSON,
+            response = requests.get(url + self.auth + query_string,
+                                    headers=ACCEPT_JSON,
                                     verify=VERIFY)
             code = response.status_code
 
@@ -800,7 +802,6 @@ class BigML(object):
 
             """
             pct = 100 - ((total - current) * 100) / (total)
-            progress = round(pct * 1.0 / 100, 2)
             clear_progress_bar()
             reset_progress_bar()
             out.write("Uploaded %s out of %s bytes [%s%%]" % (
@@ -888,7 +889,7 @@ class BigML(object):
             'error': error}
 
     def create_source(self, path=None, args=None, async=False,
-            progress_bar=False, out=sys.stdout):
+                      progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -903,6 +904,7 @@ class BigML(object):
         else:
             return self._stream_source(file_name=path, args=args, async=async,
                                        progress_bar=progress_bar, out=out)
+
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.
 

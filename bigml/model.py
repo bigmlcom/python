@@ -399,9 +399,9 @@ class Model(object):
         `by_name` to input them directly keyed by id.
 
         """
-        remove = [(key, value) for (key, value) in input_data.items()
-                  if value is None]
-        for (key, value) in remove:
+        empty_fields = [(key, value) for (key, value) in input_data.items()
+                        if value is None]
+        for (key, value) in empty_fields:
             del input_data[key]
 
         if by_name:

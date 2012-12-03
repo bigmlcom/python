@@ -287,7 +287,8 @@ class Tree(object):
                     value = repr(child.predicate.value)
                 body += (u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
-                         map_data(self.fields[child.predicate.field]['slug'], False),
+                         map_data(self.fields[child.predicate.field]['slug'],
+                         False),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
                 body += child.python_body(depth + 1, cmv=cmv[:],
@@ -360,12 +361,14 @@ class Model(object):
                                             " Please, provide a model with"
                                             " the complete list of fields.")
                         for field in fields:
-                            field_info = model['model']['fields'][field] 
+                            field_info = model['model']['fields'][field]
                             fields[field]['summary'] = field_info['summary']
                             fields[field]['name'] = field_info['name']
                     else:
                         fields = model['model']['fields']
                     self.inverted_fields = invert_dictionary(fields)
+                    self.all_inverted_fields = invert_dictionary(model['model']
+                                                                 ['fields'])
                     self.tree = Tree(
                         model['model']['root'],
                         fields,
@@ -396,19 +399,22 @@ class Model(object):
         `by_name` to input them directly keyed by id.
 
         """
-        remove = [(key, value) for (key, value) in input_data.items()
-                  if value is None]
-        for (key, value) in remove:
+        empty_fields = [(key, value) for (key, value) in input_data.items()
+                        if value is None]
+        for (key, value) in empty_fields:
             del input_data[key]
 
         if by_name:
-            try:
-                input_data = dict(
-                    [[self.inverted_fields[key], value]
-                        for key, value in input_data.items()])
-            except KeyError, field:
-                LOGGER.error("Wrong field name %s" % field)
-                return
+            wrong_keys = [key for key in input_data.keys() if not key
+                          in self.all_inverted_fields]
+            if wrong_keys:
+                LOGGER.error("Wrong field names in input data: %s" %
+                             ", ".join(wrong_keys))
+            input_data = dict(
+                [[self.inverted_fields[key], value]
+                    for key, value in input_data.items()
+                    if key in self.inverted_fields])
+
         for (key, value) in input_data.items():
             if ((self.tree.fields[key]['optype'] == 'numeric' and
                     isinstance(value, basestring)) or (
@@ -703,15 +709,15 @@ class CSVInput(object):
             self.reader = csv.reader(input, delimiter=',', quotechar='\"')
 """ % ",".join(parameters)
 
-        output += u"\n%sself.INPUT_FIELDS = [%s]\n" % ((INDENT * 3),
-                                                       (",\n " + INDENT * 8).join(args))
+        output += (u"\n%sself.INPUT_FIELDS = [%s]\n" %
+                  ((INDENT * 3), (",\n " + INDENT * 8).join(args)))
 
         input_types = []
         prefixes = []
         suffixes = []
         count = 0
         fields = self.tree.fields
-        for key in [key for (key, val) in input_fields
+        for key in [key[0] for key in input_fields
                     if key != self.tree.objective_field]:
             input_type = ('None' if not fields[key]['datatype'] in
                           PYTHON_CONV
@@ -824,12 +830,6 @@ for values in csv:
 
         """
 
-        input_fields = [(value, key) for (key, value) in
-                        sorted(self.inverted_fields.items(),
-                               key=lambda x: x[1])]
-        parameters = [value for (key, value) in
-                      input_fields if key != self.tree.objective_field]
-        fields = self.tree.fields
         output = \
 u"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-

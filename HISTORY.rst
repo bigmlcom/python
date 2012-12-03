@@ -3,13 +3,19 @@
 History
 -------
 
+0.4.4 (2012-12-02)
+~~~~~~~~~~~~~~~~~~
+
+- Tiny fixes
+- Fix local predictions for input data containing fields not included in rules
+- Overall clean up
+
 0.4.3 (2012-11-07)
 ~~~~~~~~~~~~~~~~~~
 
 - A few tiny fixes
 - Multi models to generate predictions from multiple local models
 - Adds hadoop-python code generation to create local predictions
-
 
 0.4.2 (2012-09-19)
 ~~~~~~~~~~~~~~~~~~

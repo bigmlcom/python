@@ -162,11 +162,13 @@ def sort_fields(fields):
             fathers.append(child)
     return fathers
 
+
 def utf8(text):
     """Returns text in utf-8 encoding
 
     """
     return text.encode("utf-8")
+
 
 def map_type(value):
     """Maps a BigML type to a Python type.

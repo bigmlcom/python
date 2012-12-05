@@ -562,7 +562,7 @@ class BigML(object):
         resource = self._get("%s%s" % (self.url, resource_id))
         if resource['code'] == HTTP_OK:
             if  MODEL_RE.match(resource_id):
-                return resource['object']['model']['fields']
+                return resource['object']['model']['model_fields']
             else:
                 return resource['object']['fields']
         return None
@@ -1101,12 +1101,16 @@ class BigML(object):
             elif by_name:
                 fields = self.get_fields(model_id)
                 inverted_fields = invert_dictionary(fields)
-                try:
-                    input_data = dict(
-                        [[inverted_fields[key], value]
-                         for key, value in input_data.items()])
-                except KeyError, field:
-                    LOGGER.error("Wrong field name %s" % field)
+                wrong_keys = [key for key in input_data.keys() if not key
+                              in inverted_fields]
+                if wrong_keys:
+                    LOGGER.error(("Some input fields are"
+                                  " not used in the model: %s") %
+                                 ", ".join(wrong_keys))
+                input_data = dict(
+                    [[inverted_fields[key], value]
+                     for key, value in input_data.items()
+                     if key in inverted_fields])
 
             if args is None:
                 args = {}

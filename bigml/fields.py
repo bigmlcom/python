@@ -75,9 +75,9 @@ class Fields(object):
             new_locale = locale.setlocale(locale.LC_ALL, '')
 
         if verbose and new_locale != data_locale:
-            print """Unable to find %s locale, using %s instead. This
-                     can alter numeric fields values.""" % (data_locale,
-                  new_locale)
+            print ("Unable to find %s locale, using %s instead. This "
+                   "can alter numeric fields values.") % (data_locale,
+                                                          new_locale)
 
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')

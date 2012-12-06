@@ -3,6 +3,11 @@
 History
 -------
 
+0.4.7 (2012-12-06)
+~~~~~~~~~~~~~~~~~~
+
+- Warning message to inform of locale default if verbose mode
+
 0.4.6 (2012-12-06)
 ~~~~~~~~~~~~~~~~~~
 

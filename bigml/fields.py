@@ -54,7 +54,7 @@ class Fields(object):
 
     """
     def __init__(self, fields, missing_tokens=[''],
-                 data_locale=DEFAULT_LOCALE):
+                 data_locale=DEFAULT_LOCALE, verbose=False):
         new_locale = None
         try:
             new_locale = locale.setlocale(locale.LC_ALL, data_locale)
@@ -73,6 +73,11 @@ class Fields(object):
                 pass
         if new_locale is None:
             new_locale = locale.setlocale(locale.LC_ALL, '')
+
+        if verbose and new_locale != data_locale:
+            print ("Unable to find %s locale, using %s instead. This "
+                   "can alter numeric fields values.") % (data_locale,
+                                                          new_locale)
 
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')

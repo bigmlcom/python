@@ -63,16 +63,25 @@ class Fields(object):
         if new_locale is None:
             try:
                 new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+                print """Unable to find %s locale, using %s instead. This
+                         can alter numeric fields values.""" % (data_locale,
+                      new_locale)
             except:
                 pass
         if new_locale is None:
             try:
                 new_locale = locale.setlocale(locale.LC_ALL,
                                               WINDOWS_DEFAULT_LOCALE)
+                print """Unable to find %s locale, using %s instead. This
+                         can alter numeric fields values.""" % (data_locale,
+                      new_locale)
             except:
                 pass
         if new_locale is None:
             new_locale = locale.setlocale(locale.LC_ALL, '')
+            print """Unable to find %s locale, using %s instead. This
+                     can alter numeric fields values.""" % (data_locale,
+                  new_locale)
 
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')

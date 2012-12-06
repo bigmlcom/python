@@ -24,11 +24,7 @@ from urlparse import urlparse
 import locale
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
-
-LOCALE_MAP = {
-    'en_US.UTF-8': DEFAULT_LOCALE,
-    'en_US': DEFAULT_LOCALE,
-    'en-US': DEFAULT_LOCALE}
+WINDOWS_DEFAULT_LOCALE = 'English'
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')

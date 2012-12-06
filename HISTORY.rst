@@ -3,6 +3,16 @@
 History
 -------
 
+0.4.6 (2012-12-06)
+~~~~~~~~~~~~~~~~~~
+
+- Fix locale code for windows
+
+0.4.5 (2012-12-05)
+~~~~~~~~~~~~~~~~~~
+
+- Fix remote predictions for input data containing fields not included in rules
+
 0.4.4 (2012-12-02)
 ~~~~~~~~~~~~~~~~~~
 

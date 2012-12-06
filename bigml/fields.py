@@ -67,7 +67,8 @@ class Fields(object):
                 pass
         if new_locale is None:
             try:
-                new_locale = locale.setlocale(locale.LC_ALL, WINDOWS_DEFAULT_LOCALE)
+                new_locale = locale.setlocale(locale.LC_ALL,
+                                              WINDOWS_DEFAULT_LOCALE)
             except:
                 pass
         if new_locale is None:

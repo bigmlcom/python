@@ -53,6 +53,8 @@ PYTHON_TYPE_MAP = {
     "text": [unicode, str]
 }
 
+PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
+
 
 def python_map_type(value):
     """Maps a BigML type to equivalent Python types.
@@ -205,3 +207,12 @@ def locale_synonyms(main_locale, locale_alias):
                 result = locale_alias in subgroup
                 break
         return result
+
+
+def get_predictions_file_name(model, path):
+    """Returns the file name for a multimodel predictions file
+
+    """
+    return "%s/%s_%s" % (path,
+                         model.replace("/", "_"),
+                         PREDICTIONS_FILE_SUFFIX) 

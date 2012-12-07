@@ -25,6 +25,16 @@ import locale
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
+LOCALE_SYNONYMS = {'en': ['en_us', 'en_us.utf8', 'english_united states.1252'],
+                   'es': ['es_es', 'es_es.utf8', 'spanish_spain.1252'],
+                   'sp': ['es_es', 'es_es.utf8', 'spanish_spain.1252'],
+                   'fr': [['fr_fr', 'fr_fr.utf8', 'fr_ch.utf8', 'fr_be.utf8',
+                           'french_france.1252'],
+                          ['fr_ca', 'fr_ca.utf8', 'french_canada.1252']],
+                   'de': ['de_de', 'de_de.utf8', 'german_germany.1252'],
+                   'ge': ['de_de', 'de_de.utf8', 'german_germany.1252'],
+                   'it': ['it_it', 'it_it.utf8', 'italian_italy.1252'],
+                   'ca': ['ca_es', 'ca_es.utf8', 'catalan_spain.1252']}
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
@@ -174,3 +184,24 @@ def map_type(value):
         return TYPE_MAP[value]
     else:
         return str
+
+
+def locale_synonyms(main_locale, locale_alias):
+    """Returns True if both strings correspond to equivalent locale conventions
+
+    """
+    main_locale = main_locale.lower()
+    locale_alias = locale_alias.lower()
+    language_code = main_locale[0:2]
+    if not language_code in LOCALE_SYNONYMS:
+        return False
+    alternatives = LOCALE_SYNONYMS[language_code]
+    if isinstance(alternatives[0], basestring):
+        return (main_locale in alternatives and locale_alias in alternatives)
+    else:
+        result = False
+        for subgroup in alternatives:
+            if main_locale in subgroup:
+                result = locale_alias in subgroup
+                break
+        return result

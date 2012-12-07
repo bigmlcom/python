@@ -46,7 +46,7 @@ import locale
 
 from bigml.util import invert_dictionary, map_type
 from bigml.util import DEFAULT_LOCALE, WINDOWS_DEFAULT_LOCALE
-from bigml.util import python_map_type
+from bigml.util import python_map_type, locale_synonyms
 
 
 class Fields(object):
@@ -74,10 +74,10 @@ class Fields(object):
         if new_locale is None:
             new_locale = locale.setlocale(locale.LC_ALL, '')
 
-        if verbose and new_locale != data_locale:
-            print ("Unable to find %s locale, using %s instead. This "
-                   "can alter numeric fields values.") % (data_locale,
-                                                          new_locale)
+        if verbose and not locale_synonyms(data_locale, new_locale):
+            print ("WARNING: Unable to find %s locale, using %s instead. This "
+                   "might alter numeric fields values.\n") % (data_locale,
+                                                              new_locale)
 
         self.fields = fields
         self.fields_by_name = invert_dictionary(fields, 'name')

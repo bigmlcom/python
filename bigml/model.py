@@ -208,9 +208,9 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-            return self.output, path
+            return self.output, path, self.confidence
         else:
-            return self.output, path
+            return self.output, path, self.confidence
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.
@@ -395,8 +395,8 @@ class Model(object):
         """
         self.tree.list_fields(out)
 
-    def predict(self, input_data,
-                by_name=True, print_path=False, out=sys.stdout):
+    def predict(self, input_data, by_name=True,
+                print_path=False, out=sys.stdout, with_confidence=False):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -434,12 +434,14 @@ class Model(object):
                                     (self.tree.fields[key]['name'],
                                      value))
 
-        prediction, path = self.tree.predict(input_data)
+        prediction, path, confidence = self.tree.predict(input_data)
 
         # Prediction path
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
+        if with_confidence:
+            return [prediction, confidence]
         return prediction
 
     def docstring(self):

@@ -64,12 +64,17 @@ def combine_predictions(predictions):
         return avg(predictions)
     else:
         mode = {}
+        order = 0
         for prediction in predictions:
             if prediction in mode:
-                mode[prediction] = mode[prediction] + 1
+                mode[prediction] = {
+                        "count": mode[prediction]["count"] + 1,
+                        "order": mode[prediction]["order"]}
             else:
-                mode[prediction] = 1
-        return max(mode.iteritems(), key=operator.itemgetter(1))[0]
+                order = order + 1
+                mode[prediction] = {"count": 1, "order": order}
+        return sorted(mode.items(), key=lambda x: (x[1]['count'], -x[1]['order']),
+                reverse=True)[0][0]
 
 
 class MultiModel(object):

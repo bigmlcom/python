@@ -67,14 +67,14 @@ def combine_predictions(predictions):
         order = 0
         for prediction in predictions:
             if prediction in mode:
-                mode[prediction] = {
-                        "count": mode[prediction]["count"] + 1,
-                        "order": mode[prediction]["order"]}
+                mode[prediction] = {"count": mode[prediction]["count"] + 1,
+                                    "order": mode[prediction]["order"]}
             else:
                 order = order + 1
                 mode[prediction] = {"count": 1, "order": order}
-        return sorted(mode.items(), key=lambda x: (x[1]['count'], -x[1]['order']),
-                reverse=True)[0][0]
+        return sorted(mode.items(), key=lambda x: (x[1]['count'],
+                                                   -x[1]['order']),
+                      reverse=True)[0][0]
 
 
 class MultiModel(object):
@@ -119,7 +119,7 @@ class MultiModel(object):
                 model_[id of the model]_predictions.csv
            For instance, when using model/50c0de043b563519830001c2 to predict,
            if output_file_suffix has the value 'predictions.csv' the output
-           file name will be 
+           file name will be
                 model_50c0de043b563519830001c2_predictions.csv
         """
         for model in self.models:
@@ -152,7 +152,7 @@ class MultiModel(object):
         for model in self.models:
             predictions_files.append((model, csv.reader(open(
                 get_predictions_file_name(model.resource_id,
-                predictions_file_path), "U"))))
+                                          predictions_file_path), "U"))))
         votes = []
         predictions = {}
         prediction = True

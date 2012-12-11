@@ -25,16 +25,25 @@ import locale
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
-LOCALE_SYNONYMS = {'en': ['en_us', 'en_us.utf8', 'english_united states.1252'],
-                   'es': ['es_es', 'es_es.utf8', 'spanish_spain.1252'],
-                   'sp': ['es_es', 'es_es.utf8', 'spanish_spain.1252'],
+LOCALE_SYNONYMS = {'en': ['en_us', 'en_us.utf8', 'en_us.utf-8',
+                          'english_united states.1252'],
+                   'es': ['es_es', 'es_es.utf8', 'es_es.utf-8',
+                          'spanish_spain.1252'],
+                   'sp': ['es_es', 'es_es.utf8', 'es_es.utf-8',
+                          'spanish_spain.1252'],
                    'fr': [['fr_fr', 'fr_fr.utf8', 'fr_ch.utf8', 'fr_be.utf8',
+                           'fr_fr.utf-8', 'fr_ch.utf-8', 'fr_be.utf-8',
                            'french_france.1252'],
-                          ['fr_ca', 'fr_ca.utf8', 'french_canada.1252']],
-                   'de': ['de_de', 'de_de.utf8', 'german_germany.1252'],
-                   'ge': ['de_de', 'de_de.utf8', 'german_germany.1252'],
-                   'it': ['it_it', 'it_it.utf8', 'italian_italy.1252'],
-                   'ca': ['ca_es', 'ca_es.utf8', 'catalan_spain.1252']}
+                          ['fr_ca', 'fr_ca.utf8', 'fr_ca.utf-8',
+                           'french_canada.1252']],
+                   'de': ['de_de', 'de_de.utf8', 'de_de.utf-8',
+                          'german_germany.1252'],
+                   'ge': ['de_de', 'de_de.utf8', 'de_de.utf-8',
+                          'german_germany.1252'],
+                   'it': ['it_it', 'it_it.utf8', 'it_it.utf-8',
+                          'italian_italy.1252'],
+                   'ca': ['ca_es', 'ca_es.utf8', 'ca_es.utf-8',
+                          'catalan_spain.1252']}
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')

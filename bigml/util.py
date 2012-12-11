@@ -209,10 +209,39 @@ def locale_synonyms(main_locale, locale_alias):
         return result
 
 
+def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
+    """Looks for the given locale or the cosest alternatives
+
+    """
+    new_locale = None
+    try:
+        new_locale = locale.setlocale(locale.LC_ALL, data_locale)
+    except:
+        pass
+    if new_locale is None:
+        try:
+            new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+        except:
+            pass
+    if new_locale is None:
+        try:
+            new_locale = locale.setlocale(locale.LC_ALL,
+                                          WINDOWS_DEFAULT_LOCALE)
+        except:
+            pass
+    if new_locale is None:
+        new_locale = locale.setlocale(locale.LC_ALL, '')
+
+    if verbose and not locale_synonyms(data_locale, new_locale):
+        print ("WARNING: Unable to find %s locale, using %s instead. This "
+               "might alter numeric fields values.\n") % (data_locale,
+                                                          new_locale)
+
+
 def get_predictions_file_name(model, path):
     """Returns the file name for a multimodel predictions file
 
     """
     return "%s/%s_%s" % (path,
                          model.replace("/", "_"),
-                         PREDICTIONS_FILE_SUFFIX) 
+                         PREDICTIONS_FILE_SUFFIX)

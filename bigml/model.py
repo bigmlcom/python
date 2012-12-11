@@ -53,10 +53,12 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import operator
+import locale
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields, utf8, map_type
+    prefix_as_comment, sort_fields, utf8, map_type, find_locale
+from bigml.util import DEFAULT_LOCALE
 
 
 # Map operator str to its corresponding function
@@ -380,6 +382,8 @@ class Model(object):
                         self.field_importance = [element for element
                                                  in self.field_importance
                                                  if element[0] in fields]
+                    self.locale = model.get('locale', DEFAULT_LOCALE)
+
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -860,3 +864,17 @@ if count > 0:
 """
         out.write(utf8(output))
         out.flush()
+
+    def to_prediction(self, value_as_string, data_locale=DEFAULT_LOCALE):
+        """Given a prediction string, returns its value in the required type
+
+        """
+        objective_field = self.tree.objective_field
+        if self.tree.fields[objective_field]['optype'] == 'numeric':
+            if data_locale is None:
+                data_locale = self.locale
+            find_locale(data_locale)
+            return eval(PYTHON_CONV[self.tree.fields[objective_field]
+                        ['datatype']])(value_as_string)
+        else:
+            return unicode(value_as_string, "utf-8")

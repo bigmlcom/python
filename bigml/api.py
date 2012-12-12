@@ -56,7 +56,8 @@ try:
 except ImportError:
     import json
 
-from bigml.util import invert_dictionary, localize, is_url
+from bigml.util import invert_dictionary, localize, is_url, \
+    clear_progress_bar, reset_progress_bar
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -127,8 +128,6 @@ STATUSES = {
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
-
-PROGRESS_BAR_WIDTH = 50
 
 
 def get_resource(regex, resource):
@@ -783,30 +782,16 @@ class BigML(object):
 
         """
 
-        def clear_progress_bar():
-            """Fills progress bar with blanks.
-
-            """
-            out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
-            out.flush()
-
-        def reset_progress_bar():
-            """Returns cursor to first column.
-
-            """
-            out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
-            out.flush()
-
         def draw_progress_bar(param, current, total):
             """Draws a text based progress report.
 
             """
             pct = 100 - ((total - current) * 100) / (total)
-            clear_progress_bar()
-            reset_progress_bar()
+            clear_progress_bar(out=out)
+            reset_progress_bar(out=out)
             out.write("Uploaded %s out of %s bytes [%s%%]" % (
                 localize(current), localize(total), pct))
-            reset_progress_bar()
+            reset_progress_bar(out=out)
 
         if args is None:
             args = {}
@@ -854,8 +839,8 @@ class BigML(object):
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
-            clear_progress_bar()
-            reset_progress_bar()
+            clear_progress_bar(out=out)
+            reset_progress_bar(out=out)
             code = response.getcode()
             if code == HTTP_CREATED:
                 location = response.headers['location']

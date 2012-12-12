@@ -22,6 +22,7 @@ import re
 import unidecode
 from urlparse import urlparse
 import locale
+import sys
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
@@ -63,6 +64,8 @@ PYTHON_TYPE_MAP = {
 }
 
 PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
+
+PROGRESS_BAR_WIDTH = 50
 
 
 def python_map_type(value):
@@ -225,18 +228,18 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     new_locale = None
     try:
         new_locale = locale.setlocale(locale.LC_ALL, data_locale)
-    except:
+    except locale.Error:
         pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
-        except:
+        except locale.Error:
             pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL,
                                           WINDOWS_DEFAULT_LOCALE)
-        except:
+        except locale.Error:
             pass
     if new_locale is None:
         new_locale = locale.setlocale(locale.LC_ALL, '')
@@ -254,3 +257,19 @@ def get_predictions_file_name(model, path):
     return "%s/%s_%s" % (path,
                          model.replace("/", "_"),
                          PREDICTIONS_FILE_SUFFIX)
+
+
+def clear_progress_bar(out=sys.stdout):
+    """Fills progress bar with blanks.
+
+    """
+    out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+    out.flush()
+
+
+def reset_progress_bar(out=sys.stdout):
+    """Returns cursor to first column.
+
+    """
+    out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
+    out.flush()

@@ -53,7 +53,6 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import operator
-import locale
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \

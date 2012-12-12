@@ -39,8 +39,6 @@ model.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
-
-import operator
 import numbers
 import csv
 from bigml.model import Model
@@ -130,7 +128,7 @@ class MultiModel(object):
                     predictions_file = open(output_file)
                     predictions_file.close()
                     continue
-                except:
+                except IOError:
                     pass
             predictions_file = csv.writer(open(output_file, 'w', 0))
             for input_data in input_data_list:

@@ -195,7 +195,7 @@ class Tree(object):
         The input fields must be keyed by Id.
 
         """
-        if not path:
+        if path is None:
             path = []
         if self.children and split(self.children) in input_data:
             for child in self.children:

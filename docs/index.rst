@@ -641,8 +641,47 @@ combining the outputs of each model.
 
     model.predict({"petal length": 3, "petal width": 1})
 
-This will create a multi model using all the models that been previously tagged
-with `my_tag`.
+This will create a multi model using all the models that have been previously
+tagged with `my_tag`.
+
+When making predictions on a test set with a large number of models,
+`batch_prediction` can be useful to log each model's predictions in a
+separated file. It expects a list of input data values and the directory path
+to save the prediction files in.
+
+::
+    model.batch_predict([{"petal length": 3, "petal width": 1},
+                         {"petal length": 1, "petal width": 5.1}],
+                        "data/predictions"}
+
+The predictions generated for each model will be stored in an output
+file in `data/predictions` using the syntax
+`model_[id of the model]_predictions.csv`. For instance, when using
+`model/50c0de043b563519830001c2` to predict, the output file name will be
+`model_50c0de043b563519830001c2_predictions.csv`. An additional feature is
+that using `reuse=True` as agument will force the function to skip the
+creation of the file if it already exists. This can be
+helpful when using repeatedly a bunch of models on the same test set.
+
+::
+    model.batch_predict([{"petal length": 3, "petal width": 1},
+                         {"petal length": 1, "petal width": 5.1}],
+                        "data/predictions", reuse=True}
+
+Prediction files can be subsequently retrieved and converted into a votes list
+using `batch_votes`::
+
+    model.batch_votes("data/predictions")
+
+wich will return a list of votes for predictions, one for each item in the
+input data list (e.g. [{u'Iris-versicolor': 2}, {u'Iris-setosa': 2}]).
+These votes can be further combined to issue a final
+prediction for each input data element using the function `combine_predictions`
+
+::
+
+    for predictions in model.batch_votes("data/predictions"):
+        prediction = combine_predictions(predictions)
 
 
 Local Predictions

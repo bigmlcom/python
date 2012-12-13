@@ -116,8 +116,7 @@ class MultiModel(object):
            file. The name of the file will use the following syntax:
                 model_[id of the model]_predictions.csv
            For instance, when using model/50c0de043b563519830001c2 to predict,
-           if output_file_suffix has the value 'predictions.csv' the output
-           file name will be
+           the output file name will be
                 model_50c0de043b563519830001c2_predictions.csv
         """
         for model in self.models:
@@ -130,7 +129,10 @@ class MultiModel(object):
                     continue
                 except IOError:
                     pass
-            predictions_file = csv.writer(open(output_file, 'w', 0))
+            try:
+                predictions_file = csv.writer(open(output_file, 'w', 0))
+            except IOError:
+                raise Exception("Cannot find %s directory." % output_file_path)
             for input_data in input_data_list:
                 prediction = model.predict(input_data,
                                            by_name=by_name,

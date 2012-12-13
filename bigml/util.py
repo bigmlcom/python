@@ -228,18 +228,18 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     new_locale = None
     try:
         new_locale = locale.setlocale(locale.LC_ALL, data_locale)
-    except locale.Error:
+    except:
         pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
-        except locale.Error:
+        except:
             pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL,
                                           WINDOWS_DEFAULT_LOCALE)
-        except locale.Error:
+        except:
             pass
     if new_locale is None:
         new_locale = locale.setlocale(locale.LC_ALL, '')

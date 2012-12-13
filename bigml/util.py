@@ -229,7 +229,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     try:
         data_locale = str(data_locale)
     except UnicodeEncodeError:
-        pass
+        data_locale = data_locale.encode("utf8")
     try:
         new_locale = locale.setlocale(locale.LC_ALL, data_locale)
     except locale.Error:

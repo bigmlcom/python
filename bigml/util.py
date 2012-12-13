@@ -227,19 +227,23 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     """
     new_locale = None
     try:
+        data_locale = str(data_locale)
+    except UnicodeEncodeError:
+        pass
+    try:
         new_locale = locale.setlocale(locale.LC_ALL, data_locale)
-    except:
+    except locale.Error:
         pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
-        except:
+        except locale.Error:
             pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL,
                                           WINDOWS_DEFAULT_LOCALE)
-        except:
+        except locale.Error:
             pass
     if new_locale is None:
         new_locale = locale.setlocale(locale.LC_ALL, '')

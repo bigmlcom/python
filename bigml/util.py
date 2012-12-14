@@ -23,6 +23,7 @@ import unidecode
 from urlparse import urlparse
 import locale
 import sys
+import os
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
@@ -258,9 +259,10 @@ def get_predictions_file_name(model, path):
     """Returns the file name for a multimodel predictions file
 
     """
-    return "%s/%s_%s" % (path,
-                         model.replace("/", "_"),
-                         PREDICTIONS_FILE_SUFFIX)
+    return "%s%s%s_%s" % (path,
+                          os.sep,
+                          model.replace("/", "_"),
+                          PREDICTIONS_FILE_SUFFIX)
 
 
 def clear_progress_bar(out=sys.stdout):

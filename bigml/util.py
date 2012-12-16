@@ -223,7 +223,7 @@ def locale_synonyms(main_locale, locale_alias):
 
 
 def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
-    """Looks for the given locale or the cosest alternatives
+    """Looks for the given locale or the closest alternatives
 
     """
     new_locale = None

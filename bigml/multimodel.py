@@ -41,20 +41,9 @@ LOGGER = logging.getLogger('BigML')
 
 import numbers
 import csv
+import math
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
-
-
-def avg(data):
-    """Returns the average of a list of numeric values.
-
-    """
-    total = 0
-    result = 0.0
-    for prediction, confidences in data.items():
-        total += len(confidences)
-        result += prediction * len(confidences)
-    return result / total if total > 0 else float('nan')
 
 
 def combine_predictions(predictions, method='plurality'):
@@ -64,9 +53,53 @@ def combine_predictions(predictions, method='plurality'):
     """
     if all([isinstance(prediction, numbers.Number) for prediction in
            predictions.keys()]):
-        return avg(predictions)
+        return NUMERICAL_COMBINATION_METHODS[method](predictions)
     else:
         return COMBINATION_METHODS[method](predictions)
+
+
+def avg(predictions):
+    """Returns the average of a list of numeric values.
+
+    """
+    total = 0
+    result = 0.0
+    for prediction, confidences in predictions.items():
+        total += len(confidences)
+        result += prediction * len(confidences)
+    return result / total if total > 0 else float('nan')
+
+
+def error_weighted(predictions):
+    """Returns the prediction combining votes using error to compute weight
+
+    """
+    TOP_RANGE = 10
+    result = 0.0
+    normalization_factor = normalize_error(predictions, TOP_RANGE)
+    for prediction, confidences in predictions.items():
+        result += prediction * sum(confidences)
+    return result / normalization_factor
+
+
+def normalize_error(predictions, top_range):
+    """Normalizes error to a [0, top_range] and builds probabilities
+
+    """
+    error_values = reduce(lambda x, y: x + y,
+                          [errors for errors in predictions.values()])
+    max_error = max(error_values)
+    min_error = min(error_values)
+    error_range = max_error - min_error
+    if error_range > 0:
+        # Shifts and scales predictions errors to [0, top_range].
+        # Then builds e^-[scaled error] and returns the normalization factor
+        # to fit them between [0, 1]
+        for prediction, errors in predictions.items():
+            predictions[prediction] = [math.exp((min_error - x) / error_range
+                                                * top_range) for x in errors]
+    return sum(reduce(lambda x, y: x + y, [errors
+                      for errors in predictions.values()]))
 
 
 def plurality(predictions):
@@ -87,20 +120,21 @@ def plurality(predictions):
                                                -x[1]['order']),
                   reverse=True)[0][0]
 
+
 def confidence_weighted(predictions):
-    """Returns the prediction combining votes by assigning one vote per model
+    """Returns the prediction combining votes by using confidence as weight
 
     """
     mode = {}
     order = 0
-    for prediction, values in predictions.items():
-        values = [float(value) for value in values]
+    for prediction, confidences in predictions.items():
         if prediction in mode:
-            mode[prediction] = {"count": mode[prediction]["count"] + sum(values),
+            mode[prediction] = {"count": mode[prediction]["count"] +
+                                sum(confidences),
                                 "order": mode[prediction]["order"]}
         else:
             order = order + 1
-            mode[prediction] = {"count": sum(values), "order": order}
+            mode[prediction] = {"count": sum(confidences), "order": order}
     return sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                -x[1]['order']),
                   reverse=True)[0][0]
@@ -108,6 +142,8 @@ def confidence_weighted(predictions):
 
 COMBINATION_METHODS = {"plurality": plurality,
                        "confidence weighted": confidence_weighted}
+NUMERICAL_COMBINATION_METHODS = {"plurality": avg,
+                                 "confidence weighted": error_weighted}
 
 
 class MultiModel(object):
@@ -200,7 +236,7 @@ class MultiModel(object):
                 try:
                     row = handler.next()
                     prediction = row[0]
-                    confidence = row[1]
+                    confidence = float(row[1])
                 except StopIteration:
                     prediction = False
                     break

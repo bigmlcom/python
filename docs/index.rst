@@ -652,7 +652,7 @@ to save the prediction files in.
 ::
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
-                        "data/predictions"}
+                        "data/predictions")
 
 The predictions generated for each model will be stored in an output
 file in `data/predictions` using the syntax
@@ -666,15 +666,15 @@ helpful when using repeatedly a bunch of models on the same test set.
 ::
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
-                        "data/predictions", reuse=True}
+                        "data/predictions", reuse=True)
 
 Prediction files can be subsequently retrieved and converted into a votes list
 using `batch_votes`::
 
     model.batch_votes("data/predictions")
 
-wich will return a list of votes for predictions, one for each item in the
-input data list (e.g. [{u'Iris-versicolor': 2}, {u'Iris-setosa': 2}]).
+which will return a list of votes for predictions, one for each item in the
+input data list (e.g. [{u'Iris-versicolor': [0.34], {u'Iris-setosa': [0.25]}]).
 These votes can be further combined to issue a final
 prediction for each input data element using the function `combine_predictions`
 
@@ -683,6 +683,10 @@ prediction for each input data element using the function `combine_predictions`
     for predictions in model.batch_votes("data/predictions"):
         prediction = combine_predictions(predictions)
 
+The combination method used by default is `plurality` for categorical
+predictions and mean value for numerical ones. You can also use
+`combine_predictions(predictions, 'confidence weighted')` that will weight
+each vote using the confidence/error given by the model to each prediction.
 
 Local Predictions
 -----------------

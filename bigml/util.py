@@ -250,7 +250,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
                     new_locale = locale.setlocale(locale.LC_ALL, locale_alias)
                     break
                 except locale.Error:
-                    pass        
+                    pass
     if new_locale is None:
         try:
             new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -295,3 +295,11 @@ def reset_progress_bar(out=sys.stdout):
     """
     out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
     out.flush()
+
+
+def get_csv_delimiter():
+    """Returns the csv delimiter character
+
+    """
+    point_char = locale.localeconv()['decimal_point']
+    return ',' if point_char != ',' else ';'

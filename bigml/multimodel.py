@@ -57,7 +57,7 @@ def avg(data):
     return result / total if total > 0 else float('nan')
 
 
-def combine_predictions(predictions, method='pluralize'):
+def combine_predictions(predictions, method='plurality'):
     """Reduces a number of predictions voting for classification and averaging
     predictions for regression.
 
@@ -69,7 +69,7 @@ def combine_predictions(predictions, method='pluralize'):
         return COMBINATION_METHODS[method](predictions)
 
 
-def pluralize(predictions):
+def plurality(predictions):
     """Returns the prediction combining votes by assigning one vote per model
 
     """
@@ -106,7 +106,7 @@ def confidence_weighted(predictions):
                   reverse=True)[0][0]
 
 
-COMBINATION_METHODS = {"pluralize": pluralize,
+COMBINATION_METHODS = {"plurality": plurality,
                        "confidence weighted": confidence_weighted}
 
 

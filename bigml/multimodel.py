@@ -173,9 +173,13 @@ class MultiModel(object):
 
         """
 
-        predictions = []
+        predictions = {}
         for model in self.models:
-            predictions.append(model.predict(input_data, by_name=by_name))
+            prediction, confidence = model.predict(input_data, by_name=by_name,
+                                                   with_confidence=True)
+            if not prediction in predictions:
+                predictions[prediction] = []
+            predictions[prediction].append(confidence)
 
         return combine_predictions(predictions)
 

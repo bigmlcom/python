@@ -1,7 +1,8 @@
 import json
+import os
 from lettuce import step, world
 from bigml.model import Model
-from bigml.multimodel import MultiModel
+from bigml.multimodel import MultiModel, combine_predictions
 
 @step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
@@ -34,3 +35,28 @@ def the_local_prediction_is(step, prediction):
 def i_create_a_local_multi_model(step):
     world.local_model = MultiModel(world.list_of_models)
 
+@step(r'I create a batch prediction for "(.*)" and save it in "(.*)"')
+def i_create_a_batch_prediction(step, input_data_list, directory):
+    if len(directory) > 0 and not os.path.exists(directory):
+        os.makedirs(directory)
+    input_data_list = eval(input_data_list)
+    assert isinstance(input_data_list, list)
+    world.local_model.batch_predict(input_data_list, directory)
+
+@step(r'I combine the votes in "(.*)"')
+def i_combine_the_votes(step, directory):
+    world.votes = world.local_model.batch_votes(directory)
+
+@step(r'the plurality combined predictions are "(.*)"')
+def the_plurality_combined_prediction(step, predictions):
+    predictions = eval(predictions)
+    for i in range(len(world.votes)):
+        combined_prediction = combine_predictions(world.votes[i])
+        assert combined_prediction == predictions[i]
+
+@step(r'the confidence weighted predictions are "(.*)"')
+def the_confidence_weighted_prediction(step, predictions):
+    predictions = eval(predictions)
+    for i in range(len(world.votes)):
+        combined_prediction = combine_predictions(world.votes[i], "confidence weighted")
+        assert combined_prediction == predictions[i]

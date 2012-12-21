@@ -39,8 +39,10 @@ def setup_resources(feature):
 
 @after.each_feature
 def cleanup_resources(feature):
+
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
+
     for id in world.sources:
         world.api.delete_source(id)
     world.sources = []

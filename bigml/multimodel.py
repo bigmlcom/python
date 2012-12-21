@@ -205,7 +205,8 @@ class MultiModel(object):
                 except IOError:
                     pass
             try:
-                predictions_file = csv.writer(open(output_file, 'w', 0))
+                predictions_file = csv.writer(open(output_file, 'w', 0),
+                                              lineterminator="\n")
             except IOError:
                 raise Exception("Cannot find %s directory." % output_file_path)
             for input_data in input_data_list:
@@ -228,7 +229,8 @@ class MultiModel(object):
         for model in self.models:
             predictions_files.append((model, csv.reader(open(
                 get_predictions_file_name(model.resource_id,
-                                          predictions_file_path), "U"))))
+                                          predictions_file_path), "U"),
+                                      lineterminator="\n")))
         votes = []
         predictions = {}
         prediction = True

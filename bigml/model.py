@@ -53,10 +53,12 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import operator
+import locale
 
 from bigml.api import FINISHED
 from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields, utf8, map_type
+    prefix_as_comment, sort_fields, utf8, map_type, find_locale
+from bigml.util import DEFAULT_LOCALE
 
 
 # Map operator str to its corresponding function
@@ -99,6 +101,8 @@ PYTHON_CONV = {
     "day-of-week": "lambda x: int(locale.atof(x))",
     "day-of-month": "lambda x: int(locale.atof(x))"
 }
+
+PYTHON_FUNC = dict([(key, eval(val)) for key, val in PYTHON_CONV.iteritems()]) 
 
 INDENT = u'    '
 
@@ -194,7 +198,7 @@ class Tree(object):
         The input fields must be keyed by Id.
 
         """
-        if not path:
+        if path is None:
             path = []
         if self.children and split(self.children) in input_data:
             for child in self.children:
@@ -206,9 +210,9 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-            return self.output, path
+            return self.output, path, self.confidence
         else:
-            return self.output, path
+            return self.output, path, self.confidence
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.
@@ -380,6 +384,8 @@ class Model(object):
                         self.field_importance = [element for element
                                                  in self.field_importance
                                                  if element[0] in fields]
+                    self.locale = model.get('locale', DEFAULT_LOCALE)
+
                 else:
                     raise Exception("The model isn't finished yet")
         else:
@@ -391,8 +397,8 @@ class Model(object):
         """
         self.tree.list_fields(out)
 
-    def predict(self, input_data,
-                by_name=True, print_path=False, out=sys.stdout):
+    def predict(self, input_data, by_name=True,
+                print_path=False, out=sys.stdout, with_confidence=False):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -430,12 +436,14 @@ class Model(object):
                                     (self.tree.fields[key]['name'],
                                      value))
 
-        prediction, path = self.tree.predict(input_data)
+        prediction, path, confidence = self.tree.predict(input_data)
 
         # Prediction path
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
+        if with_confidence:
+            return [prediction, confidence]
         return prediction
 
     def docstring(self):
@@ -860,3 +868,19 @@ if count > 0:
 """
         out.write(utf8(output))
         out.flush()
+
+    def to_prediction(self, value_as_string, data_locale=DEFAULT_LOCALE):
+        """Given a prediction string, returns its value in the required type
+
+        """
+        objective_field = self.tree.objective_field
+        if self.tree.fields[objective_field]['optype'] == 'numeric':
+            if data_locale is None:
+                data_locale = self.locale
+            find_locale(data_locale)
+            datatype = self.tree.fields[objective_field]['datatype']
+            cast_function = PYTHON_FUNC.get(datatype,
+                lambda x: unicode(x, "utf-8"))
+            return cast_function(value_as_string)
+        else:
+            return unicode(value_as_string, "utf-8")

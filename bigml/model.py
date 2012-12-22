@@ -878,10 +878,9 @@ if count > 0:
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
-            value = (PYTHON_FUNC.get(self.tree.fields[objective_field]
-                                     ['datatype'],
-                                     lambda x: unicode(x, "utf-8"))
-                                     (value_as_string))
-            return value
+            datatype = self.tree.fields[objective_field]['datatype']
+            cast_function = PYTHON_FUNC.get(datatype,
+                lambda x: unicode(x, "utf-8"))
+            return cast_function(value_as_string)
         else:
             return unicode(value_as_string, "utf-8")

@@ -3,6 +3,14 @@
 History
 -------
 
+0.4.8 (2012-12-21)
+~~~~~~~~~~~~~~~~~~
+
+- Improved locale management
+- Adds new features to MultiModel to allow local batch predictions
+- Improved combined predictions
+- Adds local predictions options: plurality, confidence weighted
+
 0.4.7 (2012-12-06)
 ~~~~~~~~~~~~~~~~~~
 

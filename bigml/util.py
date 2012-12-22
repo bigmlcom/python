@@ -22,9 +22,31 @@ import re
 import unidecode
 from urlparse import urlparse
 import locale
+import sys
+import os
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
+LOCALE_SYNONYMS = {'en': ['en_US', 'en-US', 'en_US.UTF8', 'en_US.UTF-8',
+                          'English_United States.1252'],
+                   'es': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
+                          'Spanish_Spain.1252'],
+                   'sp': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
+                          'Spanish_Spain.1252'],
+                   'fr': [['fr_FR', 'fr-FR', 'fr_BE', 'fr_CH', 'fr-BE',
+                           'fr-CH', 'fr_FR.UTF8', 'fr_CH.UTF8',
+                           'fr_BE.UTF8', 'fr_FR.UTF-8', 'fr_CH.UTF-8',
+                           'fr_BE.UTF-8', 'French_France.1252'],
+                          ['fr_CA', 'fr-CA', 'fr_CA.UTF8', 'fr_CA.UTF-8',
+                           'French_Canada.1252']],
+                   'de': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
+                          'German_Germany.1252'],
+                   'ge': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
+                          'German_Germany.1252'],
+                   'it': ['it_IT', 'it-IT', 'it_IT.UTF8', 'it_IT.UTF-8',
+                          'Italian_Italy.1252'],
+                   'ca': ['ca_ES', 'ca-ES', 'ca_ES.UTF8', 'ca_ES.UTF-8',
+                          'Catalan_Spain.1252']}
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
@@ -42,6 +64,10 @@ PYTHON_TYPE_MAP = {
     "numeric": [int, float],
     "text": [unicode, str]
 }
+
+PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
+
+PROGRESS_BAR_WIDTH = 50
 
 
 def python_map_type(value):
@@ -174,3 +200,106 @@ def map_type(value):
         return TYPE_MAP[value]
     else:
         return str
+
+
+def locale_synonyms(main_locale, locale_alias):
+    """Returns True if both strings correspond to equivalent locale conventions
+
+    """
+    language_code = main_locale[0:2]
+    if not language_code in LOCALE_SYNONYMS:
+        return False
+    alternatives = LOCALE_SYNONYMS[language_code]
+    if isinstance(alternatives[0], basestring):
+        return (main_locale in alternatives and locale_alias in alternatives)
+    else:
+        result = False
+        for subgroup in alternatives:
+            if main_locale in subgroup:
+                result = locale_alias in subgroup
+                break
+        return result
+
+
+def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
+    """Looks for the given locale or the closest alternatives
+
+    """
+    new_locale = None
+    try:
+        data_locale = str(data_locale)
+    except UnicodeEncodeError:
+        data_locale = data_locale.encode("utf8")
+    try:
+        new_locale = locale.setlocale(locale.LC_ALL, data_locale)
+    except locale.Error:
+        pass
+    if new_locale is None:
+        for locale_alias in LOCALE_SYNONYMS[data_locale[0:2]]:
+            if isinstance(locale_alias, list):
+                for subalias in locale_alias:
+                    try:
+                        new_locale = locale.setlocale(locale.LC_ALL, subalias)
+                        break
+                    except locale.Error:
+                        pass
+                if not new_locale is None:
+                    break
+            else:
+                try:
+                    new_locale = locale.setlocale(locale.LC_ALL, locale_alias)
+                    break
+                except locale.Error:
+                    pass
+    if new_locale is None:
+        try:
+            new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+        except locale.Error:
+            pass
+    if new_locale is None:
+        try:
+            new_locale = locale.setlocale(locale.LC_ALL,
+                                          WINDOWS_DEFAULT_LOCALE)
+        except locale.Error:
+            pass
+    if new_locale is None:
+        new_locale = locale.setlocale(locale.LC_ALL, '')
+
+    if verbose and not locale_synonyms(data_locale, new_locale):
+        print ("WARNING: Unable to find %s locale, using %s instead. This "
+               "might alter numeric fields values.\n") % (data_locale,
+                                                          new_locale)
+
+
+def get_predictions_file_name(model, path):
+    """Returns the file name for a multimodel predictions file
+
+    """
+    return "%s%s%s_%s" % (path,
+                          os.sep,
+                          model.replace("/", "_"),
+                          PREDICTIONS_FILE_SUFFIX)
+
+
+def clear_progress_bar(out=sys.stdout):
+    """Fills progress bar with blanks.
+
+    """
+    out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+    out.flush()
+
+
+def reset_progress_bar(out=sys.stdout):
+    """Returns cursor to first column.
+
+    """
+    out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
+    out.flush()
+
+
+def get_csv_delimiter():
+    """Returns the csv delimiter character
+
+    """
+    point_char = locale.localeconv()['decimal_point']
+    return ',' if point_char != ',' else ';'

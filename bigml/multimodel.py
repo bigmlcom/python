@@ -39,34 +39,95 @@ model.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
-import operator
 import numbers
+import csv
+import math
 from bigml.model import Model
+from bigml.util import get_predictions_file_name
 
 
-def avg(data):
-    """Returns the average of a list of numeric values.
-
-    """
-    return float(sum(data)) / len(data) if len(data) > 0 else float('nan')
-
-
-def combine_predictions(predictions):
+def combine_predictions(predictions, method='plurality'):
     """Reduces a number of predictions voting for classification and averaging
     predictions for regression.
 
     """
     if all([isinstance(prediction, numbers.Number) for prediction in
-           predictions]):
-        return avg(predictions)
+           predictions.keys()]):
+        return NUMERICAL_COMBINATION_METHODS[method](predictions)
     else:
-        mode = {}
-        for prediction in predictions:
-            if prediction in mode:
-                mode[prediction] = mode[prediction] + 1
-            else:
-                mode[prediction] = 1
-        return max(mode.iteritems(), key=operator.itemgetter(1))[0]
+        return combine_categorical(predictions, COMBINATION_METHODS[method])
+
+
+def avg(predictions):
+    """Returns the average of a list of numeric values.
+
+    """
+    total = 0
+    result = 0.0
+    for prediction, confidences in predictions.items():
+        total += len(confidences)
+        result += prediction * len(confidences)
+    return result / total if total > 0 else float('nan')
+
+
+def error_weighted(predictions):
+    """Returns the prediction combining votes using error to compute weight
+
+    """
+    TOP_RANGE = 10
+    result = 0.0
+    normalization_factor = normalize_error(predictions, TOP_RANGE)
+    for prediction, confidences in predictions.items():
+        result += prediction * sum(confidences)
+    return (result / normalization_factor if normalization_factor > 0
+            else float('nan'))
+
+
+def normalize_error(predictions, top_range):
+    """Normalizes error to a [0, top_range] and builds probabilities
+
+    """
+    error_values = reduce(lambda x, y: x + y,
+                          [errors for errors in predictions.values()])
+    max_error = max(error_values)
+    min_error = min(error_values)
+    error_range = max_error - min_error
+    if error_range > 0:
+        # Shifts and scales predictions errors to [0, top_range].
+        # Then builds e^-[scaled error] and returns the normalization factor
+        # to fit them between [0, 1]
+        for prediction, errors in predictions.items():
+            predictions[prediction] = [math.exp((min_error - x) / error_range
+                                                * top_range) for x in errors]
+    return sum(reduce(lambda x, y: x + y, [errors
+                      for errors in predictions.values()]))
+
+
+def combine_categorical(predictions, function):
+    """Returns the prediction combining votes by using the related function
+
+        len for plurality (1 vote per prediction)
+        sum for confidence_weighted (confidence as a vote value)
+    """
+    mode = {}
+    order = 0
+    for prediction, values in predictions.items():
+        if prediction in mode:
+            mode[prediction] = {"count": mode[prediction]["count"] +
+                                function(values),
+                                "order": mode[prediction]["order"]}
+        else:
+            order = order + 1
+            mode[prediction] = {"count": function(values), "order": order}
+    return sorted(mode.items(), key=lambda x: (x[1]['count'],
+                                               -x[1]['order']),
+                  reverse=True)[0][0]
+
+
+COMBINATION_METHODS = {"plurality": len,
+                       "confidence weighted": sum}
+NUMERICAL_COMBINATION_METHODS = {"plurality": avg,
+                                 "confidence weighted": error_weighted}
 
 
 class MultiModel(object):
@@ -96,8 +157,82 @@ class MultiModel(object):
 
         """
 
-        predictions = []
+        predictions = {}
         for model in self.models:
-            predictions.append(model.predict(input_data, by_name=by_name))
+            prediction, confidence = model.predict(input_data, by_name=by_name,
+                                                   with_confidence=True)
+            if not prediction in predictions:
+                predictions[prediction] = []
+            predictions[prediction].append(confidence)
 
         return combine_predictions(predictions)
+
+    def batch_predict(self, input_data_list, output_file_path,
+                      by_name=True, reuse=False):
+        """Makes predictions for a list of input data.
+
+           The predictions generated for each model are stored in an output
+           file. The name of the file will use the following syntax:
+                model_[id of the model]_predictions.csv
+           For instance, when using model/50c0de043b563519830001c2 to predict,
+           the output file name will be
+                model_50c0de043b563519830001c2_predictions.csv
+        """
+        for model in self.models:
+            output_file = get_predictions_file_name(model.resource_id,
+                                                    output_file_path)
+            if reuse:
+                try:
+                    predictions_file = open(output_file)
+                    predictions_file.close()
+                    continue
+                except IOError:
+                    pass
+            try:
+                predictions_file = csv.writer(open(output_file, 'w', 0),
+                                              lineterminator="\n")
+            except IOError:
+                raise Exception("Cannot find %s directory." % output_file_path)
+            for input_data in input_data_list:
+                prediction = model.predict(input_data,
+                                           by_name=by_name,
+                                           with_confidence=True)
+                if isinstance(prediction[0], basestring):
+                    prediction[0] = prediction[0].encode("utf-8")
+                predictions_file.writerow(prediction)
+
+    def batch_votes(self, predictions_file_path, data_locale=None):
+        """Adds the votes for predictions generated by the models.
+
+           Returns a list of predictions groups. A prediction group is a dict
+           whose key is the prediction and its value is a list of the
+           confidences with which the prediction has been issued
+        """
+
+        predictions_files = []
+        for model in self.models:
+            predictions_files.append((model, csv.reader(open(
+                get_predictions_file_name(model.resource_id,
+                                          predictions_file_path), "U"),
+                lineterminator="\n")))
+        votes = []
+        predictions = {}
+        prediction = True
+        while prediction:
+            if predictions:
+                votes.append(predictions)
+                predictions = {}
+            for (model, handler) in predictions_files:
+                try:
+                    row = handler.next()
+                    prediction = row[0]
+                    confidence = float(row[1])
+                except StopIteration:
+                    prediction = False
+                    break
+                prediction = model.to_prediction(prediction, data_locale)
+                if not prediction in predictions:
+                    predictions[prediction] = []
+                predictions[prediction].append(confidence)
+
+        return votes

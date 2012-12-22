@@ -55,7 +55,7 @@ def combine_predictions(predictions, method='plurality'):
            predictions.keys()]):
         return NUMERICAL_COMBINATION_METHODS[method](predictions)
     else:
-        return COMBINATION_METHODS[method](predictions)
+        return combine_categorical(predictions, COMBINATION_METHODS[method])
 
 
 def avg(predictions):
@@ -79,7 +79,8 @@ def error_weighted(predictions):
     normalization_factor = normalize_error(predictions, TOP_RANGE)
     for prediction, confidences in predictions.items():
         result += prediction * sum(confidences)
-    return result / normalization_factor
+    return (result / normalization_factor if normalization_factor > 0
+            else float('nan'))
 
 
 def normalize_error(predictions, top_range):
@@ -102,46 +103,29 @@ def normalize_error(predictions, top_range):
                       for errors in predictions.values()]))
 
 
-def plurality(predictions):
-    """Returns the prediction combining votes by assigning one vote per model
+def combine_categorical(predictions, function):
+    """Returns the prediction combining votes by using the related function
 
+        len for plurality (1 vote per prediction)
+        sum for confidence_weighted (confidence as a vote value)
     """
     mode = {}
     order = 0
     for prediction, values in predictions.items():
         if prediction in mode:
             mode[prediction] = {"count": mode[prediction]["count"] +
-                                len(values),
+                                function(values),
                                 "order": mode[prediction]["order"]}
         else:
             order = order + 1
-            mode[prediction] = {"count": len(values), "order": order}
+            mode[prediction] = {"count": function(values), "order": order}
     return sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                -x[1]['order']),
                   reverse=True)[0][0]
 
 
-def confidence_weighted(predictions):
-    """Returns the prediction combining votes by using confidence as weight
-
-    """
-    mode = {}
-    order = 0
-    for prediction, confidences in predictions.items():
-        if prediction in mode:
-            mode[prediction] = {"count": mode[prediction]["count"] +
-                                sum(confidences),
-                                "order": mode[prediction]["order"]}
-        else:
-            order = order + 1
-            mode[prediction] = {"count": sum(confidences), "order": order}
-    return sorted(mode.items(), key=lambda x: (x[1]['count'],
-                                               -x[1]['order']),
-                  reverse=True)[0][0]
-
-
-COMBINATION_METHODS = {"plurality": plurality,
-                       "confidence weighted": confidence_weighted}
+COMBINATION_METHODS = {"plurality": len,
+                       "confidence weighted": sum}
 NUMERICAL_COMBINATION_METHODS = {"plurality": avg,
                                  "confidence weighted": error_weighted}
 
@@ -230,7 +214,7 @@ class MultiModel(object):
             predictions_files.append((model, csv.reader(open(
                 get_predictions_file_name(model.resource_id,
                                           predictions_file_path), "U"),
-                                      lineterminator="\n")))
+                lineterminator="\n")))
         votes = []
         predictions = {}
         prediction = True

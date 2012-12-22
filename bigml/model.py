@@ -102,6 +102,8 @@ PYTHON_CONV = {
     "day-of-month": "lambda x: int(locale.atof(x))"
 }
 
+PYTHON_FUNC = dict([(key, eval(val)) for key, val in PYTHON_CONV.iteritems()]) 
+
 INDENT = u'    '
 
 MAX_ARGS_LENGTH = 10
@@ -876,7 +878,10 @@ if count > 0:
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
-            return eval(PYTHON_CONV[self.tree.fields[objective_field]
-                        ['datatype']])(value_as_string)
+            value = (PYTHON_FUNC.get(self.tree.fields[objective_field]
+                                     ['datatype'],
+                                     lambda x: unicode(x, "utf-8"))
+                                     (value_as_string))
+            return value
         else:
             return unicode(value_as_string, "utf-8")

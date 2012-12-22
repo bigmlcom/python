@@ -659,7 +659,7 @@ file in `data/predictions` using the syntax
 `model_[id of the model]_predictions.csv`. For instance, when using
 `model/50c0de043b563519830001c2` to predict, the output file name will be
 `model_50c0de043b563519830001c2_predictions.csv`. An additional feature is
-that using `reuse=True` as agument will force the function to skip the
+that using `reuse=True` as argument will force the function to skip the
 creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
 
@@ -674,7 +674,7 @@ using `batch_votes`::
     model.batch_votes("data/predictions")
 
 which will return a list of votes for predictions, one for each item in the
-input data list (e.g. [{u'Iris-versicolor': [0.34], {u'Iris-setosa': [0.25]}]).
+input data list (e.g. `[{u'Iris-versicolor': [0.34], {u'Iris-setosa': [0.25]}]`).
 These votes can be further combined to issue a final
 prediction for each input data element using the function `combine_predictions`
 

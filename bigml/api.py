@@ -57,7 +57,7 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url, \
-    clear_progress_bar, reset_progress_bar
+    clear_console_line, reset_console_line
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -406,7 +406,6 @@ class BigML(object):
         try:
             response = requests.get(url + self.auth + query_string,
                                     headers=ACCEPT_JSON, verify=VERIFY)
-
             code = response.status_code
 
             if code == HTTP_OK:
@@ -511,7 +510,6 @@ class BigML(object):
 
         try:
             response = requests.delete(url + self.auth, verify=VERIFY)
-
             code = response.status_code
 
             if code == HTTP_NO_CONTENT:
@@ -787,11 +785,8 @@ class BigML(object):
 
             """
             pct = 100 - ((total - current) * 100) / (total)
-            clear_progress_bar(out=out)
-            reset_progress_bar(out=out)
-            out.write("Uploaded %s out of %s bytes [%s%%]" % (
+            console_log("Uploaded %s out of %s bytes [%s%%]" % (
                 localize(current), localize(total), pct))
-            reset_progress_bar(out=out)
 
         if args is None:
             args = {}
@@ -839,8 +834,8 @@ class BigML(object):
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
-            clear_progress_bar(out=out)
-            reset_progress_bar(out=out)
+            clear_console_line(out=out)
+            reset_console_line(out=out)
             code = response.getcode()
             if code == HTTP_CREATED:
                 location = response.headers['location']

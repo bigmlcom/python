@@ -74,9 +74,9 @@ def error_weighted(predictions):
     """Returns the prediction combining votes using error to compute weight
 
     """
-    TOP_RANGE = 10
+    top_range = 10
     result = 0.0
-    normalization_factor = normalize_error(predictions, TOP_RANGE)
+    normalization_factor = normalize_error(predictions, top_range)
     for prediction, confidences in predictions.items():
         result += prediction * sum(confidences)
     return (result / normalization_factor if normalization_factor > 0

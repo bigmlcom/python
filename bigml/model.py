@@ -102,7 +102,8 @@ PYTHON_CONV = {
     "day-of-month": "lambda x: int(locale.atof(x))"
 }
 
-PYTHON_FUNC = dict([(key, eval(val)) for key, val in PYTHON_CONV.iteritems()]) 
+PYTHON_FUNC = dict([(numtype, eval(function))
+                    for numtype, function in PYTHON_CONV.iteritems()]) 
 
 INDENT = u'    '
 

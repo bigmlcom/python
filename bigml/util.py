@@ -303,10 +303,10 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     """Prints the message to the given output
 
     """
-    clear_console_line(out=out)
-    reset_console_line(out=out)
+    clear_console_line(out=out, length=length)
+    reset_console_line(out=out, length=length)
     out.write(message)
-    reset_console_line(out=out)
+    reset_console_line(out=out, length=length)
 
 
 def get_csv_delimiter():

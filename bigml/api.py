@@ -57,7 +57,7 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url, \
-    clear_console_line, reset_console_line
+    clear_console_line, reset_console_line, console_log
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -178,6 +178,9 @@ def patch_requests():
 
     """
     def debug_request(method, url, **kwargs):
+        """Logs url and data in a request
+
+        """
         response = original_request(method, url, **kwargs)
         logging.debug("Data: {}".format(response.request.data))
         logging.debug("Response: {}".format(response.content))

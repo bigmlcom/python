@@ -140,6 +140,12 @@ You can then print the prediction using the ``pprint`` method::
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
+and also generate an evaluation for the model by using:
+
+    test_source = api.create_source('./data/test_iris.csv')
+    test_dataset = api.create_dataset(test_source)
+    evaluation = api.create_evaluation(model, test_dataset)
+
 Fields
 ------
 
@@ -259,6 +265,90 @@ Again, filtering options are also available using a query string expression,
     >>> model = api.get_model(model, "limit=5")
 
 limits the number of fields that will be included in `model` to 5.
+
+Evaluation
+----------
+
+The predictive performance of a model can be measured using many different
+measures. In BigML these measures can be obtained by creating evaluations. To
+create an evaluation you need the id of the model you are evaluating and the id
+of the dataset that contains the data to be tested with. The result is shown
+as::
+
+    >>> evaluation = api.get_evaluation(evaluation)
+    >>> api.pprint(evaluation['object']['result'])
+    {   'class_names': ['0', '1'],
+        'mode': {   'accuracy': 0.9802,
+                    'average_f_measure': 0.495,
+                    'average_phi': 0,
+                    'average_precision': 0.5,
+                    'average_recall': 0.4901,
+                    'confusion_matrix': [[99, 0], [2, 0]],
+                    'per_class_statistics': [   {   'accuracy': 0.9801980198019802,
+                                                    'class_name': '0',
+                                                    'f_measure': 0.99,
+                                                    'phi_coefficient': 0,
+                                                    'precision': 1.0,
+                                                    'present_in_test_data': True,
+                                                    'recall': 0.9801980198019802},
+                                                {   'accuracy': 0.9801980198019802,
+                                                    'class_name': '1',
+                                                    'f_measure': 0,
+                                                    'phi_coefficient': 0,
+                                                    'precision': 0.0,
+                                                    'present_in_test_data': True,
+                                                    'recall': 0}]},
+        'model': {   'accuracy': 0.9901,
+                     'average_f_measure': 0.89746,
+                     'average_phi': 0.81236,
+                     'average_precision': 0.99495,
+                     'average_recall': 0.83333,
+                     'confusion_matrix': [[98, 1], [0, 2]],
+                     'per_class_statistics': [   {   'accuracy': 0.9900990099009901,
+                                                     'class_name': '0',
+                                                     'f_measure': 0.9949238578680203,
+                                                     'phi_coefficient': 0.8123623944599232,
+                                                     'precision': 0.98989898989899,
+                                                     'present_in_test_data': True,
+                                                     'recall': 1.0},
+                                                 {   'accuracy': 0.9900990099009901,
+                                                     'class_name': '1',
+                                                     'f_measure': 0.8,
+                                                     'phi_coefficient': 0.8123623944599232,
+                                                     'precision': 1.0,
+                                                     'present_in_test_data': True,
+                                                     'recall': 0.6666666666666666}]},
+        'random': {   'accuracy': 0.50495,
+                      'average_f_measure': 0.36812,
+                      'average_phi': 0.13797,
+                      'average_precision': 0.74747,
+                      'average_recall': 0.51923,
+                      'confusion_matrix': [[49, 50], [0, 2]],
+                      'per_class_statistics': [   {   'accuracy': 0.504950495049505,
+                                                      'class_name': '0',
+                                                      'f_measure': 0.6621621621621622,
+                                                      'phi_coefficient': 0.1379728923974526,
+                                                      'precision': 0.494949494949495,
+                                                      'present_in_test_data': True,
+                                                      'recall': 1.0},
+                                                  {   'accuracy': 0.504950495049505,
+                                                      'class_name': '1',
+                                                      'f_measure': 0.07407407407407407,
+                                                      'phi_coefficient': 0.1379728923974526,
+                                                      'precision': 1.0,
+                                                      'present_in_test_data': True,
+                                                      'recall': 0.038461538461538464}]}}
+
+where two levels of detail are easily identified. For categorical objective
+fields, the first level shows `class_names`, `mode`, `model`, `random` labels
+and the second level `accuracy`, `average_f_measure`, `average_phi`,
+`average_precision`, `average_precision`, `average_recall`, `confusion_matrix`
+and `per_class_statistics`, while the numeric ones will show at first level
+`mean`, `model`, `random` and at second `mean_absolute_error`,
+`mean_squared_error` and `r_squared` (refer to
+`developers documentation <https://bigml.com/developers/evaluations>`_ for
+more info on the meaning of these measures.
+
 
 Creating Resources
 ------------------
@@ -433,6 +523,27 @@ To see the prediction you can use ``pprint``::
 
     api.pprint(prediction)
 
+Creating evaluations
+~~~~~~~~~~~~~~~~~~~~
+
+Once you have created a model, you can measure its perfomance by running a
+dataset of test data through it and comparing its predictions to the objective
+field real values. Thus the required arguments to create an evaluation are
+model id and a dataset id. You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Evaluations section of the Developer's
+documentation <https://bigml.com/developers/evaluations>`_.
+
+For instance, to evaluate a previously created model using 10000 rows at most
+from the existing dataset
+you can use the following call::
+
+    evaluation = api.create_evaluation(model, dataset, {
+        "name": "my model", "max_rows": 10000})
+
+Again, the evaluation is scheduled for creation, ``api.status(evaluation)``
+will show its state.
+
 Reading Resources
 -----------------
 
@@ -451,6 +562,7 @@ You can list resources with the appropriate api method::
     api.list_datasets()
     api.list_models()
     api.list_predictions()
+    api.list_evaluations()
 
 you will receive a dictionary with the following keys:
 
@@ -570,6 +682,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_dataset(dataset, {"name": "new name"})
     api.update_model(model, {"name": "new name"})
     api.update_prediction(prediction, {"name": "new name"})
+    api.update_evaluation(evaluation, {"name": "new name"})
 
 Deleting Resources
 ------------------
@@ -583,6 +696,7 @@ each type of resource.
     api.delete_dataset(dataset)
     api.delete_model(model)
     api.delete_prediction(prediction)
+    api.delete_evaluation(evaluation)
 
 Each of the calls above will return a dictionary with the following
 keys:

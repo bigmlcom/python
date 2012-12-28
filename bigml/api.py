@@ -70,6 +70,7 @@ SOURCE_PATH = 'source'
 DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
+EVALUATION_PATH = 'evaluation'
 
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
@@ -77,6 +78,7 @@ DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
 MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
                       (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
+EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
 
 # Development Mode URL
 BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
@@ -166,6 +168,13 @@ def get_prediction_id(prediction):
 
     """
     return get_resource(PREDICTION_RE, prediction)
+
+
+def get_evaluation_id(evaluation):
+    """Returns a evaluation/id.
+
+    """
+    return get_resource(EVALUATION_RE, evaluation)
 
 
 ##############################################################################
@@ -259,6 +268,7 @@ class BigML(object):
         self.dataset_url = self.url + DATASET_PATH
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
+        self.evaluation_url = self.url + EVALUATION_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -601,6 +611,9 @@ class BigML(object):
                             [resource['object']['objective_fields'][0]])
                 print("%s for %s is %s" % (objective_field_name, input_data,
                                            prediction))
+            elif EVALUATION_RE.match(resource['resource']):
+                print "%s (%s bytes)" % (resource['object']['name'],
+                                         resource['object']['size'])
         else:
             pretty_print.pprint(resource)
 
@@ -613,7 +626,8 @@ class BigML(object):
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
                 SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-                MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
+                MODEL_RE.match(resource) or PREDICTION_RE.match(resource)
+                or EVALUATION_RE.match(resource))):
             resource_id = resource
         else:
             LOGGER.error("Wrong resource id")
@@ -1133,3 +1147,68 @@ class BigML(object):
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             return self._delete("%s%s" % (self.url, prediction_id))
+
+
+    ##########################################################################
+    #
+    # Evaluations
+    # https://bigml.com/developers/evaluations
+    #
+    ##########################################################################
+    def create_evaluation(self, model, dataset,
+                          args=None, wait_time=3):
+        """Creates a new evaluation.
+
+        """
+        model_id = get_model_id(model)
+        dataset_id = get_dataset_id(dataset)
+
+        if model_id:
+            if wait_time > 0:
+                while not self.model_is_ready(model_id):
+                    time.sleep(wait_time)
+        print model_id
+        if dataset_id:
+            if wait_time > 0:
+                while not self.dataset_is_ready(dataset_id):
+                    time.sleep(wait_time)
+        print dataset_id
+
+        if args is None:
+            args = {}
+        args.update({
+            "model": model_id,
+            "dataset": dataset_id})
+        body = json.dumps(args)
+        return self._create(self.evaluation_url, body)
+
+    def get_evaluation(self, evaluation):
+        """Retrieves an evaluation.
+
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            return self._get("%s%s" % (self.url, evaluation_id))
+
+    def list_evaluations(self, query_string=''):
+        """Lists all your evaluations.
+
+        """
+        return self._list(self.evaluation_url, query_string)
+
+    def update_evaluation(self, evaluation, changes):
+        """Updates an evaluation.
+
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, evaluation_id), body)
+
+    def delete_evaluation(self, evaluation):
+        """Deletes an evaluation.
+
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            return self._delete("%s%s" % (self.url, evaluation_id))

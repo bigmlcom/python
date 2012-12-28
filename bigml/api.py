@@ -1167,12 +1167,11 @@ class BigML(object):
             if wait_time > 0:
                 while not self.model_is_ready(model_id):
                     time.sleep(wait_time)
-        print model_id
+
         if dataset_id:
             if wait_time > 0:
                 while not self.dataset_is_ready(dataset_id):
                     time.sleep(wait_time)
-        print dataset_id
 
         if args is None:
             args = {}

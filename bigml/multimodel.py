@@ -64,9 +64,9 @@ def avg(predictions):
     """
     total = 0
     result = 0.0
-    for prediction, confidences in predictions.items():
-        total += len(confidences)
-        result += prediction * len(confidences)
+    for prediction, values in predictions.items():
+        total += len(values)
+        result += prediction * len(values)
     return result / total if total > 0 else float('nan')
 
 
@@ -76,9 +76,13 @@ def error_weighted(predictions):
     """
     top_range = 10
     result = 0.0
+    # we only need the error part of each prediction that originally saves
+    # (error, order)
+    for prediction, values in predictions.items():
+        predictions[prediction] = [x[0] for x in values]
     normalization_factor = normalize_error(predictions, top_range)
-    for prediction, confidences in predictions.items():
-        result += prediction * sum(confidences)
+    for prediction, values in predictions.items():
+        result += prediction * sum(values)
     return (result / normalization_factor if normalization_factor > 0
             else float('nan'))
 
@@ -112,16 +116,44 @@ def combine_categorical(predictions, function):
     mode = {}
     order = 0
     for prediction, values in predictions.items():
+        # the structure of each value is (confidence, order)
+        confidences = [x[0] for x in values]
         if prediction in mode:
             mode[prediction] = {"count": mode[prediction]["count"] +
-                                function(values),
+                                function(confidences),
                                 "order": mode[prediction]["order"]}
         else:
-            order = order + 1
-            mode[prediction] = {"count": function(values), "order": order}
+            mode[prediction] = {"count": function(confidences),
+                                "order": values[0][1]}
     return sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                -x[1]['order']),
                   reverse=True)[0][0]
+
+
+def read_votes(votes_files, to_prediction):
+    """Reads the votes found in the votes' files and returns a list.
+
+    """
+    votes = []
+    for order in range(0, len(votes_files)):
+        votes_file = votes_files[order]
+        index = 0
+        for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
+            prediction = to_prediction(row[0])
+            if index > (len(votes) - 1):
+                votes.append({prediction: []})
+            add_prediction(votes[index], prediction, float(row[1]), order)
+            index += 1
+    return votes
+
+
+def add_prediction(predictions, prediction, confidence, order):
+    """Adds a new prediction to a list of existing ones
+
+    """
+    if not prediction in predictions:
+        predictions[prediction] = []
+    predictions[prediction].append((confidence, order))
 
 
 COMBINATION_METHODS = {"plurality": len,
@@ -158,12 +190,11 @@ class MultiModel(object):
         """
 
         predictions = {}
-        for model in self.models:
+        for order in range(0, len(self.models)):
+            model = self.models[order]
             prediction, confidence = model.predict(input_data, by_name=by_name,
                                                    with_confidence=True)
-            if not prediction in predictions:
-                predictions[prediction] = []
-            predictions[prediction].append(confidence)
+            add_prediction(predictions, prediction, confidence, order)
 
         return combine_predictions(predictions)
 
@@ -206,33 +237,11 @@ class MultiModel(object):
 
            Returns a list of predictions groups. A prediction group is a dict
            whose key is the prediction and its value is a list of the
-           confidences with which the prediction has been issued
+           (confidence, order) tuples with which the prediction has been issued
         """
 
-        predictions_files = []
+        votes_files = []
         for model in self.models:
-            predictions_files.append((model, csv.reader(open(
-                get_predictions_file_name(model.resource_id,
-                                          predictions_file_path), "U"),
-                lineterminator="\n")))
-        votes = []
-        predictions = {}
-        prediction = True
-        while prediction:
-            if predictions:
-                votes.append(predictions)
-                predictions = {}
-            for (model, handler) in predictions_files:
-                try:
-                    row = handler.next()
-                    prediction = row[0]
-                    confidence = float(row[1])
-                except StopIteration:
-                    prediction = False
-                    break
-                prediction = model.to_prediction(prediction, data_locale)
-                if not prediction in predictions:
-                    predictions[prediction] = []
-                predictions[prediction].append(confidence)
-
-        return votes
+            votes_files.append(get_predictions_file_name(model.resource_id,
+                                          predictions_file_path))
+        return read_votes(votes_files, self.models[0].to_prediction)

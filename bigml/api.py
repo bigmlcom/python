@@ -577,26 +577,24 @@ class BigML(object):
                 return resource['object']['fields']
         return None
 
-    def pprint(self, resource):
+    def pprint(self, resource, out=sys.stdout):
         """Pretty prints a resource or part of it.
 
         """
-
-        pretty_print = pprint.PrettyPrinter(indent=4)
 
         if (isinstance(resource, dict)
                 and 'object' in resource
                 and 'resource' in resource):
 
             if SOURCE_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
+                out.write("%s (%s bytes)\n" % (resource['object']['name'],
+                                               resource['object']['size']))
             elif DATASET_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
+                out.write("%s (%s bytes)\n" % (resource['object']['name'],
+                                               resource['object']['size']))
             elif MODEL_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
+                out.write("%s (%s bytes)\n" % (resource['object']['name'],
+                                               resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
                 objective_field_name = (resource['object']['fields']
                                                 [resource['object']
@@ -609,13 +607,15 @@ class BigML(object):
                 prediction = (
                     resource['object']['prediction']
                             [resource['object']['objective_fields'][0]])
-                print("%s for %s is %s" % (objective_field_name, input_data,
-                                           prediction))
+                out.write("%s for %s is %s\n" % (objective_field_name,
+                                                 input_data,
+                                                 prediction))
             elif EVALUATION_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
+                out.write("%s (%s bytes)\n" % (resource['object']['name'],
+                                               resource['object']['size']))
+            out.flush()
         else:
-            pretty_print.pprint(resource)
+            pprint.pprint(resource, out, indent=4)
 
     def status(self, resource):
         """Maps status code to string.

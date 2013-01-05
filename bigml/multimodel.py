@@ -42,20 +42,36 @@ LOGGER = logging.getLogger('BigML')
 import numbers
 import csv
 import math
+import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
 
+PLURALITY = 'plurality'
+CONFIDENCE = 'confidence weighted'
+PROBABILITY = 'probability weighted'
 
-def combine_predictions(predictions, method='plurality'):
+
+def combine_predictions(predictions, method=PLURALITY):
     """Reduces a number of predictions voting for classification and averaging
     predictions for regression.
 
     """
+
     if all([isinstance(prediction, numbers.Number) for prediction in
            predictions.keys()]):
-        return NUMERICAL_COMBINATION_METHODS[method](predictions)
+        return NUMERICAL_COMBINATION_METHODS.get(method, avg)(predictions)
     else:
-        return combine_categorical(predictions, COMBINATION_METHODS[method])
+        probability_weighted = (method == PROBABILITY)
+        if probability_weighted:
+            # Changes predictions dict using its distribution values.
+            # Initially the prediction structure is
+            # prediction, confidence, order, distribution, instances
+            # The new predictions dict has the same structure, but
+            # changing confidence values to probability values
+            # prediction, probability, order, None, None
+            predictions = probability_weight(predictions)
+        return combine_categorical(predictions,
+                                   *COMBINATION_METHODS.get(method, (len,)))
 
 
 def avg(predictions):
@@ -64,9 +80,9 @@ def avg(predictions):
     """
     total = 0
     result = 0.0
-    for prediction, values in predictions.items():
-        total += len(values)
-        result += prediction * len(values)
+    for prediction, weights in predictions.items():
+        total += len(weights)
+        result += prediction * len(weights)
     return result / total if total > 0 else float('nan')
 
 
@@ -107,27 +123,69 @@ def normalize_error(predictions, top_range):
                       for errors in predictions.values()]))
 
 
-def combine_categorical(predictions, function):
+def combine_categorical(predictions, function, weight_extractor=None):
     """Returns the prediction combining votes by using the related function
 
         len for plurality (1 vote per prediction)
-        sum for confidence_weighted (confidence as a vote value)
+        sum for confidence weighted (confidence as a vote value)
+        sum for probability weighted (probability as a vote value)
     """
     mode = {}
     order = 0
     for prediction, values in predictions.items():
+        weights_factors = values
         # the structure of each value is (confidence, order)
-        confidences = [x[0] for x in values]
+        if not weight_extractor is None:
+            weights_factors = weight_extractor(values)
+        if not weights_factors:
+            raise Exception("Not enough data to use the selected prediction"
+                            " method. Try creating your model anew.")
         if prediction in mode:
             mode[prediction] = {"count": mode[prediction]["count"] +
-                                function(confidences),
+                                function(weights_factors),
                                 "order": mode[prediction]["order"]}
         else:
-            mode[prediction] = {"count": function(confidences),
+            mode[prediction] = {"count": function(weights_factors),
                                 "order": values[0][1]}
     return sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                -x[1]['order']),
                   reverse=True)[0][0]
+
+
+def extract_confidence(values):
+    """Extracts confidence from predictions associated values
+
+    """
+    return [x[0] for x in values if not x[0] is None]
+
+
+def probability_weight(predictions):
+    """Reorganizes predictions depending on training data probability
+
+    """
+    new_predictions = {}
+    for prediction, values in predictions.items():
+        for node_info in values:
+            order = node_info[1]
+            distribution = node_info[2]
+            total = node_info[3]
+            if distribution is None:
+                raise Exception("Probability weighting is not available "
+                                "because distribution information is missing.")
+
+            for prediction, instances in distribution:
+                add_prediction(new_predictions, prediction,
+                               float(instances) / total, order)
+    return new_predictions
+
+
+COMBINATION_METHODS = {PLURALITY: (len,),
+                       CONFIDENCE: (sum, extract_confidence),
+                       PROBABILITY: (sum, extract_confidence)}
+
+NUMERICAL_COMBINATION_METHODS = {PLURALITY: avg,
+                                 CONFIDENCE: error_weighted,
+                                 PROBABILITY: avg}
 
 
 def read_votes(votes_files, to_prediction):
@@ -142,24 +200,26 @@ def read_votes(votes_files, to_prediction):
             prediction = to_prediction(row[0])
             if index > (len(votes) - 1):
                 votes.append({prediction: []})
-            add_prediction(votes[index], prediction, float(row[1]), order)
+            distribution = None
+            instances = None
+            if len(row) > 2:
+                distribution = ast.literal_eval(row[2])
+                instances = int(row[3])
+            add_prediction(votes[index], prediction, float(row[1]), order,
+                           distribution, instances)
             index += 1
     return votes
 
 
-def add_prediction(predictions, prediction, confidence, order):
+def add_prediction(predictions, prediction, confidence, order,
+                   distribution=None, instances=None):
     """Adds a new prediction to a list of existing ones
 
     """
     if not prediction in predictions:
         predictions[prediction] = []
-    predictions[prediction].append((confidence, order))
-
-
-COMBINATION_METHODS = {"plurality": len,
-                       "confidence weighted": sum}
-NUMERICAL_COMBINATION_METHODS = {"plurality": avg,
-                                 "confidence weighted": error_weighted}
+    predictions[prediction].append((confidence, order,
+                                    distribution, instances))
 
 
 class MultiModel(object):
@@ -243,5 +303,5 @@ class MultiModel(object):
         votes_files = []
         for model in self.models:
             votes_files.append(get_predictions_file_name(model.resource_id,
-                                          predictions_file_path))
+                               predictions_file_path))
         return read_votes(votes_files, self.models[0].to_prediction)

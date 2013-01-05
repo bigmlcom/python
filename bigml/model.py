@@ -103,7 +103,7 @@ PYTHON_CONV = {
 }
 
 PYTHON_FUNC = dict([(numtype, eval(function))
-                    for numtype, function in PYTHON_CONV.iteritems()]) 
+                    for numtype, function in PYTHON_CONV.iteritems()])
 
 INDENT = u'    '
 
@@ -199,6 +199,12 @@ class Tree(object):
         The input fields must be keyed by Id.
 
         """
+        def get_instances(distribution):
+            """Returns the total number of instances in a distribution
+
+            """
+            return sum(x[1] for x in distribution)
+
         if path is None:
             path = []
         if self.children and split(self.children) in input_data:
@@ -211,9 +217,11 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-            return self.output, path, self.confidence
+            return (self.output, path, self.confidence,
+                    self.distribution, get_instances(self.distribution))
         else:
-            return self.output, path, self.confidence
+            return (self.output, path, self.confidence,
+                    self.distribution, get_instances(self.distribution))
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.
@@ -437,14 +445,15 @@ class Model(object):
                                     (self.tree.fields[key]['name'],
                                      value))
 
-        prediction, path, confidence = self.tree.predict(input_data)
+        prediction = self.tree.predict(input_data)
+        prediction, path, confidence, distribution, instances = prediction
 
         # Prediction path
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
         if with_confidence:
-            return [prediction, confidence]
+            return [prediction, confidence, distribution, instances]
         return prediction
 
     def docstring(self):

@@ -43,7 +43,7 @@ def wait_until_evaluation_status_code_is(step, code1, code2, secs):
            world.evaluation['status']['code'] != int(code2)):
            time.sleep(3)
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the evaluation "{id}"'.format(id=world.model['resource']))
+           step.given('I get the evaluation "{id}"'.format(id=world.evaluation['resource']))
     assert world.model['status']['code'] == int(code1)
 
 @step(r'I wait until the evaluation is ready less than (\d+)')

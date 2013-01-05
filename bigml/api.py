@@ -63,7 +63,10 @@ from bigml.util import DEFAULT_LOCALE
 register_openers()
 
 # Base URL
-BIGML_URL = "https://bigml.io/andromeda/"
+try:
+    BIGML_URL = os.environ['BIGML_URL']
+except KeyError:
+    BIGML_URL = "https://bigml.io/andromeda/"
 
 # Basic resources
 SOURCE_PATH = 'source'
@@ -81,11 +84,18 @@ PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
 
 # Development Mode URL
-BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
+try:
+    BIGML_DEV_URL = os.environ['BIGML_DEV_URL']
+except KeyError:
+    BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
 
 # Check BigML.io host’s SSL certificate
 # DO NOT CHANGE IT.
-VERIFY = True
+try:
+    if (os.environ['BIGML_URL'] or os.environ['BIGML_DEV_URL']):
+        VERIFY = False
+except KeyError:
+    VERIFY = True
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -1147,7 +1157,6 @@ class BigML(object):
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             return self._delete("%s%s" % (self.url, prediction_id))
-
 
     ##########################################################################
     #

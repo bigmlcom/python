@@ -131,7 +131,6 @@ def combine_categorical(predictions, function, weight_extractor=None):
         sum for probability weighted (probability as a vote value)
     """
     mode = {}
-    order = 0
     for prediction, values in predictions.items():
         weights_factors = values
         # the structure of each value is (confidence, order)
@@ -252,9 +251,11 @@ class MultiModel(object):
         predictions = {}
         for order in range(0, len(self.models)):
             model = self.models[order]
-            prediction, confidence = model.predict(input_data, by_name=by_name,
-                                                   with_confidence=True)
-            add_prediction(predictions, prediction, confidence, order)
+            prediction_info = model.predict(input_data, by_name=by_name,
+                                            with_confidence=True)
+            prediction, confidence, distribution, instances = prediction_info
+            add_prediction(predictions, prediction, confidence, order,
+                           distribution, instances)
 
         return combine_predictions(predictions)
 

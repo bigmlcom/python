@@ -631,18 +631,10 @@ class BigML(object):
         """Maps status code to string.
 
         """
-
-        if isinstance(resource, dict) and 'resource' in resource:
-            resource_id = resource['resource']
-        elif (isinstance(resource, basestring) and (
-                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-                MODEL_RE.match(resource) or PREDICTION_RE.match(resource)
-                or EVALUATION_RE.match(resource))):
-            resource_id = resource
-        else:
+        resource_id = self.get_resource_id(resource)
+        if not resource_id:
             LOGGER.error("Wrong resource id")
             return
-
         resource = self._get("%s%s" % (self.url, resource_id))
         code = resource['object']['status']['code']
         if code in STATUSES:
@@ -666,6 +658,20 @@ class BigML(object):
             elif code == FAULTY:
                 raise ValueError(status)
             resource = get_method(resource)
+
+    def get_resource_id(self, resource):
+        """Returns the resource id if it falls in one of the registered types
+
+        """
+        if isinstance(resource, dict) and 'resource' in resource:
+            return resource['resource']
+        elif (isinstance(resource, basestring) and (
+                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
+                MODEL_RE.match(resource) or PREDICTION_RE.match(resource)
+                or EVALUATION_RE.match(resource))):
+            return resource
+        else:
+            return
 
     ##########################################################################
     #

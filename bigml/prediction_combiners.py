@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+#
+# Copyright 2012 BigML
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+"""Auxiliar functions for predictions combination.
+
+"""
 import numbers
 
 PLURALITY = 'plurality'
@@ -13,7 +32,7 @@ def combine_predictions(predictions, method=PLURALITY):
     are a list of tuples of the form (confidence, order, distribution, total
     number of instances). For instance, given three different models where the
     first one predicts 'Iris-virginica' with confidence 0.26289, the second
-    one 'Iris-virginica' with confidence 0.22343 and the third one 
+    one 'Iris-virginica' with confidence 0.22343 and the third one
     'Iris-setosa' with confidence 0.1783 the predictions to be combined would
     be:
 
@@ -21,13 +40,14 @@ def combine_predictions(predictions, method=PLURALITY):
                                       ['Iris-setosa', 50],
                                       ['Iris-virginica', 50]], 150),
                         (0.22343, 1, [['Iris-versicolor', 50],
-                                      ['Iris-setosa', 40], 
+                                      ['Iris-setosa', 40],
                                       ['Iris-virginica', 60]], 150)],
      'Iris-setosa':[(0.1783, 2, [['Iris-versicolor', 50],
                                  ['Iris-setosa', 55],
                                  ['Iris-virginica', 45]], 150)]}
 
     """
+
     if all([isinstance(prediction, numbers.Number) for prediction in
            predictions.keys()]):
         return NUMERICAL_COMBINATION_METHODS.get(method, avg)(predictions)
@@ -36,10 +56,10 @@ def combine_predictions(predictions, method=PLURALITY):
         if probability_weighted:
             # Changes predictions dict using its distribution values.
             # Initially the prediction structure is
-            # prediction, confidence, order, distribution, instances
+            # prediction: (confidence, order, distribution, instances)
             # The new predictions dict has the same structure, but
-            # changing confidence values to probability values
-            # prediction, probability, order, None, None
+            # changing confidence values to probability values:
+            # prediction: (probability, order)
             predictions = probability_weight(predictions)
         return combine_categorical(predictions,
                                    *COMBINATION_METHODS.get(method, (len,)))
@@ -64,7 +84,7 @@ def error_weighted(predictions):
     top_range = 10
     result = 0.0
     # we only need the error part of each prediction that originally saves
-    # (error, order)
+    # error
     for prediction, values in predictions.items():
         predictions[prediction] = [x[0] for x in values]
     normalization_factor = normalize_error(predictions, top_range)
@@ -104,7 +124,9 @@ def combine_categorical(predictions, function, weight_extractor=None):
     mode = {}
     for prediction, values in predictions.items():
         weights_factors = values
-        # the structure of each value is (confidence, order)
+        # the structure of each value is (confidence, order, distribution,
+        # instances) or
+        # (probability, order)
         if not weight_extractor is None:
             weights_factors = weight_extractor(values)
         if not weights_factors:
@@ -133,7 +155,7 @@ def probability_weight(predictions):
     """Reorganizes predictions depending on training data probability
 
     Transforms the predictions original structure (see combine_predictions)
-    to a similar one where confidence is replaced by probability as 
+    to a similar one where confidence is replaced by probability as
     extracted from distribution and instances data. For instance, for the
     previous example data:
 
@@ -141,7 +163,7 @@ def probability_weight(predictions):
                                       ['Iris-setosa', 50],
                                       ['Iris-virginica', 50]], 150),
                         (0.22343, 1, [['Iris-versicolor', 50],
-                                      ['Iris-setosa', 40], 
+                                      ['Iris-setosa', 40],
                                       ['Iris-virginica', 60]], 150)],
      'Iris-setosa':[(0.1783, 2, [['Iris-versicolor', 50],
                                  ['Iris-setosa', 55],
@@ -187,6 +209,7 @@ NUMERICAL_COMBINATION_METHODS = {PLURALITY: avg,
                                  CONFIDENCE: error_weighted,
                                  PROBABILITY: avg}
 
+
 def add_prediction(predictions, prediction, confidence, order,
                    distribution=None, instances=None):
     """Adds a new prediction to a list of existing ones
@@ -198,5 +221,3 @@ def add_prediction(predictions, prediction, confidence, order,
     if not distribution is None and not instances is None:
         prediction_info = prediction_info + (distribution, instances)
     predictions[prediction].append(prediction_info)
-
-

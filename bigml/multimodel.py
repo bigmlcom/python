@@ -45,11 +45,10 @@ import math
 import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
-from bigml.prediction_combiners import combine_predictions, avg, \
-    error_weighted, normalize_error, combine_categorical, extract_confidence, \
-    probability_weight, add_prediction
+from bigml.prediction_combiners import combine_predictions, \
+    add_prediction
 from bigml.prediction_combiners import COMBINATION_METHODS, \
-    NUMERICAL_COMBINATION_METHODS
+    PLURALITY
 
 
 def read_votes(votes_files, to_prediction):
@@ -97,7 +96,7 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=True):
+    def predict(self, input_data, by_name=True, method=PLURALITY):
         """Makes a prediction based on the prediction made by every model.
 
         """
@@ -111,7 +110,7 @@ class MultiModel(object):
             add_prediction(predictions, prediction, confidence, order,
                            distribution, instances)
 
-        return combine_predictions(predictions)
+        return combine_predictions(predictions, method=method)
 
     def batch_predict(self, input_data_list, output_file_path,
                       by_name=True, reuse=False):
@@ -119,10 +118,10 @@ class MultiModel(object):
 
            The predictions generated for each model are stored in an output
            file. The name of the file will use the following syntax:
-                model_[id of the model]_predictions.csv
+                model_[id of the model]__predictions.csv
            For instance, when using model/50c0de043b563519830001c2 to predict,
            the output file name will be
-                model_50c0de043b563519830001c2_predictions.csv
+                model_50c0de043b563519830001c2__predictions.csv
         """
         for model in self.models:
             output_file = get_predictions_file_name(model.resource_id,

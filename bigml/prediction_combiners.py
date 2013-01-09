@@ -196,8 +196,8 @@ def probability_weight(predictions):
                                 "because distribution information is missing.")
 
             for prediction, instances in distribution:
-                add_prediction(new_predictions, prediction,
-                               float(instances) / total, order)
+                insert_prediction(new_predictions, prediction,
+                                  float(instances) / total, order)
     return new_predictions
 
 
@@ -210,9 +210,10 @@ NUMERICAL_COMBINATION_METHODS = {PLURALITY: avg,
                                  PROBABILITY: avg}
 
 
-def add_prediction(predictions, prediction, confidence, order,
+def insert_prediction(predictions, prediction, confidence, order,
                    distribution=None, instances=None):
-    """Adds a new prediction to a list of existing ones
+    """Inserts a new prediction into a dictionary of predictions or
+       appends it to a list of existing ones
 
     """
     if not prediction in predictions:

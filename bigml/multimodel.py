@@ -46,7 +46,7 @@ import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
 from bigml.prediction_combiners import combine_predictions, \
-    add_prediction
+    insert_prediction
 from bigml.prediction_combiners import COMBINATION_METHODS, \
     PLURALITY
 
@@ -68,8 +68,8 @@ def read_votes(votes_files, to_prediction):
             if len(row) > 2:
                 distribution = ast.literal_eval(row[2])
                 instances = int(row[3])
-            add_prediction(votes[index], prediction, float(row[1]), order,
-                           distribution, instances)
+            insert_prediction(votes[index], prediction, float(row[1]), order,
+                              distribution, instances)
             index += 1
     return votes
 
@@ -107,8 +107,8 @@ class MultiModel(object):
             prediction_info = model.predict(input_data, by_name=by_name,
                                             with_confidence=True)
             prediction, confidence, distribution, instances = prediction_info
-            add_prediction(predictions, prediction, confidence, order,
-                           distribution, instances)
+            insert_prediction(predictions, prediction, confidence, order,
+                              distribution, instances)
 
         return combine_predictions(predictions, method=method)
 

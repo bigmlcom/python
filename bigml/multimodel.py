@@ -41,14 +41,12 @@ LOGGER = logging.getLogger('BigML')
 
 
 import csv
-import math
 import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
 from bigml.prediction_combiners import combine_predictions, \
-    insert_prediction
-from bigml.prediction_combiners import COMBINATION_METHODS, \
-    PLURALITY
+    add_prediction_row
+from bigml.prediction_combiners import PLURALITY    
 
 
 def read_votes(votes_files, to_prediction):
@@ -62,14 +60,15 @@ def read_votes(votes_files, to_prediction):
         for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
             prediction = to_prediction(row[0])
             if index > (len(votes) - 1):
-                votes.append({prediction: []})
+                votes.append([])
             distribution = None
             instances = None
             if len(row) > 2:
                 distribution = ast.literal_eval(row[2])
                 instances = int(row[3])
-            insert_prediction(votes[index], prediction, float(row[1]), order,
-                              distribution, instances)
+            prediction_row = [prediction, float(row[1]), order,
+                              distribution, instances]
+            add_prediction_row(votes[index], prediction_row)
             index += 1
     return votes
 
@@ -101,14 +100,15 @@ class MultiModel(object):
 
         """
 
-        predictions = {}
+        predictions = []
         for order in range(0, len(self.models)):
             model = self.models[order]
             prediction_info = model.predict(input_data, by_name=by_name,
                                             with_confidence=True)
             prediction, confidence, distribution, instances = prediction_info
-            insert_prediction(predictions, prediction, confidence, order,
-                              distribution, instances)
+            prediction_row = [prediction, confidence, order,
+                              distribution, instances]
+            add_prediction_row(predictions, prediction_row)
 
         return combine_predictions(predictions, method=method)
 

@@ -216,3 +216,99 @@ def add_prediction_row(predictions, prediction_row,
         LOGGER.error("WARNING: failed to add the prediction.\n"
                      "The minimal labels rows and labels for the prediction"
                      " are 'prediction' and 'order'")
+
+def extend_predictions(predictions, predictions_info):
+    """Given a list of predictions, extends the list with another list of
+       predictions adding the order information. The predictions are given in
+       the following format:
+
+            [{'prediction': 'Iris-virginica', 'confidence': 0.3},
+             {'prediction': 'Iris-versicolor', 'confidence': 0.8}]
+       where the expected prediction keys are: prediction, confidence,
+       distribution and count.
+       Also the predictions to be extended should be a list of dict-like
+       and sorted predictions, so that the last prediction of the list has
+       the max order. For instance:
+            >>> predictions = [{'prediction': 'Iris-setosa', 'order': 0}, \
+                               {'prediction': 'Iris-versicolor', 'order': 1}]
+            >>> more_predictions = [{'prediction': 'Iris-virginica'}, \
+                                    {'prediction': 'Iris-versicolor'}]
+            >>> extend_predictions(predictions, more_predictions)
+            >>> predictions
+            [{'prediction': 'Iris-setosa', 'order': 0},
+             {'prediction': 'Iris-versicolor', 'order': 1},
+             {'prediction': 'Iris-virginica', 'order': 2},
+             {'prediction': 'Iris-versicolor', 'order': 3}]
+    """
+    order = 0
+    if predictions:
+        order = predictions[-1]['order']
+        order += 1
+
+    if isinstance(predictions_info, list):
+        for i in range(0, len(predictions_info)):
+            prediction = predictions_info[i]
+            if isinstance(prediction, dict):
+                prediction['order'] = order + i
+                add_prediction(predictions, prediction)
+            else:
+                LOGGER.error("WARNING: failed to add the prediction.\n"
+                             "Only dict like predictions are expected.")
+    else:
+        LOGGER.error("WARNING: failed to add the predictions.\n"
+                     "Only a list of dict-like predictions are expected.") 
+
+def extend_predictions_with_rows(predictions, predictions_rows,
+                                 prediction_headers=PREDICTION_HEADERS):
+    """Given a list of predictions, extends the list with a list of predictions
+       adding the order information. The predictions are given in the following
+       format:
+
+            [['Iris-virginica', 0.3],
+             ['Iris-versicolor', 0.8]]
+       and their respective labels are extracted from predition_headers, that 
+       for this example would be:
+            ['prediction', 'confidence']
+
+       The expected prediction elements are: prediction, confidence,
+       distribution and count.
+       Also the predictions to be extended should be a list of dict-like
+       and sorted predictions, so that the last prediction of the list has
+       the max order. For instance:
+            >>> predictions = [{'prediction': 'Iris-setosa', 'order': 0}, \
+                               {'prediction': 'Iris-versicolor', 'order': 1}]
+            >>> more_predictions = [['Iris-virginica'], ['Iris-versicolor']]
+            >>> headers = ['prediction']
+            >>> extend_predictions_with_rows(predictions, more_predictions, \
+                                             headers)
+            >>> predictions
+            [{'prediction': 'Iris-setosa', 'order': 0},
+             {'prediction': 'Iris-versicolor', 'order': 1},
+             {'prediction': 'Iris-virginica', 'order': 2},
+             {'prediction': 'Iris-versicolor', 'order': 3}]
+    """
+    order = 0
+    if predictions:
+        order = predictions[-1]['order']
+        order += 1
+    try:
+        index = prediction_headers.index('order')
+    except ValueError:
+        index = len(prediction_headers)
+        prediction_headers.append('order')
+
+    if isinstance(predictions_rows, list):
+        for i in range(0, len(predictions_rows)):
+            prediction = predictions_rows[i]
+            if isinstance(prediction, list):
+                if index == len(prediction):
+                    prediction.append(order + i)
+                else:
+                    prediction[index] = order + i
+                add_prediction_row(predictions, prediction, prediction_headers)
+            else:
+                LOGGER.error("WARNING: failed to add the prediction.\n"
+                             "Only row-like predictions are expected.")
+    else:
+        LOGGER.error("WARNING: failed to add the predictions.\n"
+                     "Only a list of row-like predictions are expected.") 

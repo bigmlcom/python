@@ -44,9 +44,7 @@ import csv
 import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
-from bigml.prediction_combiners import combine_predictions, \
-    add_prediction_row
-from bigml.prediction_combiners import PLURALITY
+from bigml.multivote import MultiVote
 
 
 def read_votes(votes_files, to_prediction):
@@ -60,7 +58,7 @@ def read_votes(votes_files, to_prediction):
         for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
             prediction = to_prediction(row[0])
             if index > (len(votes) - 1):
-                votes.append([])
+                votes.append(MultiVote([]))
             distribution = None
             instances = None
             if len(row) > 2:
@@ -68,7 +66,7 @@ def read_votes(votes_files, to_prediction):
                 instances = int(row[3])
             prediction_row = [prediction, float(row[1]), order,
                               distribution, instances]
-            add_prediction_row(votes[index], prediction_row)
+            votes[index].append_row(prediction_row)
             index += 1
     return votes
 
@@ -95,12 +93,12 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=True, method=PLURALITY):
+    def predict(self, input_data, by_name=True, method=0):
         """Makes a prediction based on the prediction made by every model.
 
         """
 
-        predictions = []
+        votes = MultiVote([])
         for order in range(0, len(self.models)):
             model = self.models[order]
             prediction_info = model.predict(input_data, by_name=by_name,
@@ -108,9 +106,9 @@ class MultiModel(object):
             prediction, confidence, distribution, instances = prediction_info
             prediction_row = [prediction, confidence, order,
                               distribution, instances]
-            add_prediction_row(predictions, prediction_row)
+            votes.append_row(prediction_row)
 
-        return combine_predictions(predictions, method=method)
+        return votes.combine(method=method)
 
     def batch_predict(self, input_data_list, output_file_path,
                       by_name=True, reuse=False):

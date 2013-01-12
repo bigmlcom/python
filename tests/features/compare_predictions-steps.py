@@ -2,7 +2,8 @@ import json
 import os
 from lettuce import step, world
 from bigml.model import Model
-from bigml.multimodel import MultiModel, combine_predictions
+from bigml.multimodel import MultiModel
+from bigml.multivote import MultiVote
 
 @step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
@@ -51,12 +52,12 @@ def i_combine_the_votes(step, directory):
 def the_plurality_combined_prediction(step, predictions):
     predictions = eval(predictions)
     for i in range(len(world.votes)):
-        combined_prediction = combine_predictions(world.votes[i])
+        combined_prediction = world.votes[i].combine()
         assert combined_prediction == predictions[i]
 
 @step(r'the confidence weighted predictions are "(.*)"')
 def the_confidence_weighted_prediction(step, predictions):
     predictions = eval(predictions)
     for i in range(len(world.votes)):
-        combined_prediction = combine_predictions(world.votes[i], "confidence weighted")
+        combined_prediction = world.votes[i].combine(1)
         assert combined_prediction == predictions[i]

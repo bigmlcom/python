@@ -14,7 +14,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-"""Auxiliar functions for predictions combination.
+"""Auxiliar class for predictions combination.
 
 """
 import logging
@@ -31,6 +31,12 @@ PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
 COMBINATION_WEIGHTS = {PLURALITY: None,
                        CONFIDENCE: 'confidence',
                        PROBABILITY: 'probability'}
+COMBINER_MAP  = {
+    0: PLURALITY,
+    1: CONFIDENCE,
+    2: PROBABILITY}
+
+DEFAULT_METHOD = 0
 
 
 class MultiVote(object):
@@ -70,11 +76,16 @@ class MultiVote(object):
             order += 1
         return order
 
-    def combine_predictions(self, method=PLURALITY):
+    def combine(self, method=DEFAULT_METHOD):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
         """
+
+        if method in COMBINER_MAP:
+	        method = COMBINER_MAP[method]
+        else:
+            method = COMBINER_MAP[DEFAULT_METHOD]
 
         if self.is_regression():
             return self.NUMERICAL_COMBINATION_METHODS.get(method, self.avg)()
@@ -135,11 +146,11 @@ class MultiVote(object):
         return normalize_factor
 
     def combine_categorical(self, weight_label=None):
-        """Returns the prediction combining votes by using the related function
+        """Returns the prediction combining votes by using
 
-            len for plurality (1 vote per prediction)
-            sum for confidence weighted (confidence as a vote value)
-            sum for probability weighted (probability as a vote value)
+            plurality (1 vote per prediction)
+            confidence weighted (confidence as a vote value)
+            probability weighted (probability as a vote value)
         """
         mode = {}
         if weight_label is None:
@@ -287,8 +298,8 @@ class MultiVote(object):
            that for this example would be:
                 ['prediction', 'confidence']
 
-           The expected prediction elements are: prediction, confidence,
-           distribution and count.
+           The expected prediction elements are: prediction (compulsory),
+           confidence, distribution and count.
         """
         order = self.next_order()
         try:

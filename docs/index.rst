@@ -756,7 +756,20 @@ combining the outputs of each model.
     model.predict({"petal length": 3, "petal width": 1})
 
 This will create a multi model using all the models that have been previously
-tagged with `my_tag`.
+tagged with `my_tag` and predict by combining each model's prediction.
+The combination method used by default is `plurality` for categorical
+predictions and mean value for numerical ones. You can also use ``confidence
+weighted``::
+
+    model.predict({"petal length": 3, "petal width": 1}, method=1)
+
+that will weight each vote using the confidence/error given by the model
+ to each prediction, or even ``probability weighted``::
+
+    model.predict({"petal length": 3, "petal width": 1}, method=2)
+
+that weights each vote by using the probability associated to the training
+distribution at the prediction node.
 
 When making predictions on a test set with a large number of models,
 `batch_prediction` can be useful to log each model's predictions in a
@@ -772,7 +785,7 @@ The predictions generated for each model will be stored in an output
 file in `data/predictions` using the syntax
 `model_[id of the model]_predictions.csv`. For instance, when using
 `model/50c0de043b563519830001c2` to predict, the output file name will be
-`model_50c0de043b563519830001c2_predictions.csv`. An additional feature is
+`model_50c0de043b563519830001c2__predictions.csv`. An additional feature is
 that using `reuse=True` as argument will force the function to skip the
 creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
@@ -787,20 +800,28 @@ using `batch_votes`::
 
     model.batch_votes("data/predictions")
 
-which will return a list of votes for predictions, one for each item in the
-input data list (e.g. `[{u'Iris-versicolor': [0.34], {u'Iris-setosa': [0.25]}]`).
+which will return a list of MultiVote objects. Each MultiVote is a list of
+predictions (e.g. `[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
+'order': 0}, {'prediction': u'Iris-setosa', 'confidence': [0.25],
+'order': 1}]`).
 These votes can be further combined to issue a final
-prediction for each input data element using the function `combine_predictions`
+prediction for each input data element using the method `combine`
 
 ::
 
-    for predictions in model.batch_votes("data/predictions"):
-        prediction = combine_predictions(predictions)
+    for multivote in model.batch_votes("data/predictions"):
+        prediction = multivote.combine()
 
-The combination method used by default is `plurality` for categorical
-predictions and mean value for numerical ones. You can also use
-`combine_predictions(predictions, 'confidence weighted')` that will weight
-each vote using the confidence/error given by the model to each prediction.
+Again, the default method of combination is `plurality` for categorical
+predictions and mean value for numerical ones. You can also use ``confidence
+weighted``::
+
+    prediction = multivote.combine(1)
+
+or ``probability weighted``::
+
+    prediction = multivote.combine(2)
+
 
 Local Predictions
 -----------------

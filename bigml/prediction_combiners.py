@@ -28,287 +28,286 @@ CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']
-
-
-def combine_predictions(predictions, method=PLURALITY):
-    """Reduces a number of predictions voting for classification and averaging
-    predictions for regression.
-
-    """
-
-    if all([isinstance(prediction['prediction'], numbers.Number)
-           for prediction in predictions]):
-        return NUMERICAL_COMBINATION_METHODS.get(method, avg)(predictions)
-    else: 
-        if method == PROBABILITY:
-            predictions = probability_weight(predictions)
-        return combine_categorical(predictions,
-                                   COMBINATION_WEIGHTS.get(method, None))
-
-
-def avg(predictions):
-    """Returns the average of a list of numeric values.
-
-    """
-    total = len(predictions)
-    result = 0.0
-    for prediction in predictions:
-        result += prediction['prediction']
-    return result / total if total > 0 else float('nan')
-
-
-def error_weighted(predictions):
-    """Returns the prediction combining votes using error to compute weight
-
-    """
-    top_range = 10
-    result = 0.0
-    # we only need the error part of each prediction that originally saves
-    # error
-    normalization_factor = normalize_error(predictions, top_range)
-    for prediction in predictions:
-        result += prediction['prediction'] * prediction['error_weight']
-    return (result / normalization_factor if normalization_factor > 0
-            else float('nan'))
-
-
-def normalize_error(predictions, top_range):
-    """Normalizes error to a [0, top_range] and builds probabilities
-
-    """
-    error_values = [prediction['confidence'] for prediction in predictions]
-    max_error = max(error_values)
-    min_error = min(error_values)
-    error_range = 1.0 * (max_error - min_error)
-    normalize_factor = 0
-    if error_range > 0:
-        # Shifts and scales predictions errors to [0, top_range].
-        # Then builds e^-[scaled error] and returns the normalization factor
-        # to fit them between [0, 1]
-        for prediction in predictions:
-            prediction['error_weight'] = math.exp((min_error -
-                                                   prediction['confidence']) /
-                                                   error_range * top_range)
-            normalize_factor += prediction['error_weight']
-    return normalize_factor
-
-
-def combine_categorical(predictions, weight_label=None):
-    """Returns the prediction combining votes by using the related function
-
-        len for plurality (1 vote per prediction)
-        sum for confidence weighted (confidence as a vote value)
-        sum for probability weighted (probability as a vote value)
-    """
-    mode = {}
-    if weight_label is None:
-        weight = 1
-    for prediction in predictions:
-        if not weight_label is None:
-            if not weight_label in prediction:
-                raise Exception("Not enough data to use the selected "
-                                "prediction method. Try creating your"
-                                " model anew.")
-            else:
-                weight = prediction[weight_label]
-        category = prediction['prediction']
-        if category in mode:
-            mode[category] = {"count": mode[category]["count"] +
-                               weight,
-                               "order": mode[category]["order"]}
-        else:
-            mode[category] = {"count": weight,
-                              "order": prediction['order']}
-    return sorted(mode.items(), key=lambda x: (x[1]['count'],
-                                               -x[1]['order']),
-                  reverse=True)[0][0]
-
-
-
-def probability_weight(predictions):
-    """Reorganizes predictions depending on training data probability
-
-    """
-    new_predictions = []
-    for prediction in predictions:
-        if not 'distribution' in prediction or not 'count' in prediction:
-            raise Exception("Probability weighting is not available "
-                            "because distribution information is missing.")
-        total = prediction['count']
-        order = prediction['order']
-        for prediction, instances in prediction['distribution']:
-            add_prediction(new_predictions, {'prediction': prediction,
-                           'probability': float(instances) / total,
-                           'order': order})
-    return new_predictions
-
-
 COMBINATION_WEIGHTS = {PLURALITY: None,
                        CONFIDENCE: 'confidence',
                        PROBABILITY: 'probability'}
 
-NUMERICAL_COMBINATION_METHODS = {PLURALITY: avg,
-                                 CONFIDENCE: error_weighted,
-                                 PROBABILITY: avg}
 
+class MultiVote(object):
+    """A multiple vote prediction
 
-def add_prediction(predictions, prediction_info):
-    """Adds a new prediction into a list of predictions
-       
-       prediction_info should contain the following keys
-       - prediction: whose value is the predicted category or value
-       - order: whose value is the order of the model that generated the
-                prediction
-
-       for instance:
-           {'prediction': 'Iris-virginica', 'order': 1}
-
-       it may also contain the keys:
-       - confidence: whose value is the confidence/error of the prediction
-       - distribution: a list of [category/value, instances] pairs describing
-                       the distribution at the prediction node
-       - count: the total number of instances of the training set in the node
-    """
-    if (isinstance(prediction_info, dict) and 'prediction' in prediction_info
-        and 'order' in prediction_info):
-        predictions.append(prediction_info)
-    else:
-        LOGGER.error("WARNING: failed to add the prediction.\n"
-                     "The minimal keys for the prediction are:\n"
-                     "{'prediction': 'Iris-virginica', 'order': 1}")
-
-
-def add_prediction_row(predictions, prediction_row,
-                       prediction_headers=PREDICTION_HEADERS):
-    """Adds a new prediction into a list of predictions
-
-       prediction_headers should contain the labels for the prediction_row
-       values in the same order.
-
-       prediction_headers should contain at least the following strings
-       - 'prediction': whose associated value in prediction_row
-                       is the predicted category or value
-       - 'order': whose associated value in prediction_row
-                  is the order of the model that generated the prediction
-
-       for instance:
-           prediction_row = ['Iris-virginica', 1]
-           prediction_headers = ['prediction', 'order']
-
-       it may also contain the following headers and values:
-       - 'confidence': whose associated value in prediction_row
-                       is the confidence/error of the prediction
-       - 'distribution': a list of [category/value, instances] pairs describing
-                         the distribution at the prediction node
-       - 'count': the total number of instances of the training set in the node
+    Uses a number of predictions to generate a combined prediction.
 
     """
 
-    if (isinstance(prediction_row, list) and
-        isinstance(prediction_headers, list) and
-        len(prediction_row) == len(prediction_headers) and
-        'prediction' in prediction_headers and 'order' in prediction_headers):
-        prediction_info = {}
-        for i in range(0, len(prediction_row)):
-            prediction_info.update({prediction_headers[i]: prediction_row[i]})
-        predictions.append(prediction_info)
-    else:
-        LOGGER.error("WARNING: failed to add the prediction.\n"
-                     "The minimal labels rows and labels for the prediction"
-                     " are 'prediction' and 'order'")
+    def __init__(self, predictions):
+        """Init method, builds a MultiVote with a list of predictions
 
-def extend_predictions(predictions, predictions_info):
-    """Given a list of predictions, extends the list with another list of
-       predictions adding the order information. The predictions are given in
-       the following format:
+        """
+        self.predictions = []
+        if isinstance(predictions, list):
+            self.extend(predictions)
+        else:
+            self.append(predictions)
+        self.NUMERICAL_COMBINATION_METHODS = {PLURALITY: self.avg,
+                                              CONFIDENCE: self.error_weighted,
+                                              PROBABILITY: self.avg}
 
-            [{'prediction': 'Iris-virginica', 'confidence': 0.3},
-             {'prediction': 'Iris-versicolor', 'confidence': 0.8}]
-       where the expected prediction keys are: prediction, confidence,
-       distribution and count.
-       Also the predictions to be extended should be a list of dict-like
-       and sorted predictions, so that the last prediction of the list has
-       the max order. For instance:
-            >>> predictions = [{'prediction': 'Iris-setosa', 'order': 0}, \
-                               {'prediction': 'Iris-versicolor', 'order': 1}]
-            >>> more_predictions = [{'prediction': 'Iris-virginica'}, \
-                                    {'prediction': 'Iris-versicolor'}]
-            >>> extend_predictions(predictions, more_predictions)
-            >>> predictions
-            [{'prediction': 'Iris-setosa', 'order': 0},
-             {'prediction': 'Iris-versicolor', 'order': 1},
-             {'prediction': 'Iris-virginica', 'order': 2},
-             {'prediction': 'Iris-versicolor', 'order': 3}]
-    """
-    order = 0
-    if predictions:
-        order = predictions[-1]['order']
-        order += 1
+    def is_regression(self):
+        """Returns True if all the predictions are numbers
 
-    if isinstance(predictions_info, list):
-        for i in range(0, len(predictions_info)):
-            prediction = predictions_info[i]
-            if isinstance(prediction, dict):
-                prediction['order'] = order + i
-                add_prediction(predictions, prediction)
+        """
+        return all([isinstance(prediction['prediction'], numbers.Number)
+                   for prediction in self.predictions])
+
+    def next_order(self):
+        """Return the next order to be assigned to a prediction
+
+        """
+        order = 0
+        if self.predictions:
+            order = self.predictions[-1]['order']
+            order += 1
+        return order
+
+    def combine_predictions(self, method=PLURALITY):
+        """Reduces a number of predictions voting for classification and
+           averaging predictions for regression.
+
+        """
+
+        if self.is_regression():
+            return self.NUMERICAL_COMBINATION_METHODS.get(method, self.avg)()
+        else:
+            if method == PROBABILITY:
+                predictions = MultiVote([])
+                predictions.predictions = self.probability_weight()
             else:
-                LOGGER.error("WARNING: failed to add the prediction.\n"
-                             "Only dict like predictions are expected.")
-    else:
-        LOGGER.error("WARNING: failed to add the predictions.\n"
-                     "Only a list of dict-like predictions are expected.") 
+                predictions = self
+            return predictions.combine_categorical(
+                COMBINATION_WEIGHTS.get(method, None))
 
-def extend_predictions_with_rows(predictions, predictions_rows,
-                                 prediction_headers=PREDICTION_HEADERS):
-    """Given a list of predictions, extends the list with a list of predictions
-       adding the order information. The predictions are given in the following
-       format:
+    def avg(self):
+        """Returns the average of a list of numeric values.
 
-            [['Iris-virginica', 0.3],
-             ['Iris-versicolor', 0.8]]
-       and their respective labels are extracted from predition_headers, that 
-       for this example would be:
-            ['prediction', 'confidence']
+        """
+        total = len(self.predictions)
+        result = 0.0
+        for prediction in self.predictions:
+            result += prediction['prediction']
+        return result / total if total > 0 else float('nan')
 
-       The expected prediction elements are: prediction, confidence,
-       distribution and count.
-       Also the predictions to be extended should be a list of dict-like
-       and sorted predictions, so that the last prediction of the list has
-       the max order. For instance:
-            >>> predictions = [{'prediction': 'Iris-setosa', 'order': 0}, \
-                               {'prediction': 'Iris-versicolor', 'order': 1}]
-            >>> more_predictions = [['Iris-virginica'], ['Iris-versicolor']]
-            >>> headers = ['prediction']
-            >>> extend_predictions_with_rows(predictions, more_predictions, \
-                                             headers)
-            >>> predictions
-            [{'prediction': 'Iris-setosa', 'order': 0},
-             {'prediction': 'Iris-versicolor', 'order': 1},
-             {'prediction': 'Iris-virginica', 'order': 2},
-             {'prediction': 'Iris-versicolor', 'order': 3}]
-    """
-    order = 0
-    if predictions:
-        order = predictions[-1]['order']
-        order += 1
-    try:
-        index = prediction_headers.index('order')
-    except ValueError:
-        index = len(prediction_headers)
-        prediction_headers.append('order')
+    def error_weighted(self):
+        """Returns the prediction combining votes using error to compute weight
 
-    if isinstance(predictions_rows, list):
-        for i in range(0, len(predictions_rows)):
-            prediction = predictions_rows[i]
-            if isinstance(prediction, list):
-                if index == len(prediction):
-                    prediction.append(order + i)
+        """
+        top_range = 10
+        result = 0.0
+        normalization_factor = self.normalize_error(top_range)
+        for prediction in self.predictions:
+            result += prediction['prediction'] * prediction['error_weight']
+        return (result / normalization_factor if normalization_factor > 0
+                else float('nan'))
+
+    def normalize_error(self, top_range):
+        """Normalizes error to a [0, top_range] and builds probabilities
+
+        """
+        error_values = [prediction['confidence']
+                        for prediction in self.predictions]
+        max_error = max(error_values)
+        min_error = min(error_values)
+        error_range = 1.0 * (max_error - min_error)
+        normalize_factor = 0
+        if error_range > 0:
+            # Shifts and scales predictions errors to [0, top_range].
+            # Then builds e^-[scaled error] and returns the normalization
+            # factor to fit them between [0, 1]
+            for prediction in self.predictions:
+                delta = (min_error - prediction['confidence'])
+                prediction['error_weight'] = math.exp(delta / error_range *
+                                                      top_range)
+                normalize_factor += prediction['error_weight']
+        else:
+            for prediction in self.predictions:
+                prediction['error_weight'] = 1
+                normalize_factor += 1
+        return normalize_factor
+
+    def combine_categorical(self, weight_label=None):
+        """Returns the prediction combining votes by using the related function
+
+            len for plurality (1 vote per prediction)
+            sum for confidence weighted (confidence as a vote value)
+            sum for probability weighted (probability as a vote value)
+        """
+        mode = {}
+        if weight_label is None:
+            weight = 1
+        for prediction in self.predictions:
+            if not weight_label is None:
+                if not weight_label in prediction:
+                    raise Exception("Not enough data to use the selected "
+                                    "prediction method. Try creating your"
+                                    " model anew.")
                 else:
-                    prediction[index] = order + i
-                add_prediction_row(predictions, prediction, prediction_headers)
+                    weight = prediction[weight_label]
+            category = prediction['prediction']
+            if category in mode:
+                mode[category] = {"count": mode[category]["count"] +
+                                  weight,
+                                  "order": mode[category]["order"]}
             else:
-                LOGGER.error("WARNING: failed to add the prediction.\n"
-                             "Only row-like predictions are expected.")
-    else:
-        LOGGER.error("WARNING: failed to add the predictions.\n"
-                     "Only a list of row-like predictions are expected.") 
+                mode[category] = {"count": weight,
+                                  "order": prediction['order']}
+        return sorted(mode.items(), key=lambda x: (x[1]['count'],
+                                                   -x[1]['order']),
+                      reverse=True)[0][0]
+
+    def probability_weight(self):
+        """Reorganizes predictions depending on training data probability
+
+        """
+        predictions = []
+        for prediction in self.predictions:
+            if not 'distribution' in prediction or not 'count' in prediction:
+                raise Exception("Probability weighting is not available "
+                                "because distribution information is missing.")
+            total = prediction['count']
+            order = prediction['order']
+            for prediction, instances in prediction['distribution']:
+                predictions.append({'prediction': prediction,
+                                    'probability': float(instances) / total,
+                                    'order': order})
+        return predictions
+
+    def append(self, prediction_info):
+        """Adds a new prediction into a list of predictions
+
+           prediction_info should contain at least:
+           - prediction: whose value is the predicted category or value
+
+           for instance:
+               {'prediction': 'Iris-virginica'}
+
+           it may also contain the keys:
+           - confidence: whose value is the confidence/error of the prediction
+           - distribution: a list of [category/value, instances] pairs
+                           describing the distribution at the prediction node
+           - count: the total number of instances of the training set in the
+                    node
+        """
+        if (isinstance(prediction_info, dict) and
+                'prediction' in prediction_info):
+            order = self.next_order()
+            prediction_info['order'] = order
+            self.predictions.append(prediction_info)
+        else:
+            LOGGER.error("WARNING: failed to add the prediction.\n"
+                         "The minimal key for the prediction is 'prediction':"
+                         "\n{'prediction': 'Iris-virginica'")
+
+    def append_row(self, prediction_row,
+                   prediction_headers=PREDICTION_HEADERS):
+        """Adds a new prediction into a list of predictions
+
+           prediction_headers should contain the labels for the prediction_row
+           values in the same order.
+
+           prediction_headers should contain at least the following string
+           - 'prediction': whose associated value in prediction_row
+                           is the predicted category or value
+
+           for instance:
+               prediction_row = ['Iris-virginica']
+               prediction_headers = ['prediction']
+
+           it may also contain the following headers and values:
+           - 'confidence': whose associated value in prediction_row
+                           is the confidence/error of the prediction
+           - 'distribution': a list of [category/value, instances] pairs
+                             describing the distribution at the prediction node
+           - 'count': the total number of instances of the training set in the
+                      node
+        """
+
+        if (isinstance(prediction_row, list) and
+                isinstance(prediction_headers, list) and
+                len(prediction_row) == len(prediction_headers) and
+                'prediction' in prediction_headers):
+            order = self.next_order()
+            try:
+                index = prediction_headers.index('order')
+                prediction_row[index] = order
+            except ValueError:
+                prediction_headers.append('order')
+                prediction_row.append(order)
+            prediction_info = {}
+            for i in range(0, len(prediction_row)):
+                prediction_info.update({prediction_headers[i]:
+                                        prediction_row[i]})
+            self.predictions.append(prediction_info)
+        else:
+            LOGGER.error("WARNING: failed to add the prediction.\n"
+                         "The row must have label 'prediction' at least.")
+
+    def extend(self, predictions_info):
+        """Given a list of predictions, extends the list with another list of
+           predictions and adds the order information. For instance,
+           predictions_info could be:
+
+                [{'prediction': 'Iris-virginica', 'confidence': 0.3},
+                 {'prediction': 'Iris-versicolor', 'confidence': 0.8}]
+           where the expected prediction keys are: prediction (compulsory),
+           confidence, distribution and count.
+        """
+        if isinstance(predictions_info, list):
+            order = self.next_order()
+            for i in range(0, len(predictions_info)):
+                prediction = predictions_info[i]
+                if isinstance(prediction, dict):
+                    prediction['order'] = order + i
+                    self.append(prediction)
+                else:
+                    LOGGER.error("WARNING: failed to add the prediction.\n"
+                                 "Only dict like predictions are expected.")
+        else:
+            LOGGER.error("WARNING: failed to add the predictions.\n"
+                         "Only a list of dict-like predictions are expected.")
+
+    def extend_rows(self, predictions_rows,
+                    prediction_headers=PREDICTION_HEADERS):
+        """Given a list of predictions, extends the list with a list of
+           predictions and adds the order information. For instance,
+           predictions_info could be:
+
+                [['Iris-virginica', 0.3],
+                 ['Iris-versicolor', 0.8]]
+           and their respective labels are extracted from predition_headers,
+           that for this example would be:
+                ['prediction', 'confidence']
+
+           The expected prediction elements are: prediction, confidence,
+           distribution and count.
+        """
+        order = self.next_order()
+        try:
+            index = prediction_headers.index('order')
+        except ValueError:
+            index = len(prediction_headers)
+            prediction_headers.append('order')
+        if isinstance(predictions_rows, list):
+            for i in range(0, len(predictions_rows)):
+                prediction = predictions_rows[i]
+                if isinstance(prediction, list):
+                    if index == len(prediction):
+                        prediction.append(order + i)
+                    else:
+                        prediction[index] = order + i
+                    self.append_row(prediction, prediction_headers)
+                else:
+                    LOGGER.error("WARNING: failed to add the prediction.\n"
+                                 "Only row-like predictions are expected.")
+        else:
+            LOGGER.error("WARNING: failed to add the predictions.\n"
+                         "Only a list of row-like predictions are expected.")

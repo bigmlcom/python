@@ -46,7 +46,7 @@ from bigml.model import Model
 from bigml.util import get_predictions_file_name
 from bigml.prediction_combiners import combine_predictions, \
     add_prediction_row
-from bigml.prediction_combiners import PLURALITY    
+from bigml.prediction_combiners import PLURALITY
 
 
 def read_votes(votes_files, to_prediction):
@@ -76,7 +76,7 @@ def read_votes(votes_files, to_prediction):
 class MultiModel(object):
     """A multiple local model.
 
-    Uses a numbers of BigML remote models to build a local version that can be
+    Uses a number of BigML remote models to build a local version that can be
     used to generate predictions locally.
 
     """

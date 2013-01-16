@@ -598,9 +598,9 @@ class Model(object):
             """
             count = 1
             for [field, importance] in self.field_importance:
-                out.write(u"    %s. %s: %.2f%%\n" % (count,
-                          self.tree.fields[field]['name'],
-                          round(importance, 4) * 100))
+                out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
+                               self.tree.fields[field]['name'],
+                               round(importance, 4) * 100)))
                 count += 1
 
         def extract_common_path(groups):

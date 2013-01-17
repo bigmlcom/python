@@ -28,10 +28,11 @@ CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']
-COMBINATION_WEIGHTS = {PLURALITY: None,
-                       CONFIDENCE: 'confidence',
-                       PROBABILITY: 'probability'}
-COMBINER_MAP  = {
+COMBINATION_WEIGHTS = {
+    PLURALITY: None,
+    CONFIDENCE: 'confidence',
+    PROBABILITY: 'probability'}
+COMBINER_MAP = {
     0: PLURALITY,
     1: CONFIDENCE,
     2: PROBABILITY}
@@ -55,9 +56,10 @@ class MultiVote(object):
             self.extend(predictions)
         else:
             self.append(predictions)
-        self.NUMERICAL_COMBINATION_METHODS = {PLURALITY: self.avg,
-                                              CONFIDENCE: self.error_weighted,
-                                              PROBABILITY: self.avg}
+        self.numerical_combination_methods = {
+            PLURALITY: self.avg,
+            CONFIDENCE: self.error_weighted,
+            PROBABILITY: self.avg}
 
     def is_regression(self):
         """Returns True if all the predictions are numbers
@@ -83,12 +85,12 @@ class MultiVote(object):
         """
 
         if method in COMBINER_MAP:
-	        method = COMBINER_MAP[method]
+            method = COMBINER_MAP[method]
         else:
             method = COMBINER_MAP[DEFAULT_METHOD]
 
         if self.is_regression():
-            return self.NUMERICAL_COMBINATION_METHODS.get(method, self.avg)()
+            return self.numerical_combination_methods.get(method, self.avg)()
         else:
             if method == PROBABILITY:
                 predictions = MultiVote([])

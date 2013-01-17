@@ -47,7 +47,7 @@ from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
 
 
-def read_votes(votes_files, to_prediction):
+def read_votes(votes_files, to_prediction, data_locale=None):
     """Reads the votes found in the votes' files and returns a list.
 
     """
@@ -56,7 +56,7 @@ def read_votes(votes_files, to_prediction):
         votes_file = votes_files[order]
         index = 0
         for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
-            prediction = to_prediction(row[0])
+            prediction = to_prediction(row[0], data_locale=data_locale)
             if index > (len(votes) - 1):
                 votes.append(MultiVote([]))
             distribution = None
@@ -156,4 +156,5 @@ class MultiModel(object):
         for model in self.models:
             votes_files.append(get_predictions_file_name(model.resource_id,
                                predictions_file_path))
-        return read_votes(votes_files, self.models[0].to_prediction)
+        return read_votes(votes_files, self.models[0].to_prediction,
+                          data_locale=data_locale)

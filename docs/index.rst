@@ -339,11 +339,11 @@ as::
                                                       'present_in_test_data': True,
                                                       'recall': 0.038461538461538464}]}}
 
-where two levels of detail are easily identified. For categorical objective
-fields, the first level shows `class_names`, `mode`, `model`, `random` labels
+where two levels of detail are easily identified. For classifications,
+the first level shows `class_names`, `mode`, `model`, `random` labels
 and the second level `accuracy`, `average_f_measure`, `average_phi`,
 `average_precision`, `average_precision`, `average_recall`, `confusion_matrix`
-and `per_class_statistics`, while the numeric ones will show at first level
+and `per_class_statistics`, while for regressions will show at first level
 `mean`, `model`, `random` and at second `mean_absolute_error`,
 `mean_squared_error` and `r_squared` (refer to
 `developers documentation <https://bigml.com/developers/evaluations>`_ for
@@ -735,6 +735,26 @@ model methods need the important fields in the `model` parameter to be
  available. If an important field is missing (because it has been excluded or
 filtered), an exception will arise.
 
+Local Predictions
+-----------------
+
+Once you have a local model you can use to generate predictions locally.
+
+::
+
+    local_model.predict({"petal length": 3, "petal width": 1})
+    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
+    Iris-versicolor
+
+Local predictions have three clear advantages:
+
+- Removing the dependency from BigML to make new predictions.
+
+- No cost in BigML (i.e., you do not spend BigML credits).
+
+- Extremely low latency to generate predictions for huge volumes of data.
+
+
 Multi Models
 ------------
 
@@ -783,7 +803,7 @@ to save the prediction files in.
 
 The predictions generated for each model will be stored in an output
 file in `data/predictions` using the syntax
-`model_[id of the model]_predictions.csv`. For instance, when using
+`model_[id of the model]__predictions.csv`. For instance, when using
 `model/50c0de043b563519830001c2` to predict, the output file name will be
 `model_50c0de043b563519830001c2__predictions.csv`. An additional feature is
 that using `reuse=True` as argument will force the function to skip the
@@ -800,9 +820,9 @@ using `batch_votes`::
 
     model.batch_votes("data/predictions")
 
-which will return a list of MultiVote objects. Each MultiVote is a list of
-predictions (e.g. `[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
-'order': 0}, {'prediction': u'Iris-setosa', 'confidence': [0.25],
+which will return a list of MultiVote objects. Each MultiVote contains a list
+of predictions (e.g. `[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
+'order': 0}, {'prediction': u'Iris-setosa', 'confidence': 0.25,
 'order': 1}]`).
 These votes can be further combined to issue a final
 prediction for each input data element using the method `combine`
@@ -821,26 +841,6 @@ weighted``::
 or ``probability weighted``::
 
     prediction = multivote.combine(2)
-
-
-Local Predictions
------------------
-
-Once you have a local model you can use to generate predictions locally.
-
-::
-
-    local_model.predict({"petal length": 3, "petal width": 1})
-    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
-    Iris-versicolor
-
-Local predictions have three clear advantages:
-
-- Removing the dependency from BigML to make new predictions.
-
-- No cost in BigML (i.e., you do not spend BigML credits).
-
-- Extremely low latency to generate predictions for huge volumes of data.
 
 
 Fields

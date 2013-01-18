@@ -190,8 +190,7 @@ def patch_requests():
 
     """
     def debug_request(method, url, **kwargs):
-        """Logs the request data and the response content for api's 
-           remote requests
+        """Logs the request and response content for api's remote requests
 
         """
         response = original_request(method, url, **kwargs)
@@ -592,8 +591,8 @@ class BigML(object):
 
             resource_id = resource['resource']
             if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
-                or MODEL_RE.match(resource_id)
-                or EVALUATION_RE.match(resource_id)):
+                    or MODEL_RE.match(resource_id)
+                    or EVALUATION_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
@@ -653,8 +652,10 @@ class BigML(object):
         """
         if isinstance(resource, dict) and 'resource' in resource:
             return resource['resource']
-        elif isinstance(resource, basestring) and (SOURCE_RE.match(resource)
-                or DATASET_RE.match(resource) or MODEL_RE.match(resource)
+        elif isinstance(resource, basestring) and (
+                SOURCE_RE.match(resource)
+                or DATASET_RE.match(resource)
+                or MODEL_RE.match(resource)
                 or PREDICTION_RE.match(resource)
                 or EVALUATION_RE.match(resource)):
             return resource
@@ -1185,7 +1186,7 @@ class BigML(object):
     #
     ##########################################################################
     def create_evaluation(self, model, dataset,
-                          args=None, wait_time=3):
+                          args=None, wait_time=3, retries=10):
         """Creates a new evaluation.
 
         """

@@ -79,7 +79,7 @@ class MultiVote(object):
         top_range = 10
         result = 0.0
         normalization_factor = cls.normalize_error(instance, top_range)
-        if normalization_factor == 0: 
+        if normalization_factor == 0:
             return float('nan')
         for prediction in instance.predictions:
             result += prediction['prediction'] * prediction['error_weight']
@@ -159,7 +159,7 @@ class MultiVote(object):
         keys = WEIGHT_KEYS.get(method, None)
         # and all predictions should have the weight-related keys
         if not keys is None:
-            for key in keys: 
+            for key in keys:
                 if not all([key in prediction for prediction
                            in self.predictions]):
                     raise Exception("Not enough data to use the selected "
@@ -167,7 +167,7 @@ class MultiVote(object):
                                     " model anew.")
         if self.is_regression():
             return NUMERICAL_COMBINATION_METHODS.get(method,
-                   self.__class__.avg)(self)
+                                                     self.__class__.avg)(self)
         else:
             if method == PROBABILITY:
                 predictions = MultiVote([])
@@ -212,7 +212,7 @@ class MultiVote(object):
         for prediction in self.predictions:
             if not weight_label is None:
                 if not weight_label in COMBINATION_WEIGHTS.values():
-                    raise Exception("Wrong weight_label value.") 
+                    raise Exception("Wrong weight_label value.")
                 if not weight_label in prediction:
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
@@ -254,8 +254,8 @@ class MultiVote(object):
             self.predictions.append(prediction_info)
         else:
             LOGGER.warning("Failed to add the prediction.\n"
-                         "The minimal key for the prediction is 'prediction':"
-                         "\n{'prediction': 'Iris-virginica'")
+                           "The minimal key for the prediction is 'prediction'"
+                           ":\n{'prediction': 'Iris-virginica'")
 
     def append_row(self, prediction_row,
                    prediction_headers=PREDICTION_HEADERS):

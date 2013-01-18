@@ -140,7 +140,7 @@ You can then print the prediction using the ``pprint`` method::
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
-and also generate an evaluation for the model by using:
+and also generate an evaluation for the model by using::
 
     test_source = api.create_source('./data/test_iris.csv')
     test_dataset = api.create_dataset(test_source)
@@ -340,22 +340,22 @@ as::
                                                       'recall': 0.038461538461538464}]}}
 
 where two levels of detail are easily identified. For classifications,
-the first level shows these labels::
+the first level shows these keys:
 
-class_names   A list with the names of all the categories for the objective field (i.e., all the classes)    
-mode          A detailed result object. Measures of the performance of the classifier that predicts the mode class for all the instances in the dataset
-model         A detailed result object.
-random        A detailed result object.  Measures the performance of the classifier that predicts a random class for all the instances in the dataset.
+-  **class_names**: A list with the names of all the categories for the objective field (i.e., all the classes)    
+-  **mode**: A detailed result object. Measures of the performance of the classifier that predicts the mode class for all the instances in the dataset
+-  **model**: A detailed result object.
+-  **random**: A detailed result object.  Measures the performance of the classifier that predicts a random class for all the instances in the dataset.
 
 and the detailed result objects include ``accuracy``, ``average_f_measure``, ``average_phi``,
 ``average_precision``, ``average_recall``, ``confusion_matrix``
 and ``per_class_statistics``.
 
-For regressions first level will contain these labels::
+For regressions first level will contain these keys:
 
-mean           A detailed result object. Measures the performance of the model that predicts the mean for all the instances in the dataset.
-model          A detailed result object.
-random         A detailed result object. Measures the performance of the model that predicts a random class for all the instances in the dataset.
+-  **mean**: A detailed result object. Measures the performance of the model that predicts the mean for all the instances in the dataset.
+-  **model**: A detailed result object.
+-  **random**: A detailed result object. Measures the performance of the model that predicts a random class for all the instances in the dataset.
 
 where the detailed result objects include ``mean_absolute_error``,
 ``mean_squared_error`` and ``r_squared`` (refer to
@@ -420,7 +420,7 @@ the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
-You can also use the ``check_resource`` method:
+You can also use the ``check_resource`` method::
 
     api.check_resource(resource, api.get_source)
 
@@ -745,7 +745,7 @@ generate IF-THEN rules or a Python function that implements the model.
 
 Beware of using filtered fields models to instantiate a local model. The local
 model methods need the important fields in the ``model`` parameter to be
- available. If an important field is missing (because it has been excluded or
+available. If an important field is missing (because it has been excluded or
 filtered), an exception will arise.
 
 Local Predictions
@@ -810,6 +810,7 @@ separated file. It expects a list of input data values and the directory path
 to save the prediction files in.
 
 ::
+
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
                         "data/predictions")
@@ -824,6 +825,7 @@ creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
 
 ::
+
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
                         "data/predictions", reuse=True)

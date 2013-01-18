@@ -3,6 +3,14 @@
 History
 -------
 
+0.5.0 (2012-01-16)
+~~~~~~~~~~~~~~~~~~
+
+- Adds evaluation api functions
+- New prediction combination method: probability weighted
+- Refactors MultiModels lists of predictions into MultiVote
+- Multimodels partial predictions: new format
+
 0.4.8 (2012-12-21)
 ~~~~~~~~~~~~~~~~~~
 

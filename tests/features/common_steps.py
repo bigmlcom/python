@@ -51,3 +51,6 @@ def i_want_api_dev_mode(step):
     assert predictions['code'] == HTTP_OK
     world.init_predictions_count = predictions['meta']['total_count']
 
+    evaluations = world.api.list_evaluations()
+    assert evaluations['code'] == HTTP_OK
+    world.init_evaluations_count = evaluations['meta']['total_count']

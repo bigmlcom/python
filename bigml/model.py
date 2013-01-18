@@ -102,7 +102,8 @@ PYTHON_CONV = {
     "day-of-month": "lambda x: int(locale.atof(x))"
 }
 
-PYTHON_FUNC = dict([(key, eval(val)) for key, val in PYTHON_CONV.iteritems()]) 
+PYTHON_FUNC = dict([(numtype, eval(function))
+                    for numtype, function in PYTHON_CONV.iteritems()])
 
 INDENT = u'    '
 
@@ -198,6 +199,12 @@ class Tree(object):
         The input fields must be keyed by Id.
 
         """
+        def get_instances(distribution):
+            """Returns the total number of instances in a distribution
+
+            """
+            return sum(x[1] for x in distribution) if distribution else 0
+
         if path is None:
             path = []
         if self.children and split(self.children) in input_data:
@@ -210,9 +217,8 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-            return self.output, path, self.confidence
-        else:
-            return self.output, path, self.confidence
+        return (self.output, path, self.confidence,
+                self.distribution, get_instances(self.distribution))
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.
@@ -436,14 +442,15 @@ class Model(object):
                                     (self.tree.fields[key]['name'],
                                      value))
 
-        prediction, path, confidence = self.tree.predict(input_data)
+        prediction_info = self.tree.predict(input_data)
+        prediction, path, confidence, distribution, instances = prediction_info
 
         # Prediction path
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
         if with_confidence:
-            return [prediction, confidence]
+            return [prediction, confidence, distribution, instances]
         return prediction
 
     def docstring(self):
@@ -588,9 +595,9 @@ class Model(object):
             """
             count = 1
             for [field, importance] in self.field_importance:
-                out.write(u"    %s. %s: %.2f%%\n" % (count,
-                          self.tree.fields[field]['name'],
-                          round(importance, 4) * 100))
+                out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
+                               self.tree.fields[field]['name'],
+                               round(importance, 4) * 100)))
                 count += 1
 
         def extract_common_path(groups):

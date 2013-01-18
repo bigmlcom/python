@@ -87,8 +87,8 @@ BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
 
 # Check BigML.io host’s SSL certificate
 # DO NOT CHANGE IT.
-VERIFY = (not os.environ.get('BIGML_URL') and
-          not os.environ.get('BIGML_DEV_URL'))
+VERIFY = (BIGML_URL.startswith("https://bigml.io/") or
+          BIGML_DEV_URL.startswith("https://bigml.io/"))
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}

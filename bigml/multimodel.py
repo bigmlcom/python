@@ -45,12 +45,25 @@ import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
+from bigml.multivote import PLURALITY_CODE
 
 
 def read_votes(votes_files, to_prediction, data_locale=None):
     """Reads the votes found in the votes' files.
 
        Returns a list of MultiVote objects containing the list of predictions.
+       votes_files parameter should contain the path to the files where votes
+       are stored
+       In to_prediction parameter we expect the method of a local model object
+       that casts the string prediction values read from the file to their
+       real type. For instance
+           >>> local_model = Model(model)
+           >>> prediction = local_model.to_prediction("1")
+           >>> isinstance(prediction, int)
+           True
+           >>> read_votes(["my_predictions_file"], local_model.to_prediction)
+       data_locale should contain the string identification for the locale
+       used in numeric formatting.
     """
     votes = []
     for order in range(0, len(votes_files)):
@@ -94,15 +107,16 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=True, method=0):
+    def predict(self, input_data, by_name=True, method=PLURALITY_CODE):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
            methods in classifications/regressions:
-              0 - majority vote / average
-              1 - confidence weighted majority vote / error weighted
-              2 - probability weighted majority vote / average
-
+              0 - majority vote (plurality)/ average: PLURALITY_CODE
+              1 - confidence weighted majority vote / error weighted:
+                  CONFIDENCE_CODE
+              2 - probability weighted majority vote / average:
+                  PROBABILITY_CODE
         """
 
         votes = MultiVote([])

@@ -3,7 +3,7 @@
 History
 -------
 
-0.4.9 (2012-01-16)
+0.5.0 (2012-01-16)
 ~~~~~~~~~~~~~~~~~~
 
 - Adds evaluation api functions

@@ -14,5 +14,5 @@ Feature: Create Evaluations
         Then the measured "<measure>" is <value>
 
         Examples:
-        | data                | time_1  | time_2 | time_3 | time_4 | measure | value  |
-        | ../data/iris.csv | 10      | 10     | 10     | 10     | average_phi   | 1 |
+        | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
+        | ../data/iris.csv | 10      | 10     | 10     | 10     | average_phi   | 1      |

@@ -203,7 +203,7 @@ class Tree(object):
             """Returns the total number of instances in a distribution
 
             """
-            return sum(x[1] for x in distribution)
+            return sum(x[1] for x in distribution) if distribution else 0
 
         if path is None:
             path = []
@@ -217,11 +217,8 @@ class Tree(object):
                                 child.predicate.operator,
                                 child.predicate.value))
                     return child.predict(input_data, path)
-            return (self.output, path, self.confidence,
-                    self.distribution, get_instances(self.distribution))
-        else:
-            return (self.output, path, self.confidence,
-                    self.distribution, get_instances(self.distribution))
+        return (self.output, path, self.confidence,
+                self.distribution, get_instances(self.distribution))
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.
@@ -445,8 +442,8 @@ class Model(object):
                                     (self.tree.fields[key]['name'],
                                      value))
 
-        prediction = self.tree.predict(input_data)
-        prediction, path, confidence, distribution, instances = prediction
+        prediction_info = self.tree.predict(input_data)
+        prediction, path, confidence, distribution, instances = prediction_info
 
         # Prediction path
         if print_path:

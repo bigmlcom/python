@@ -219,7 +219,7 @@ The field filtering options are also available using a query string expression,
 
     >>> dataset = api.get_dataset(dataset, "limit=20")
 
-limits the number of fields that will be included in `dataset` to 20.
+limits the number of fields that will be included in ``dataset`` to 20.
 
 Model
 -----
@@ -264,7 +264,7 @@ Again, filtering options are also available using a query string expression,
 
     >>> model = api.get_model(model, "limit=5")
 
-limits the number of fields that will be included in `model` to 5.
+limits the number of fields that will be included in ``model`` to 5.
 
 Evaluation
 ----------
@@ -340,12 +340,25 @@ as::
                                                       'recall': 0.038461538461538464}]}}
 
 where two levels of detail are easily identified. For classifications,
-the first level shows `class_names`, `mode`, `model`, `random` labels
-and the second level `accuracy`, `average_f_measure`, `average_phi`,
-`average_precision`, `average_precision`, `average_recall`, `confusion_matrix`
-and `per_class_statistics`, while for regressions will show at first level
-`mean`, `model`, `random` and at second `mean_absolute_error`,
-`mean_squared_error` and `r_squared` (refer to
+the first level shows these labels::
+
+class_names   A list with the names of all the categories for the objective field (i.e., all the classes)    
+mode          A detailed result object. Measures of the performance of the classifier that predicts the mode class for all the instances in the dataset
+model         A detailed result object.
+random        A detailed result object.  Measures the performance of the classifier that predicts a random class for all the instances in the dataset.
+
+and the detailed result objects include ``accuracy``, ``average_f_measure``, ``average_phi``,
+``average_precision``, ``average_recall``, ``confusion_matrix``
+and ``per_class_statistics``.
+
+For regressions first level will contain these labels::
+
+mean           A detailed result object. Measures the performance of the model that predicts the mean for all the instances in the dataset.
+model          A detailed result object.
+random         A detailed result object. Measures the performance of the model that predicts a random class for all the instances in the dataset.
+
+where the detailed result objects include ``mean_absolute_error``,
+``mean_squared_error`` and ``r_squared`` (refer to
 `developers documentation <https://bigml.com/developers/evaluations>`_ for
 more info on the meaning of these measures.
 
@@ -358,7 +371,7 @@ keys:
 
 -  **code**: If the request is successful you will get a
    ``bigml.api.HTTP_CREATED`` (201) status code. In asynchronous file uploading
-   `api.create_source` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
+   ``api.create_source`` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
    status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
    documentation <https://bigml.com/developers/status_codes>`_.
@@ -437,8 +450,8 @@ or you may want to create a source from a file in a remote location::
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
 
 As already mentioned, source creation is asynchronous. In both these examples,
-the `api.create_source` call returns once the file is uploaded.
-Then `source` will contain a resource whose status code will be either
+the ``api.create_source`` call returns once the file is uploaded.
+Then ``source`` will contain a resource whose status code will be either
 ``WAITING`` or ``QUEUED``.
 
 For local data files you can go one step further and use asynchronous
@@ -459,8 +472,8 @@ In this case, the call fills `source` immediately with a primary resource like::
                     'code': 6}},
      'error': None}
 
-where the `source['object']` status is set to `UPLOADING` and  its `progress`
-is periodically updated with the current uploading
+where the ``source['object']`` status is set to ``UPLOADING`` and  its
+``progress`` is periodically updated with the current uploading
 progress ranging from 0 to 1. When upload completes, this structure will be
 replaced by the real resource info as computed by BigML. Therefore source's
 status will eventually be (as it is in the synchronous upload case)
@@ -528,20 +541,20 @@ Creating evaluations
 
 Once you have created a model, you can measure its perfomance by running a
 dataset of test data through it and comparing its predictions to the objective
-field real values. Thus the required arguments to create an evaluation are
+field real values. Thus, the required arguments to create an evaluation are
 model id and a dataset id. You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Evaluations section of the Developer's
 documentation <https://bigml.com/developers/evaluations>`_.
 
-For instance, to evaluate a previously created model using 10000 rows at most
-from the existing dataset
+For instance, to evaluate a previously created model using at most 10000 rows
+from an existing dataset
 you can use the following call::
 
     evaluation = api.create_evaluation(model, dataset, {
         "name": "my model", "max_rows": 10000})
 
-Again, the evaluation is scheduled for creation, ``api.status(evaluation)``
+Again, the evaluation is scheduled for creation and ``api.status(evaluation)``
 will show its state.
 
 Reading Resources
@@ -731,7 +744,7 @@ This will return a Model object that you can use to make local predictions,
 generate IF-THEN rules or a Python function that implements the model.
 
 Beware of using filtered fields models to instantiate a local model. The local
-model methods need the important fields in the `model` parameter to be
+model methods need the important fields in the ``model`` parameter to be
  available. If an important field is missing (because it has been excluded or
 filtered), an exception will arise.
 
@@ -750,7 +763,7 @@ Local predictions have three clear advantages:
 
 - Removing the dependency from BigML to make new predictions.
 
-- No cost in BigML (i.e., you do not spend BigML credits).
+- No cost (i.e., you do not spend BigML credits).
 
 - Extremely low latency to generate predictions for huge volumes of data.
 
@@ -776,15 +789,15 @@ combining the outputs of each model.
     model.predict({"petal length": 3, "petal width": 1})
 
 This will create a multi model using all the models that have been previously
-tagged with `my_tag` and predict by combining each model's prediction.
-The combination method used by default is `plurality` for categorical
+tagged with ``my_tag`` and predict by combining each model's prediction.
+The combination method used by default is ``plurality`` for categorical
 predictions and mean value for numerical ones. You can also use ``confidence
 weighted``::
 
     model.predict({"petal length": 3, "petal width": 1}, method=1)
 
 that will weight each vote using the confidence/error given by the model
- to each prediction, or even ``probability weighted``::
+to each prediction, or even ``probability weighted``::
 
     model.predict({"petal length": 3, "petal width": 1}, method=2)
 
@@ -792,7 +805,7 @@ that weights each vote by using the probability associated to the training
 distribution at the prediction node.
 
 When making predictions on a test set with a large number of models,
-`batch_prediction` can be useful to log each model's predictions in a
+``batch_predict`` can be useful to log each model's predictions in a
 separated file. It expects a list of input data values and the directory path
 to save the prediction files in.
 
@@ -806,7 +819,7 @@ file in `data/predictions` using the syntax
 `model_[id of the model]__predictions.csv`. For instance, when using
 `model/50c0de043b563519830001c2` to predict, the output file name will be
 `model_50c0de043b563519830001c2__predictions.csv`. An additional feature is
-that using `reuse=True` as argument will force the function to skip the
+that using ``reuse=True`` as argument will force the function to skip the
 creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
 
@@ -816,23 +829,23 @@ helpful when using repeatedly a bunch of models on the same test set.
                         "data/predictions", reuse=True)
 
 Prediction files can be subsequently retrieved and converted into a votes list
-using `batch_votes`::
+using ``batch_votes``::
 
     model.batch_votes("data/predictions")
 
 which will return a list of MultiVote objects. Each MultiVote contains a list
-of predictions (e.g. `[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
+of predictions (e.g. ``[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
 'order': 0}, {'prediction': u'Iris-setosa', 'confidence': 0.25,
-'order': 1}]`).
+'order': 1}]``).
 These votes can be further combined to issue a final
-prediction for each input data element using the method `combine`
+prediction for each input data element using the method ``combine``
 
 ::
 
     for multivote in model.batch_votes("data/predictions"):
         prediction = multivote.combine()
 
-Again, the default method of combination is `plurality` for categorical
+Again, the default method of combination is ``plurality`` for categorical
 predictions and mean value for numerical ones. You can also use ``confidence
 weighted``::
 

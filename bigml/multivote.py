@@ -26,6 +26,9 @@ import math
 PLURALITY = 'plurality'
 CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
+PLURALITY_CODE = 0
+CONFIDENCE_CODE = 1
+PROBABILITY_CODE = 2
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']
 COMBINATION_WEIGHTS = {
@@ -33,9 +36,13 @@ COMBINATION_WEIGHTS = {
     CONFIDENCE: 'confidence',
     PROBABILITY: 'probability'}
 COMBINER_MAP = {
-    0: PLURALITY,
-    1: CONFIDENCE,
-    2: PROBABILITY}
+    PLURALITY_CODE: PLURALITY,
+    CONFIDENCE_CODE: CONFIDENCE,
+    PROBABILITY_CODE: PROBABILITY}
+WEIGHT_KEYS = {
+    PLURALITY: None,
+    CONFIDENCE: ['confidence'],
+    PROBABILITY: ['distribution', 'count']}
 
 DEFAULT_METHOD = 0
 
@@ -47,6 +54,69 @@ class MultiVote(object):
 
     """
 
+    @classmethod
+    def avg(cls, instance):
+        """Returns the average of a list of numeric values.
+
+        """
+        total = len(instance.predictions)
+        result = 0.0
+        for prediction in instance.predictions:
+            result += prediction['prediction']
+        return result / total if total > 0 else float('nan')
+
+    @classmethod
+    def error_weighted(cls, instance):
+        """Returns the prediction combining votes using error to compute weight
+
+        """
+        if instance.predictions and not all(['confidence' in prediction
+                                             for prediction
+                                             in instance.predictions]):
+            raise Exception("Not enough data to use the selected "
+                            "prediction method. Try creating your"
+                            " model anew.")
+        top_range = 10
+        result = 0.0
+        normalization_factor = cls.normalize_error(instance, top_range)
+        if normalization_factor == 0: 
+            return float('nan')
+        for prediction in instance.predictions:
+            result += prediction['prediction'] * prediction['error_weight']
+        return result / normalization_factor
+
+    @classmethod
+    def normalize_error(cls, instance, top_range):
+        """Normalizes error to a [0, top_range] and builds probabilities
+
+        """
+        if instance.predictions and not all(['confidence' in prediction
+                                             for prediction
+                                             in instance.predictions]):
+            raise Exception("Not enough data to use the selected "
+                            "prediction method. Try creating your"
+                            " model anew.")
+        error_values = [prediction['confidence']
+                        for prediction in instance.predictions]
+        max_error = max(error_values)
+        min_error = min(error_values)
+        error_range = 1.0 * (max_error - min_error)
+        normalize_factor = 0
+        if error_range > 0:
+            # Shifts and scales predictions errors to [0, top_range].
+            # Then builds e^-[scaled error] and returns the normalization
+            # factor to fit them between [0, 1]
+            for prediction in instance.predictions:
+                delta = (min_error - prediction['confidence'])
+                prediction['error_weight'] = math.exp(delta / error_range *
+                                                      top_range)
+                normalize_factor += prediction['error_weight']
+        else:
+            for prediction in instance.predictions:
+                prediction['error_weight'] = 1
+            normalize_factor = len(instance.predictions)
+        return normalize_factor
+
     def __init__(self, predictions):
         """Init method, builds a MultiVote with a list of predictions
 
@@ -56,10 +126,6 @@ class MultiVote(object):
             self.extend(predictions)
         else:
             self.append(predictions)
-        self.numerical_combination_methods = {
-            PLURALITY: self.avg,
-            CONFIDENCE: self.error_weighted,
-            PROBABILITY: self.avg}
 
     def is_regression(self):
         """Returns True if all the predictions are numbers
@@ -71,26 +137,37 @@ class MultiVote(object):
     def next_order(self):
         """Return the next order to be assigned to a prediction
 
+           Predictions in MultiVote are ordered in arrival sequence when
+           added using the constructor or the append and extend methods.
+           This order is used to break even cases in combination
+           methods for classifications.
         """
-        order = 0
         if self.predictions:
-            order = self.predictions[-1]['order']
-            order += 1
-        return order
+            return self.predictions[-1]['order'] + 1
+        return 0
 
     def combine(self, method=DEFAULT_METHOD):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
         """
+        # there must be at least one prediction to be combined
+        if not self.predictions:
+            raise Exception("No predictions to be combined.")
 
-        if method in COMBINER_MAP:
-            method = COMBINER_MAP[method]
-        else:
-            method = COMBINER_MAP[DEFAULT_METHOD]
-
+        method = COMBINER_MAP.get(method, COMBINER_MAP[DEFAULT_METHOD])
+        keys = WEIGHT_KEYS.get(method, None)
+        # and all predictions should have the weight-related keys
+        if not keys is None:
+            for key in keys: 
+                if not all([key in prediction for prediction
+                           in self.predictions]):
+                    raise Exception("Not enough data to use the selected "
+                                    "prediction method. Try creating your"
+                                    " model anew.")
         if self.is_regression():
-            return self.numerical_combination_methods.get(method, self.avg)()
+            return NUMERICAL_COMBINATION_METHODS.get(method,
+                   self.__class__.avg)(self)
         else:
             if method == PROBABILITY:
                 predictions = MultiVote([])
@@ -100,65 +177,42 @@ class MultiVote(object):
             return predictions.combine_categorical(
                 COMBINATION_WEIGHTS.get(method, None))
 
-    def avg(self):
-        """Returns the average of a list of numeric values.
+    def probability_weight(self):
+        """Reorganizes predictions depending on training data probability
 
         """
-        total = len(self.predictions)
-        result = 0.0
+        predictions = []
         for prediction in self.predictions:
-            result += prediction['prediction']
-        return result / total if total > 0 else float('nan')
-
-    def error_weighted(self):
-        """Returns the prediction combining votes using error to compute weight
-
-        """
-        top_range = 10
-        result = 0.0
-        normalization_factor = self.normalize_error(top_range)
-        for prediction in self.predictions:
-            result += prediction['prediction'] * prediction['error_weight']
-        return (result / normalization_factor if normalization_factor > 0
-                else float('nan'))
-
-    def normalize_error(self, top_range):
-        """Normalizes error to a [0, top_range] and builds probabilities
-
-        """
-        error_values = [prediction['confidence']
-                        for prediction in self.predictions]
-        max_error = max(error_values)
-        min_error = min(error_values)
-        error_range = 1.0 * (max_error - min_error)
-        normalize_factor = 0
-        if error_range > 0:
-            # Shifts and scales predictions errors to [0, top_range].
-            # Then builds e^-[scaled error] and returns the normalization
-            # factor to fit them between [0, 1]
-            for prediction in self.predictions:
-                delta = (min_error - prediction['confidence'])
-                prediction['error_weight'] = math.exp(delta / error_range *
-                                                      top_range)
-                normalize_factor += prediction['error_weight']
-        else:
-            for prediction in self.predictions:
-                prediction['error_weight'] = 1
-                normalize_factor += 1
-        return normalize_factor
+            if not 'distribution' in prediction or not 'count' in prediction:
+                raise Exception("Probability weighting is not available "
+                                "because distribution information is missing.")
+            total = prediction['count']
+            if total < 1 or not isinstance(total, int):
+                raise Exception("Probability weighting is not available "
+                                "because distribution seems to have %s "
+                                "as number of instances in a node" % total)
+            order = prediction['order']
+            for prediction, instances in prediction['distribution']:
+                predictions.append({'prediction': prediction,
+                                    'probability': float(instances) / total,
+                                    'order': order})
+        return predictions
 
     def combine_categorical(self, weight_label=None):
-        """Returns the prediction combining votes by using
+        """Returns the prediction combining votes by using the given weight:
 
-            plurality (1 vote per prediction)
-            confidence weighted (confidence as a vote value)
-            probability weighted (probability as a vote value)
+            weight_label can be set as:
+            None:          plurality (1 vote per prediction)
+            'confidence':  confidence weighted (confidence as a vote value)
+            'probability': probability weighted (probability as a vote value)
         """
         mode = {}
         if weight_label is None:
             weight = 1
         for prediction in self.predictions:
             if not weight_label is None:
+                if not weight_label in COMBINATION_WEIGHTS.values():
+                    raise Exception("Wrong weight_label value.") 
                 if not weight_label in prediction:
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
@@ -176,23 +230,6 @@ class MultiVote(object):
         return sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                    -x[1]['order']),
                       reverse=True)[0][0]
-
-    def probability_weight(self):
-        """Reorganizes predictions depending on training data probability
-
-        """
-        predictions = []
-        for prediction in self.predictions:
-            if not 'distribution' in prediction or not 'count' in prediction:
-                raise Exception("Probability weighting is not available "
-                                "because distribution information is missing.")
-            total = prediction['count']
-            order = prediction['order']
-            for prediction, instances in prediction['distribution']:
-                predictions.append({'prediction': prediction,
-                                    'probability': float(instances) / total,
-                                    'order': order})
-        return predictions
 
     def append(self, prediction_info):
         """Adds a new prediction into a list of predictions
@@ -216,7 +253,7 @@ class MultiVote(object):
             prediction_info['order'] = order
             self.predictions.append(prediction_info)
         else:
-            LOGGER.error("WARNING: failed to add the prediction.\n"
+            LOGGER.warning("Failed to add the prediction.\n"
                          "The minimal key for the prediction is 'prediction':"
                          "\n{'prediction': 'Iris-virginica'")
 
@@ -324,3 +361,8 @@ class MultiVote(object):
         else:
             LOGGER.error("WARNING: failed to add the predictions.\n"
                          "Only a list of row-like predictions are expected.")
+
+NUMERICAL_COMBINATION_METHODS = {
+    PLURALITY: MultiVote.avg,
+    CONFIDENCE: MultiVote.error_weighted,
+    PROBABILITY: MultiVote.avg}

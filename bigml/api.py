@@ -57,19 +57,20 @@ except ImportError:
     import json
 
 from bigml.util import invert_dictionary, localize, is_url, \
-    clear_progress_bar, reset_progress_bar
+    clear_console_line, reset_console_line, console_log
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
 # Base URL
-BIGML_URL = "https://bigml.io/andromeda/"
+BIGML_URL = os.environ.get('BIGML_URL', 'https://bigml.io/andromeda/')
 
 # Basic resources
 SOURCE_PATH = 'source'
 DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
+EVALUATION_PATH = 'evaluation'
 
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
@@ -77,13 +78,17 @@ DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
 MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
                       (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
+EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
 
 # Development Mode URL
-BIGML_DEV_URL = "https://bigml.io/dev/andromeda/"
+BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
+                               'https://bigml.io/dev/andromeda/')
+
 
 # Check BigML.io host’s SSL certificate
 # DO NOT CHANGE IT.
-VERIFY = True
+VERIFY = (BIGML_URL.startswith("https://bigml.io/") or
+          BIGML_DEV_URL.startswith("https://bigml.io/"))
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -168,6 +173,13 @@ def get_prediction_id(prediction):
     return get_resource(PREDICTION_RE, prediction)
 
 
+def get_evaluation_id(evaluation):
+    """Returns a evaluation/id.
+
+    """
+    return get_resource(EVALUATION_RE, evaluation)
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -178,6 +190,9 @@ def patch_requests():
 
     """
     def debug_request(method, url, **kwargs):
+        """Logs the request and response content for api's remote requests
+
+        """
         response = original_request(method, url, **kwargs)
         logging.debug("Data: {}".format(response.request.data))
         logging.debug("Response: {}".format(response.content))
@@ -256,6 +271,7 @@ class BigML(object):
         self.dataset_url = self.url + DATASET_PATH
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
+        self.evaluation_url = self.url + EVALUATION_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -406,7 +422,6 @@ class BigML(object):
         try:
             response = requests.get(url + self.auth + query_string,
                                     headers=ACCEPT_JSON, verify=VERIFY)
-
             code = response.status_code
 
             if code == HTTP_OK:
@@ -511,7 +526,6 @@ class BigML(object):
 
         try:
             response = requests.delete(url + self.auth, verify=VERIFY)
-
             code = response.status_code
 
             if code == HTTP_NO_CONTENT:
@@ -566,26 +580,21 @@ class BigML(object):
                 return resource['object']['fields']
         return None
 
-    def pprint(self, resource):
+    def pprint(self, resource, out=sys.stdout):
         """Pretty prints a resource or part of it.
 
         """
-
-        pretty_print = pprint.PrettyPrinter(indent=4)
 
         if (isinstance(resource, dict)
                 and 'object' in resource
                 and 'resource' in resource):
 
-            if SOURCE_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
-            elif DATASET_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
-            elif MODEL_RE.match(resource['resource']):
-                print "%s (%s bytes)" % (resource['object']['name'],
-                                         resource['object']['size'])
+            resource_id = resource['resource']
+            if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
+                    or MODEL_RE.match(resource_id)
+                    or EVALUATION_RE.match(resource_id)):
+                out.write("%s (%s bytes)\n" % (resource['object']['name'],
+                                               resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
                 objective_field_name = (resource['object']['fields']
                                                 [resource['object']
@@ -598,26 +607,21 @@ class BigML(object):
                 prediction = (
                     resource['object']['prediction']
                             [resource['object']['objective_fields'][0]])
-                print("%s for %s is %s" % (objective_field_name, input_data,
-                                           prediction))
+                out.write("%s for %s is %s\n" % (objective_field_name,
+                                                 input_data,
+                                                 prediction))
+            out.flush()
         else:
-            pretty_print.pprint(resource)
+            pprint.pprint(resource, out, indent=4)
 
     def status(self, resource):
         """Maps status code to string.
 
         """
-
-        if isinstance(resource, dict) and 'resource' in resource:
-            resource_id = resource['resource']
-        elif (isinstance(resource, basestring) and (
-                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-                MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
-            resource_id = resource
-        else:
+        resource_id = self.get_resource_id(resource)
+        if not resource_id:
             LOGGER.error("Wrong resource id")
             return
-
         resource = self._get("%s%s" % (self.url, resource_id))
         code = resource['object']['status']['code']
         if code in STATUSES:
@@ -641,6 +645,22 @@ class BigML(object):
             elif code == FAULTY:
                 raise ValueError(status)
             resource = get_method(resource)
+
+    def get_resource_id(self, resource):
+        """Returns the resource id if it falls in one of the registered types
+
+        """
+        if isinstance(resource, dict) and 'resource' in resource:
+            return resource['resource']
+        elif isinstance(resource, basestring) and (
+                SOURCE_RE.match(resource)
+                or DATASET_RE.match(resource)
+                or MODEL_RE.match(resource)
+                or PREDICTION_RE.match(resource)
+                or EVALUATION_RE.match(resource)):
+            return resource
+        else:
+            return
 
     ##########################################################################
     #
@@ -787,11 +807,8 @@ class BigML(object):
 
             """
             pct = 100 - ((total - current) * 100) / (total)
-            clear_progress_bar(out=out)
-            reset_progress_bar(out=out)
-            out.write("Uploaded %s out of %s bytes [%s%%]" % (
+            console_log("Uploaded %s out of %s bytes [%s%%]" % (
                 localize(current), localize(total), pct))
-            reset_progress_bar(out=out)
 
         if args is None:
             args = {}
@@ -839,8 +856,8 @@ class BigML(object):
         request = urllib2.Request(self.source_url + self.auth, body, headers)
         try:
             response = urllib2.urlopen(request)
-            clear_progress_bar(out=out)
-            reset_progress_bar(out=out)
+            clear_console_line(out=out)
+            reset_console_line(out=out)
             code = response.getcode()
             if code == HTTP_CREATED:
                 location = response.headers['location']
@@ -893,6 +910,13 @@ class BigML(object):
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.
 
+           The source parameter should be a string containing the
+           source id or the dict returned by create_source.
+           As source is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the source values and state info
+           available at the time it is called.
+
         """
         source_id = get_source_id(source)
         if source_id:
@@ -938,19 +962,21 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source, args=None, wait_time=3):
+    def create_dataset(self, source, args=None, wait_time=3, retries=10):
         """Creates a remote dataset.
 
         Uses remote `source` to create a new dataset using the arguments in
-        `args`.  If `wait_time` is higgher than 0 then the dataset creation
+        `args`.  If `wait_time` is higher than 0 then the dataset creation
         request is not sent until the `source` has been created successfuly.
 
         """
         source_id = get_source_id(source)
         if source_id:
             if wait_time > 0:
-                while not self.source_is_ready(source_id):
+                count = 0
+                while not self.source_is_ready(source_id) and count < retries:
                     time.sleep(wait_time)
+                    count += 1
 
             if args is None:
                 args = {}
@@ -962,6 +988,12 @@ class BigML(object):
     def get_dataset(self, dataset, query_string=''):
         """Retrieves a dataset.
 
+           The dataset parameter should be a string containing the
+           dataset id or the dict returned by create_dataset.
+           As dataset is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the dataset values and state info
+           available at the time it is called.
         """
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
@@ -1005,7 +1037,7 @@ class BigML(object):
     # https://bigml.com/developers/models
     #
     ##########################################################################
-    def create_model(self, dataset, args=None, wait_time=3):
+    def create_model(self, dataset, args=None, wait_time=3, retries=10):
         """Creates a model.
 
         """
@@ -1013,8 +1045,11 @@ class BigML(object):
 
         if dataset_id:
             if wait_time > 0:
-                while not self.dataset_is_ready(dataset_id):
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
                     time.sleep(wait_time)
+                    count += 1
 
             if args is None:
                 args = {}
@@ -1026,6 +1061,12 @@ class BigML(object):
     def get_model(self, model, query_string=''):
         """Retrieves a model.
 
+           The model parameter should be a string containing the
+           model id or the dict returned by create_model.
+           As model is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the model values and state info
+           available at the time it is called.
         """
         model_id = get_model_id(model)
         if model_id:
@@ -1070,7 +1111,7 @@ class BigML(object):
     #
     ##########################################################################
     def create_prediction(self, model, input_data=None, by_name=True,
-                          args=None, wait_time=3):
+                          args=None, wait_time=3, retries=10):
         """Creates a new prediction.
 
         """
@@ -1078,8 +1119,10 @@ class BigML(object):
 
         if model_id:
             if wait_time > 0:
-                while not self.model_is_ready(model_id):
+                count = 0
+                while not self.model_is_ready(model_id) and count < retries:
                     time.sleep(wait_time)
+                    count += 1
 
             if input_data is None:
                 input_data = {}
@@ -1135,3 +1178,77 @@ class BigML(object):
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             return self._delete("%s%s" % (self.url, prediction_id))
+
+    ##########################################################################
+    #
+    # Evaluations
+    # https://bigml.com/developers/evaluations
+    #
+    ##########################################################################
+    def create_evaluation(self, model, dataset,
+                          args=None, wait_time=3, retries=10):
+        """Creates a new evaluation.
+
+        """
+        model_id = get_model_id(model)
+        dataset_id = get_dataset_id(dataset)
+
+        if model_id:
+            if wait_time > 0:
+                count = 0
+                while not self.model_is_ready(model_id) and count < retries:
+                    time.sleep(wait_time)
+                    count += 1
+
+        if dataset_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+
+        if args is None:
+            args = {}
+        args.update({
+            "model": model_id,
+            "dataset": dataset_id})
+        body = json.dumps(args)
+        return self._create(self.evaluation_url, body)
+
+    def get_evaluation(self, evaluation):
+        """Retrieves an evaluation.
+
+           The evaluation parameter should be a string containing the
+           evaluation id or the dict returned by create_evaluation.
+           As evaluation is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the evaluation values and state info
+           available at the time it is called.
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            return self._get("%s%s" % (self.url, evaluation_id))
+
+    def list_evaluations(self, query_string=''):
+        """Lists all your evaluations.
+
+        """
+        return self._list(self.evaluation_url, query_string)
+
+    def update_evaluation(self, evaluation, changes):
+        """Updates an evaluation.
+
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, evaluation_id), body)
+
+    def delete_evaluation(self, evaluation):
+        """Deletes an evaluation.
+
+        """
+        evaluation_id = get_evaluation_id(evaluation)
+        if evaluation_id:
+            return self._delete("%s%s" % (self.url, evaluation_id))

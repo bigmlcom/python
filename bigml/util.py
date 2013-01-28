@@ -275,26 +275,38 @@ def get_predictions_file_name(model, path):
     """Returns the file name for a multimodel predictions file
 
     """
+    if isinstance(model, dict) and 'resource' in model:
+        model = model['resource']
     return "%s%s%s_%s" % (path,
                           os.sep,
                           model.replace("/", "_"),
                           PREDICTIONS_FILE_SUFFIX)
 
 
-def clear_progress_bar(out=sys.stdout):
-    """Fills progress bar with blanks.
+def clear_console_line(out=sys.stdout, length=PROGRESS_BAR_WIDTH):
+    """Fills console line with blanks.
 
     """
-    out.write("%s" % (" " * PROGRESS_BAR_WIDTH))
+    out.write("%s" % (" " * length))
     out.flush()
 
 
-def reset_progress_bar(out=sys.stdout):
+def reset_console_line(out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     """Returns cursor to first column.
 
     """
-    out.write("\b" * (PROGRESS_BAR_WIDTH + 1))
+    out.write("\b" * (length + 1))
     out.flush()
+
+
+def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
+    """Prints the message to the given output
+
+    """
+    clear_console_line(out=out, length=length)
+    reset_console_line(out=out, length=length)
+    out.write(message)
+    reset_console_line(out=out, length=length)
 
 
 def get_csv_delimiter():

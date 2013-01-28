@@ -39,101 +39,56 @@ model.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
-import numbers
+
 import csv
-import math
+import ast
 from bigml.model import Model
 from bigml.util import get_predictions_file_name
+from bigml.multivote import MultiVote
+from bigml.multivote import PLURALITY_CODE
 
 
-def combine_predictions(predictions, method='plurality'):
-    """Reduces a number of predictions voting for classification and averaging
-    predictions for regression.
+def read_votes(votes_files, to_prediction, data_locale=None):
+    """Reads the votes found in the votes' files.
 
+       Returns a list of MultiVote objects containing the list of predictions.
+       votes_files parameter should contain the path to the files where votes
+       are stored
+       In to_prediction parameter we expect the method of a local model object
+       that casts the string prediction values read from the file to their
+       real type. For instance
+           >>> local_model = Model(model)
+           >>> prediction = local_model.to_prediction("1")
+           >>> isinstance(prediction, int)
+           True
+           >>> read_votes(["my_predictions_file"], local_model.to_prediction)
+       data_locale should contain the string identification for the locale
+       used in numeric formatting.
     """
-    if all([isinstance(prediction, numbers.Number) for prediction in
-           predictions.keys()]):
-        return NUMERICAL_COMBINATION_METHODS[method](predictions)
-    else:
-        return combine_categorical(predictions, COMBINATION_METHODS[method])
-
-
-def avg(predictions):
-    """Returns the average of a list of numeric values.
-
-    """
-    total = 0
-    result = 0.0
-    for prediction, confidences in predictions.items():
-        total += len(confidences)
-        result += prediction * len(confidences)
-    return result / total if total > 0 else float('nan')
-
-
-def error_weighted(predictions):
-    """Returns the prediction combining votes using error to compute weight
-
-    """
-    TOP_RANGE = 10
-    result = 0.0
-    normalization_factor = normalize_error(predictions, TOP_RANGE)
-    for prediction, confidences in predictions.items():
-        result += prediction * sum(confidences)
-    return (result / normalization_factor if normalization_factor > 0
-            else float('nan'))
-
-
-def normalize_error(predictions, top_range):
-    """Normalizes error to a [0, top_range] and builds probabilities
-
-    """
-    error_values = reduce(lambda x, y: x + y,
-                          [errors for errors in predictions.values()])
-    max_error = max(error_values)
-    min_error = min(error_values)
-    error_range = max_error - min_error
-    if error_range > 0:
-        # Shifts and scales predictions errors to [0, top_range].
-        # Then builds e^-[scaled error] and returns the normalization factor
-        # to fit them between [0, 1]
-        for prediction, errors in predictions.items():
-            predictions[prediction] = [math.exp((min_error - x) / error_range
-                                                * top_range) for x in errors]
-    return sum(reduce(lambda x, y: x + y, [errors
-                      for errors in predictions.values()]))
-
-
-def combine_categorical(predictions, function):
-    """Returns the prediction combining votes by using the related function
-
-        len for plurality (1 vote per prediction)
-        sum for confidence_weighted (confidence as a vote value)
-    """
-    mode = {}
-    order = 0
-    for prediction, values in predictions.items():
-        if prediction in mode:
-            mode[prediction] = {"count": mode[prediction]["count"] +
-                                function(values),
-                                "order": mode[prediction]["order"]}
-        else:
-            order = order + 1
-            mode[prediction] = {"count": function(values), "order": order}
-    return sorted(mode.items(), key=lambda x: (x[1]['count'],
-                                               -x[1]['order']),
-                  reverse=True)[0][0]
-
-
-COMBINATION_METHODS = {"plurality": len,
-                       "confidence weighted": sum}
-NUMERICAL_COMBINATION_METHODS = {"plurality": avg,
-                                 "confidence weighted": error_weighted}
+    votes = []
+    for order in range(0, len(votes_files)):
+        votes_file = votes_files[order]
+        index = 0
+        for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
+            prediction = to_prediction(row[0], data_locale=data_locale)
+            if index > (len(votes) - 1):
+                votes.append(MultiVote([]))
+            distribution = None
+            instances = None
+            if len(row) > 2:
+                distribution = ast.literal_eval(row[2])
+                instances = int(row[3])
+            prediction_row = [prediction, float(row[1]), order,
+                              distribution, instances]
+            votes[index].append_row(prediction_row)
+            index += 1
+    return votes
 
 
 class MultiModel(object):
     """A multiple local model.
 
-    Uses a numbers of BigML remote models to build a local version that can be
+    Uses a number of BigML remote models to build a local version that can be
     used to generate predictions locally.
 
     """
@@ -152,20 +107,29 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=True):
+    def predict(self, input_data, by_name=True, method=PLURALITY_CODE):
         """Makes a prediction based on the prediction made by every model.
 
+           The method parameter is a numeric key to the following combination
+           methods in classifications/regressions:
+              0 - majority vote (plurality)/ average: PLURALITY_CODE
+              1 - confidence weighted majority vote / error weighted:
+                  CONFIDENCE_CODE
+              2 - probability weighted majority vote / average:
+                  PROBABILITY_CODE
         """
 
-        predictions = {}
-        for model in self.models:
-            prediction, confidence = model.predict(input_data, by_name=by_name,
-                                                   with_confidence=True)
-            if not prediction in predictions:
-                predictions[prediction] = []
-            predictions[prediction].append(confidence)
+        votes = MultiVote([])
+        for order in range(0, len(self.models)):
+            model = self.models[order]
+            prediction_info = model.predict(input_data, by_name=by_name,
+                                            with_confidence=True)
+            prediction, confidence, distribution, instances = prediction_info
+            prediction_row = [prediction, confidence, order,
+                              distribution, instances]
+            votes.append_row(prediction_row)
 
-        return combine_predictions(predictions)
+        return votes.combine(method=method)
 
     def batch_predict(self, input_data_list, output_file_path,
                       by_name=True, reuse=False):
@@ -173,10 +137,10 @@ class MultiModel(object):
 
            The predictions generated for each model are stored in an output
            file. The name of the file will use the following syntax:
-                model_[id of the model]_predictions.csv
+                model_[id of the model]__predictions.csv
            For instance, when using model/50c0de043b563519830001c2 to predict,
            the output file name will be
-                model_50c0de043b563519830001c2_predictions.csv
+                model_50c0de043b563519830001c2__predictions.csv
         """
         for model in self.models:
             output_file = get_predictions_file_name(model.resource_id,
@@ -204,35 +168,13 @@ class MultiModel(object):
     def batch_votes(self, predictions_file_path, data_locale=None):
         """Adds the votes for predictions generated by the models.
 
-           Returns a list of predictions groups. A prediction group is a dict
-           whose key is the prediction and its value is a list of the
-           confidences with which the prediction has been issued
+           Returns a list of MultiVote objects each of which contains a list
+           of predictions.
         """
 
-        predictions_files = []
+        votes_files = []
         for model in self.models:
-            predictions_files.append((model, csv.reader(open(
-                get_predictions_file_name(model.resource_id,
-                                          predictions_file_path), "U"),
-                lineterminator="\n")))
-        votes = []
-        predictions = {}
-        prediction = True
-        while prediction:
-            if predictions:
-                votes.append(predictions)
-                predictions = {}
-            for (model, handler) in predictions_files:
-                try:
-                    row = handler.next()
-                    prediction = row[0]
-                    confidence = float(row[1])
-                except StopIteration:
-                    prediction = False
-                    break
-                prediction = model.to_prediction(prediction, data_locale)
-                if not prediction in predictions:
-                    predictions[prediction] = []
-                predictions[prediction].append(confidence)
-
-        return votes
+            votes_files.append(get_predictions_file_name(model.resource_id,
+                               predictions_file_path))
+        return read_votes(votes_files, self.models[0].to_prediction,
+                          data_locale=data_locale)

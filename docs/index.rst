@@ -140,6 +140,12 @@ You can then print the prediction using the ``pprint`` method::
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
+and also generate an evaluation for the model by using::
+
+    test_source = api.create_source('./data/test_iris.csv')
+    test_dataset = api.create_dataset(test_source)
+    evaluation = api.create_evaluation(model, test_dataset)
+
 Fields
 ------
 
@@ -213,7 +219,7 @@ The field filtering options are also available using a query string expression,
 
     >>> dataset = api.get_dataset(dataset, "limit=20")
 
-limits the number of fields that will be included in `dataset` to 20.
+limits the number of fields that will be included in ``dataset`` to 20.
 
 Model
 -----
@@ -258,7 +264,104 @@ Again, filtering options are also available using a query string expression,
 
     >>> model = api.get_model(model, "limit=5")
 
-limits the number of fields that will be included in `model` to 5.
+limits the number of fields that will be included in ``model`` to 5.
+
+Evaluation
+----------
+
+The predictive performance of a model can be measured using many different
+measures. In BigML these measures can be obtained by creating evaluations. To
+create an evaluation you need the id of the model you are evaluating and the id
+of the dataset that contains the data to be tested with. The result is shown
+as::
+
+    >>> evaluation = api.get_evaluation(evaluation)
+    >>> api.pprint(evaluation['object']['result'])
+    {   'class_names': ['0', '1'],
+        'mode': {   'accuracy': 0.9802,
+                    'average_f_measure': 0.495,
+                    'average_phi': 0,
+                    'average_precision': 0.5,
+                    'average_recall': 0.4901,
+                    'confusion_matrix': [[99, 0], [2, 0]],
+                    'per_class_statistics': [   {   'accuracy': 0.9801980198019802,
+                                                    'class_name': '0',
+                                                    'f_measure': 0.99,
+                                                    'phi_coefficient': 0,
+                                                    'precision': 1.0,
+                                                    'present_in_test_data': True,
+                                                    'recall': 0.9801980198019802},
+                                                {   'accuracy': 0.9801980198019802,
+                                                    'class_name': '1',
+                                                    'f_measure': 0,
+                                                    'phi_coefficient': 0,
+                                                    'precision': 0.0,
+                                                    'present_in_test_data': True,
+                                                    'recall': 0}]},
+        'model': {   'accuracy': 0.9901,
+                     'average_f_measure': 0.89746,
+                     'average_phi': 0.81236,
+                     'average_precision': 0.99495,
+                     'average_recall': 0.83333,
+                     'confusion_matrix': [[98, 1], [0, 2]],
+                     'per_class_statistics': [   {   'accuracy': 0.9900990099009901,
+                                                     'class_name': '0',
+                                                     'f_measure': 0.9949238578680203,
+                                                     'phi_coefficient': 0.8123623944599232,
+                                                     'precision': 0.98989898989899,
+                                                     'present_in_test_data': True,
+                                                     'recall': 1.0},
+                                                 {   'accuracy': 0.9900990099009901,
+                                                     'class_name': '1',
+                                                     'f_measure': 0.8,
+                                                     'phi_coefficient': 0.8123623944599232,
+                                                     'precision': 1.0,
+                                                     'present_in_test_data': True,
+                                                     'recall': 0.6666666666666666}]},
+        'random': {   'accuracy': 0.50495,
+                      'average_f_measure': 0.36812,
+                      'average_phi': 0.13797,
+                      'average_precision': 0.74747,
+                      'average_recall': 0.51923,
+                      'confusion_matrix': [[49, 50], [0, 2]],
+                      'per_class_statistics': [   {   'accuracy': 0.504950495049505,
+                                                      'class_name': '0',
+                                                      'f_measure': 0.6621621621621622,
+                                                      'phi_coefficient': 0.1379728923974526,
+                                                      'precision': 0.494949494949495,
+                                                      'present_in_test_data': True,
+                                                      'recall': 1.0},
+                                                  {   'accuracy': 0.504950495049505,
+                                                      'class_name': '1',
+                                                      'f_measure': 0.07407407407407407,
+                                                      'phi_coefficient': 0.1379728923974526,
+                                                      'precision': 1.0,
+                                                      'present_in_test_data': True,
+                                                      'recall': 0.038461538461538464}]}}
+
+where two levels of detail are easily identified. For classifications,
+the first level shows these keys:
+
+-  **class_names**: A list with the names of all the categories for the objective field (i.e., all the classes)    
+-  **mode**: A detailed result object. Measures of the performance of the classifier that predicts the mode class for all the instances in the dataset
+-  **model**: A detailed result object.
+-  **random**: A detailed result object.  Measures the performance of the classifier that predicts a random class for all the instances in the dataset.
+
+and the detailed result objects include ``accuracy``, ``average_f_measure``, ``average_phi``,
+``average_precision``, ``average_recall``, ``confusion_matrix``
+and ``per_class_statistics``.
+
+For regressions first level will contain these keys:
+
+-  **mean**: A detailed result object. Measures the performance of the model that predicts the mean for all the instances in the dataset.
+-  **model**: A detailed result object.
+-  **random**: A detailed result object. Measures the performance of the model that predicts a random class for all the instances in the dataset.
+
+where the detailed result objects include ``mean_absolute_error``,
+``mean_squared_error`` and ``r_squared`` (refer to
+`developers documentation <https://bigml.com/developers/evaluations>`_ for
+more info on the meaning of these measures.
+
 
 Creating Resources
 ------------------
@@ -268,7 +371,7 @@ keys:
 
 -  **code**: If the request is successful you will get a
    ``bigml.api.HTTP_CREATED`` (201) status code. In asynchronous file uploading
-   `api.create_source` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
+   ``api.create_source`` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
    status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
    documentation <https://bigml.com/developers/status_codes>`_.
@@ -317,7 +420,7 @@ the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
-You can also use the ``check_resource`` method:
+You can also use the ``check_resource`` method::
 
     api.check_resource(resource, api.get_source)
 
@@ -347,8 +450,8 @@ or you may want to create a source from a file in a remote location::
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
 
 As already mentioned, source creation is asynchronous. In both these examples,
-the `api.create_source` call returns once the file is uploaded.
-Then `source` will contain a resource whose status code will be either
+the ``api.create_source`` call returns once the file is uploaded.
+Then ``source`` will contain a resource whose status code will be either
 ``WAITING`` or ``QUEUED``.
 
 For local data files you can go one step further and use asynchronous
@@ -369,8 +472,8 @@ In this case, the call fills `source` immediately with a primary resource like::
                     'code': 6}},
      'error': None}
 
-where the `source['object']` status is set to `UPLOADING` and  its `progress`
-is periodically updated with the current uploading
+where the ``source['object']`` status is set to ``UPLOADING`` and  its
+``progress`` is periodically updated with the current uploading
 progress ranging from 0 to 1. When upload completes, this structure will be
 replaced by the real resource info as computed by BigML. Therefore source's
 status will eventually be (as it is in the synchronous upload case)
@@ -433,6 +536,27 @@ To see the prediction you can use ``pprint``::
 
     api.pprint(prediction)
 
+Creating evaluations
+~~~~~~~~~~~~~~~~~~~~
+
+Once you have created a model, you can measure its perfomance by running a
+dataset of test data through it and comparing its predictions to the objective
+field real values. Thus, the required arguments to create an evaluation are
+model id and a dataset id. You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Evaluations section of the Developer's
+documentation <https://bigml.com/developers/evaluations>`_.
+
+For instance, to evaluate a previously created model using at most 10000 rows
+from an existing dataset
+you can use the following call::
+
+    evaluation = api.create_evaluation(model, dataset, {
+        "name": "my model", "max_rows": 10000})
+
+Again, the evaluation is scheduled for creation and ``api.status(evaluation)``
+will show its state.
+
 Reading Resources
 -----------------
 
@@ -451,6 +575,7 @@ You can list resources with the appropriate api method::
     api.list_datasets()
     api.list_models()
     api.list_predictions()
+    api.list_evaluations()
 
 you will receive a dictionary with the following keys:
 
@@ -570,6 +695,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_dataset(dataset, {"name": "new name"})
     api.update_model(model, {"name": "new name"})
     api.update_prediction(prediction, {"name": "new name"})
+    api.update_evaluation(evaluation, {"name": "new name"})
 
 Deleting Resources
 ------------------
@@ -583,6 +709,7 @@ each type of resource.
     api.delete_dataset(dataset)
     api.delete_model(model)
     api.delete_prediction(prediction)
+    api.delete_evaluation(evaluation)
 
 Each of the calls above will return a dictionary with the following
 keys:
@@ -617,9 +744,29 @@ This will return a Model object that you can use to make local predictions,
 generate IF-THEN rules or a Python function that implements the model.
 
 Beware of using filtered fields models to instantiate a local model. The local
-model methods need the important fields in the `model` parameter to be
- available. If an important field is missing (because it has been excluded or
+model methods need the important fields in the ``model`` parameter to be
+available. If an important field is missing (because it has been excluded or
 filtered), an exception will arise.
+
+Local Predictions
+-----------------
+
+Once you have a local model you can use to generate predictions locally.
+
+::
+
+    local_model.predict({"petal length": 3, "petal width": 1})
+    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
+    Iris-versicolor
+
+Local predictions have three clear advantages:
+
+- Removing the dependency from BigML to make new predictions.
+
+- No cost (i.e., you do not spend BigML credits).
+
+- Extremely low latency to generate predictions for huge volumes of data.
+
 
 Multi Models
 ------------
@@ -642,70 +789,73 @@ combining the outputs of each model.
     model.predict({"petal length": 3, "petal width": 1})
 
 This will create a multi model using all the models that have been previously
-tagged with `my_tag`.
+tagged with ``my_tag`` and predict by combining each model's prediction.
+The combination method used by default is ``plurality`` for categorical
+predictions and mean value for numerical ones. You can also use ``confidence
+weighted``::
+
+    model.predict({"petal length": 3, "petal width": 1}, method=1)
+
+that will weight each vote using the confidence/error given by the model
+to each prediction, or even ``probability weighted``::
+
+    model.predict({"petal length": 3, "petal width": 1}, method=2)
+
+that weights each vote by using the probability associated to the training
+distribution at the prediction node.
 
 When making predictions on a test set with a large number of models,
-`batch_prediction` can be useful to log each model's predictions in a
+``batch_predict`` can be useful to log each model's predictions in a
 separated file. It expects a list of input data values and the directory path
 to save the prediction files in.
 
 ::
+
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
                         "data/predictions")
 
 The predictions generated for each model will be stored in an output
 file in `data/predictions` using the syntax
-`model_[id of the model]_predictions.csv`. For instance, when using
+`model_[id of the model]__predictions.csv`. For instance, when using
 `model/50c0de043b563519830001c2` to predict, the output file name will be
-`model_50c0de043b563519830001c2_predictions.csv`. An additional feature is
-that using `reuse=True` as argument will force the function to skip the
+`model_50c0de043b563519830001c2__predictions.csv`. An additional feature is
+that using ``reuse=True`` as argument will force the function to skip the
 creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
 
 ::
+
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
                         "data/predictions", reuse=True)
 
 Prediction files can be subsequently retrieved and converted into a votes list
-using `batch_votes`::
+using ``batch_votes``::
 
     model.batch_votes("data/predictions")
 
-which will return a list of votes for predictions, one for each item in the
-input data list (e.g. `[{u'Iris-versicolor': [0.34], {u'Iris-setosa': [0.25]}]`).
+which will return a list of MultiVote objects. Each MultiVote contains a list
+of predictions (e.g. ``[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
+'order': 0}, {'prediction': u'Iris-setosa', 'confidence': 0.25,
+'order': 1}]``).
 These votes can be further combined to issue a final
-prediction for each input data element using the function `combine_predictions`
+prediction for each input data element using the method ``combine``
 
 ::
 
-    for predictions in model.batch_votes("data/predictions"):
-        prediction = combine_predictions(predictions)
+    for multivote in model.batch_votes("data/predictions"):
+        prediction = multivote.combine()
 
-The combination method used by default is `plurality` for categorical
-predictions and mean value for numerical ones. You can also use
-`combine_predictions(predictions, 'confidence weighted')` that will weight
-each vote using the confidence/error given by the model to each prediction.
+Again, the default method of combination is ``plurality`` for categorical
+predictions and mean value for numerical ones. You can also use ``confidence
+weighted``::
 
-Local Predictions
------------------
+    prediction = multivote.combine(1)
 
-Once you have a local model you can use to generate predictions locally.
+or ``probability weighted``::
 
-::
-
-    local_model.predict({"petal length": 3, "petal width": 1})
-    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
-    Iris-versicolor
-
-Local predictions have three clear advantages:
-
-- Removing the dependency from BigML to make new predictions.
-
-- No cost in BigML (i.e., you do not spend BigML credits).
-
-- Extremely low latency to generate predictions for huge volumes of data.
+    prediction = multivote.combine(2)
 
 
 Fields

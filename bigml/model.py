@@ -358,42 +358,42 @@ class Model(object):
             model = model['object']
 
         if ('model' in model and isinstance(model['model'], dict)):
-            if ('status' in model and 'code' in model['status']):
-                if model['status']['code'] == FINISHED:
-                    if 'model_fields' in model['model']:
-                        fields = model['model']['model_fields']
-                        # pagination or exclusion might cause a field not to
-                        # be in available fields dict
-                        if not all(key in model['model']['fields']
-                                   for key in fields.keys()):
-                            raise Exception("Some fields are missing"
-                                            " to generate a local model."
-                                            " Please, provide a model with"
-                                            " the complete list of fields.")
-                        for field in fields:
-                            field_info = model['model']['fields'][field]
-                            fields[field]['summary'] = field_info['summary']
-                            fields[field]['name'] = field_info['name']
-                    else:
-                        fields = model['model']['fields']
-                    self.inverted_fields = invert_dictionary(fields)
-                    self.all_inverted_fields = invert_dictionary(model['model']
-                                                                 ['fields'])
-                    self.tree = Tree(
-                        model['model']['root'],
-                        fields,
-                        model['objective_fields'])
-                    self.description = model['description']
-                    self.field_importance = model['model'].get('importance',
-                                                               None)
-                    if self.field_importance:
-                        self.field_importance = [element for element
-                                                 in self.field_importance
-                                                 if element[0] in fields]
-                    self.locale = model.get('locale', DEFAULT_LOCALE)
-
+            if (not 'status' in model  or ('code' in model['status']
+                    and model['status']['code'] == FINISHED)):
+                if 'model_fields' in model['model']:
+                    fields = model['model']['model_fields']
+                    # pagination or exclusion might cause a field not to
+                    # be in available fields dict
+                    if not all(key in model['model']['fields']
+                               for key in fields.keys()):
+                        raise Exception("Some fields are missing"
+                                        " to generate a local model."
+                                        " Please, provide a model with"
+                                        " the complete list of fields.")
+                    for field in fields:
+                        field_info = model['model']['fields'][field]
+                        fields[field]['summary'] = field_info['summary']
+                        fields[field]['name'] = field_info['name']
                 else:
-                    raise Exception("The model isn't finished yet")
+                    fields = model['model']['fields']
+                self.inverted_fields = invert_dictionary(fields)
+                self.all_inverted_fields = invert_dictionary(model['model']
+                                                             ['fields'])
+                self.tree = Tree(
+                    model['model']['root'],
+                    fields,
+                    model['objective_fields'])
+                self.description = model['description']
+                self.field_importance = model['model'].get('importance',
+                                                           None)
+                if self.field_importance:
+                    self.field_importance = [element for element
+                                             in self.field_importance
+                                             if element[0] in fields]
+                self.locale = model.get('locale', DEFAULT_LOCALE)
+
+            else:
+                raise Exception("The model isn't finished yet")
         else:
             raise Exception("Invalid model structure")
 

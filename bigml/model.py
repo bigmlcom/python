@@ -56,8 +56,9 @@ import operator
 import locale
 
 from bigml.api import FINISHED
-from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields, utf8, map_type, find_locale
+from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
+                        prefix_as_comment, sort_fields, utf8,
+                        find_locale, cast)
 from bigml.util import DEFAULT_LOCALE
 
 
@@ -233,7 +234,6 @@ class Tree(object):
                           child.predicate.operator,
                           child.predicate.value,
                           "AND" if child.children else "THEN"))
-                print rules
                 rules += child.generate_rules(depth + 1)
         else:
             rules += (u"%s %s = %s\n" %
@@ -411,11 +411,14 @@ class Model(object):
         `by_name` to input them directly keyed by id.
 
         """
+        # Strips None values
         empty_fields = [(key, value) for (key, value) in input_data.items()
                         if value is None]
         for (key, value) in empty_fields:
             del input_data[key]
 
+        # Checks input_data keys against field names and filters the ones
+        # used in the model
         if by_name:
             wrong_keys = [key for key in input_data.keys() if not key
                           in self.all_inverted_fields]
@@ -426,21 +429,14 @@ class Model(object):
                 [[self.inverted_fields[key], value]
                     for key, value in input_data.items()
                     if key in self.inverted_fields])
+        else:
+            input_data = dict(
+                [[key, value]
+                    for key, value in input_data.items()
+                    if key in self.tree.fields])
 
-        for (key, value) in input_data.items():
-            if ((self.tree.fields[key]['optype'] == 'numeric' and
-                    isinstance(value, basestring)) or (
-                    self.tree.fields[key]['optype'] != 'numeric' and
-                    not isinstance(value, basestring))):
-                try:
-                    input_data.update({key:
-                                       map_type(self.tree.fields[key]
-                                                ['optype'])(value)})
-                except:
-                    raise Exception(u"Mismatch input data type in field "
-                                    u"\"%s\" for value %s." %
-                                    (self.tree.fields[key]['name'],
-                                     value))
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.tree.fields)
 
         prediction_info = self.tree.predict(input_data)
         prediction, path, confidence, distribution, instances = prediction_info

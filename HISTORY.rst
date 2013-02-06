@@ -3,6 +3,11 @@
 History
 -------
 
+0.5.1 (2012-01-31)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes local model bug in public models (no status)
+
 0.5.0 (2012-01-16)
 ~~~~~~~~~~~~~~~~~~
 

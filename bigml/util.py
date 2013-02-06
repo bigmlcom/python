@@ -28,25 +28,26 @@ import os
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
 LOCALE_SYNONYMS = {'en': ['en_US', 'en-US', 'en_US.UTF8', 'en_US.UTF-8',
-                          'English_United States.1252'],
+                          'English_United States.1252', 'en-us', 'en_us'],
                    'es': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
-                          'Spanish_Spain.1252'],
+                          'Spanish_Spain.1252', 'es-es', 'es_es'],
                    'sp': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
-                          'Spanish_Spain.1252'],
+                          'Spanish_Spain.1252', 'es-es', 'es_es'],
                    'fr': [['fr_FR', 'fr-FR', 'fr_BE', 'fr_CH', 'fr-BE',
                            'fr-CH', 'fr_FR.UTF8', 'fr_CH.UTF8',
                            'fr_BE.UTF8', 'fr_FR.UTF-8', 'fr_CH.UTF-8',
-                           'fr_BE.UTF-8', 'French_France.1252'],
+                           'fr_BE.UTF-8', 'French_France.1252', 'fr-fr',
+                           'fr_fr', 'fr-be', 'fr_be', 'fr-ch', 'fr_ch'],
                           ['fr_CA', 'fr-CA', 'fr_CA.UTF8', 'fr_CA.UTF-8',
-                           'French_Canada.1252']],
+                           'French_Canada.1252', 'fr-ca', 'fr_ca']],
                    'de': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
-                          'German_Germany.1252'],
+                          'German_Germany.1252', 'de-de', 'de_de'],
                    'ge': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
-                          'German_Germany.1252'],
+                          'German_Germany.1252', 'de-de', 'de_de'],
                    'it': ['it_IT', 'it-IT', 'it_IT.UTF8', 'it_IT.UTF-8',
-                          'Italian_Italy.1252'],
+                          'Italian_Italy.1252', 'it-it', 'it_it'],
                    'ca': ['ca_ES', 'ca-ES', 'ca_ES.UTF8', 'ca_ES.UTF-8',
-                          'Catalan_Spain.1252']}
+                          'Catalan_Spain.1252', 'ca-es', 'ca_es']}
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
@@ -235,7 +236,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     except locale.Error:
         pass
     if new_locale is None:
-        for locale_alias in LOCALE_SYNONYMS[data_locale[0:2]]:
+        for locale_alias in LOCALE_SYNONYMS.get(data_locale[0:2], []):
             if isinstance(locale_alias, list):
                 for subalias in locale_alias:
                     try:
@@ -315,3 +316,38 @@ def get_csv_delimiter():
     """
     point_char = locale.localeconv()['decimal_point']
     return ',' if point_char != ',' else ';'
+
+
+def strip_affixes(value, field):
+    """Strips prefixes and suffixes if present
+
+    """
+    if not isinstance(value, unicode):
+        value = unicode(value, "utf-8")
+    if 'prefix' in field and value.startswith(field['prefix']):
+        value = value[len(field['prefix']):]
+    if 'suffix' in field and value.endswith(field['suffix']):
+        value = value[0:-len(field['suffix'])]
+    return value
+
+
+def cast(input_data, fields):
+    """Checks expected type in input data values, strips affixes and casts
+
+    """
+    for (key, value) in input_data.items():
+        if ((fields[key]['optype'] == 'numeric' and
+             isinstance(value, basestring)) or
+            (fields[key]['optype'] != 'numeric' and
+             not isinstance(value, basestring))):
+            try:
+                if fields[key]['optype'] == 'numeric':
+                    value = strip_affixes(value, fields[key])
+                input_data.update({key:
+                                   map_type(fields[key]
+                                            ['optype'])(value)})
+            except ValueError:
+                raise ValueError(u"Mismatch input data type in field "
+                                 u"\"%s\" for value %s." %
+                                 (fields[key]['name'],
+                                  value))

@@ -56,8 +56,8 @@ try:
 except ImportError:
     import json
 
-from bigml.util import invert_dictionary, localize, is_url, \
-    clear_console_line, reset_console_line, console_log
+from bigml.util import (invert_dictionary, localize, is_url,
+                        clear_console_line, reset_console_line, console_log)
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -629,13 +629,19 @@ class BigML(object):
         else:
             return "UNKNOWN"
 
-    def check_resource(self, resource, get_method):
-        """Waits until a resource is finshed.
+    def check_resource(self, resource, get_method,
+                       query_string='', wait_time=1):
+        """Waits until a resource is finished.
 
         """
-
+        kwargs = {}
         if isinstance(resource, basestring):
-            resource = get_method(resource)
+            if not EVALUATION_RE.match(resource):
+                kwargs = {'query_string': query_string}
+            resource = get_method(resource, **kwargs)
+        else:
+            if not EVALUATION_RE.match(self.get_resource_id(resource)):
+                kwargs = {'query_string': query_string}
 
         while True:
             status = resource['object']['status']
@@ -644,7 +650,8 @@ class BigML(object):
                 return resource
             elif code == FAULTY:
                 raise ValueError(status)
-            resource = get_method(resource)
+            time.sleep(wait_time)
+            resource = get_method(resource, **kwargs)
 
     def get_resource_id(self, resource):
         """Returns the resource id if it falls in one of the registered types
@@ -913,7 +920,7 @@ class BigML(object):
            The source parameter should be a string containing the
            source id or the dict returned by create_source.
            As source is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
+           until it reaches the FINISHED or FAULTY state, thet function will
            return a dict that encloses the source values and state info
            available at the time it is called.
 

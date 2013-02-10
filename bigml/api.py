@@ -47,7 +47,7 @@ from threading import Thread
 
 import requests
 import urllib2
-from poster.encode import multipart_encode
+from poster.encode import multipart_encode, MultipartParam
 from poster.streaminghttp import register_openers
 
 
@@ -748,7 +748,7 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def _upload_source(self, url, args, source):
+    def _upload_source(self, url, args, source, out=sys.stdout):
         """Uploads a source asynchronously.
 
         """
@@ -761,47 +761,15 @@ class BigML(object):
             if progress < 1.0:
                 source['object']['status']['progress'] = progress
 
-        code = HTTP_INTERNAL_SERVER_ERROR
-        error = {
-            "status": {
-                "code": code,
-                "message": "The resource couldn't be created"}}
-
-        body, headers = multipart_encode(args, cb=update_progress)
-        request = urllib2.Request(url, body, headers)
-
-        try:
-            response = urllib2.urlopen(request)
-            code = response.getcode()
-            if code == HTTP_CREATED:
-                location = response.headers['location']
-                content = response.read()
-                resource = json.loads(content, 'utf-8')
-                resource_id = resource['resource']
-                error = None
-        except ValueError:
-            LOGGER.error("Malformed response")
-        except urllib2.HTTPError, exception:
-            LOGGER.error("Error %s", exception.code)
-            code = exception.code
-            if code in [HTTP_BAD_REQUEST,
-                        HTTP_UNAUTHORIZED,
-                        HTTP_PAYMENT_REQUIRED,
-                        HTTP_NOT_FOUND]:
-                content = exception.read()
-                error = json.loads(content, 'utf-8')
-            else:
-                LOGGER.error("Unexpected error (%s)" % code)
-                code = HTTP_INTERNAL_SERVER_ERROR
-
-        except urllib2.URLError, exception:
-            LOGGER.error("Error establishing connection")
-            error = exception.args
-        source['code'] = code
-        source['resource'] = resource_id
-        source['location'] = location
-        source['object'] = resource
-        source['error'] = error
+        resource = self._process_source(source['resource'], source['location'],
+                                        source['object'],
+                                        args=args, progress_bar=True,
+                                        callback=update_progress, out=out)
+        source['code'] = resource['code']
+        source['resource'] = resource['resource']
+        source['location'] = resource['location']
+        source['object'] = resource['object']
+        source['error'] = resource['error']
 
     def _stream_source(self, file_name, args=None, async=False,
                        progress_bar=False, out=sys.stdout):
@@ -822,14 +790,25 @@ class BigML(object):
         elif 'source_parser' in args:
             args['source_parser'] = json.dumps(args['source_parser'])
 
-        code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
         location = None
         resource = None
         error = None
 
+        try:
+            if isinstance(file_name, basestring):
+                args.update({os.path.basename(file_name):
+                             open(file_name, "rb")})
+            else:
+                args = args.items()
+                name = '<none>'
+                args.append(MultipartParam(name, filename=name,
+                                           fileobj=file_name))
+
+        except IOError:
+            sys.exit("Error: cannot read training set")
+
         if async:
-            args.update({os.path.basename(file_name): open(file_name, "rb")})
             source = {
                 'code': HTTP_ACCEPTED,
                 'resource': resource_id,
@@ -841,26 +820,32 @@ class BigML(object):
             upload_args = (self.source_url + self.auth, args, source)
             thread = Thread(target=self._upload_source,
                             args=upload_args,
-                            kwargs={})
+                            kwargs={'out': out})
             thread.start()
             return source
+        return self._process_source(resource_id, location, resource,
+                                    args=args, progress_bar=progress_bar,
+                                    callback=draw_progress_bar, out=out)
 
+    def _process_source(self, resource_id, location, resource,
+                        args=None, progress_bar=False, callback=None,
+                        out=sys.stdout):
+        """Creates a new source.
+
+        """
+        code = HTTP_INTERNAL_SERVER_ERROR
         error = {
             "status": {
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
-        try:
-            args.update({os.path.basename(file_name): open(file_name, "rb")})
-        except IOError:
-            sys.exit("Error: cannot read training set")
-
-        if progress_bar:
-            body, headers = multipart_encode(args, cb=draw_progress_bar)
+        if progress_bar and callback is not None:
+            body, headers = multipart_encode(args, cb=callback)
         else:
             body, headers = multipart_encode(args)
 
         request = urllib2.Request(self.source_url + self.auth, body, headers)
+
         try:
             response = urllib2.urlopen(request)
             clear_console_line(out=out)

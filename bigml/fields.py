@@ -107,7 +107,7 @@ class Fields(object):
             self.headers = self.row_ids
         else:
             # The row is supposed to contain the fields as sorted in headers
-            self.row_ids = map(lambda x: self.field_id(x), headers)
+            self.row_ids = map(self.field_id, headers)
             self.headers = headers
         # Mapping each included field to its correspondent index in the row.
         # The result is stored in filtered_indexes.

@@ -187,7 +187,7 @@ class Fields(object):
                 objective_field = self.fields_columns[-1]
             else:
                 objective_field = self.objective_field
-        # If objective fiels is a name or an id, retrive column number
+        # If objective fields is a name or an id, retrive column number
         if isinstance(objective_field, basestring):
             objective_field = self.field_column_number(objective_field)
 

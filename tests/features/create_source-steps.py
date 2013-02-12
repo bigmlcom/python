@@ -26,6 +26,7 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import UPLOADING
+from bigml.api import get_status
 
 @step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
@@ -55,9 +56,11 @@ def i_upload_a_file_async(step, file):
 @step(r'I wait until the source has been created less than (\d+) secs')
 def the_source_has_been_created_async(step, secs):
     start = datetime.utcnow()
-    while world.resource['object']['status']['code'] == UPLOADING:
+    status = get_status(world.resource)
+    while status['code'] == UPLOADING:
         time.sleep(3)
         assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        status = get_status(world.resource)
     assert world.resource['code'] == HTTP_CREATED
     # update status
     world.status = world.resource['code']
@@ -70,12 +73,14 @@ def the_source_has_been_created_async(step, secs):
 def wait_until_source_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     step.given('I get the source "{id}"'.format(id=world.source['resource']))
-    while (world.source['status']['code'] != int(code1) and
-           world.source['status']['code'] != int(code2)):
-           time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the source "{id}"'.format(id=world.source['resource']))
-    assert world.source['status']['code'] == int(code1)
+    status = get_status(world.source)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        step.given('I get the source "{id}"'.format(id=world.source['resource']))
+        status = get_status(world.source)
+    assert status['code'] == int(code1)
 
 @step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs):

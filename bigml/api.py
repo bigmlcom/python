@@ -180,6 +180,21 @@ def get_evaluation_id(evaluation):
     return get_resource(EVALUATION_RE, evaluation)
 
 
+def get_status(resource):
+    """Extracts status info if present or sets the default if public
+
+    """
+    if not isinstance(resource, dict):
+        raise ValueError("We need a complete resource to extract its status")
+    if 'object' in resource:
+        resource = resource['object']
+    if not resource.get('private', True):
+        status = {'code': FINISHED}
+    else:
+        status = resource['status']
+    return status
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -623,7 +638,8 @@ class BigML(object):
             LOGGER.error("Wrong resource id")
             return
         resource = self._get("%s%s" % (self.url, resource_id))
-        code = resource['object']['status']['code']
+        status = get_status(resource)
+        code = status['code']
         if code in STATUSES:
             return STATUSES[code]
         else:
@@ -632,6 +648,17 @@ class BigML(object):
     def check_resource(self, resource, get_method,
                        query_string='', wait_time=1):
         """Waits until a resource is finished.
+
+           Given a resource and its corresponding get_method
+               source, api.get_source
+               dataset, api.get_dataset
+               model, api.get_model
+               prediction, api.get_prediction
+               evaluation, api.get_evaluation
+           it calls the get_method on the resource with the given query_string
+           and waits with sleeping intervals of wait_time
+           until the resource is in a final state (either FINISHED
+           or FAULTY)
 
         """
         kwargs = {}
@@ -644,7 +671,7 @@ class BigML(object):
                 kwargs = {'query_string': query_string}
 
         while True:
-            status = resource['object']['status']
+            status = get_status(resource)
             code = status['code']
             if code == FINISHED:
                 return resource
@@ -805,8 +832,8 @@ class BigML(object):
                 args.append(MultipartParam(name, filename=name,
                                            fileobj=file_name))
 
-        except IOError:
-            sys.exit("Error: cannot read training set")
+        except IOError, exception:
+            sys.exit("Error: cannot read training set. %s" % str(exception))
 
         if async:
             source = {
@@ -921,7 +948,7 @@ class BigML(object):
         """
         source = self.get_source(source)
         return (source['code'] == HTTP_OK and
-                source['object']['status']['code'] == FINISHED)
+                get_status(source)['code'] == FINISHED)
 
     def list_sources(self, query_string=''):
         """Lists all your remote sources.
@@ -998,7 +1025,7 @@ class BigML(object):
         """
         resource = self.get_dataset(dataset)
         return (resource['code'] == HTTP_OK and
-                resource['object']['status']['code'] == FINISHED)
+                get_status(resource)['code'] == FINISHED)
 
     def list_datasets(self, query_string=''):
         """Lists all your datasets.
@@ -1071,7 +1098,7 @@ class BigML(object):
         """
         resource = self.get_model(model)
         return (resource['code'] == HTTP_OK and
-                resource['object']['status']['code'] == FINISHED)
+                get_status(resource)['code'] == FINISHED)
 
     def list_models(self, query_string=''):
         """Lists all your models.

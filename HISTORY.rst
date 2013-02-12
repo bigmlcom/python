@@ -3,10 +3,13 @@
 History
 -------
 
-0.5.1 (2012-01-31)
+0.5.1 (2012-02-12)
 ~~~~~~~~~~~~~~~~~~
 
-- Fixes local model bug in public models (no status)
+- Fixes bug: no status info in public models, now shows FINISHED status code
+- Adds more file-like objects (e.g. stdin) support in create_source input
+- Refactoring Fields pair method and Model predict method to increase
+- Adds some more locale aliases
 
 0.5.0 (2012-01-16)
 ~~~~~~~~~~~~~~~~~~

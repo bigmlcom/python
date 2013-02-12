@@ -56,6 +56,7 @@ import operator
 import locale
 
 from bigml.api import FINISHED
+from bigml.api import get_status
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
                         find_locale, cast)
@@ -358,8 +359,8 @@ class Model(object):
             model = model['object']
 
         if ('model' in model and isinstance(model['model'], dict)):
-            if (not 'status' in model or ('code' in model['status']
-                    and model['status']['code'] == FINISHED)):
+            status = get_status(model)
+            if ('code' in status and status['code'] == FINISHED):
                 if 'model_fields' in model['model']:
                     fields = model['model']['model_fields']
                     # pagination or exclusion might cause a field not to

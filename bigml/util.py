@@ -25,6 +25,7 @@ import locale
 import sys
 import os
 
+
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
 LOCALE_SYNONYMS = {'en': ['en_US', 'en-US', 'en_US.UTF8', 'en_US.UTF-8',

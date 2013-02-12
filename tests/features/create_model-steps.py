@@ -17,12 +17,15 @@
 
 import time
 import json
+import os
 from datetime import datetime, timedelta
 from lettuce import step, world
 
 from bigml.api import HTTP_CREATED
+from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
+from bigml.api import get_status
 
 @step(r'I create a model$')
 def i_create_a_model(step):
@@ -38,12 +41,14 @@ def i_create_a_model(step):
 def wait_until_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     step.given('I get the model "{id}"'.format(id=world.model['resource']))
-    while (world.model['status']['code'] != int(code1) and
-           world.model['status']['code'] != int(code2)):
+    status = get_status(world.model)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
            time.sleep(3)
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
            step.given('I get the model "{id}"'.format(id=world.model['resource']))
-    assert world.model['status']['code'] == int(code1)
+           status = get_status(world.model)
+    assert status['code'] == int(code1)
 
 @step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs):
@@ -57,3 +62,18 @@ def i_create_a_model_with(step, data="{}"):
     world.location = resource['location']
     world.model = resource['object']
     world.models.append(resource['resource'])
+
+@step(r'I make the model public')
+def make_the_model_public(step):
+    resource = world.api.update_model(world.model['resource'],
+                                      {'private': False, 'white_box': True})
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED
+    world.location = resource['location']
+    world.model = resource['object']
+
+@step(r'I check the model status using the model\'s public url')
+def build_local_model_from_public_url(step):
+    world.model = world.api.get_model("public/%s" % world.model['resource'])
+    assert get_status(world.model)['code'] == FINISHED
+

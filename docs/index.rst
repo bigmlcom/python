@@ -432,7 +432,8 @@ Creating sources
 
 To create a source from a local data file, you can use the
 ``create_source`` method. The only required parameter is the path to the
-data file. You can use a second optional parameter to specify any of the
+data file (or file-like object). You can use a second optional parameter
+to specify any of the
 options for source creation described in the `BigML API
 documentation <https://bigml.com/developers/sources>`_.
 
@@ -448,6 +449,12 @@ or you may want to create a source from a file in a remote location::
 
     source = api.create_source('s3://bigml-public/csv/iris.csv',
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
+
+or maybe reading the content from stdin::
+
+    content = StringIO.StringIO(sys.stdin.read())
+    source = api.create_source(content,
+        {'name': 'my stdin source', 'source_parser': {'missing_tokens': ['?']}})
 
 As already mentioned, source creation is asynchronous. In both these examples,
 the ``api.create_source`` call returns once the file is uploaded.

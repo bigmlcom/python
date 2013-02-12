@@ -120,12 +120,19 @@ class MultiVote(object):
     def __init__(self, predictions):
         """Init method, builds a MultiVote with a list of predictions
 
+           The constuctor expects a list of well formed predictions like:
+                {'prediction': 'Iris-setosa', 'confidence': 0.7}
+            Each prediction can also contain an 'order' key that is used
+            to break even in votations. The list order is used by default.
         """
         self.predictions = []
         if isinstance(predictions, list):
             self.extend(predictions)
         else:
             self.append(predictions)
+        if not all(['order' in prediction for prediction in predictions]):
+            for i in range(len(self.predictions)):
+                self.predictions[i]['order'] = i
 
     def is_regression(self):
         """Returns True if all the predictions are numbers

@@ -23,6 +23,7 @@ from lettuce import step, world
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
+from bigml.api import get_status
 
 @step(r'I create an evaluation for the model with the dataset$')
 def i_create_an_evaluation(step):
@@ -39,12 +40,14 @@ def i_create_an_evaluation(step):
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     step.given('I get the evaluation "{id}"'.format(id=world.evaluation['resource']))
-    while (world.evaluation['status']['code'] != int(code1) and
-           world.evaluation['status']['code'] != int(code2)):
-           time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the evaluation "{id}"'.format(id=world.evaluation['resource']))
-    assert world.model['status']['code'] == int(code1)
+    status = get_status(world.evaluation)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        step.given('I get the evaluation "{id}"'.format(id=world.evaluation['resource']))
+        status = get_status(world.evaluation)
+    assert status['code'] == int(code1)
 
 @step(r'I wait until the evaluation is ready less than (\d+)')
 def the_evaluation_is_finished_in_less_than(step, secs):

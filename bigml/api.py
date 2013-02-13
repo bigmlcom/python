@@ -187,6 +187,8 @@ def get_status(resource):
     if not isinstance(resource, dict):
         raise ValueError("We need a complete resource to extract its status")
     if 'object' in resource:
+        if resource['object'] is None:
+            raise ValueError("The resource has no status info\n%s" % resource)
         resource = resource['object']
     if not resource.get('private', True):
         status = {'code': FINISHED}

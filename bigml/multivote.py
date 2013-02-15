@@ -47,6 +47,27 @@ WEIGHT_KEYS = {
 DEFAULT_METHOD = 0
 
 
+def ws_confidence(prediction, distribution, ws_z=None, ws_n=None):
+    """Wilson score interval computation of the distribution for the prediction
+
+    """
+    if isinstance(distribution, list):
+        distribution = dict(distribution)
+    if ws_z is None:
+        ws_z = 1.96
+    ws_p = distribution[prediction]
+    ws_norm = sum(distribution.values())
+    ws_norm = float(ws_norm)
+    if not ws_norm == 1.0:
+        ws_p = ws_p / ws_norm
+    if ws_n is None:
+        ws_n = ws_norm
+    ws_z2 = ws_z * ws_z
+    ws_n2 = ws_n * ws_n
+    return (ws_p + 1 / (2 * ws_n) * ws_z2 - ws_z * math.sqrt(ws_p * (1 - ws_p) / ws_n +
+            ws_z2 / (4 * ws_n2))) / (1 + 1 / ws_n * ws_z2)
+
+
 class MultiVote(object):
     """A multiple vote prediction
 
@@ -55,18 +76,24 @@ class MultiVote(object):
     """
 
     @classmethod
-    def avg(cls, instance):
+    def avg(cls, instance, with_confidence=False):
         """Returns the average of a list of numeric values.
 
         """
         total = len(instance.predictions)
         result = 0.0
+        confidence = 0.0
         for prediction in instance.predictions:
             result += prediction['prediction']
-        return result / total if total > 0 else float('nan')
+            if with_confidence:
+                confidence += prediction['confidence']
+        if with_confidence:
+            return ((result / total, confidence / total) if total > 0 else
+                    (float('nan'), 0))
+        return result if total > 0 else float('nan')
 
     @classmethod
-    def error_weighted(cls, instance):
+    def error_weighted(cls, instance, with_confidence=False):
         """Returns the prediction combining votes using error to compute weight
 
         """
@@ -80,10 +107,22 @@ class MultiVote(object):
         result = 0.0
         normalization_factor = cls.normalize_error(instance, top_range)
         if normalization_factor == 0:
-            return float('nan')
+            if with_confidence:
+                return float('nan'), 0
+            else:
+                return float('nan')
+        if with_confidence:
+            combined_error = 0.0
         for prediction in instance.predictions:
             result += prediction['prediction'] * prediction['error_weight']
-        return result / normalization_factor
+            if with_confidence:
+                combined_error += (prediction['confidence'] *
+                                   prediction['error_weight'])
+        if with_confidence:
+            return (result / normalization_factor,
+                    combined_error / normalization_factor)
+        else:
+            return result / normalization_factor
 
     @classmethod
     def normalize_error(cls, instance, top_range):
@@ -153,7 +192,7 @@ class MultiVote(object):
             return self.predictions[-1]['order'] + 1
         return 0
 
-    def combine(self, method=DEFAULT_METHOD):
+    def combine(self, method=DEFAULT_METHOD, with_confidence=False):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
@@ -173,8 +212,9 @@ class MultiVote(object):
                                     "prediction method. Try creating your"
                                     " model anew.")
         if self.is_regression():
-            return NUMERICAL_COMBINATION_METHODS.get(method,
-                                                     self.__class__.avg)(self)
+            function = NUMERICAL_COMBINATION_METHODS.get(method,
+                                                         self.__class__.avg)
+            return function(self, with_confidence=with_confidence)
         else:
             if method == PROBABILITY:
                 predictions = MultiVote([])
@@ -182,7 +222,8 @@ class MultiVote(object):
             else:
                 predictions = self
             return predictions.combine_categorical(
-                COMBINATION_WEIGHTS.get(method, None))
+                COMBINATION_WEIGHTS.get(method, None),
+                with_confidence=with_confidence)
 
     def probability_weight(self):
         """Reorganizes predictions depending on training data probability
@@ -202,10 +243,31 @@ class MultiVote(object):
             for prediction, instances in prediction['distribution']:
                 predictions.append({'prediction': prediction,
                                     'probability': float(instances) / total,
+                                    'count': instances,
                                     'order': order})
         return predictions
 
-    def combine_categorical(self, weight_label=None):
+    def combine_distribution(self, weight_label='probability'):
+        """Builds a distribution based on the predictions of the MultiVote
+
+        """
+        distribution = {}
+        normalization = 0.0
+        total = 0
+        for prediction in self.predictions:
+            if not prediction['prediction'] in distribution:
+                distribution[prediction['prediction']] = 0.0
+            distribution[prediction['prediction']] += prediction[weight_label]
+            normalization += prediction[weight_label]
+            total += prediction['count']
+        if normalization > 0:
+            distribution = [[key, value] for key, value in
+                            distribution.items()]
+        else:
+            distribution = []
+        return distribution, normalization, total
+
+    def combine_categorical(self, weight_label=None, with_confidence=False):
         """Returns the prediction combining votes by using the given weight:
 
             weight_label can be set as:
@@ -234,9 +296,47 @@ class MultiVote(object):
             else:
                 mode[category] = {"count": weight,
                                   "order": prediction['order']}
-        return sorted(mode.items(), key=lambda x: (x[1]['count'],
-                                                   -x[1]['order']),
-                      reverse=True)[0][0]
+
+        prediction = sorted(mode.items(), key=lambda x: (x[1]['count'],
+                                                         -x[1]['order']),
+                            reverse=True)[0][0]
+
+        if with_confidence:
+            if 'confidence' in self.predictions[0]:
+                return self.weighted_confidence(prediction,
+                                                weight_label)
+            # if prediction had no confidence, compute it from distribution
+            else:
+                distribution, normalization, count = self.combine_distribution()
+                combined_confidence = ws_confidence(prediction, distribution,
+                                                    ws_n=count)
+                return prediction, combined_confidence
+        return prediction
+
+    def weighted_confidence(self, combined_prediction, weight_label):
+        """Compute the combined weighted confidence from a list of predictions
+
+        """
+        predictions = filter(lambda x: x['prediction'] == combined_prediction,
+                             self.predictions)
+        if (weight_label is not None and
+                (not isinstance(weight_label, basestring) or
+                 any([not 'confidence' or not weight_label in prediction
+                 for prediction in predictions]))):
+            raise ValueError("Not enough data to use the selected "
+                             "prediction method. Lacks %s information." %
+                             weight_label)
+        final_confidence = 0.0
+        total_weight = 0.0
+        weight = 1
+        for prediction in predictions:
+            if weight_label is not None:
+                weight = prediction[weight_label]
+            final_confidence += weight * prediction['confidence']
+            total_weight += weight
+        final_confidence = (final_confidence / total_weight
+                            if total_weight > 0 else float('nan'))
+        return combined_prediction, final_confidence
 
     def append(self, prediction_info):
         """Adds a new prediction into a list of predictions

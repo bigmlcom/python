@@ -864,6 +864,10 @@ or ``probability weighted``::
 
     prediction = multivote.combine(2)
 
+You can also get a confidence measure for the combined prediction::
+
+    prediction = multivolte.combine(0, with_confidence=True)
+
 
 Fields
 ------

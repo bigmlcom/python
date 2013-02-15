@@ -777,7 +777,7 @@ class BigML(object):
             'object': resource,
             'error': error}
 
-    def _upload_source(self, url, args, source, out=sys.stdout):
+    def _upload_source(self, args, source, out=sys.stdout):
         """Uploads a source asynchronously.
 
         """
@@ -846,7 +846,7 @@ class BigML(object):
                                       'code': UPLOADING,
                                       'progress': 0.0}},
                 'error': error}
-            upload_args = (self.source_url + self.auth, args, source)
+            upload_args = (args, source)
             thread = Thread(target=self._upload_source,
                             args=upload_args,
                             kwargs={'out': out})

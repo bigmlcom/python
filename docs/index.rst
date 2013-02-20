@@ -864,6 +864,23 @@ or ``probability weighted``::
 
     prediction = multivote.combine(2)
 
+You can also get a confidence measure for the combined prediction::
+
+    prediction = multivolte.combine(0, with_confidence=True)
+
+For classification, the confidence associated to the combined prediction
+is derived by first selecting the model's predictions that voted for the
+resulting prediction and computing the weighted average of their individual
+confidence. Nevertheless, when ``probability weighted`` is used,
+the confidence is obtained by using each model's distribution at the
+prediction node to build a probability distribution and combining them.
+The confidence is then computed as the wilson score interval of the
+combined distribution (using as total number of instances the sum of all
+the model's distributions original instances at the prediction node)
+
+In regression, all the models predictions' confidences contribute
+to the weighted average confidence.
+
 
 Fields
 ------

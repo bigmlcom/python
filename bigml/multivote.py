@@ -47,25 +47,42 @@ WEIGHT_KEYS = {
 DEFAULT_METHOD = 0
 
 
-def ws_confidence(prediction, distribution, ws_z=None, ws_n=None):
+def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
     """Wilson score interval computation of the distribution for the prediction
+
+       expected arguments:
+            prediction: the value of the prediction for which confidence is
+                        computed
+            distribution: a distribution-like structure of predictions and
+                          the associated weights. (e.g.
+                          [['Iris-setosa', 10], ['Iris-versicolor', 5]])
+            ws_z: percentile of the standard normal distribution
+            ws_n: total number of instances in the distribution. If absent,
+                  the number is computed as the sum of weights in the
+                  provided distribution
 
     """
     if isinstance(distribution, list):
         distribution = dict(distribution)
-    if ws_z is None:
-        ws_z = 1.96
     ws_p = distribution[prediction]
-    ws_norm = sum(distribution.values())
-    ws_norm = float(ws_norm)
+    if ws_p < 0:
+        raise ValueError("The distribution weight must be a positive value")
+    if ws_n < 1:
+        raise ValueError("The total of instances in the distribution must be"
+                         " a positive integer")
+    ws_norm = float(sum(distribution.values()))
     if not ws_norm == 1.0:
         ws_p = ws_p / ws_norm
     if ws_n is None:
         ws_n = ws_norm
+    else:
+        ws_n = float(ws_n)
+        ws_z = float(ws_z)
     ws_z2 = ws_z * ws_z
     ws_n2 = ws_n * ws_n
-    return (ws_p + 1 / (2 * ws_n) * ws_z2 - ws_z * math.sqrt(ws_p * (1 - ws_p) / ws_n +
-            ws_z2 / (4 * ws_n2))) / (1 + 1 / ws_n * ws_z2)
+    ws_factor = ws_z2 / ws_n
+    ws_sqrt = math.sqrt((ws_p * (1 - ws_p) + ws_factor / 4) / ws_n)
+    return (ws_p + ws_factor / 2 - ws_z * ws_sqrt) / (1 + ws_factor)
 
 
 class MultiVote(object):
@@ -79,7 +96,16 @@ class MultiVote(object):
     def avg(cls, instance, with_confidence=False):
         """Returns the average of a list of numeric values.
 
+           If with_confidence is True, the combined confidence (as the
+           average of confidences of the multivote predictions) is also
+           returned
         """
+        if (instance.predictions and with_confidence and
+                not all(['confidence' in prediction
+                         for prediction in instance.predictions])):
+            raise Exception("Not enough data to use the selected "
+                            "prediction method. Try creating your"
+                            " model anew.")
         total = len(instance.predictions)
         result = 0.0
         confidence = 0.0
@@ -96,10 +122,13 @@ class MultiVote(object):
     def error_weighted(cls, instance, with_confidence=False):
         """Returns the prediction combining votes using error to compute weight
 
+           If with_confidences is true, the combined confidence (as the
+           error weighted average of the confidences of the multivote
+           predictions) is also returned
         """
-        if instance.predictions and not all(['confidence' in prediction
-                                             for prediction
-                                             in instance.predictions]):
+        if (instance.predictions and with_confidence and
+                not all(['confidence' in prediction
+                         for prediction in instance.predictions])):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
@@ -196,6 +225,11 @@ class MultiVote(object):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
+           method will determine the voting method (plurality, confidence
+           weighted or probability weighted).
+           If with_confidence is true, the combined confidence (as a weighted
+           average of the confidences of votes for the combined prediction)
+           will also be given.
         """
         # there must be at least one prediction to be combined
         if not self.predictions:
@@ -250,7 +284,15 @@ class MultiVote(object):
     def combine_distribution(self, weight_label='probability'):
         """Builds a distribution based on the predictions of the MultiVote
 
+           Given the array of predictions, we build a set of predictions with
+           them and associate the sum of weights (the weight being the
+           contents of the weight_label field of each prediction)
         """
+        if not all([weight_label in prediction
+                    for prediction in self.predictions]):
+            raise Exception("Not enough data to use the selected "
+                            "prediction method. Try creating your"
+                            " model anew.")
         distribution = {}
         normalization = 0.0
         total = 0
@@ -274,6 +316,10 @@ class MultiVote(object):
             None:          plurality (1 vote per prediction)
             'confidence':  confidence weighted (confidence as a vote value)
             'probability': probability weighted (probability as a vote value)
+
+            If with_confidence is true, the combined confidence (as a weighted
+            average of the confidences of the votes for the combined
+            prediction) will also be given.
         """
         mode = {}
         if weight_label is None:
@@ -307,7 +353,8 @@ class MultiVote(object):
                                                 weight_label)
             # if prediction had no confidence, compute it from distribution
             else:
-                distribution, normalization, count = self.combine_distribution()
+                combined_distribution = self.combine_distribution()
+                distribution, normalization, count = combined_distribution
                 combined_confidence = ws_confidence(prediction, distribution,
                                                     ws_n=count)
                 return prediction, combined_confidence

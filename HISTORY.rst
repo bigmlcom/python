@@ -3,6 +3,10 @@
 History
 -------
 
+0.5.3 (2012-03-03)
+~~~~~~~~~~~~~~~~~~
+- Fixes bug: public datasets, that should be downloadable, weren't.
+
 0.5.2 (2012-02-15)
 ~~~~~~~~~~~~~~~~~~
 

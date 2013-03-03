@@ -79,7 +79,6 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
         ws_n = float(ws_n)
         ws_z = float(ws_z)
     ws_z2 = ws_z * ws_z
-    ws_n2 = ws_n * ws_n
     ws_factor = ws_z2 / ws_n
     ws_sqrt = math.sqrt((ws_p * (1 - ws_p) + ws_factor / 4) / ws_n)
     return (ws_p + ws_factor / 2 - ws_z * ws_sqrt) / (1 + ws_factor)
@@ -294,20 +293,18 @@ class MultiVote(object):
                             "prediction method. Try creating your"
                             " model anew.")
         distribution = {}
-        normalization = 0.0
         total = 0
         for prediction in self.predictions:
             if not prediction['prediction'] in distribution:
                 distribution[prediction['prediction']] = 0.0
             distribution[prediction['prediction']] += prediction[weight_label]
-            normalization += prediction[weight_label]
             total += prediction['count']
-        if normalization > 0:
+        if total > 0:
             distribution = [[key, value] for key, value in
                             distribution.items()]
         else:
             distribution = []
-        return distribution, normalization, total
+        return distribution, total
 
     def combine_categorical(self, weight_label=None, with_confidence=False):
         """Returns the prediction combining votes by using the given weight:
@@ -354,7 +351,7 @@ class MultiVote(object):
             # if prediction had no confidence, compute it from distribution
             else:
                 combined_distribution = self.combine_distribution()
-                distribution, normalization, count = combined_distribution
+                distribution, count = combined_distribution
                 combined_confidence = ws_confidence(prediction, distribution,
                                                     ws_n=count)
                 return prediction, combined_confidence

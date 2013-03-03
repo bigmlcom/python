@@ -877,14 +877,16 @@ if count > 0:
         """Given a prediction string, returns its value in the required type
 
         """
+        if not isinstance(value_as_string, unicode):
+            value_as_string = unicode(value_as_string, "utf-8")
+
         objective_field = self.tree.objective_field
         if self.tree.fields[objective_field]['optype'] == 'numeric':
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
             datatype = self.tree.fields[objective_field]['datatype']
-            cast_function = PYTHON_FUNC.get(datatype,
-                lambda x: unicode(x, "utf-8"))
-            return cast_function(value_as_string)
-        else:
-            return unicode(value_as_string, "utf-8")
+            cast_function = PYTHON_FUNC.get(datatype, None)
+            if cast_function is not None:
+                return cast_function(value_as_string)
+        return value_as_string

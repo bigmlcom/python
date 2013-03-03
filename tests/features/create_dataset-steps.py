@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 from lettuce import *
 from bigml.api import HTTP_CREATED
+from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
@@ -32,3 +33,20 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
 @step(r'I wait until the dataset is ready less than (\d+)')
 def the_dataset_is_finished_in_less_than(step, secs):
     wait_until_dataset_status_code_is(step, FINISHED, FAULTY, secs)
+
+@step(r'I make the dataset public')
+def make_the_dataset_public(step):
+    resource = world.api.update_dataset(world.dataset['resource'],
+                                        {'private': False})
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED
+    world.location = resource['location']
+    world.dataset = resource['object']
+
+@step(r'I get the dataset status using the dataset\'s public url')
+def build_local_dataset_from_public_url(step):
+    world.dataset = world.api.get_dataset("public/%s" % world.dataset['resource'])
+
+@step(r'the dataset\'s status is FINISHED')
+def dataset_status_finished(step):
+    assert get_status(world.dataset)['code'] == FINISHED

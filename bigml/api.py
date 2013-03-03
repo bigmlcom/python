@@ -74,7 +74,8 @@ EVALUATION_PATH = 'evaluation'
 
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
-DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % DATASET_PATH)
+DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
+                        (DATASET_PATH, DATASET_PATH))
 MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
                       (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)

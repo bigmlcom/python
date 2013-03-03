@@ -3,11 +3,12 @@
 History
 -------
 
-0.5.2 (2012-02-15)
+0.5.2 (2012-03-03)
 ~~~~~~~~~~~~~~~~~~
 
 - Adds combined confidence to combined predictions
 - Fixes get_status for resources that have no status info
+- Fixes bug: public datasets, that should be downloadable, weren't.
 
 0.5.1 (2012-02-12)
 ~~~~~~~~~~~~~~~~~~

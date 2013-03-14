@@ -71,6 +71,7 @@ DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 EVALUATION_PATH = 'evaluation'
+ENSEMBLE_PATH = 'ensemble'
 
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
@@ -80,6 +81,8 @@ MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
                       (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
+ENSEMBLE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % ENSEMBLE_PATH)
+
 
 # Development Mode URL
 BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
@@ -179,6 +182,13 @@ def get_evaluation_id(evaluation):
 
     """
     return get_resource(EVALUATION_RE, evaluation)
+
+
+def get_ensemble_id(ensemble):
+    """Returns a ensemble/id.
+
+    """
+    return get_resource(ENSEMBLE_RE, ensemble)
 
 
 def get_status(resource):
@@ -328,6 +338,7 @@ class BigML(object):
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
+        self.ensemble_url = self.url + ENSEMBLE_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -652,7 +663,8 @@ class BigML(object):
             resource_id = resource['resource']
             if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
                     or MODEL_RE.match(resource_id)
-                    or EVALUATION_RE.match(resource_id)):
+                    or EVALUATION_RE.match(resource_id)
+                    or ENSEMBLE_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
@@ -736,7 +748,8 @@ class BigML(object):
                 or DATASET_RE.match(resource)
                 or MODEL_RE.match(resource)
                 or PREDICTION_RE.match(resource)
-                or EVALUATION_RE.match(resource)):
+                or EVALUATION_RE.match(resource)
+                or ENSEMBLE_RE.match(resource)):
             return resource
         else:
             return
@@ -1316,3 +1329,76 @@ class BigML(object):
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
             return self._delete("%s%s" % (self.url, evaluation_id))
+
+    ##########################################################################
+    #
+    # Ensembles
+    # https://bigml.com/developers/ensembles
+    #
+    ##########################################################################
+    def create_ensemble(self, dataset, args=None, wait_time=3, retries=10):
+        """Creates an ensemble.
+
+        """
+        dataset_id = get_dataset_id(dataset)
+
+        if dataset_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+
+            if args is None:
+                args = {}
+            args.update({
+                "dataset": dataset_id})
+            body = json.dumps(args)
+            return self._create(self.ensemble_url, body)
+
+    def get_ensemble(self, ensemble, query_string=''):
+        """Retrieves an ensemble.
+
+           The ensemble parameter should be a string containing the
+           ensemble id or the dict returned by create_ensemble.
+           As an ensemble is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the ensemble values and state info
+           available at the time it is called.
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            return self._get("%s%s" % (self.url, ensemble_id),
+                             query_string=query_string)
+
+    def ensemble_is_ready(self, ensemble):
+        """Checks whether a ensemble's status is FINISHED.
+
+        """
+        resource = self.get_ensemble(ensemble)
+        return (resource['code'] == HTTP_OK and
+                get_status(resource)['code'] == FINISHED)
+
+    def list_ensembles(self, query_string=''):
+        """Lists all your ensembles.
+
+        """
+        return self._list(self.ensemble_url, query_string)
+
+    def update_ensemble(self, ensemble, changes):
+        """Updates a ensemble.
+
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, ensemble_id), body)
+
+    def delete_ensemble(self, ensemble):
+        """Deletes a ensemble.
+
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            return self._delete("%s%s" % (self.url, ensemble_id))

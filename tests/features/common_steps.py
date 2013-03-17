@@ -54,3 +54,7 @@ def i_want_api_dev_mode(step):
     evaluations = world.api.list_evaluations()
     assert evaluations['code'] == HTTP_OK
     world.init_evaluations_count = evaluations['meta']['total_count']
+
+    ensembles = world.api.list_ensembles()
+    assert ensembles['code'] == HTTP_OK
+    world.init_ensembles_count = ensembles['meta']['total_count']

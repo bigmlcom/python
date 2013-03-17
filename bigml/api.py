@@ -1187,19 +1187,33 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model, input_data=None, by_name=True,
+    def create_prediction(self, model_or_ensemble, input_data=None, by_name=True,
                           args=None, wait_time=3, retries=10):
         """Creates a new prediction.
 
         """
-        model_id = get_model_id(model)
-
-        if model_id:
+        ensemble_id = get_ensemble_id(model_or_ensemble)
+        if ensemble_id is not None:
             if wait_time > 0:
                 count = 0
-                while not self.model_is_ready(model_id) and count < retries:
+                while not self.ensemble_is_ready(ensemble_id) and count < retries:
                     time.sleep(wait_time)
                     count += 1
+            try:
+                ensemble = self.get_ensemble(ensemble_id)
+                model_id = ensemble['object']['models'][0]
+            except (KeyError, IndexError), exc:
+                LOGGER.error("The ensemble has no valid model information: %s"
+                             % str(exc))
+                model_id = None
+
+        if model_id:
+            if ensemble_id is None:
+                if wait_time > 0:
+                    count = 0
+                    while not self.model_is_ready(model_id) and count < retries:
+                        time.sleep(wait_time)
+                        count += 1
 
             if input_data is None:
                 input_data = {}
@@ -1220,8 +1234,14 @@ class BigML(object):
             if args is None:
                 args = {}
             args.update({
-                "model": model_id,
                 "input_data": input_data})
+            if ensemble_id is None:
+                args.update({
+                    "model": model_id})
+            else:
+                args.update({
+                    "ensemble": ensemble_id})
+
             body = json.dumps(args)
             return self._create(self.prediction_url, body)
 

@@ -56,8 +56,9 @@ try:
 except ImportError:
     import json
 
-from bigml.util import (invert_dictionary, localize, is_url,
-                        clear_console_line, reset_console_line, console_log)
+from bigml.util import (invert_dictionary, localize, is_url, check_dir,
+                        clear_console_line, reset_console_line, console_log,
+                        save_to_repo)
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -290,7 +291,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False):
+                 debug=False, set_locale=False, local_repo=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -300,6 +301,9 @@ class BigML(object):
         If `dev_mode` is set to `True`, the API will be used in development
         mode where the size of your datasets are limited but you are not
         charged any credits.
+
+        If local_repo is set, the resources obtained in CRU operations
+        will be stored in the given directory.
 
         """
 
@@ -342,6 +346,12 @@ class BigML(object):
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+        self.local_repo = None
+        if local_repo is not None:
+            try:
+                self.local_repo = check_dir(local_repo)
+            except ValueError:
+                pass
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -396,12 +406,15 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
+        result = {
             'code': code,
             'resource': resource_id,
             'location': location,
             'object': resource,
             'error': error}
+        if self.local_repo is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.local_repo)
+        return result
 
     def _get(self, url, query_string=''):
         """Retrieves a remote resource.
@@ -451,12 +464,15 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
+        result = {
             'code': code,
             'resource': resource_id,
             'location': location,
             'object': resource,
             'error': error}
+        if self.local_repo is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.local_repo)
+        return result
 
     def _list(self, url, query_string=''):
         """Lists all existing remote resources.
@@ -573,12 +589,15 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
+        result = {
             'code': code,
             'resource': resource_id,
             'location': location,
             'object': resource,
             'error': error}
+        if self.local_repo is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.local_repo)
+        return result
 
     def _delete(self, url):
         """Permanently deletes a remote resource.
@@ -712,6 +731,7 @@ class BigML(object):
                model, api.get_model
                prediction, api.get_prediction
                evaluation, api.get_evaluation
+               ensemble, api.get_ensemble
            it calls the get_method on the resource with the given query_string
            and waits with sleeping intervals of wait_time
            until the resource is in a final state (either FINISHED
@@ -1187,31 +1207,38 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model_or_ensemble, input_data=None, by_name=True,
-                          args=None, wait_time=3, retries=10):
+    def create_prediction(self, model_or_ensemble, input_data=None,
+                          by_name=True, args=None, wait_time=3, retries=10):
         """Creates a new prediction.
 
         """
-        ensemble_id = get_ensemble_id(model_or_ensemble)
-        if ensemble_id is not None:
-            if wait_time > 0:
-                count = 0
-                while not self.ensemble_is_ready(ensemble_id) and count < retries:
-                    time.sleep(wait_time)
-                    count += 1
-            try:
-                ensemble = self.get_ensemble(ensemble_id)
-                model_id = ensemble['object']['models'][0]
-            except (KeyError, IndexError), exc:
-                LOGGER.error("The ensemble has no valid model information: %s"
-                             % str(exc))
-                model_id = None
+        ensemble_id = None
+        model_id = None
+        try:
+            ensemble_id = get_ensemble_id(model_or_ensemble)
+            if ensemble_id is not None:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.ensemble_is_ready(ensemble_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                try:
+                    ensemble = self.get_ensemble(ensemble_id)
+                    model_id = ensemble['object']['models'][0]
+                except (KeyError, IndexError), exc:
+                    LOGGER.error("The ensemble has no valid model information: %s"
+                                 % str(exc))
+                    model_id = None
+        except ValueError:           
+            model_id = get_model_id(model_or_ensemble)
 
-        if model_id:
+        if model_id is not None:
             if ensemble_id is None:
                 if wait_time > 0:
                     count = 0
-                    while not self.model_is_ready(model_id) and count < retries:
+                    while (not self.model_is_ready(model_id) and
+                           count < retries):
                         time.sleep(wait_time)
                         count += 1
 

@@ -388,9 +388,9 @@ def retrieve_model(api, model_id):
     """ Retrieves model info either from a local repo or from the remote server
 
     """
-    if api.local_repo is not None:
+    if api.storage is not None:
         try:
-            with open("%s%s%s" % (api.local_repo, os.sep,
+            with open("%s%s%s" % (api.storage, os.sep,
                                   model_id.replace("/", "_"))) as model_file:
                 model = json.loads(model_file.read())
             return model

@@ -27,9 +27,13 @@ offline.
 from bigml.api import BigML
 from bigml.ensemble import Ensemble
 
-api = BigML(local_repo='./resources')
+# api connection
+api = BigML(storage='./storage')
 
+# creating ensemble
 ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
+
+# Ensemble object to predict
 ensemble = Ensemble(ensemble, api)
 ensemble.predict({"petal length": 3, "petal width": 1})
 
@@ -37,11 +41,13 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
+from bigml.api import BigML
 from bigml.util import retrieve_model
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
 
+STORAGE = './storage'
 
 class Ensemble(object):
     """An ensemble local model.
@@ -51,9 +57,12 @@ class Ensemble(object):
 
     """
 
-    def __init__(self, ensemble, api, max_models=None):
+    def __init__(self, ensemble, api=None, max_models=None):
 
-        self.api = api
+        if api is None:
+            self.api = BigML(storage=STORAGE)
+        else:
+            self.api = api
         self.ensemble_id = api.get_resource_id(ensemble)
         ensemble = api.check_resource(ensemble, api.get_ensemble)
         models = ensemble['object']['models']

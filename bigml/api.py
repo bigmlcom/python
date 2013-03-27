@@ -291,7 +291,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False, local_repo=None):
+                 debug=False, set_locale=False, storage=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -302,7 +302,7 @@ class BigML(object):
         mode where the size of your datasets are limited but you are not
         charged any credits.
 
-        If local_repo is set, the resources obtained in CRU operations
+        If storage is set, the resources obtained in CRU operations
         will be stored in the given directory.
 
         """
@@ -346,10 +346,10 @@ class BigML(object):
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
-        self.local_repo = None
-        if local_repo is not None:
+        self.storage = None
+        if storage is not None:
             try:
-                self.local_repo = check_dir(local_repo)
+                self.storage = check_dir(storage)
             except ValueError:
                 pass
 
@@ -412,8 +412,8 @@ class BigML(object):
             'location': location,
             'object': resource,
             'error': error}
-        if self.local_repo is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.local_repo)
+        if self.storage is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.storage)
         return result
 
     def _get(self, url, query_string=''):
@@ -470,8 +470,8 @@ class BigML(object):
             'location': location,
             'object': resource,
             'error': error}
-        if self.local_repo is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.local_repo)
+        if self.storage is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.storage)
         return result
 
     def _list(self, url, query_string=''):
@@ -595,8 +595,8 @@ class BigML(object):
             'location': location,
             'object': resource,
             'error': error}
-        if self.local_repo is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.local_repo)
+        if self.storage is not None and resource_id is not None:
+            save_to_repo(resource_id, result, self.storage)
         return result
 
     def _delete(self, url):

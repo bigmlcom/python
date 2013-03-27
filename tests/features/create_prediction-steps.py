@@ -6,6 +6,7 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
+
 @step(r'I create a prediction for "(.*)"')
 def i_create_a_prediction(step, data=None):
     if data is None:
@@ -52,3 +53,11 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
 @step(r'I wait until the prediction is ready less than (\d+)')
 def the_prediction_is_finished_in_less_than(step, secs):
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)
+
+@step(r'I create a local ensemble prediction for "(.*)"$')
+def create_local_ensemble_prediction(step, input_data):
+    world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
+
+@step(r'the local prediction is "(.*)"')
+def the_local_prediction_is(step, prediction):
+    assert world.local_prediction == prediction

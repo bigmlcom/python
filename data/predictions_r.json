@@ -1,0 +1,1 @@
+[{"prediction": 1.5, "confidence": 0.2365895936154873, "order": 0, "distribution": [[1, 5], [2, 5], [3, 0]], "count": 10}, {"prediction": 2, "confidence": 0.2992949144298199, "order": 1, "distribution": [[1, 5], [2, 10], [3, 5]], "count": 20}, {"prediction": 1.1666667, "confidence": 0.6643529481431982, "order": 2, "distribution": [[1, 25], [2, 5], [3, 0]], "count": 30}]

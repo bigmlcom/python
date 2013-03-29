@@ -56,8 +56,10 @@ import operator
 import locale
 
 from bigml.api import FINISHED
-from bigml.util import invert_dictionary, slugify, split, markdown_cleanup, \
-    prefix_as_comment, sort_fields, utf8, map_type, find_locale
+from bigml.api import get_status
+from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
+                        prefix_as_comment, sort_fields, utf8,
+                        find_locale, cast)
 from bigml.util import DEFAULT_LOCALE
 
 
@@ -233,7 +235,6 @@ class Tree(object):
                           child.predicate.operator,
                           child.predicate.value,
                           "AND" if child.children else "THEN"))
-                print rules
                 rules += child.generate_rules(depth + 1)
         else:
             rules += (u"%s %s = %s\n" %
@@ -358,42 +359,42 @@ class Model(object):
             model = model['object']
 
         if ('model' in model and isinstance(model['model'], dict)):
-            if ('status' in model and 'code' in model['status']):
-                if model['status']['code'] == FINISHED:
-                    if 'model_fields' in model['model']:
-                        fields = model['model']['model_fields']
-                        # pagination or exclusion might cause a field not to
-                        # be in available fields dict
-                        if not all(key in model['model']['fields']
-                                   for key in fields.keys()):
-                            raise Exception("Some fields are missing"
-                                            " to generate a local model."
-                                            " Please, provide a model with"
-                                            " the complete list of fields.")
-                        for field in fields:
-                            field_info = model['model']['fields'][field]
-                            fields[field]['summary'] = field_info['summary']
-                            fields[field]['name'] = field_info['name']
-                    else:
-                        fields = model['model']['fields']
-                    self.inverted_fields = invert_dictionary(fields)
-                    self.all_inverted_fields = invert_dictionary(model['model']
-                                                                 ['fields'])
-                    self.tree = Tree(
-                        model['model']['root'],
-                        fields,
-                        model['objective_fields'])
-                    self.description = model['description']
-                    self.field_importance = model['model'].get('importance',
-                                                               None)
-                    if self.field_importance:
-                        self.field_importance = [element for element
-                                                 in self.field_importance
-                                                 if element[0] in fields]
-                    self.locale = model.get('locale', DEFAULT_LOCALE)
-
+            status = get_status(model)
+            if ('code' in status and status['code'] == FINISHED):
+                if 'model_fields' in model['model']:
+                    fields = model['model']['model_fields']
+                    # pagination or exclusion might cause a field not to
+                    # be in available fields dict
+                    if not all(key in model['model']['fields']
+                               for key in fields.keys()):
+                        raise Exception("Some fields are missing"
+                                        " to generate a local model."
+                                        " Please, provide a model with"
+                                        " the complete list of fields.")
+                    for field in fields:
+                        field_info = model['model']['fields'][field]
+                        fields[field]['summary'] = field_info['summary']
+                        fields[field]['name'] = field_info['name']
                 else:
-                    raise Exception("The model isn't finished yet")
+                    fields = model['model']['fields']
+                self.inverted_fields = invert_dictionary(fields)
+                self.all_inverted_fields = invert_dictionary(model['model']
+                                                             ['fields'])
+                self.tree = Tree(
+                    model['model']['root'],
+                    fields,
+                    model['objective_fields'])
+                self.description = model['description']
+                self.field_importance = model['model'].get('importance',
+                                                           None)
+                if self.field_importance:
+                    self.field_importance = [element for element
+                                             in self.field_importance
+                                             if element[0] in fields]
+                self.locale = model.get('locale', DEFAULT_LOCALE)
+
+            else:
+                raise Exception("The model isn't finished yet")
         else:
             raise Exception("Invalid model structure")
 
@@ -411,11 +412,14 @@ class Model(object):
         `by_name` to input them directly keyed by id.
 
         """
+        # Strips None values
         empty_fields = [(key, value) for (key, value) in input_data.items()
                         if value is None]
         for (key, value) in empty_fields:
             del input_data[key]
 
+        # Checks input_data keys against field names and filters the ones
+        # used in the model
         if by_name:
             wrong_keys = [key for key in input_data.keys() if not key
                           in self.all_inverted_fields]
@@ -426,21 +430,14 @@ class Model(object):
                 [[self.inverted_fields[key], value]
                     for key, value in input_data.items()
                     if key in self.inverted_fields])
+        else:
+            input_data = dict(
+                [[key, value]
+                    for key, value in input_data.items()
+                    if key in self.tree.fields])
 
-        for (key, value) in input_data.items():
-            if ((self.tree.fields[key]['optype'] == 'numeric' and
-                    isinstance(value, basestring)) or (
-                    self.tree.fields[key]['optype'] != 'numeric' and
-                    not isinstance(value, basestring))):
-                try:
-                    input_data.update({key:
-                                       map_type(self.tree.fields[key]
-                                                ['optype'])(value)})
-                except:
-                    raise Exception(u"Mismatch input data type in field "
-                                    u"\"%s\" for value %s." %
-                                    (self.tree.fields[key]['name'],
-                                     value))
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.tree.fields)
 
         prediction_info = self.tree.predict(input_data)
         prediction, path, confidence, distribution, instances = prediction_info
@@ -880,14 +877,16 @@ if count > 0:
         """Given a prediction string, returns its value in the required type
 
         """
+        if not isinstance(value_as_string, unicode):
+            value_as_string = unicode(value_as_string, "utf-8")
+
         objective_field = self.tree.objective_field
         if self.tree.fields[objective_field]['optype'] == 'numeric':
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
             datatype = self.tree.fields[objective_field]['datatype']
-            cast_function = PYTHON_FUNC.get(datatype,
-                lambda x: unicode(x, "utf-8"))
-            return cast_function(value_as_string)
-        else:
-            return unicode(value_as_string, "utf-8")
+            cast_function = PYTHON_FUNC.get(datatype, None)
+            if cast_function is not None:
+                return cast_function(value_as_string)
+        return value_as_string

@@ -107,7 +107,8 @@ class MultiModel(object):
         """
         return [model['resource'] for model in self.models]
 
-    def predict(self, input_data, by_name=True, method=PLURALITY_CODE):
+    def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
+                with_confidence=False):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -129,7 +130,7 @@ class MultiModel(object):
                               distribution, instances]
             votes.append_row(prediction_row)
 
-        return votes.combine(method=method)
+        return votes.combine(method=method, with_confidence=with_confidence)
 
     def batch_predict(self, input_data_list, output_file_path,
                       by_name=True, reuse=False):

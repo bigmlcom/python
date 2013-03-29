@@ -3,6 +3,21 @@
 History
 -------
 
+0.5.2 (2012-03-03)
+~~~~~~~~~~~~~~~~~~
+
+- Adds combined confidence to combined predictions
+- Fixes get_status for resources that have no status info
+- Fixes bug: public datasets, that should be downloadable, weren't.
+
+0.5.1 (2012-02-12)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes bug: no status info in public models, now shows FINISHED status code
+- Adds more file-like objects (e.g. stdin) support in create_source input
+- Refactoring Fields pair method and Model predict method to increase
+- Adds some more locale aliases
+
 0.5.0 (2012-01-16)
 ~~~~~~~~~~~~~~~~~~
 

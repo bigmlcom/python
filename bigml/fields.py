@@ -44,9 +44,8 @@ fields =  Fields(prediction['object']['fields'])
 import sys
 import locale
 
-from bigml.util import invert_dictionary, map_type
+from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
-from bigml.util import python_map_type, find_locale
 
 
 class Fields(object):
@@ -54,7 +53,9 @@ class Fields(object):
 
     """
     def __init__(self, fields, missing_tokens=[''],
-                 data_locale=DEFAULT_LOCALE, verbose=False):
+                 data_locale=DEFAULT_LOCALE, verbose=False,
+                 objective_field=None, objective_field_present=False,
+                 include=None):
 
         find_locale(data_locale, verbose)
 
@@ -63,6 +64,60 @@ class Fields(object):
         self.fields_by_column_number = invert_dictionary(fields,
                                                          'column_number')
         self.missing_tokens = missing_tokens
+        self.fields_columns = sorted(self.fields_by_column_number.keys())
+        # Ids of the fields to be included
+        self.filtered_fields = (self.fields.keys() if include is None
+                                else include)
+        # To be updated in update_objective_field
+        self.row_ids = None
+        self.headers = None
+        self.objective_field = None
+        self.objective_field_present = None
+        self.filtered_indexes = None
+        self.update_objective_field(objective_field, objective_field_present)
+
+    def update_objective_field(self, objective_field, objective_field_present,
+                               headers=None):
+        """Updates objective_field and headers info
+
+            Permits to update the objective_field, objective_field_present and
+            headers info from the constructor and also in a per row basis.
+        """
+        # If no objective field, select the last column, else store its column
+        if objective_field is None:
+            self.objective_field = self.fields_columns[-1]
+        elif isinstance(objective_field, basestring):
+            self.objective_field = self.field_column_number(objective_field)
+        else:
+            self.objective_field = objective_field
+
+        # If present, remove the objective field from the included fields
+        objective_id = self.field_id(self.objective_field)
+        if objective_id in self.filtered_fields:
+            del(self.filtered_fields[self.filtered_fields.index(objective_id)])
+
+        self.objective_field_present = objective_field_present
+        if headers is None:
+            # The row is supposed to contain the fields sorted by column number
+            self.row_ids = [item[0] for item in
+                            sorted(self.fields.items(),
+                                   key=lambda x: x[1]['column_number'])
+                            if objective_field_present or
+                            item[1]['column_number'] != self.objective_field]
+            self.headers = self.row_ids
+        else:
+            # The row is supposed to contain the fields as sorted in headers
+            self.row_ids = map(self.field_id, headers)
+            self.headers = headers
+        # Mapping each included field to its correspondent index in the row.
+        # The result is stored in filtered_indexes.
+        self.filtered_indexes = []
+        for field in self.filtered_fields:
+            try:
+                index = self.row_ids.index(field)
+                self.filtered_indexes.append(index)
+            except ValueError:
+                continue
 
     def field_id(self, key):
         """Returns a field id.
@@ -111,7 +166,7 @@ class Fields(object):
             return self.fields[self.fields_by_name[key]]['column_number']
 
     def len(self):
-        """Returns the number of fields."
+        """Returns the number of fields.
 
         """
         return len(self.fields)
@@ -126,69 +181,34 @@ class Fields(object):
            is present in the row.
 
         """
-
+        # Try to get objective field form Fields or use the last column
         if objective_field is None:
-            objective_field = sorted(self.fields_by_column_number.keys())[-1]
+            if self.objective_field is None:
+                objective_field = self.fields_columns[-1]
+            else:
+                objective_field = self.objective_field
+        # If objective fields is a name or an id, retrive column number
+        if isinstance(objective_field, basestring):
+            objective_field = self.field_column_number(objective_field)
 
-        fields_names = [self.fields[self.field_id(i)]['name'] for i in
-                        sorted(self.fields_by_column_number.keys())
-                        if i != objective_field]
-
-        pair = {}
-
-        if headers:
-            if not isinstance(objective_field, basestring):
-                objective_field = self.field_name(objective_field)
-            if objective_field_present is None:
-                objective_field_present = objective_field in headers
-            for index in range(len(row)):
-                if index < len(row) and not row[index] in self.missing_tokens:
-                    if (objective_field_present and
-                            headers[index] == objective_field):
-                        continue
-                    field = self.fields[self.fields_by_name[headers[index]]]
-                    row[index] = self.strip_affixes(row[index], field)
-                    try:
-                        pair.update({headers[index]:
-                                     map_type(field['optype'])(row[index])})
-                    except:
-                        message = (u"Mismatch input data type in field "
-                                   u"\"%s\" for value %s. The expected "
-                                   u"fields are: \n%s" %
-                                   (field['name'],
-                                    row[index],
-                                    ",".join(fields_names))).encode("utf-8")
-                        raise Exception(message)
-        else:
-            if isinstance(objective_field, basestring):
-                objective_field = self.field_column_number(objective_field)
-            if objective_field_present is None:
+        # Try to guess if objective field is in the data by using headers or
+        # comparing the row length to the number of fields
+        if objective_field_present is None:
+            if headers:
+                objective_field_present = (self.field_name(objective_field) in
+                                           headers)
+            else:
                 objective_field_present = len(row) == self.len()
-            column_numbers = sorted(self.fields_by_column_number.keys())
-            index = 0
-            for column_number in column_numbers:
-                if index < len(row) and not row[index] in self.missing_tokens:
-                    if column_number == objective_field:
-                        if objective_field_present:
-                            index += 1
-                        continue
 
-                    field = self.fields[self.field_id(column_number)]
-                    row[index] = self.strip_affixes(row[index], field)
-                    try:
-                        pair.update({self.field_id(column_number):
-                                    map_type(field['optype'])(row[index])})
-                    except:
-                        message = (u"Mismatch input data type in field "
-                                   u"\"%s\" for value %s. The expected "
-                                   u"fields are: \n%s" %
-                                   (field['name'],
-                                    row[index],
-                                    ",".join(fields_names))).encode("utf-8")
-                        raise Exception(message)
-                index += 1
+        # If objective field, its presence or headers have changed, update
+        if (objective_field != self.objective_field or
+                objective_field_present != self.objective_field_present or
+                (headers is not None and headers != self.headers)):
+            self.update_objective_field(objective_field,
+                                        objective_field_present, headers)
 
-        return pair
+        row = map(self.normalize, row)
+        return self.to_input_data(row)
 
     def list_fields(self, out=sys.stdout):
         """Lists a description of the fields.
@@ -225,13 +245,19 @@ class Fields(object):
         else:
             out.write("Input data must be a dictionary")
 
-    def strip_affixes(self, value, field):
-        """Strips prefixes and suffixes if present
+    def normalize(self, value):
+        """Transforms to unicode and cleans missing tokens
 
         """
-        value = unicode(value, "utf-8")
-        if 'prefix' in field and value.startswith(field['prefix']):
-            value = value[len(field['prefix']):]
-        if 'suffix' in field and value.endswith(field['suffix']):
-            value = value[0:-len(field['suffix'])]
-        return value
+        if not isinstance(value, unicode):
+            value = unicode(value, "utf-8")
+        return None if value in self.missing_tokens else value
+
+    def to_input_data(self, row):
+        """Builds dict with field, value info only for the included headers
+
+        """
+        pair = []
+        for index in self.filtered_indexes:
+            pair.append((self.headers[index], row[index]))
+        return dict(pair)

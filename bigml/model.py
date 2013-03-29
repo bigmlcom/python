@@ -180,7 +180,7 @@ class Tree(object):
                 self.distribution = summary['categories']
 
     def list_fields(self, out):
-        """List a description of the model's fields.
+        """Lists a description of the model's fields.
 
         """
         out.write(utf8(u'<%-32s : %s>\n' % (
@@ -194,6 +194,25 @@ class Tree(object):
             out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
+
+    def get_leaves(self):
+        """Returns a list that includes all the leaves of the tree.
+
+        """
+        leaves = []
+
+        if self.children:
+            for child in self.children:
+                leaves += child.get_leaves()
+        else:
+            leaves += [{
+                'confidence': self.confidence,
+                'count': self.count,
+                'distribution': self.distribution,
+                'output': self.output
+            }]
+        return leaves
+
 
     def predict(self, input_data, path=None):
         """Makes a prediction based on a number of field values.
@@ -403,6 +422,12 @@ class Model(object):
 
         """
         self.tree.list_fields(out)
+
+    def get_leaves(self):
+        """Returns a list that includes all the leaves of the model.
+
+        """
+        return self.tree.get_leaves()
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):

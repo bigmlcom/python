@@ -198,6 +198,44 @@ def get_status(resource):
     return status
 
 
+def error_message(resource, resource_type='resource', method=None):
+    """Error message for each type of resource
+
+    """
+    error = None
+    error_info = None
+    if isinstance(resource, dict):
+        if 'error' in resource:
+            error_info = resource['error']
+        elif ('code' in resource
+              and 'status' in resource):
+            error_info = resource
+    if error_info is not None and 'code' in error_info:
+        code = error_info['code']
+        if ('status' in error_info and
+            'message' in error_info['status']):
+            error = error_info['status']['message']
+        if code == HTTP_NOT_FOUND and method == 'get':
+            error += (u'\nCouldn\'t find a %s matching the given'
+                      u' id. The most probable causes are:\n\n'
+                      u'- a typo in the %s\'s id\n'
+                      u'- the %s id belongs to another user\n'
+                      u'\nDouble-check your %s and'
+                      u' credentials info and retry.' % (resource_type,
+                        resource_type, resource_type, resource_type))
+        if code == HTTP_UNAUTHORIZED:
+            error += (u'\nDouble-check your credentials, please.')
+        if code == HTTP_BAD_REQUEST:
+            error += (u'\nDouble-check the arguments for the call, please.')
+        if code == HTTP_PAYMENT_REQUIRED:
+            error += (u'\nYou\'ll need to buy some more credits to perform'
+                      u'the chosen action')
+
+    if error is None:
+        error = "Invalid %s structure:\n\n%s" % (resource_type, resource)
+    return error
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -333,6 +371,7 @@ class BigML(object):
                           HTTP_FORBIDDEN,
                           HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='create'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -387,6 +426,7 @@ class BigML(object):
                 error = None
             elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='get'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -508,6 +548,7 @@ class BigML(object):
                           HTTP_PAYMENT_REQUIRED,
                           HTTP_METHOD_NOT_ALLOWED]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='update'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -550,6 +591,7 @@ class BigML(object):
                 error = None
             elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='delete'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR

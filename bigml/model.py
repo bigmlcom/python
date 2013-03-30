@@ -56,7 +56,7 @@ import operator
 import locale
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, error_message
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
                         find_locale, cast)
@@ -369,10 +369,13 @@ class Model(object):
 
     def __init__(self, model):
 
-        if (isinstance(model, dict) and 'resource' in model):
+        if (isinstance(model, dict) and 'resource' in model and
+            model['resource'] is not None):
             self.resource_id = model['resource']
         else:
-            raise Exception("Invalid model structure")
+            raise Exception(error_message(model,
+                                          resource_type='model',
+                                          method='get'))
 
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']
@@ -415,7 +418,9 @@ class Model(object):
             else:
                 raise Exception("The model isn't finished yet")
         else:
-            raise Exception("Invalid model structure")
+            raise Exception("Cannot create the Model instance. Could not"
+                            " find the 'model' key in the resource:\n\n%s" %
+                            model)
 
     def fields(self, out=sys.stdout):
         """Describes and return the fields for this model.

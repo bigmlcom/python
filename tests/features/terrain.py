@@ -36,11 +36,16 @@ def setup_resources(feature):
     assert evaluations['code'] == HTTP_OK
     world.init_evaluations_count = evaluations['meta']['total_count']
 
+    ensembles = world.api.list_ensembles()
+    assert ensembles['code'] == HTTP_OK
+    world.init_ensembles_count = ensembles['meta']['total_count']
+
     world.sources = []
     world.datasets = []
     world.models = []
     world.predictions = []
     world.evaluations = []
+    world.ensembles = []
 
 @after.each_feature
 def cleanup_resources(feature):
@@ -68,6 +73,10 @@ def cleanup_resources(feature):
         world.api.delete_evaluation(id)
     world.evaluations = []
 
+    for id in world.ensembles:
+        world.api.delete_ensemble(id)
+    world.ensembles = []
+
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
     world.final_sources_count = sources['meta']['total_count']
@@ -88,8 +97,13 @@ def cleanup_resources(feature):
     assert evaluations['code'] == HTTP_OK
     world.final_evaluations_count = evaluations['meta']['total_count']
 
+    ensembles = world.api.list_ensembles()
+    assert ensembles['code'] == HTTP_OK
+    world.final_ensembles_count = ensembles['meta']['total_count']
+
     assert world.final_sources_count == world.init_sources_count
     assert world.final_datasets_count == world.init_datasets_count
     assert world.final_models_count == world.init_models_count
     assert world.final_predictions_count == world.init_predictions_count
     assert world.final_evaluations_count == world.init_evaluations_count
+    assert world.final_ensembles_count == world.init_ensembles_count

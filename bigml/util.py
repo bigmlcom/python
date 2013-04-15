@@ -24,6 +24,7 @@ from urlparse import urlparse
 import locale
 import sys
 import os
+import json
 
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
@@ -352,3 +353,50 @@ def cast(input_data, fields):
                                  u"\"%s\" for value %s." %
                                  (fields[key]['name'],
                                   value))
+
+
+def check_dir(path):
+    """Creates a directory if it doesn't exist
+
+    """
+    if os.path.exists(path):
+        if not os.path.isdir(path):
+            raise ValueError(u"The given path is not a directory")
+    elif len(path) > 0:
+        os.makedirs(path)
+    return path
+
+
+def save_to_repo(resource_id, resource, path):
+    """ Saves in the given directory the resource info as a json file.
+
+    """
+    try:
+        resource_json = json.dumps(resource)
+    except ValueError:
+        print("The resource has an invalid JSON format")
+    try:
+        resource_file_name = "%s%s%s" % (path, os.sep,
+                                         resource_id.replace('/', '_'))
+        with open(resource_file_name, "w", 0) as resource_file:
+            resource_file.write(resource_json)
+    except IOError:
+        print("Failed writing resource to %s" % resource_file_name)
+
+
+def retrieve_model(api, model_id):
+    """ Retrieves model info either from a local repo or from the remote server
+
+    """
+    if api.storage is not None:
+        try:
+            with open("%s%s%s" % (api.storage, os.sep,
+                                  model_id.replace("/", "_"))) as model_file:
+                model = json.loads(model_file.read())
+            return model
+        except ValueError:
+            raise ValueError("The file %s contains no JSON")
+        except IOError:
+            pass
+    model = api.check_resource(model_id, api.get_model, 'limit=-1')
+    return model

@@ -55,9 +55,11 @@ import sys
 import operator
 import locale
 import os
+import json
 
 from bigml.api import FINISHED
-from bigml.api import get_status, error_message, BigML, get_model_id
+from bigml.api import (get_status, error_message, BigML, get_model_id,
+                       check_resource)
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
                         find_locale, cast)
@@ -114,6 +116,7 @@ MAX_ARGS_LENGTH = 10
 
 STORAGE = './storage'
 
+
 def retrieve_model(api, model_id):
     """ Retrieves model info either from a local repo or from the remote server
 
@@ -128,7 +131,7 @@ def retrieve_model(api, model_id):
             raise ValueError("The file %s contains no JSON")
         except IOError:
             pass
-    model = api.check_resource(model_id, api.get_model, 'limit=-1')
+    model = check_resource(model_id, api.get_model, 'limit=-1')
     return model
 
 
@@ -232,7 +235,6 @@ class Tree(object):
                 'output': self.output
             }]
         return leaves
-
 
     def predict(self, input_data, path=None):
         """Makes a prediction based on a number of field values.
@@ -390,7 +392,7 @@ class Model(object):
     def __init__(self, model, api=None):
 
         if (isinstance(model, dict) and 'resource' in model and
-            model['resource'] is not None):
+                model['resource'] is not None):
             self.resource_id = model['resource']
         else:
             if api is None:

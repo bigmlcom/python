@@ -41,7 +41,7 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
-from bigml.api import BigML
+from bigml.api import BigML, get_ensemble_id, check_resource
 from bigml.model import retrieve_model
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
@@ -50,9 +50,9 @@ from bigml.multimodel import MultiModel
 
 
 class Ensemble(object):
-    """An ensemble local model.
+    """A local predictive Ensemble.
 
-       Uses a number of BigML remote models to build a local version
+       Uses a number of BigML remote models to build an ensemble local version
        that can be used to generate predictions locally.
 
     """
@@ -63,8 +63,8 @@ class Ensemble(object):
             self.api = BigML(storage=STORAGE)
         else:
             self.api = api
-        self.ensemble_id = api.get_resource_id(ensemble)
-        ensemble = api.check_resource(ensemble, api.get_ensemble)
+        self.ensemble_id = get_ensemble_id(ensemble)
+        ensemble = check_resource(ensemble, api.get_ensemble)
         models = ensemble['object']['models']
         self.model_ids = models
         number_of_models = len(models)

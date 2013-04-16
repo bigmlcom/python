@@ -429,9 +429,9 @@ the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
-You can also use the ``check_resource`` method::
+You can also use the ``check_resource`` function::
 
-    api.check_resource(resource, api.get_source)
+    check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
 FAULTY state.

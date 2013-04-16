@@ -192,6 +192,24 @@ def get_ensemble_id(ensemble):
     return get_resource(ENSEMBLE_RE, ensemble)
 
 
+def get_resource_id(resource):
+    """Returns the resource id if it falls in one of the registered types
+
+    """
+    if isinstance(resource, dict) and 'resource' in resource:
+        return resource['resource']
+    elif isinstance(resource, basestring) and (
+            SOURCE_RE.match(resource)
+            or DATASET_RE.match(resource)
+            or MODEL_RE.match(resource)
+            or PREDICTION_RE.match(resource)
+            or EVALUATION_RE.match(resource)
+            or ENSEMBLE_RE.match(resource)):
+        return resource
+    else:
+        return
+
+
 def get_status(resource):
     """Extracts status info if present or sets the default if public
 
@@ -209,6 +227,42 @@ def get_status(resource):
     return status
 
 
+def check_resource(resource, get_method, query_string='', wait_time=1):
+    """Waits until a resource is finished.
+
+       Given a resource and its corresponding get_method
+           source, api.get_source
+           dataset, api.get_dataset
+           model, api.get_model
+           prediction, api.get_prediction
+           evaluation, api.get_evaluation
+           ensemble, api.get_ensemble
+       it calls the get_method on the resource with the given query_string
+       and waits with sleeping intervals of wait_time
+       until the resource is in a final state (either FINISHED
+       or FAULTY)
+
+    """
+    kwargs = {}
+    if isinstance(resource, basestring):
+        if not EVALUATION_RE.match(resource):
+            kwargs = {'query_string': query_string}
+        resource = get_method(resource, **kwargs)
+    else:
+        if not EVALUATION_RE.match(get_resource_id(resource)):
+            kwargs = {'query_string': query_string}
+
+    while True:
+        status = get_status(resource)
+        code = status['code']
+        if code == FINISHED:
+            return resource
+        elif code == FAULTY:
+            raise ValueError(status)
+        time.sleep(wait_time)
+        resource = get_method(resource, **kwargs)
+
+
 def error_message(resource, resource_type='resource', method=None):
     """Error message for each type of resource
 
@@ -224,27 +278,44 @@ def error_message(resource, resource_type='resource', method=None):
     if error_info is not None and 'code' in error_info:
         code = error_info['code']
         if ('status' in error_info and
-            'message' in error_info['status']):
+                'message' in error_info['status']):
             error = error_info['status']['message']
         if code == HTTP_NOT_FOUND and method == 'get':
-            error += (u'\nCouldn\'t find a %s matching the given'
-                      u' id. The most probable causes are:\n\n'
-                      u'- a typo in the %s\'s id\n'
-                      u'- the %s id belongs to another user\n'
-                      u'\nDouble-check your %s and'
-                      u' credentials info and retry.' % (resource_type,
-                        resource_type, resource_type, resource_type))
-        elif code == HTTP_UNAUTHORIZED:
-            error += (u'\nDouble-check your credentials, please.')
-        elif code == HTTP_BAD_REQUEST:
-            error += (u'\nDouble-check the arguments for the call, please.')
+            error += (
+                u'\nCouldn\'t find a %s matching the given'
+                u' id. The most probable causes are:\n\n'
+                u'- a typo in the %s\'s id\n'
+                u'- the %s id belongs to another user\n'
+                u'\nDouble-check your %s and'
+                u' credentials info and retry.' % (
+                    resource_type, resource_type,
+                    resource_type, resource_type))
+            return error
+        if code == HTTP_UNAUTHORIZED:
+            error += u'\nDouble-check your credentials, please.'
+            return error
+        if code == HTTP_BAD_REQUEST:
+            error += u'\nDouble-check the arguments for the call, please.'
+            return error
         elif code == HTTP_PAYMENT_REQUIRED:
             error += (u'\nYou\'ll need to buy some more credits to perform'
                       u'the chosen action')
+            return error
 
-    if error is None:
-        error = "Invalid %s structure:\n\n%s" % (resource_type, resource)
-    return error
+    return "Invalid %s structure:\n\n%s" % (resource_type, resource)
+
+
+def assign_dir(path):
+    """Silently checks the path for existence or creates it.
+
+       Returns either the path or None.
+    """
+    if not isinstance(path, basestring):
+        return None
+    try:
+        return check_dir(path)
+    except ValueError:
+        return None
 
 
 ##############################################################################
@@ -346,12 +417,7 @@ class BigML(object):
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
-        self.storage = None
-        if storage is not None:
-            try:
-                self.storage = check_dir(storage)
-            except ValueError:
-                pass
+        self.storage = assign_dir(storage)
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -688,7 +754,7 @@ class BigML(object):
         """Maps status code to string.
 
         """
-        resource_id = self.get_resource_id(resource)
+        resource_id = get_resource_id(resource)
         if not resource_id:
             LOGGER.error("Wrong resource id")
             return
@@ -702,56 +768,11 @@ class BigML(object):
 
     def check_resource(self, resource, get_method,
                        query_string='', wait_time=1):
-        """Waits until a resource is finished.
-
-           Given a resource and its corresponding get_method
-               source, api.get_source
-               dataset, api.get_dataset
-               model, api.get_model
-               prediction, api.get_prediction
-               evaluation, api.get_evaluation
-               ensemble, api.get_ensemble
-           it calls the get_method on the resource with the given query_string
-           and waits with sleeping intervals of wait_time
-           until the resource is in a final state (either FINISHED
-           or FAULTY)
+        """Deprecated method. Use check_resource function instead.
 
         """
-        kwargs = {}
-        if isinstance(resource, basestring):
-            if not EVALUATION_RE.match(resource):
-                kwargs = {'query_string': query_string}
-            resource = get_method(resource, **kwargs)
-        else:
-            if not EVALUATION_RE.match(self.get_resource_id(resource)):
-                kwargs = {'query_string': query_string}
-
-        while True:
-            status = get_status(resource)
-            code = status['code']
-            if code == FINISHED:
-                return resource
-            elif code == FAULTY:
-                raise ValueError(status)
-            time.sleep(wait_time)
-            resource = get_method(resource, **kwargs)
-
-    def get_resource_id(self, resource):
-        """Returns the resource id if it falls in one of the registered types
-
-        """
-        if isinstance(resource, dict) and 'resource' in resource:
-            return resource['resource']
-        elif isinstance(resource, basestring) and (
-                SOURCE_RE.match(resource)
-                or DATASET_RE.match(resource)
-                or MODEL_RE.match(resource)
-                or PREDICTION_RE.match(resource)
-                or EVALUATION_RE.match(resource)
-                or ENSEMBLE_RE.match(resource)):
-            return resource
-        else:
-            return
+        return check_resource(resource, get_method,
+                              query_string=query_string, wait_time=wait_time)
 
     ##########################################################################
     #
@@ -1206,10 +1227,10 @@ class BigML(object):
                     ensemble = self.get_ensemble(ensemble_id)
                     model_id = ensemble['object']['models'][0]
                 except (KeyError, IndexError), exc:
-                    LOGGER.error("The ensemble has no valid model information: %s"
-                                 % str(exc))
+                    LOGGER.error("The ensemble has no valid model"
+                                 " information: %s" % str(exc))
                     model_id = None
-        except ValueError:           
+        except ValueError:
             model_id = get_model_id(model_or_ensemble)
 
         if model_id is not None:

@@ -15,12 +15,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""An Ensemble local object.
+"""An local Ensemble object.
 
-This module defines a Ensemble to make predictions locally using its
+This module defines an Ensemble to make predictions locally using its
 associated models.
 
-This module cannot only save you a few credits, but also enormously
+This module can not only save you a few credits, but also enormously
 reduce the latency for each prediction and let you use your models
 offline.
 
@@ -42,12 +42,12 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML
-from bigml.util import retrieve_model
+from bigml.model import retrieve_model
+from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
 
-STORAGE = './storage'
 
 class Ensemble(object):
     """An ensemble local model.

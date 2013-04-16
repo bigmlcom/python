@@ -58,7 +58,7 @@ except ImportError:
 
 from bigml.util import (invert_dictionary, localize, is_url, check_dir,
                         clear_console_line, reset_console_line, console_log,
-                        save_to_repo)
+                        maybe_save)
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -234,11 +234,11 @@ def error_message(resource, resource_type='resource', method=None):
                       u'\nDouble-check your %s and'
                       u' credentials info and retry.' % (resource_type,
                         resource_type, resource_type, resource_type))
-        if code == HTTP_UNAUTHORIZED:
+        elif code == HTTP_UNAUTHORIZED:
             error += (u'\nDouble-check your credentials, please.')
-        if code == HTTP_BAD_REQUEST:
+        elif code == HTTP_BAD_REQUEST:
             error += (u'\nDouble-check the arguments for the call, please.')
-        if code == HTTP_PAYMENT_REQUIRED:
+        elif code == HTTP_PAYMENT_REQUIRED:
             error += (u'\nYou\'ll need to buy some more credits to perform'
                       u'the chosen action')
 
@@ -302,8 +302,8 @@ class BigML(object):
         mode where the size of your datasets are limited but you are not
         charged any credits.
 
-        If storage is set, the resources obtained in CRU operations
-        will be stored in the given directory.
+        If storage is set to a directory name, the resources obtained in
+        CRU operations will be stored in the given directory.
 
         """
 
@@ -406,15 +406,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        result = {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
-        if self.storage is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.storage)
-        return result
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _get(self, url, query_string=''):
         """Retrieves a remote resource.
@@ -464,15 +457,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        result = {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
-        if self.storage is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.storage)
-        return result
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _list(self, url, query_string=''):
         """Lists all existing remote resources.
@@ -589,15 +575,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        result = {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
-        if self.storage is not None and resource_id is not None:
-            save_to_repo(resource_id, result, self.storage)
-        return result
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _delete(self, url):
         """Permanently deletes a remote resource.

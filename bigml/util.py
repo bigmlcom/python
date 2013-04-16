@@ -367,36 +367,30 @@ def check_dir(path):
     return path
 
 
-def save_to_repo(resource_id, resource, path):
-    """ Saves in the given directory the resource info as a json file.
+def maybe_save(resource_id, path,
+               code=None, location=None,
+               resource=None, error=None):
+    """ Builds the resource dict response and saves it if a path is provided.
+
+        The resource is saved in a local repo json file in the given path.
 
     """
-    try:
-        resource_json = json.dumps(resource)
-    except ValueError:
-        print("The resource has an invalid JSON format")
-    try:
-        resource_file_name = "%s%s%s" % (path, os.sep,
-                                         resource_id.replace('/', '_'))
-        with open(resource_file_name, "w", 0) as resource_file:
-            resource_file.write(resource_json)
-    except IOError:
-        print("Failed writing resource to %s" % resource_file_name)
-
-
-def retrieve_model(api, model_id):
-    """ Retrieves model info either from a local repo or from the remote server
-
-    """
-    if api.storage is not None:
+    resource = {
+        'code': code,
+        'resource': resource_id,
+        'location': location,
+        'object': resource,
+        'error': error}
+    if path is not None and resource_id is not None:
         try:
-            with open("%s%s%s" % (api.storage, os.sep,
-                                  model_id.replace("/", "_"))) as model_file:
-                model = json.loads(model_file.read())
-            return model
+            resource_json = json.dumps(resource)
         except ValueError:
-            raise ValueError("The file %s contains no JSON")
+            print("The resource has an invalid JSON format")
+        try:
+            resource_file_name = "%s%s%s" % (path, os.sep,
+                                             resource_id.replace('/', '_'))
+            with open(resource_file_name, "w", 0) as resource_file:
+                resource_file.write(resource_json)
         except IOError:
-            pass
-    model = api.check_resource(model_id, api.get_model, 'limit=-1')
-    return model
+            print("Failed writing resource to %s" % resource_file_name)
+    return resource

@@ -588,8 +588,8 @@ parallelism level for the task::
     args = {'number_of_models': 20, 'tlp': 3}
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
 
-Task-level parallelism ``tlp`` should be an integer between 1 and 5 (the number
-of models to be built in parallel). High ``tlp`` results in faster
+``tlp`` (task-level parallelism) should be an integer between 1 and 5 (the 
+number of models to be built in parallel). A higher ``tlp`` results in faster
 ensemble creation, but it will consume more credits. The default value for
 ``number_of_models`` is 10 and for ``tlp`` is 1.
 
@@ -918,7 +918,7 @@ Ensembles
 ---------
 
 Remote ensembles can also be used locally through the ``Ensemble``
-object. The simplest way to access an existing ensemble and using it to
+class. The simplest way to access an existing ensemble and using it to
 predict locally is
 
 ::
@@ -928,7 +928,7 @@ predict locally is
 
 This call will download all the ensemble related info and store it in a
 ``./storage`` directory ready to be used to predict. As in
-``MultipleModel``, several prediction combinations methods are available, and
+``MultipleModel``, several prediction combination methods are available, and
 you can choose another storage directory or even avoid storing at all, for
 instance:
 ::

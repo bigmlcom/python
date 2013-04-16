@@ -54,9 +54,10 @@ LOGGER = logging.getLogger('BigML')
 import sys
 import operator
 import locale
+import os
 
 from bigml.api import FINISHED
-from bigml.api import get_status, error_message
+from bigml.api import get_status, error_message, BigML, get_model_id
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
                         find_locale, cast)
@@ -110,6 +111,25 @@ PYTHON_FUNC = dict([(numtype, eval(function))
 INDENT = u'    '
 
 MAX_ARGS_LENGTH = 10
+
+STORAGE = './storage'
+
+def retrieve_model(api, model_id):
+    """ Retrieves model info either from a local repo or from the remote server
+
+    """
+    if api.storage is not None:
+        try:
+            with open("%s%s%s" % (api.storage, os.sep,
+                                  model_id.replace("/", "_"))) as model_file:
+                model = json.loads(model_file.read())
+            return model
+        except ValueError:
+            raise ValueError("The file %s contains no JSON")
+        except IOError:
+            pass
+    model = api.check_resource(model_id, api.get_model, 'limit=-1')
+    return model
 
 
 class Predicate(object):
@@ -367,15 +387,20 @@ class Model(object):
 
     """
 
-    def __init__(self, model):
+    def __init__(self, model, api=None):
 
         if (isinstance(model, dict) and 'resource' in model and
             model['resource'] is not None):
             self.resource_id = model['resource']
         else:
-            raise Exception(error_message(model,
-                                          resource_type='model',
-                                          method='get'))
+            if api is None:
+                api = BigML(storage=STORAGE)
+            self.resource_id = get_model_id(model)
+            if self.resource_id is None:
+                raise Exception(error_message(model,
+                                              resource_type='model',
+                                              method='get'))
+            model = retrieve_model(api, self.resource_id)
 
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']

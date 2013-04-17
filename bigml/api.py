@@ -332,7 +332,7 @@ def patch_requests():
 
         """
         response = original_request(method, url, **kwargs)
-        logging.debug("Data: {}".format(response.request.data))
+        logging.debug("Data: {}".format(response.request.body))
         logging.debug("Response: {}".format(response.content))
         return response
     original_request = requests.api.request

@@ -224,6 +224,28 @@ def locale_synonyms(main_locale, locale_alias):
         return result
 
 
+def bigml_locale(locale_alias):
+    """Returns the locale used in bigml.com for the given locale_alias
+
+       The result is the locale code used in bigml.com provided that 
+       the locale user code has been correctly mapped. None otherwise.
+    """
+    language_code = locale_alias.lower()[0:2]
+    if not language_code in LOCALE_SYNONYMS:
+        return None
+    alternatives = LOCALE_SYNONYMS[language_code]
+    if isinstance(alternatives[0], basestring):
+        return (alternatives[0] if locale_alias in alternatives
+                else None)
+    else:
+        result = None
+        for subgroup in alternatives:
+            if locale_alias in subgroup:
+                result = subgroup[0]
+                break
+        return result
+
+
 def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     """Looks for the given locale or the closest alternatives
 

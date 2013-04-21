@@ -54,9 +54,12 @@ LOGGER = logging.getLogger('BigML')
 import sys
 import operator
 import locale
+import os
+import json
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import (get_status, error_message, BigML, get_model_id,
+                       check_resource)
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
                         find_locale, cast)
@@ -110,6 +113,26 @@ PYTHON_FUNC = dict([(numtype, eval(function))
 INDENT = u'    '
 
 MAX_ARGS_LENGTH = 10
+
+STORAGE = './storage'
+
+
+def retrieve_model(api, model_id):
+    """ Retrieves model info either from a local repo or from the remote server
+
+    """
+    if api.storage is not None:
+        try:
+            with open("%s%s%s" % (api.storage, os.sep,
+                                  model_id.replace("/", "_"))) as model_file:
+                model = json.loads(model_file.read())
+            return model
+        except ValueError:
+            raise ValueError("The file %s contains no JSON")
+        except IOError:
+            pass
+    model = check_resource(model_id, api.get_model, 'limit=-1')
+    return model
 
 
 class Predicate(object):
@@ -180,7 +203,7 @@ class Tree(object):
                 self.distribution = summary['categories']
 
     def list_fields(self, out):
-        """List a description of the model's fields.
+        """Lists a description of the model's fields.
 
         """
         out.write(utf8(u'<%-32s : %s>\n' % (
@@ -194,6 +217,24 @@ class Tree(object):
             out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
+
+    def get_leaves(self):
+        """Returns a list that includes all the leaves of the tree.
+
+        """
+        leaves = []
+
+        if self.children:
+            for child in self.children:
+                leaves += child.get_leaves()
+        else:
+            leaves += [{
+                'confidence': self.confidence,
+                'count': self.count,
+                'distribution': self.distribution,
+                'output': self.output
+            }]
+        return leaves
 
     def predict(self, input_data, path=None):
         """Makes a prediction based on a number of field values.
@@ -348,12 +389,20 @@ class Model(object):
 
     """
 
-    def __init__(self, model):
+    def __init__(self, model, api=None):
 
-        if (isinstance(model, dict) and 'resource' in model):
+        if (isinstance(model, dict) and 'resource' in model and
+                model['resource'] is not None):
             self.resource_id = model['resource']
         else:
-            raise Exception("Invalid model structure")
+            if api is None:
+                api = BigML(storage=STORAGE)
+            self.resource_id = get_model_id(model)
+            if self.resource_id is None:
+                raise Exception(error_message(model,
+                                              resource_type='model',
+                                              method='get'))
+            model = retrieve_model(api, self.resource_id)
 
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']
@@ -396,13 +445,21 @@ class Model(object):
             else:
                 raise Exception("The model isn't finished yet")
         else:
-            raise Exception("Invalid model structure")
+            raise Exception("Cannot create the Model instance. Could not"
+                            " find the 'model' key in the resource:\n\n%s" %
+                            model)
 
     def fields(self, out=sys.stdout):
         """Describes and return the fields for this model.
 
         """
         self.tree.list_fields(out)
+
+    def get_leaves(self):
+        """Returns a list that includes all the leaves of the model.
+
+        """
+        return self.tree.get_leaves()
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):

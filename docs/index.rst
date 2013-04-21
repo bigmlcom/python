@@ -146,6 +146,13 @@ and also generate an evaluation for the model by using::
     test_dataset = api.create_dataset(test_source)
     evaluation = api.create_evaluation(model, test_dataset)
 
+Setting the ``storage`` argument in the api instantiation::
+
+    api = BigML(storage='./storage')
+
+all the generated, updated or retrieved resources will be automatically
+saved to the chosen directory.
+
 Fields
 ------
 
@@ -414,15 +421,17 @@ You can query the status of any resource with the ``status`` method::
     api.status(dataset)
     api.status(model)
     api.status(prediction)
+    api.status(evaluation)
+    api.status(ensemble)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
-You can also use the ``check_resource`` method::
+You can also use the ``check_resource`` function::
 
-    api.check_resource(resource, api.get_source)
+    check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
 FAULTY state.
@@ -564,6 +573,26 @@ you can use the following call::
 Again, the evaluation is scheduled for creation and ``api.status(evaluation)``
 will show its state.
 
+Creating ensembles
+~~~~~~~~~~~~~~~~~~
+
+To improve the performance of your predictions, you can create an ensemble
+of models and combine their individual predictions.
+The only required argument to create an ensemble is the dataset id::
+
+    ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
+
+but you can also specify the number of models to be built and the
+parallelism level for the task::
+
+    args = {'number_of_models': 20, 'tlp': 3}
+    ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
+
+``tlp`` (task-level parallelism) should be an integer between 1 and 5 (the 
+number of models to be built in parallel). A higher ``tlp`` results in faster
+ensemble creation, but it will consume more credits. The default value for
+``number_of_models`` is 10 and for ``tlp`` is 1.
+
 Reading Resources
 -----------------
 
@@ -583,6 +612,7 @@ You can list resources with the appropriate api method::
     api.list_models()
     api.list_predictions()
     api.list_evaluations()
+    api.list_ensembles()
 
 you will receive a dictionary with the following keys:
 
@@ -703,6 +733,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_model(model, {"name": "new name"})
     api.update_prediction(prediction, {"name": "new name"})
     api.update_evaluation(evaluation, {"name": "new name"})
+    api.update_ensemble(ensemble, {"name": "new name"})
 
 Deleting Resources
 ------------------
@@ -717,6 +748,7 @@ each type of resource.
     api.delete_model(model)
     api.delete_prediction(prediction)
     api.delete_evaluation(evaluation)
+    api.delete_ensemble(ensemble)
 
 Each of the calls above will return a dictionary with the following
 keys:
@@ -880,6 +912,43 @@ the model's distributions original instances at the prediction node)
 
 In regression, all the models predictions' confidences contribute
 to the weighted average confidence.
+
+
+Ensembles
+---------
+
+Remote ensembles can also be used locally through the ``Ensemble``
+class. The simplest way to access an existing ensemble and using it to
+predict locally is
+
+::
+    from bigml.ensemble import Ensemble
+    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
+    ensemble.predict({"petal length": 3, "petal width": 1})
+
+This call will download all the ensemble related info and store it in a
+``./storage`` directory ready to be used to predict. As in
+``MultipleModel``, several prediction combination methods are available, and
+you can choose another storage directory or even avoid storing at all, for
+instance:
+::
+
+from bigml.api import BigML
+from bigml.ensemble import Ensemble
+
+# api connection
+api = BigML(storage='./my_storage')
+
+# creating ensemble
+ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
+
+# Ensemble object to predict
+ensemble = Ensemble(ensemble, api)
+ensemble.predict({"petal length": 3, "petal width": 1}, method=1)
+
+creates a new ensemble and stores its information in ``./my_storage``
+folder. Then this information is used to predict locally using the
+``confidence weighted`` method.
 
 
 Fields

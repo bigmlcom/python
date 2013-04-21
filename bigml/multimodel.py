@@ -120,6 +120,13 @@ class MultiModel(object):
                   PROBABILITY_CODE
         """
 
+        votes = self.generate_votes(input_data, by_name=by_name)
+        return votes.combine(method=method, with_confidence=with_confidence)
+
+    def generate_votes(self, input_data, by_name=True):
+        """ Generates a MultiVote object that contains the predictions
+            made by each of the models.
+        """
         votes = MultiVote([])
         for order in range(0, len(self.models)):
             model = self.models[order]
@@ -129,8 +136,7 @@ class MultiModel(object):
             prediction_row = [prediction, confidence, order,
                               distribution, instances]
             votes.append_row(prediction_row)
-
-        return votes.combine(method=method, with_confidence=with_confidence)
+        return votes
 
     def batch_predict(self, input_data_list, output_file_path,
                       by_name=True, reuse=False):

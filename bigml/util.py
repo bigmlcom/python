@@ -24,6 +24,7 @@ from urlparse import urlparse
 import locale
 import sys
 import os
+import json
 
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
@@ -223,6 +224,28 @@ def locale_synonyms(main_locale, locale_alias):
         return result
 
 
+def bigml_locale(locale_alias):
+    """Returns the locale used in bigml.com for the given locale_alias
+
+       The result is the locale code used in bigml.com provided that 
+       the locale user code has been correctly mapped. None otherwise.
+    """
+    language_code = locale_alias.lower()[0:2]
+    if not language_code in LOCALE_SYNONYMS:
+        return None
+    alternatives = LOCALE_SYNONYMS[language_code]
+    if isinstance(alternatives[0], basestring):
+        return (alternatives[0] if locale_alias in alternatives
+                else None)
+    else:
+        result = None
+        for subgroup in alternatives:
+            if locale_alias in subgroup:
+                result = subgroup[0]
+                break
+        return result
+
+
 def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     """Looks for the given locale or the closest alternatives
 
@@ -352,3 +375,44 @@ def cast(input_data, fields):
                                  u"\"%s\" for value %s." %
                                  (fields[key]['name'],
                                   value))
+
+
+def check_dir(path):
+    """Creates a directory if it doesn't exist
+
+    """
+    if os.path.exists(path):
+        if not os.path.isdir(path):
+            raise ValueError(u"The given path is not a directory")
+    elif len(path) > 0:
+        os.makedirs(path)
+    return path
+
+
+def maybe_save(resource_id, path,
+               code=None, location=None,
+               resource=None, error=None):
+    """ Builds the resource dict response and saves it if a path is provided.
+
+        The resource is saved in a local repo json file in the given path.
+
+    """
+    resource = {
+        'code': code,
+        'resource': resource_id,
+        'location': location,
+        'object': resource,
+        'error': error}
+    if path is not None and resource_id is not None:
+        try:
+            resource_json = json.dumps(resource)
+        except ValueError:
+            print("The resource has an invalid JSON format")
+        try:
+            resource_file_name = "%s%s%s" % (path, os.sep,
+                                             resource_id.replace('/', '_'))
+            with open(resource_file_name, "w", 0) as resource_file:
+                resource_file.write(resource_json)
+        except IOError:
+            print("Failed writing resource to %s" % resource_file_name)
+    return resource

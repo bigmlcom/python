@@ -142,10 +142,11 @@ class MultiVote(object):
         if with_confidence:
             combined_error = 0.0
         for prediction in instance.predictions:
-            result += prediction['prediction'] * prediction['error_weight']
+            result += prediction['prediction'] * prediction['_error_weight']
             if with_confidence:
                 combined_error += (prediction['confidence'] *
-                                   prediction['error_weight'])
+                                   prediction['_error_weight'])
+            del prediction['_error_weight']
         if with_confidence:
             return (result / normalization_factor,
                     combined_error / normalization_factor)
@@ -175,12 +176,12 @@ class MultiVote(object):
             # factor to fit them between [0, 1]
             for prediction in instance.predictions:
                 delta = (min_error - prediction['confidence'])
-                prediction['error_weight'] = math.exp(delta / error_range *
+                prediction['_error_weight'] = math.exp(delta / error_range *
                                                       top_range)
-                normalize_factor += prediction['error_weight']
+                normalize_factor += prediction['_error_weight']
         else:
             for prediction in instance.predictions:
-                prediction['error_weight'] = 1
+                prediction['_error_weight'] = 1
             normalize_factor = len(instance.predictions)
         return normalize_factor
 
@@ -194,9 +195,9 @@ class MultiVote(object):
         """
         self.predictions = []
         if isinstance(predictions, list):
-            self.extend(predictions)
+            self.predictions.extend(predictions)
         else:
-            self.append(predictions)
+            self.predictions.append(predictions)
         if not all(['order' in prediction for prediction in predictions]):
             for i in range(len(self.predictions)):
                 self.predictions[i]['order'] = i

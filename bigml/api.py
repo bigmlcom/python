@@ -56,8 +56,9 @@ try:
 except ImportError:
     import json
 
-from bigml.util import (invert_dictionary, localize, is_url,
-                        clear_console_line, reset_console_line, console_log)
+from bigml.util import (invert_dictionary, localize, is_url, check_dir,
+                        clear_console_line, reset_console_line, console_log,
+                        maybe_save)
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -71,6 +72,7 @@ DATASET_PATH = 'dataset'
 MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 EVALUATION_PATH = 'evaluation'
+ENSEMBLE_PATH = 'ensemble'
 
 # Resource Ids patterns
 SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
@@ -80,6 +82,8 @@ MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
                       (MODEL_PATH, MODEL_PATH))
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
+ENSEMBLE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % ENSEMBLE_PATH)
+
 
 # Development Mode URL
 BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
@@ -181,6 +185,31 @@ def get_evaluation_id(evaluation):
     return get_resource(EVALUATION_RE, evaluation)
 
 
+def get_ensemble_id(ensemble):
+    """Returns a ensemble/id.
+
+    """
+    return get_resource(ENSEMBLE_RE, ensemble)
+
+
+def get_resource_id(resource):
+    """Returns the resource id if it falls in one of the registered types
+
+    """
+    if isinstance(resource, dict) and 'resource' in resource:
+        return resource['resource']
+    elif isinstance(resource, basestring) and (
+            SOURCE_RE.match(resource)
+            or DATASET_RE.match(resource)
+            or MODEL_RE.match(resource)
+            or PREDICTION_RE.match(resource)
+            or EVALUATION_RE.match(resource)
+            or ENSEMBLE_RE.match(resource)):
+        return resource
+    else:
+        return
+
+
 def get_status(resource):
     """Extracts status info if present or sets the default if public
 
@@ -198,6 +227,97 @@ def get_status(resource):
     return status
 
 
+def check_resource(resource, get_method, query_string='', wait_time=1):
+    """Waits until a resource is finished.
+
+       Given a resource and its corresponding get_method
+           source, api.get_source
+           dataset, api.get_dataset
+           model, api.get_model
+           prediction, api.get_prediction
+           evaluation, api.get_evaluation
+           ensemble, api.get_ensemble
+       it calls the get_method on the resource with the given query_string
+       and waits with sleeping intervals of wait_time
+       until the resource is in a final state (either FINISHED
+       or FAULTY)
+
+    """
+    kwargs = {}
+    if isinstance(resource, basestring):
+        if not EVALUATION_RE.match(resource):
+            kwargs = {'query_string': query_string}
+        resource = get_method(resource, **kwargs)
+    else:
+        if not EVALUATION_RE.match(get_resource_id(resource)):
+            kwargs = {'query_string': query_string}
+
+    while True:
+        status = get_status(resource)
+        code = status['code']
+        if code == FINISHED:
+            return resource
+        elif code == FAULTY:
+            raise ValueError(status)
+        time.sleep(wait_time)
+        resource = get_method(resource, **kwargs)
+
+
+def error_message(resource, resource_type='resource', method=None):
+    """Error message for each type of resource
+
+    """
+    error = None
+    error_info = None
+    if isinstance(resource, dict):
+        if 'error' in resource:
+            error_info = resource['error']
+        elif ('code' in resource
+              and 'status' in resource):
+            error_info = resource
+    if error_info is not None and 'code' in error_info:
+        code = error_info['code']
+        if ('status' in error_info and
+                'message' in error_info['status']):
+            error = error_info['status']['message']
+        if code == HTTP_NOT_FOUND and method == 'get':
+            error += (
+                u'\nCouldn\'t find a %s matching the given'
+                u' id. The most probable causes are:\n\n'
+                u'- a typo in the %s\'s id\n'
+                u'- the %s id belongs to another user\n'
+                u'\nDouble-check your %s and'
+                u' credentials info and retry.' % (
+                    resource_type, resource_type,
+                    resource_type, resource_type))
+            return error
+        if code == HTTP_UNAUTHORIZED:
+            error += u'\nDouble-check your credentials, please.'
+            return error
+        if code == HTTP_BAD_REQUEST:
+            error += u'\nDouble-check the arguments for the call, please.'
+            return error
+        elif code == HTTP_PAYMENT_REQUIRED:
+            error += (u'\nYou\'ll need to buy some more credits to perform'
+                      u'the chosen action')
+            return error
+
+    return "Invalid %s structure:\n\n%s" % (resource_type, resource)
+
+
+def assign_dir(path):
+    """Silently checks the path for existence or creates it.
+
+       Returns either the path or None.
+    """
+    if not isinstance(path, basestring):
+        return None
+    try:
+        return check_dir(path)
+    except ValueError:
+        return None
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -212,7 +332,7 @@ def patch_requests():
 
         """
         response = original_request(method, url, **kwargs)
-        logging.debug("Data: {}".format(response.request.data))
+        logging.debug("Data: {}".format(response.request.body))
         logging.debug("Response: {}".format(response.content))
         return response
     original_request = requests.api.request
@@ -242,7 +362,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False):
+                 debug=False, set_locale=False, storage=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -252,6 +372,9 @@ class BigML(object):
         If `dev_mode` is set to `True`, the API will be used in development
         mode where the size of your datasets are limited but you are not
         charged any credits.
+
+        If storage is set to a directory name, the resources obtained in
+        CRU operations will be stored in the given directory.
 
         """
 
@@ -290,9 +413,11 @@ class BigML(object):
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
+        self.ensemble_url = self.url + ENSEMBLE_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+        self.storage = assign_dir(storage)
 
     def _create(self, url, body):
         """Creates a new remote resource.
@@ -333,6 +458,7 @@ class BigML(object):
                           HTTP_FORBIDDEN,
                           HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='create'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -346,12 +472,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _get(self, url, query_string=''):
         """Retrieves a remote resource.
@@ -387,6 +509,7 @@ class BigML(object):
                 error = None
             elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='get'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -400,12 +523,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _list(self, url, query_string=''):
         """Lists all existing remote resources.
@@ -508,6 +627,7 @@ class BigML(object):
                           HTTP_PAYMENT_REQUIRED,
                           HTTP_METHOD_NOT_ALLOWED]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='update'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -521,12 +641,8 @@ class BigML(object):
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
 
-        return {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
 
     def _delete(self, url):
         """Permanently deletes a remote resource.
@@ -550,6 +666,7 @@ class BigML(object):
                 error = None
             elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
                 error = json.loads(response.content, 'utf-8')
+                LOGGER.error(error_message(error, method='delete'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -610,7 +727,8 @@ class BigML(object):
             resource_id = resource['resource']
             if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
                     or MODEL_RE.match(resource_id)
-                    or EVALUATION_RE.match(resource_id)):
+                    or EVALUATION_RE.match(resource_id)
+                    or ENSEMBLE_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
@@ -636,7 +754,7 @@ class BigML(object):
         """Maps status code to string.
 
         """
-        resource_id = self.get_resource_id(resource)
+        resource_id = get_resource_id(resource)
         if not resource_id:
             LOGGER.error("Wrong resource id")
             return
@@ -650,54 +768,11 @@ class BigML(object):
 
     def check_resource(self, resource, get_method,
                        query_string='', wait_time=1):
-        """Waits until a resource is finished.
-
-           Given a resource and its corresponding get_method
-               source, api.get_source
-               dataset, api.get_dataset
-               model, api.get_model
-               prediction, api.get_prediction
-               evaluation, api.get_evaluation
-           it calls the get_method on the resource with the given query_string
-           and waits with sleeping intervals of wait_time
-           until the resource is in a final state (either FINISHED
-           or FAULTY)
+        """Deprecated method. Use check_resource function instead.
 
         """
-        kwargs = {}
-        if isinstance(resource, basestring):
-            if not EVALUATION_RE.match(resource):
-                kwargs = {'query_string': query_string}
-            resource = get_method(resource, **kwargs)
-        else:
-            if not EVALUATION_RE.match(self.get_resource_id(resource)):
-                kwargs = {'query_string': query_string}
-
-        while True:
-            status = get_status(resource)
-            code = status['code']
-            if code == FINISHED:
-                return resource
-            elif code == FAULTY:
-                raise ValueError(status)
-            time.sleep(wait_time)
-            resource = get_method(resource, **kwargs)
-
-    def get_resource_id(self, resource):
-        """Returns the resource id if it falls in one of the registered types
-
-        """
-        if isinstance(resource, dict) and 'resource' in resource:
-            return resource['resource']
-        elif isinstance(resource, basestring) and (
-                SOURCE_RE.match(resource)
-                or DATASET_RE.match(resource)
-                or MODEL_RE.match(resource)
-                or PREDICTION_RE.match(resource)
-                or EVALUATION_RE.match(resource)):
-            return resource
-        else:
-            return
+        return check_resource(resource, get_method,
+                              query_string=query_string, wait_time=wait_time)
 
     ##########################################################################
     #
@@ -1132,19 +1207,40 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model, input_data=None, by_name=True,
-                          args=None, wait_time=3, retries=10):
+    def create_prediction(self, model_or_ensemble, input_data=None,
+                          by_name=True, args=None, wait_time=3, retries=10):
         """Creates a new prediction.
 
         """
-        model_id = get_model_id(model)
+        ensemble_id = None
+        model_id = None
+        try:
+            ensemble_id = get_ensemble_id(model_or_ensemble)
+            if ensemble_id is not None:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.ensemble_is_ready(ensemble_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                try:
+                    ensemble = self.get_ensemble(ensemble_id)
+                    model_id = ensemble['object']['models'][0]
+                except (KeyError, IndexError), exc:
+                    LOGGER.error("The ensemble has no valid model"
+                                 " information: %s" % str(exc))
+                    model_id = None
+        except ValueError:
+            model_id = get_model_id(model_or_ensemble)
 
-        if model_id:
-            if wait_time > 0:
-                count = 0
-                while not self.model_is_ready(model_id) and count < retries:
-                    time.sleep(wait_time)
-                    count += 1
+        if model_id is not None:
+            if ensemble_id is None:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.model_is_ready(model_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
 
             if input_data is None:
                 input_data = {}
@@ -1165,8 +1261,14 @@ class BigML(object):
             if args is None:
                 args = {}
             args.update({
-                "model": model_id,
                 "input_data": input_data})
+            if ensemble_id is None:
+                args.update({
+                    "model": model_id})
+            else:
+                args.update({
+                    "ensemble": ensemble_id})
+
             body = json.dumps(args)
             return self._create(self.prediction_url, body)
 
@@ -1274,3 +1376,76 @@ class BigML(object):
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
             return self._delete("%s%s" % (self.url, evaluation_id))
+
+    ##########################################################################
+    #
+    # Ensembles
+    # https://bigml.com/developers/ensembles
+    #
+    ##########################################################################
+    def create_ensemble(self, dataset, args=None, wait_time=3, retries=10):
+        """Creates an ensemble.
+
+        """
+        dataset_id = get_dataset_id(dataset)
+
+        if dataset_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+
+            if args is None:
+                args = {}
+            args.update({
+                "dataset": dataset_id})
+            body = json.dumps(args)
+            return self._create(self.ensemble_url, body)
+
+    def get_ensemble(self, ensemble, query_string=''):
+        """Retrieves an ensemble.
+
+           The ensemble parameter should be a string containing the
+           ensemble id or the dict returned by create_ensemble.
+           As an ensemble is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the ensemble values and state info
+           available at the time it is called.
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            return self._get("%s%s" % (self.url, ensemble_id),
+                             query_string=query_string)
+
+    def ensemble_is_ready(self, ensemble):
+        """Checks whether a ensemble's status is FINISHED.
+
+        """
+        resource = self.get_ensemble(ensemble)
+        return (resource['code'] == HTTP_OK and
+                get_status(resource)['code'] == FINISHED)
+
+    def list_ensembles(self, query_string=''):
+        """Lists all your ensembles.
+
+        """
+        return self._list(self.ensemble_url, query_string)
+
+    def update_ensemble(self, ensemble, changes):
+        """Updates a ensemble.
+
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, ensemble_id), body)
+
+    def delete_ensemble(self, ensemble):
+        """Deletes a ensemble.
+
+        """
+        ensemble_id = get_ensemble_id(ensemble)
+        if ensemble_id:
+            return self._delete("%s%s" % (self.url, ensemble_id))

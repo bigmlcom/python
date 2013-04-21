@@ -64,7 +64,7 @@ class Ensemble(object):
         else:
             self.api = api
         self.ensemble_id = get_ensemble_id(ensemble)
-        ensemble = check_resource(ensemble, api.get_ensemble)
+        ensemble = check_resource(ensemble, self.api.get_ensemble)
         models = ensemble['object']['models']
         self.model_ids = models
         number_of_models = len(models)

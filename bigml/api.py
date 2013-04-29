@@ -145,7 +145,7 @@ def get_resource(regex, resource):
 
     """
     if isinstance(resource, dict) and 'resource' in resource:
-        return resource['resource']
+        resource = resource['resource']
     if isinstance(resource, basestring) and regex.match(resource):
         return resource
     raise ValueError("Cannot find resource id for %s" % resource)
@@ -1059,28 +1059,41 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source, args=None, wait_time=3, retries=10):
+    def create_dataset(self, source_or_dataset, args=None, wait_time=3, retries=10):
         """Creates a remote dataset.
 
-        Uses remote `source` to create a new dataset using the arguments in
-        `args`.  If `wait_time` is higher than 0 then the dataset creation
+        Uses remote `source` or `dataset` to create a new dataset using the
+        arguments in `args`.
+        If `wait_time` is higher than 0 then the dataset creation
         request is not sent until the `source` has been created successfuly.
 
         """
-        source_id = get_source_id(source)
-        if source_id:
-            if wait_time > 0:
-                count = 0
-                while not self.source_is_ready(source_id) and count < retries:
-                    time.sleep(wait_time)
-                    count += 1
+        if args is None:
+            args = {}
 
-            if args is None:
-                args = {}
+        try:
+            source_id = get_source_id(source_or_dataset)
+            if source_id:
+                if wait_time > 0:
+                    count = 0
+                    while not self.source_is_ready(source_id) and count < retries:
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    "source": source_id})
+        except ValueError:
+            dataset_id = get_dataset_id(source_or_dataset)
+            if dataset_id:
+                if wait_time > 0:
+                    count = 0
+                    while not self.dataset_is_ready(dataset_id) and count < retries:
+                        time.sleep(wait_time)
+                        count += 1
             args.update({
-                "source": source_id})
-            body = json.dumps(args)
-            return self._create(self.dataset_url, body)
+                "origin_dataset": dataset_id})
+
+        body = json.dumps(args)
+        return self._create(self.dataset_url, body)
 
     def get_dataset(self, dataset, query_string=''):
         """Retrieves a dataset.

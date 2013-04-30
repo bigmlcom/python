@@ -1322,21 +1322,15 @@ class BigML(object):
     # https://bigml.com/developers/evaluations
     #
     ##########################################################################
-    def create_evaluation(self, model, dataset,
+    def create_evaluation(self, model_or_ensemble, dataset,
                           args=None, wait_time=3, retries=10):
         """Creates a new evaluation.
 
         """
-        model_id = get_model_id(model)
+        if args is None:
+            args = {}
+
         dataset_id = get_dataset_id(dataset)
-
-        if model_id:
-            if wait_time > 0:
-                count = 0
-                while not self.model_is_ready(model_id) and count < retries:
-                    time.sleep(wait_time)
-                    count += 1
-
         if dataset_id:
             if wait_time > 0:
                 count = 0
@@ -1345,11 +1339,29 @@ class BigML(object):
                     time.sleep(wait_time)
                     count += 1
 
-        if args is None:
-            args = {}
-        args.update({
-            "model": model_id,
-            "dataset": dataset_id})
+        try:
+            model_id = get_model_id(model_or_ensemble)
+            if model_id:
+                if wait_time > 0:
+                    count = 0
+                    while not self.model_is_ready(model_id) and count < retries:
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    "model": model_id,
+                    "dataset": dataset_id})
+        except ValueError:
+            ensemble_id = get_ensemble_id(model_or_ensemble)
+            if ensemble_id:
+                if wait_time > 0:
+                    count = 0
+                    while not self.ensemble_is_ready(ensemble_id) and count < retries:
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    "ensemble": ensemble_id,
+                    "dataset": dataset_id})
+
         body = json.dumps(args)
         return self._create(self.evaluation_url, body)
 

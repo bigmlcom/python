@@ -3,7 +3,7 @@
 History
 -------
 
-0.6.1 (2012-05-01)
+0.7.0 (2012-05-01)
 ~~~~~~~~~~~~~~~~~~
 
 - Adds splits in datasets to generate new datasets

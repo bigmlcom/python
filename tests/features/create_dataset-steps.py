@@ -50,3 +50,21 @@ def build_local_dataset_from_public_url(step):
 @step(r'the dataset\'s status is FINISHED')
 def dataset_status_finished(step):
     assert get_status(world.dataset)['code'] == FINISHED
+
+@step(r'I create a dataset extracting a (.*) sample$')
+def i_create_a_split_dataset(step, rate):
+    world.origin_dataset = world.dataset
+    resource = world.api.create_dataset(world.dataset['resource'], {'sample_rate': float(rate)})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.dataset = resource['object']
+    world.datasets.append(resource['resource'])
+
+@step(r'I compare the datasets\' instances$')
+def i_compare_datasets_instances(step):
+    world.datasets_instances = (world.dataset['rows'], world.origin_dataset['rows'])
+
+@step(r'the proportion of instances between datasets is (.*)$')
+def proportion_datasets_instances(step, rate):
+    assert int(world.datasets_instances[1] * float(rate)) == world.datasets_instances[0]

@@ -1074,16 +1074,18 @@ class BigML(object):
 
         try:
             source_id = get_source_id(source_or_dataset)
-            if source_id:
-                if wait_time > 0:
-                    count = 0
-                    while (not self.source_is_ready(source_id) and
-                           count < retries):
-                        time.sleep(wait_time)
-                        count += 1
-                args.update({
-                    "source": source_id})
         except ValueError:
+            source_id = None
+        if source_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.source_is_ready(source_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+            args.update({
+                "source": source_id})
+        else:
             dataset_id = get_dataset_id(source_or_dataset)
             if dataset_id:
                 if wait_time > 0:
@@ -1344,17 +1346,19 @@ class BigML(object):
 
         try:
             model_id = get_model_id(model_or_ensemble)
-            if model_id:
-                if wait_time > 0:
-                    count = 0
-                    while (not self.model_is_ready(model_id) and
-                           count < retries):
-                        time.sleep(wait_time)
-                        count += 1
-                args.update({
-                    "model": model_id,
-                    "dataset": dataset_id})
         except ValueError:
+            model_id = None
+        if model_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.model_is_ready(model_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+            args.update({
+                "model": model_id,
+                "dataset": dataset_id})
+        else:
             ensemble_id = get_ensemble_id(model_or_ensemble)
             if ensemble_id:
                 if wait_time > 0:

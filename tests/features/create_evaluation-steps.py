@@ -36,6 +36,18 @@ def i_create_an_evaluation(step):
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
 
+
+@step(r'I create an evaluation for the ensemble with the dataset$')
+def i_create_an_evaluation(step):
+    dataset = world.dataset.get('resource')
+    ensemble = world.ensemble.get('resource')
+    resource = world.api.create_evaluation(ensemble, dataset)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.evaluation = resource['object']
+    world.evaluations.append(resource['resource'])
+
 @step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
@@ -55,5 +67,8 @@ def the_evaluation_is_finished_in_less_than(step, secs):
 
 @step(r'the measured "(.*)" is (\d+\.*\d*)')
 def the_measured_measure_is_value(step, measure, value):
-    assert world.evaluation['result']['model'][measure] == int(value)
+    assert world.evaluation['result']['model'][measure] + 0.0 == float(value)
 
+@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
+def the_measured_measure_is_greater_value(step, measure, value):
+    assert world.evaluation['result']['model'][measure] + 0.0 > float(value)

@@ -3,6 +3,12 @@
 History
 -------
 
+0.6.1 (2012-05-01)
+~~~~~~~~~~~~~~~~~~
+
+- Adds splits in datasets to generate new datasets
+- Adds evaluations for ensembles
+
 0.6.0 (2012-04-27)
 ~~~~~~~~~~~~~~~~~~
 

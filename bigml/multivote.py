@@ -177,7 +177,7 @@ class MultiVote(object):
             for prediction in instance.predictions:
                 delta = (min_error - prediction['confidence'])
                 prediction['_error_weight'] = math.exp(delta / error_range *
-                                                      top_range)
+                                                       top_range)
                 normalize_factor += prediction['_error_weight']
         else:
             for prediction in instance.predictions:

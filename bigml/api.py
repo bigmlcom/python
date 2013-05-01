@@ -1059,7 +1059,8 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source_or_dataset, args=None, wait_time=3, retries=10):
+    def create_dataset(self, source_or_dataset, args=None,
+                       wait_time=3, retries=10):
         """Creates a remote dataset.
 
         Uses remote `source` or `dataset` to create a new dataset using the
@@ -1076,7 +1077,8 @@ class BigML(object):
             if source_id:
                 if wait_time > 0:
                     count = 0
-                    while not self.source_is_ready(source_id) and count < retries:
+                    while (not self.source_is_ready(source_id) and
+                           count < retries):
                         time.sleep(wait_time)
                         count += 1
                 args.update({
@@ -1086,7 +1088,8 @@ class BigML(object):
             if dataset_id:
                 if wait_time > 0:
                     count = 0
-                    while not self.dataset_is_ready(dataset_id) and count < retries:
+                    while (not self.dataset_is_ready(dataset_id) and
+                           count < retries):
                         time.sleep(wait_time)
                         count += 1
             args.update({
@@ -1344,7 +1347,8 @@ class BigML(object):
             if model_id:
                 if wait_time > 0:
                     count = 0
-                    while not self.model_is_ready(model_id) and count < retries:
+                    while (not self.model_is_ready(model_id) and
+                           count < retries):
                         time.sleep(wait_time)
                         count += 1
                 args.update({
@@ -1355,7 +1359,8 @@ class BigML(object):
             if ensemble_id:
                 if wait_time > 0:
                     count = 0
-                    while not self.ensemble_is_ready(ensemble_id) and count < retries:
+                    while (not self.ensemble_is_ready(ensemble_id) and
+                           count < retries):
                         time.sleep(wait_time)
                         count += 1
                 args.update({

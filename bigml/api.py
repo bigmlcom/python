@@ -145,7 +145,7 @@ def get_resource(regex, resource):
 
     """
     if isinstance(resource, dict) and 'resource' in resource:
-        return resource['resource']
+        resource = resource['resource']
     if isinstance(resource, basestring) and regex.match(resource):
         return resource
     raise ValueError("Cannot find resource id for %s" % resource)
@@ -1059,28 +1059,46 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source, args=None, wait_time=3, retries=10):
+    def create_dataset(self, source_or_dataset, args=None,
+                       wait_time=3, retries=10):
         """Creates a remote dataset.
 
-        Uses remote `source` to create a new dataset using the arguments in
-        `args`.  If `wait_time` is higher than 0 then the dataset creation
+        Uses remote `source` or `dataset` to create a new dataset using the
+        arguments in `args`.
+        If `wait_time` is higher than 0 then the dataset creation
         request is not sent until the `source` has been created successfuly.
 
         """
-        source_id = get_source_id(source)
+        if args is None:
+            args = {}
+
+        try:
+            source_id = get_source_id(source_or_dataset)
+        except ValueError:
+            source_id = None
         if source_id:
             if wait_time > 0:
                 count = 0
-                while not self.source_is_ready(source_id) and count < retries:
+                while (not self.source_is_ready(source_id) and
+                       count < retries):
                     time.sleep(wait_time)
                     count += 1
-
-            if args is None:
-                args = {}
             args.update({
                 "source": source_id})
-            body = json.dumps(args)
-            return self._create(self.dataset_url, body)
+        else:
+            dataset_id = get_dataset_id(source_or_dataset)
+            if dataset_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.dataset_is_ready(dataset_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+            args.update({
+                "origin_dataset": dataset_id})
+
+        body = json.dumps(args)
+        return self._create(self.dataset_url, body)
 
     def get_dataset(self, dataset, query_string=''):
         """Retrieves a dataset.
@@ -1309,21 +1327,15 @@ class BigML(object):
     # https://bigml.com/developers/evaluations
     #
     ##########################################################################
-    def create_evaluation(self, model, dataset,
+    def create_evaluation(self, model_or_ensemble, dataset,
                           args=None, wait_time=3, retries=10):
         """Creates a new evaluation.
 
         """
-        model_id = get_model_id(model)
+        if args is None:
+            args = {}
+
         dataset_id = get_dataset_id(dataset)
-
-        if model_id:
-            if wait_time > 0:
-                count = 0
-                while not self.model_is_ready(model_id) and count < retries:
-                    time.sleep(wait_time)
-                    count += 1
-
         if dataset_id:
             if wait_time > 0:
                 count = 0
@@ -1332,11 +1344,33 @@ class BigML(object):
                     time.sleep(wait_time)
                     count += 1
 
-        if args is None:
-            args = {}
-        args.update({
-            "model": model_id,
-            "dataset": dataset_id})
+        try:
+            model_id = get_model_id(model_or_ensemble)
+        except ValueError:
+            model_id = None
+        if model_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.model_is_ready(model_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+            args.update({
+                "model": model_id,
+                "dataset": dataset_id})
+        else:
+            ensemble_id = get_ensemble_id(model_or_ensemble)
+            if ensemble_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.ensemble_is_ready(ensemble_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    "ensemble": ensemble_id,
+                    "dataset": dataset_id})
+
         body = json.dumps(args)
         return self._create(self.evaluation_url, body)
 

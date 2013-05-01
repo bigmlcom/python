@@ -517,6 +517,14 @@ bytes of a source, you can submit the following request::
 Upon success, the dataset creation job will be queued for execution, and
 you can follow its evolution using ``api.status(dataset)``.
 
+You can also extract samples from an existing dataset and generate a new one
+with them using the ``api.create_dataset`` method. The first argument should
+be the origin dataset and the rest of arguments that set the range or the
+sampling rate should be passed as a dictionary. For instance, to create a new
+dataset extracting the 80% of instances from an existing one, you could use::
+
+    dataset = api.create_dataset(origin_dataset, {"sample_rate": 0.8})
+
 Creating models
 ~~~~~~~~~~~~~~~
 
@@ -572,6 +580,12 @@ you can use the following call::
 
 Again, the evaluation is scheduled for creation and ``api.status(evaluation)``
 will show its state.
+
+Evaluations can also check the ensembles' performance. To evaluate an ensemble
+you can do exactly what we just did for the model case, using the ensemble
+object instead of the model as first argument::
+
+    evaluation = api.create_evaluation(ensemble, dataset)
 
 Creating ensembles
 ~~~~~~~~~~~~~~~~~~

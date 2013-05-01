@@ -227,7 +227,7 @@ def locale_synonyms(main_locale, locale_alias):
 def bigml_locale(locale_alias):
     """Returns the locale used in bigml.com for the given locale_alias
 
-       The result is the locale code used in bigml.com provided that 
+       The result is the locale code used in bigml.com provided that
        the locale user code has been correctly mapped. None otherwise.
     """
     language_code = locale_alias.lower()[0:2]

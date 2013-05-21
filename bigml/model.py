@@ -449,6 +449,12 @@ class Model(object):
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
 
+    def resource(self):
+        """Returns the model resource ID
+
+        """
+        return self.resource_id
+
     def fields(self, out=sys.stdout):
         """Describes and return the fields for this model.
 

@@ -62,9 +62,17 @@ from bigml.util import (invert_dictionary, localize, is_url, check_dir,
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
+# Base Domain
+BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io');
+
+# Check BigML.io host’s SSL certificate
+# DO NOT CHANGE IT.
+VERIFY = (BIGML_DOMAIN == "bigml.io")
 
 # Base URL
-BIGML_URL = os.environ.get('BIGML_URL', 'https://bigml.io/andromeda/')
+BIGML_URL = 'https://%s/andromeda/' % BIGML_DOMAIN
+# Development Mode URL
+BIGML_DEV_URL = 'https://%s/dev/andromeda/' % BIGML_DOMAIN
 
 # Basic resources
 SOURCE_PATH = 'source'
@@ -83,17 +91,6 @@ MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
 PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
 EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
 ENSEMBLE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % ENSEMBLE_PATH)
-
-
-# Development Mode URL
-BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
-                               'https://bigml.io/dev/andromeda/')
-
-
-# Check BigML.io host’s SSL certificate
-# DO NOT CHANGE IT.
-VERIFY = (BIGML_URL.startswith("https://bigml.io/") or
-          BIGML_DEV_URL.startswith("https://bigml.io/"))
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}

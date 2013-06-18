@@ -73,6 +73,10 @@ class Ensemble(object):
         else:
             self.models_splits = [models[index:(index + max_models)] for index
                                   in range(0, number_of_models, max_models)]
+        if len(self.models_splits) == 1:
+            models = [retrieve_model(self.api, model_id)
+                      for model_id in self.models_splits[0]]
+            self.multi_model = MultiModel(models)
 
     def list_models(self):
         """Lists all the model/ids that compound the ensemble.
@@ -92,12 +96,22 @@ class Ensemble(object):
               2 - probability weighted majority vote / average:
                   PROBABILITY_CODE
         """
-        votes = MultiVote([])
-        for models_split in self.models_splits:
-            models = [retrieve_model(self.api, model_id)
-                      for model_id in models_split]
-            multi_model = MultiModel(models)
-            votes_split = multi_model.generate_votes(input_data,
-                                                     by_name=by_name)
-            votes.extend(votes_split.predictions)
+
+        if len(self.models_splits) > 1:
+            # If there's more than one chunck of models, they must be
+            # sequentially used to generate the votes for the prediction
+            votes = MultiVote([])
+            for models_split in self.models_splits:
+                models = [retrieve_model(self.api, model_id)
+                          for model_id in models_split]
+                multi_model = MultiModel(models)
+                votes_split = multi_model.generate_votes(input_data,
+                                                         by_name=by_name)
+                votes.extend(votes_split.predictions)
+        else:
+            # When only one group of models is found you use the
+            # corresponding multimodel to predict
+            votes_split = self.multi_model.generate_votes(input_data,
+                                                          by_name=by_name)
+            votes = MultiVote(votes_split.predictions)
         return votes.combine(method=method, with_confidence=with_confidence)

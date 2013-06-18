@@ -245,12 +245,14 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
     """
     kwargs = {}
     if isinstance(resource, basestring):
-        if not EVALUATION_RE.match(resource):
-            kwargs = {'query_string': query_string}
+        resource_id = resource
         resource = get_method(resource, **kwargs)
     else:
-        if not EVALUATION_RE.match(get_resource_id(resource)):
-            kwargs = {'query_string': query_string}
+        resource_id = get_resource_id(resource) 
+
+    if not (EVALUATION_RE.match(resource_id) or
+            PREDICTION_RE.match(resource_id)):
+        kwargs = {'query_string': query_string}
 
     while True:
         status = get_status(resource)

@@ -62,8 +62,9 @@ from bigml.util import (invert_dictionary, localize, is_url, check_dir,
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
+
 # Base Domain
-BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io');
+BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io')
 
 # Check BigML.io host’s SSL certificate
 # DO NOT CHANGE IT.
@@ -245,7 +246,7 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
         resource_id = resource
         resource = get_method(resource, **kwargs)
     else:
-        resource_id = get_resource_id(resource) 
+        resource_id = get_resource_id(resource)
 
     if not (EVALUATION_RE.match(resource_id) or
             PREDICTION_RE.match(resource_id)):

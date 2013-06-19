@@ -467,8 +467,8 @@ class Model(object):
         """
         return self.tree.get_leaves()
 
-    def check_input_data(self, input_data, by_name=True):
-        """Checks the keys given in input_data against the model fields
+    def filter_input_data(self, input_data, by_name=True):
+        """Filters the keys given in input_data checking against model fields
 
         """
 
@@ -478,9 +478,10 @@ class Model(object):
             for (key, value) in empty_fields:
                 del input_data[key]
 
-            # Checks input_data keys against field names and filters the ones
-            # used in the model
+
             if by_name:
+                # Checks input_data keys against field names and filters the
+                # ones used in the model
                 wrong_keys = [key for key in input_data.keys() if not key
                               in self.all_inverted_fields]
                 if wrong_keys:
@@ -511,7 +512,7 @@ class Model(object):
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.check_input_data(input_data, by_name=by_name)
+        input_data = self.filter_input_data(input_data, by_name=by_name)
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.tree.fields)

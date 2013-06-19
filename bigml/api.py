@@ -84,14 +84,13 @@ EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
 
 # Resource Ids patterns
-SOURCE_RE = re.compile(r'^%s/[a-f0-9]{24}$' % SOURCE_PATH)
-DATASET_RE = re.compile(r'^%s/[a-f0-9]{24}$|^public/%s/[a-f0-9]{24}$' %
-                        (DATASET_PATH, DATASET_PATH))
-MODEL_RE = re.compile(r'^%s/[a-f0-9]{24}$|^public/%s/[a-f0-9]{24}$' %
-                      (MODEL_PATH, MODEL_PATH))
-PREDICTION_RE = re.compile(r'^%s/[a-f0-9]{24}$' % PREDICTION_PATH)
-EVALUATION_RE = re.compile(r'^%s/[a-f0-9]{24}$' % EVALUATION_PATH)
-ENSEMBLE_RE = re.compile(r'^%s/[a-f0-9]{24}$' % ENSEMBLE_PATH)
+ID_PATTERN = '[a-f0-9]{24}'
+SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
+DATASET_RE = re.compile(r'^(public/)?%s/%s$' % (DATASET_PATH, ID_PATTERN))
+MODEL_RE = re.compile(r'^(public/)?%s/%s$' % (MODEL_PATH, ID_PATTERN))
+PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
+EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
+ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}

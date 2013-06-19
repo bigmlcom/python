@@ -221,8 +221,9 @@ field id::
                                                               50]],
                                        u'missing_count': 0}}}
 
+
 The field filtering options are also available using a query string expression,
- for instance::
+for instance::
 
     >>> dataset = api.get_dataset(dataset, "limit=20")
 
@@ -267,7 +268,7 @@ readability: the full predictive model you'll get is going to contain
 much more details).
 
 Again, filtering options are also available using a query string expression,
- for instance::
+for instance::
 
     >>> model = api.get_model(model, "limit=5")
 
@@ -933,9 +934,8 @@ Ensembles
 
 Remote ensembles can also be used locally through the ``Ensemble``
 class. The simplest way to access an existing ensemble and using it to
-predict locally is
+predict locally is::
 
-::
     from bigml.ensemble import Ensemble
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
     ensemble.predict({"petal length": 3, "petal width": 1})
@@ -944,21 +944,20 @@ This call will download all the ensemble related info and store it in a
 ``./storage`` directory ready to be used to predict. As in
 ``MultipleModel``, several prediction combination methods are available, and
 you can choose another storage directory or even avoid storing at all, for
-instance:
-::
+instance::
 
-from bigml.api import BigML
-from bigml.ensemble import Ensemble
+    from bigml.api import BigML
+    from bigml.ensemble import Ensemble
 
-# api connection
-api = BigML(storage='./my_storage')
+    # api connection
+    api = BigML(storage='./my_storage')
 
-# creating ensemble
-ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
+    # creating ensemble
+    ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
 
-# Ensemble object to predict
-ensemble = Ensemble(ensemble, api)
-ensemble.predict({"petal length": 3, "petal width": 1}, method=1)
+    # Ensemble object to predict
+    ensemble = Ensemble(ensemble, api)
+    ensemble.predict({"petal length": 3, "petal width": 1}, method=1)
 
 creates a new ensemble and stores its information in ``./my_storage``
 folder. Then this information is used to predict locally using the

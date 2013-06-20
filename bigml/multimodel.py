@@ -105,7 +105,7 @@ class MultiModel(object):
         """Lists all the model/ids that compound the multi model.
 
         """
-        return [model['resource'] for model in self.models]
+        return [model.resource() for model in self.models]
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False):

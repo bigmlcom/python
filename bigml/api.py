@@ -63,8 +63,17 @@ from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
+# Base Domain
+BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io')
+
+# Check BigML.io host’s SSL certificate
+# DO NOT CHANGE IT.
+VERIFY = (BIGML_DOMAIN == "bigml.io")
+
 # Base URL
-BIGML_URL = os.environ.get('BIGML_URL', 'https://bigml.io/andromeda/')
+BIGML_URL = 'https://%s/andromeda/' % BIGML_DOMAIN
+# Development Mode URL
+BIGML_DEV_URL = 'https://%s/dev/andromeda/' % BIGML_DOMAIN
 
 # Basic resources
 SOURCE_PATH = 'source'
@@ -75,25 +84,13 @@ EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
 
 # Resource Ids patterns
-SOURCE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % SOURCE_PATH)
-DATASET_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
-                        (DATASET_PATH, DATASET_PATH))
-MODEL_RE = re.compile(r'^%s/[a-f,0-9]{24}$|^public/%s/[a-f,0-9]{24}$' %
-                      (MODEL_PATH, MODEL_PATH))
-PREDICTION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % PREDICTION_PATH)
-EVALUATION_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % EVALUATION_PATH)
-ENSEMBLE_RE = re.compile(r'^%s/[a-f,0-9]{24}$' % ENSEMBLE_PATH)
-
-
-# Development Mode URL
-BIGML_DEV_URL = os.environ.get('BIGML_DEV_URL',
-                               'https://bigml.io/dev/andromeda/')
-
-
-# Check BigML.io host’s SSL certificate
-# DO NOT CHANGE IT.
-VERIFY = (BIGML_URL.startswith("https://bigml.io/") or
-          BIGML_DEV_URL.startswith("https://bigml.io/"))
+ID_PATTERN = '[a-f0-9]{24}'
+SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
+DATASET_RE = re.compile(r'^(public/)?%s/%s$' % (DATASET_PATH, ID_PATTERN))
+MODEL_RE = re.compile(r'^(public/)?%s/%s$' % (MODEL_PATH, ID_PATTERN))
+PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
+EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
+ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -245,12 +242,14 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
     """
     kwargs = {}
     if isinstance(resource, basestring):
-        if not EVALUATION_RE.match(resource):
-            kwargs = {'query_string': query_string}
+        resource_id = resource
         resource = get_method(resource, **kwargs)
     else:
-        if not EVALUATION_RE.match(get_resource_id(resource)):
-            kwargs = {'query_string': query_string}
+        resource_id = get_resource_id(resource)
+
+    if not (EVALUATION_RE.match(resource_id) or
+            PREDICTION_RE.match(resource_id)):
+        kwargs = {'query_string': query_string}
 
     while True:
         status = get_status(resource)
@@ -619,7 +618,6 @@ class BigML(object):
             code = response.status_code
 
             if code == HTTP_ACCEPTED:
-                location = response.headers['location']
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None

@@ -618,7 +618,6 @@ class BigML(object):
             code = response.status_code
 
             if code == HTTP_ACCEPTED:
-                location = response.headers['location']
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None

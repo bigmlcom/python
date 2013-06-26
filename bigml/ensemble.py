@@ -41,7 +41,7 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 import logging
 LOGGER = logging.getLogger('BigML')
 
-from bigml.api import BigML, get_ensemble_id, check_resource
+from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
 from bigml.model import retrieve_model
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
@@ -63,9 +63,17 @@ class Ensemble(object):
             self.api = BigML(storage=STORAGE)
         else:
             self.api = api
-        self.ensemble_id = get_ensemble_id(ensemble)
-        ensemble = check_resource(ensemble, self.api.get_ensemble)
-        models = ensemble['object']['models']
+        self.ensemble_id = None
+        if isinstance(ensemble, list):
+            try:
+                models = [get_model_id(model) for model in ensemble]
+            except ValueError:
+                raise ValueError('Failed to verify the list of models. Check '
+                                 'your model id values.')
+        else:
+            self.ensemble_id = get_ensemble_id(ensemble)
+            ensemble = check_resource(ensemble, self.api.get_ensemble)
+            models = ensemble['object']['models']
         self.model_ids = models
         number_of_models = len(models)
         if max_models is None:

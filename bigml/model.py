@@ -131,7 +131,7 @@ def retrieve_model(api, model_id):
             raise ValueError("The file %s contains no JSON")
         except IOError:
             pass
-    model = check_resource(model_id, api.get_model, 'limit=-1')
+    model = check_resource(model_id, api.get_model, 'only_model=true')
     return model
 
 

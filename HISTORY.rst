@@ -3,6 +3,13 @@
 History
 -------
 
+0.7.2 (2013-07-04)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes check_resource method that was not using query-string data
+- Add list of models as argument in Ensemble constructor
+- MultiModel has BigML connection as a new optional argument
+
 0.7.1 (2013-06-19)
 ~~~~~~~~~~~~~~~~~~
 

@@ -240,16 +240,20 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
        or FAULTY)
 
     """
+    def get_kwargs(resource_id):
+        if not (EVALUATION_RE.match(resource_id) or
+                PREDICTION_RE.match(resource_id)):
+            return {'query_string': query_string}
+        return {}
+
     kwargs = {}
     if isinstance(resource, basestring):
         resource_id = resource
+        kwargs = get_kwargs(resource_id)
         resource = get_method(resource, **kwargs)
     else:
         resource_id = get_resource_id(resource)
-
-    if not (EVALUATION_RE.match(resource_id) or
-            PREDICTION_RE.match(resource_id)):
-        kwargs = {'query_string': query_string}
+        kwargs = get_kwargs(resource_id)
 
     while True:
         status = get_status(resource)

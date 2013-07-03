@@ -963,6 +963,14 @@ creates a new ensemble and stores its information in ``./my_storage``
 folder. Then this information is used to predict locally using the
 ``confidence weighted`` method.
 
+Similarly, local ensembles can also be created by giving a list of models to be
+combined to issue the final prediction::
+
+    from bigml.ensemble import Ensemble
+    ensemble = Ensemble(['model/50c0de043b563519830001c2',
+                         'model/50c0de043b5635198300031b')]
+    ensemble.predict({"petal length": 3, "petal width": 1})
+
 
 Fields
 ------

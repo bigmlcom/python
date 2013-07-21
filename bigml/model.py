@@ -56,6 +56,7 @@ import operator
 import locale
 import os
 import json
+import re
 
 from bigml.api import FINISHED
 from bigml.api import (get_status, error_message, BigML, get_model_id,
@@ -135,22 +136,61 @@ def retrieve_model(api, model_id):
     return model
 
 
+def term_matches(text, forms_list, options):
+    """ Counts the number of occurences of the words in forms_list in the text
+
+    """
+    count = 0
+    for word in forms_list:
+        # basic pattern that should be changed to the tokenizer behaviour
+        flags=0
+        if not options.get('case_sensitive', False):
+            flags = re.I
+        pattern = re.compile(r'\b%s\b' % word, flags=flags)
+        matches = re.findall(pattern, text)
+        if matches is not None:
+            count += len(matches)
+    return count
+
+
 class Predicate(object):
     """A predicate to be evaluated in a tree's node.
 
     """
-    def __init__(self, operation, field, value):
+    def __init__(self, operation, field, value, term=None):
         self.operator = operation
         self.field = field
         self.value = value
+        self.term = term
 
     def to_rule(self, fields):
         """ Builds rule string from a predicate
 
         """
-        return u"%s %s %s" % (fields[self.field]['name'],
+        name = fields[self.field]['name']
+        if self.term is not None:
+            return u"matches(%s, term_forms(%s)) %s %s" % (
+                name, self.term, self.operator, self.value)
+        return u"%s %s %s" % (name,
                               self.operator,
                               self.value)
+
+    def apply(self, input_data, fields):
+        """ Applies the operators defined in the predicate as strings to
+            the provided input data
+        """
+        if self.term is not None:
+            all_forms = fields[self.field]['summary'].get('term_forms', {})
+            term_forms = all_forms.get(self.term, [])
+            terms = [self.term]
+            terms.extend(term_forms)
+            options = fields[self.field]['term_analysis']
+            return apply(OPERATOR[self.operator],
+                         [term_matches(input_data[self.field], terms, options),
+                          self.value])
+        return apply(OPERATOR[self.operator],
+                     [input_data[self.field],
+                      self.value])
 
 
 class Tree(object):
@@ -173,7 +213,8 @@ class Tree(object):
             self.predicate = Predicate(
                 tree['predicate']['operator'],
                 tree['predicate']['field'],
-                tree['predicate']['value'])
+                tree['predicate']['value'],
+                tree['predicate'].get('term', None))
 
         children = []
         if 'children' in tree:
@@ -252,13 +293,8 @@ class Tree(object):
             path = []
         if self.children and split(self.children) in input_data:
             for child in self.children:
-                if apply(OPERATOR[child.predicate.operator],
-                         [input_data[child.predicate.field],
-                         child.predicate.value]):
-                    path.append(u"%s %s %s" % (
-                                self.fields[child.predicate.field]['name'],
-                                child.predicate.operator,
-                                child.predicate.value))
+                if child.predicate.apply(input_data, self.fields):
+                    path.append(child.predicate.to_rule(self.fields))
                     return child.predict(input_data, path)
         return (self.output, path, self.confidence,
                 self.distribution, get_instances(self.distribution))

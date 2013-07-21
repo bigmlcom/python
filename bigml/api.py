@@ -1172,6 +1172,7 @@ class BigML(object):
                 args = {}
             args.update({
                 "dataset": dataset_id})
+
             body = json.dumps(args)
             return self._create(self.model_url, body)
 

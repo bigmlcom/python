@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from datetime import datetime, timedelta
 from lettuce import *
 from bigml.api import HTTP_CREATED
@@ -16,6 +17,16 @@ def i_create_a_dataset(step):
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
+
+@step(r'I create a dataset with "(.*)"')
+def i_create_a_dataset_with(step, data="{}"):
+    resource = world.api.create_dataset(world.source['resource'], json.loads(data))
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.dataset = resource['object']
+    world.datasets.append(resource['resource'])
+
 
 @step(r'I wait until the dataset status code is either (\d) or (\d) less than (\d+)')
 def wait_until_dataset_status_code_is(step, code1, code2, secs):

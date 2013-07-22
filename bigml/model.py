@@ -63,7 +63,7 @@ from bigml.api import (get_status, error_message, BigML, get_model_id,
                        check_resource)
 from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
                         prefix_as_comment, sort_fields, utf8,
-                        find_locale, cast)
+                        find_locale, cast, plural)
 from bigml.util import DEFAULT_LOCALE
 
 
@@ -163,14 +163,32 @@ class Predicate(object):
         self.value = value
         self.term = term
 
-    def to_rule(self, fields):
+    def to_rule(self, fields, label='name'):
         """ Builds rule string from a predicate
 
         """
-        name = fields[self.field]['name']
+        name = fields[self.field][label]
         if self.term is not None:
-            return u"matches(%s, term_forms(%s)) %s %s" % (
-                name, self.term, self.operator, self.value)
+            relation_suffix = ''
+            if ((self.operator == '<' and self.value <= 1) or
+                (self.operator == '<=' and self.value == 0)):
+                relation_literal = 'does not contain'
+            else:
+                relation_literal = 'contains'
+                if self.operator == '<=':
+                    relation_suffix = ('no more than %s %s' %
+                        (self.value, plural('time', self.value)))
+                elif self.operator == '>=':
+                    relation_suffix = ('%s %s at most' %
+                        (self.value, plural('time', self.value)))
+                elif self.operator == '>' and self.value != 0:
+                    relation_suffix = ('more than %s %s' %
+                        (self.value, plural('time', self.value)))
+                elif self.operator == '<':
+                    relation_suffix = ('less than %s %s' %
+                        (self.value, plural('time', self.value)))
+            return u"%s %s %s %s" % (name, relation_literal,
+                                     self.term, relation_suffix)
         return u"%s %s %s" % (name,
                               self.operator,
                               self.value)
@@ -306,11 +324,9 @@ class Tree(object):
         rules = u""
         if self.children:
             for child in self.children:
-                rules += (u"%s IF %s %s %s %s\n" %
+                rules += (u"%s IF %s %s\n" %
                          (INDENT * depth,
-                          self.fields[child.predicate.field]['slug'],
-                          child.predicate.operator,
-                          child.predicate.value,
+                          child.predicate.to_rule(self.fields, 'slug'),
                           "AND" if child.children else "THEN"))
                 rules += child.generate_rules(depth + 1)
         else:

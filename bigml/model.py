@@ -143,7 +143,7 @@ def term_matches(text, forms_list, options):
     count = 0
     for word in forms_list:
         # basic pattern that should be changed to the tokenizer behaviour
-        flags=0
+        flags = 0
         if not options.get('case_sensitive', False):
             flags = re.I
         pattern = re.compile(r'\b%s\b' % word, flags=flags)
@@ -369,6 +369,7 @@ class Tree(object):
         if cmv is None:
             cmv = []
         body = u""
+        term_analysis_fields = []
         if self.children:
             field = split(self.children)
             if not self.fields[field]['slug'] in cmv:
@@ -385,25 +386,41 @@ class Tree(object):
                 cmv.append(self.fields[field]['slug'])
 
             for child in self.children:
-                if self.fields[child.predicate.field]['optype'] == 'numeric':
+                optype = self.fields[child.predicate.field]['optype']
+                if (optype == 'numeric' or optype == 'text'):
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
-                body += (u"%sif (%s %s %s):\n" %
-                        (INDENT * depth,
-                         map_data(self.fields[child.predicate.field]['slug'],
-                         False),
-                         PYTHON_OPERATOR[child.predicate.operator],
-                         value))
-                body += child.python_body(depth + 1, cmv=cmv[:],
-                                          input_map=input_map)
+                if optype == 'text':
+                    body += (u"%sif (term_matches(%s, \"%s\", \"%s\") %s %s):\n" %
+                            (INDENT * depth,
+                             map_data(self.fields[child.predicate.field]['slug'],
+                             False),
+                             self.fields[child.predicate.field]['slug'],
+                             child.predicate.term,
+                             PYTHON_OPERATOR[child.predicate.operator],
+                             value))
+                    term_analysis_fields.append((child.predicate.field,
+                                                 child.predicate.term))
+                else:                
+                    body += (u"%sif (%s %s %s):\n" %
+                            (INDENT * depth,
+                             map_data(self.fields[child.predicate.field]['slug'],
+                             False),
+                             PYTHON_OPERATOR[child.predicate.operator],
+                             value))    
+                next_level = child.python_body(depth + 1, cmv=cmv[:],
+                                               input_map=input_map)
+                body += next_level[0]
+                term_analysis_fields.extend(next_level[1])
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output
             else:
                 value = repr(self.output)
             body = u"%sreturn %s\n" % (INDENT * depth, value)
-        return body
+
+        return body, term_analysis_fields
 
     def python(self, out, docstring, input_map=False):
         """Writes a python function that implements the model.
@@ -428,9 +445,82 @@ class Tree(object):
                                    (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        predictor += predictor_doc + self.python_body(input_map=input_map)
+        body, term_analysis_predicates = self.python_body(input_map=input_map)
+        terms_body = ""
+        if term_analysis_predicates:
+            terms_body = self.term_analysis_body(term_analysis_predicates)
+        predictor += predictor_doc + terms_body + body
         out.write(utf8(predictor))
         out.flush()
+
+    def term_analysis_body(self, term_analysis_predicates):
+        """ Writes auxiliary functions to handle the term analysis fields
+
+        """
+        body = u""
+        # static content
+        body += """
+    import re
+    def term_matches(text, field_name, term):
+        \"\"\" Counts the number of occurences of term and its variants in text
+
+        \"\"\"
+        count = 0
+        forms_list = term_forms[field_name][term]
+        options = term_analysis[field_name]
+        for word in forms_list:
+            # basic pattern that should be changed to the tokenizer behaviour
+            flags = 0
+            if not options.get('case_sensitive', False):
+                flags = re.I
+            pattern = re.compile(r'\\b%s\\b' % word, flags=flags)
+            matches = re.findall(pattern, text)
+            if matches is not None:
+                count += len(matches)
+        return count
+        """
+        term_analysis_options = set(map(lambda x: x[0],
+                                        term_analysis_predicates))
+        term_analysis_predicates = set(term_analysis_predicates)
+        body += """
+    term_analysis = {"""
+        for field_id in term_analysis_options:
+            field = self.fields[field_id]
+            body += """
+        \"%s\": {""" % field['slug']
+            for option in field['term_analysis']:
+                body +="""
+            \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
+            body +="""
+        },"""
+        body += """
+    }"""
+        if term_analysis_predicates:
+            term_forms = {}
+            for field_id, term in term_analysis_predicates:
+                all_forms = self.fields[field_id]['summary'].get('term_forms', {})
+                terms = [term]
+                terms.extend(all_forms.get(term, []))
+
+                if self.fields[field_id]['slug'] not in term_forms:
+                    term_forms[self.fields[field_id]['slug']] = {}
+                term_forms[self.fields[field_id]['slug']][term] = terms
+            body += """
+    term_forms = {"""
+            for field in term_forms:
+                body += """
+        \"%s\": {""" % field
+                for term in term_forms[field]:
+                    body += """
+            \"%s\": %s,""" % (term, term_forms[field][term])
+                body += """
+        }
+                """
+            body +="""
+    }
+"""
+
+        return body
 
 
 class Model(object):

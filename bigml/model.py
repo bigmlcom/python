@@ -141,15 +141,14 @@ def term_matches(text, forms_list, options):
 
     """
     count = 0
-    for word in forms_list:
-        # basic pattern that should be changed to the tokenizer behaviour
-        flags = 0
-        if not options.get('case_sensitive', False):
-            flags = re.I
-        pattern = re.compile(r'\b%s\b' % word, flags=flags)
-        matches = re.findall(pattern, text)
-        if matches is not None:
-            count += len(matches)
+    # basic pattern that should be changed to the tokenizer behaviour
+    flags = 0
+    if not options.get('case_sensitive', False):
+        flags = re.I
+    pattern = re.compile(r'\b%s\b' % '\\b|\\b'.join(forms_list), flags=flags)
+    matches = re.findall(pattern, text)
+    if matches is not None:
+        count = len(matches)
     return count
 
 
@@ -468,15 +467,13 @@ class Tree(object):
         count = 0
         forms_list = term_forms[field_name][term]
         options = term_analysis[field_name]
-        for word in forms_list:
-            # basic pattern that should be changed to the tokenizer behaviour
-            flags = 0
-            if not options.get('case_sensitive', False):
-                flags = re.I
-            pattern = re.compile(r'\\b%s\\b' % word, flags=flags)
-            matches = re.findall(pattern, text)
-            if matches is not None:
-                count += len(matches)
+        flags = 0
+        if not options.get('case_sensitive', False):
+            flags = re.I
+        pattern = re.compile(r'\\b%s\\b' % '\\\\b|\\\\b'.join(forms_list), flags=flags)
+        matches = re.findall(pattern, text)
+        if matches is not None:
+            count = len(matches)
         return count
         """
         term_analysis_options = set(map(lambda x: x[0],
@@ -514,7 +511,7 @@ class Tree(object):
                     body += """
             \"%s\": %s,""" % (term, term_forms[field][term])
                 body += """
-        }
+        },
                 """
             body +="""
     }

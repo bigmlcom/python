@@ -170,21 +170,25 @@ class Predicate(object):
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
-                (self.operator == '<=' and self.value == 0)):
+                    (self.operator == '<=' and self.value == 0)):
                 relation_literal = 'does not contain'
             else:
                 relation_literal = 'contains'
                 if self.operator == '<=':
-                    relation_suffix = ('no more than %s %s' %
+                    relation_suffix = (
+                        'no more than %s %s' %
                         (self.value, plural('time', self.value)))
                 elif self.operator == '>=':
-                    relation_suffix = ('%s %s at most' %
+                    relation_suffix = (
+                        '%s %s at most' %
                         (self.value, plural('time', self.value)))
                 elif self.operator == '>' and self.value != 0:
-                    relation_suffix = ('more than %s %s' %
+                    relation_suffix = (
+                        'more than %s %s' %
                         (self.value, plural('time', self.value)))
                 elif self.operator == '<':
-                    relation_suffix = ('less than %s %s' %
+                    relation_suffix = (
+                        'less than %s %s' %
                         (self.value, plural('time', self.value)))
             return u"%s %s %s %s" % (name, relation_literal,
                                      self.term, relation_suffix)
@@ -391,23 +395,25 @@ class Tree(object):
                 else:
                     value = repr(child.predicate.value)
                 if optype == 'text':
-                    body += (u"%sif (term_matches(%s, \"%s\", \"%s\") %s %s):\n" %
-                            (INDENT * depth,
-                             map_data(self.fields[child.predicate.field]['slug'],
-                             False),
-                             self.fields[child.predicate.field]['slug'],
-                             child.predicate.term,
-                             PYTHON_OPERATOR[child.predicate.operator],
-                             value))
+                    body += (
+                        u"%sif (term_matches(%s, \"%s\", \"%s\") %s %s):\n" %
+                        (INDENT * depth,
+                         map_data(self.fields[child.predicate.field]['slug'],
+                         False),
+                         self.fields[child.predicate.field]['slug'],
+                         child.predicate.term,
+                         PYTHON_OPERATOR[child.predicate.operator],
+                         value))
                     term_analysis_fields.append((child.predicate.field,
                                                  child.predicate.term))
-                else:                
-                    body += (u"%sif (%s %s %s):\n" %
-                            (INDENT * depth,
-                             map_data(self.fields[child.predicate.field]['slug'],
-                             False),
-                             PYTHON_OPERATOR[child.predicate.operator],
-                             value))    
+                else:
+                    body += (
+                        u"%sif (%s %s %s):\n" %
+                        (INDENT * depth,
+                         map_data(self.fields[child.predicate.field]['slug'],
+                         False),
+                         PYTHON_OPERATOR[child.predicate.operator],
+                         value))
                 next_level = child.python_body(depth + 1, cmv=cmv[:],
                                                input_map=input_map)
                 body += next_level[0]
@@ -470,7 +476,8 @@ class Tree(object):
         flags = 0
         if not options.get('case_sensitive', False):
             flags = re.I
-        pattern = re.compile(r'\\b%s\\b' % '\\\\b|\\\\b'.join(forms_list), flags=flags)
+        pattern = re.compile(r'\\b%s\\b' % '\\\\b|\\\\b'.join(forms_list),
+                             flags=flags)
         matches = re.findall(pattern, text)
         if matches is not None:
             count = len(matches)
@@ -486,22 +493,23 @@ class Tree(object):
             body += """
         \"%s\": {""" % field['slug']
             for option in field['term_analysis']:
-                body +="""
+                body += """
             \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
-            body +="""
+            body += """
         },"""
         body += """
     }"""
         if term_analysis_predicates:
             term_forms = {}
             for field_id, term in term_analysis_predicates:
-                all_forms = self.fields[field_id]['summary'].get('term_forms', {})
+                field = self.fields[field_id]
+                all_forms = field['summary'].get('term_forms', {})
                 terms = [term]
                 terms.extend(all_forms.get(term, []))
 
-                if self.fields[field_id]['slug'] not in term_forms:
-                    term_forms[self.fields[field_id]['slug']] = {}
-                term_forms[self.fields[field_id]['slug']][term] = terms
+                if field['slug'] not in term_forms:
+                    term_forms[field['slug']] = {}
+                term_forms[field['slug']][term] = terms
             body += """
     term_forms = {"""
             for field in term_forms:
@@ -513,7 +521,7 @@ class Tree(object):
                 body += """
         },
                 """
-            body +="""
+            body += """
     }
 """
 
@@ -617,7 +625,6 @@ class Model(object):
             for (key, value) in empty_fields:
                 del input_data[key]
 
-
             if by_name:
                 # Checks input_data keys against field names and filters the
                 # ones used in the model
@@ -640,7 +647,6 @@ class Model(object):
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
             return {}
-
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):
@@ -1034,7 +1040,8 @@ u"""            self.MISSING_TOKENS = ['?']
                 data.update({self.INPUT_FIELDS[i]: values[i]})
             return data
         except Exception, exc:
-            sys.stderr.write(\"Error in data transformations. %s\\n\" % str(exc))
+            sys.stderr.write(\"Error in data transformations. %s\\n\" %
+                             str(exc))
             return False
 \n\n
 """

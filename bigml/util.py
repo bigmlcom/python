@@ -416,3 +416,10 @@ def maybe_save(resource_id, path,
         except IOError:
             print("Failed writing resource to %s" % resource_file_name)
     return resource
+
+
+def plural(text, num):
+    """Pluralizer: adds "s" at the end of a string if a given number is > 1
+
+    """
+    return "%s%s" % (text, "s"[num == 1:])

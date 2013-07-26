@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2013 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -52,41 +52,21 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 import sys
-import operator
 import locale
 import os
 import json
+import re
 
 from bigml.api import FINISHED
 from bigml.api import (get_status, error_message, BigML, get_model_id,
                        check_resource)
-from bigml.util import (invert_dictionary, slugify, split, markdown_cleanup,
-                        prefix_as_comment, sort_fields, utf8,
+from bigml.util import (invert_dictionary, slugify, markdown_cleanup,
+                        prefix_as_comment, utf8,
                         find_locale, cast)
 from bigml.util import DEFAULT_LOCALE
+from bigml.tree import Tree
+from bigml.predicate import Predicate
 
-
-# Map operator str to its corresponding function
-OPERATOR = {
-    "<": operator.lt,
-    "<=": operator.le,
-    "=": operator.eq,
-    "!=": operator.ne,
-    "/=": operator.ne,
-    ">=": operator.ge,
-    ">": operator.gt
-}
-
-# Map operator str to its corresponding python operator
-PYTHON_OPERATOR = {
-    "<": "<",
-    "<=": "<=",
-    "=": "==",
-    "!=": "!=",
-    "/=": "!=",
-    ">=": ">=",
-    ">": ">"
-}
 
 PYTHON_CONV = {
     "double": "locale.atof",
@@ -112,8 +92,6 @@ PYTHON_FUNC = dict([(numtype, eval(function))
 
 INDENT = u'    '
 
-MAX_ARGS_LENGTH = 10
-
 STORAGE = './storage'
 
 
@@ -133,252 +111,6 @@ def retrieve_model(api, model_id):
             pass
     model = check_resource(model_id, api.get_model, 'only_model=true')
     return model
-
-
-class Predicate(object):
-    """A predicate to be evaluated in a tree's node.
-
-    """
-    def __init__(self, operation, field, value):
-        self.operator = operation
-        self.field = field
-        self.value = value
-
-    def to_rule(self, fields):
-        """ Builds rule string from a predicate
-
-        """
-        return u"%s %s %s" % (fields[self.field]['name'],
-                              self.operator,
-                              self.value)
-
-
-class Tree(object):
-    """A tree-like predictive model.
-
-    """
-    def __init__(self, tree, fields, objective_field=None):
-
-        self.fields = fields
-        if objective_field and isinstance(objective_field, list):
-            self.objective_field = objective_field[0]
-        else:
-            self.objective_field = objective_field
-
-        self.output = tree['output']
-
-        if tree['predicate'] is True:
-            self.predicate = True
-        else:
-            self.predicate = Predicate(
-                tree['predicate']['operator'],
-                tree['predicate']['field'],
-                tree['predicate']['value'])
-
-        children = []
-        if 'children' in tree:
-            for child in tree['children']:
-                children.append(Tree(child, self.fields, objective_field))
-
-        self.children = children
-        self.count = tree['count']
-        self.confidence = tree.get('confidence', None)
-        if 'distribution' in tree:
-            self.distribution = tree['distribution']
-        elif ('objective_summary' in tree):
-            summary = tree['objective_summary']
-            if 'bins' in summary:
-                self.distribution = summary['bins']
-            elif 'counts' in summary:
-                self.distribution = summary['counts']
-            elif 'categories' in summary:
-                self.distribution = summary['categories']
-        else:
-            summary = self.fields[self.objective_field]['summary']
-            if 'bins' in summary:
-                self.distribution = summary['bins']
-            elif 'counts' in summary:
-                self.distribution = summary['counts']
-            elif 'categories' in summary:
-                self.distribution = summary['categories']
-
-    def list_fields(self, out):
-        """Lists a description of the model's fields.
-
-        """
-        out.write(utf8(u'<%-32s : %s>\n' % (
-            self.fields[self.objective_field]['name'],
-            self.fields[self.objective_field]['optype'])))
-        out.flush()
-
-        for field in [(val['name'], val['optype']) for key, val in
-                      sort_fields(self.fields)
-                      if key != self.objective_field]:
-            out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
-            out.flush()
-        return self.fields
-
-    def get_leaves(self):
-        """Returns a list that includes all the leaves of the tree.
-
-        """
-        leaves = []
-
-        if self.children:
-            for child in self.children:
-                leaves += child.get_leaves()
-        else:
-            leaves += [{
-                'confidence': self.confidence,
-                'count': self.count,
-                'distribution': self.distribution,
-                'output': self.output
-            }]
-        return leaves
-
-    def predict(self, input_data, path=None):
-        """Makes a prediction based on a number of field values.
-
-        The input fields must be keyed by Id.
-
-        """
-        def get_instances(distribution):
-            """Returns the total number of instances in a distribution
-
-            """
-            return sum(x[1] for x in distribution) if distribution else 0
-
-        if path is None:
-            path = []
-        if self.children and split(self.children) in input_data:
-            for child in self.children:
-                if apply(OPERATOR[child.predicate.operator],
-                         [input_data[child.predicate.field],
-                         child.predicate.value]):
-                    path.append(u"%s %s %s" % (
-                                self.fields[child.predicate.field]['name'],
-                                child.predicate.operator,
-                                child.predicate.value))
-                    return child.predict(input_data, path)
-        return (self.output, path, self.confidence,
-                self.distribution, get_instances(self.distribution))
-
-    def generate_rules(self, depth=0):
-        """Translates a tree model into a set of IF-THEN rules.
-
-        """
-        rules = u""
-        if self.children:
-            for child in self.children:
-                rules += (u"%s IF %s %s %s %s\n" %
-                         (INDENT * depth,
-                          self.fields[child.predicate.field]['slug'],
-                          child.predicate.operator,
-                          child.predicate.value,
-                          "AND" if child.children else "THEN"))
-                rules += child.generate_rules(depth + 1)
-        else:
-            rules += (u"%s %s = %s\n" %
-                     (INDENT * depth,
-                      (self.fields[self.objective_field]['slug']
-                       if self.objective_field else "Prediction"),
-                      self.output))
-        return rules
-
-    def rules(self, out):
-        """Prints out an IF-THEN rule version of the tree.
-
-        """
-        for field in [(key, val) for key, val in sort_fields(self.fields)]:
-
-            slug = slugify(self.fields[field[0]]['name'])
-            self.fields[field[0]].update(slug=slug)
-        out.write(utf8(self.generate_rules()))
-        out.flush()
-
-    def python_body(self, depth=1, cmv=None, input_map=False):
-        """Translate the model into a set of "if" python statements.
-
-        `depth` controls the size of indentation. As soon as a value is missing
-        that node is returned without further evaluation.
-
-        """
-
-        def map_data(field, missing=False):
-            """Returns the subject of the condition in map format when
-               more than MAX_ARGS_LENGTH arguments are used.
-            """
-            if input_map:
-                if missing:
-                    return "not '%s' in data or data['%s']" % (field, field)
-                else:
-                    return "data['%s']" % field
-            return field
-        if cmv is None:
-            cmv = []
-        body = u""
-        if self.children:
-            field = split(self.children)
-            if not self.fields[field]['slug'] in cmv:
-                body += (u"%sif (%s is None):\n" %
-                        (INDENT * depth,
-                         map_data(self.fields[field]['slug'], True)))
-                if self.fields[self.objective_field]['optype'] == 'numeric':
-                    value = self.output
-                else:
-                    value = repr(self.output)
-                body += (u"%sreturn %s\n" %
-                        (INDENT * (depth + 1),
-                         value))
-                cmv.append(self.fields[field]['slug'])
-
-            for child in self.children:
-                if self.fields[child.predicate.field]['optype'] == 'numeric':
-                    value = child.predicate.value
-                else:
-                    value = repr(child.predicate.value)
-                body += (u"%sif (%s %s %s):\n" %
-                        (INDENT * depth,
-                         map_data(self.fields[child.predicate.field]['slug'],
-                         False),
-                         PYTHON_OPERATOR[child.predicate.operator],
-                         value))
-                body += child.python_body(depth + 1, cmv=cmv[:],
-                                          input_map=input_map)
-        else:
-            if self.fields[self.objective_field]['optype'] == 'numeric':
-                value = self.output
-            else:
-                value = repr(self.output)
-            body = u"%sreturn %s\n" % (INDENT * depth, value)
-        return body
-
-    def python(self, out, docstring, input_map=False):
-        """Writes a python function that implements the model.
-
-        """
-        args = []
-        parameters = sort_fields(self.fields)
-        if not input_map:
-            input_map = len(parameters) > MAX_ARGS_LENGTH
-        for field in [(key, val) for key, val in parameters]:
-            slug = slugify(self.fields[field[0]]['name'])
-            self.fields[field[0]].update(slug=slug)
-            if not input_map:
-                if field[0] != self.objective_field:
-                    args.append("%s=None" % (slug))
-        if input_map:
-            args.append("data={}")
-        predictor_definition = (u"def predict_%s" %
-                                self.fields[self.objective_field]['slug'])
-        depth = len(predictor_definition) + 1
-        predictor = u"%s(%s):\n" % (predictor_definition,
-                                   (",\n" + " " * depth).join(args))
-        predictor_doc = (INDENT + u"\"\"\" " + docstring +
-                         u"\n" + INDENT + u"\"\"\"\n")
-        predictor += predictor_doc + self.python_body(input_map=input_map)
-        out.write(utf8(predictor))
-        out.flush()
 
 
 class Model(object):
@@ -478,7 +210,6 @@ class Model(object):
             for (key, value) in empty_fields:
                 del input_data[key]
 
-
             if by_name:
                 # Checks input_data keys against field names and filters the
                 # ones used in the model
@@ -501,7 +232,6 @@ class Model(object):
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
             return {}
-
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):
@@ -895,7 +625,8 @@ u"""            self.MISSING_TOKENS = ['?']
                 data.update({self.INPUT_FIELDS[i]: values[i]})
             return data
         except Exception, exc:
-            sys.stderr.write(\"Error in data transformations. %s\\n\" % str(exc))
+            sys.stderr.write(\"Error in data transformations. %s\\n\" %
+                             str(exc))
             return False
 \n\n
 """

@@ -253,6 +253,8 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
         resource = get_method(resource, **kwargs)
     else:
         resource_id = get_resource_id(resource)
+        if resource_id is None:
+            raise ValueError("Failed to extract a valid resource id to check.")
         kwargs = get_kwargs(resource_id)
 
     while True:
@@ -1172,6 +1174,7 @@ class BigML(object):
                 args = {}
             args.update({
                 "dataset": dataset_id})
+
             body = json.dumps(args)
             return self._create(self.model_url, body)
 

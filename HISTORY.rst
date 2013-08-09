@@ -3,6 +3,12 @@
 History
 -------
 
+0.7.3 (2013-08-09)
+~~~~~~~~~~~~~~~~~~
+
+- Adds fields method to retrieve only preferred fields
+- Fixes error message when no valid resource id is provided in check_resource
+
 0.7.2 (2013-07-04)
 ~~~~~~~~~~~~~~~~~~
 

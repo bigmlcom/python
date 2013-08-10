@@ -297,7 +297,7 @@ class Tree(object):
         \"\"\" Counts the number of occurences of term and its variants in text
 
         \"\"\"
-        count = 0
+
         forms_list = term_forms[field_name][term]
         options = term_analysis[field_name]
         flags = 0
@@ -306,9 +306,7 @@ class Tree(object):
         pattern = re.compile(r'\\b%s\\b' % '\\\\b|\\\\b'.join(forms_list),
                              flags=flags)
         matches = re.findall(pattern, text)
-        if matches is not None:
-            count = len(matches)
-        return count
+        return len(matches)
         """
         term_analysis_options = set(map(lambda x: x[0],
                                         term_analysis_predicates))

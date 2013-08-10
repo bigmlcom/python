@@ -43,16 +43,14 @@ def term_matches(text, forms_list, options):
     """ Counts the number of occurences of the words in forms_list in the text
 
     """
-    count = 0
+
     # basic pattern that should be changed to the tokenizer behaviour
     flags = 0
     if not options.get('case_sensitive', False):
         flags = re.I
     pattern = re.compile(r'\b%s\b' % '\\b|\\b'.join(forms_list), flags=flags)
     matches = re.findall(pattern, text)
-    if matches is not None:
-        count = len(matches)
-    return count
+    return len(matches)
 
 
 class Predicate(object):

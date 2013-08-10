@@ -3,6 +3,12 @@
 History
 -------
 
+0.8.0 (2013-08-10)
+~~~~~~~~~~~~~~~~~~
+
+- Adds text analysis local predict function
+- Modifies outputs for text analysis: rules, summary, python, hadoop
+
 0.7.3 (2013-08-09)
 ~~~~~~~~~~~~~~~~~~
 

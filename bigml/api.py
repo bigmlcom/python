@@ -66,14 +66,32 @@ register_openers()
 # Base Domain
 BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io')
 
+# Domain for prediction server
+BIGML_PREDICTION_DOMAIN = os.environ.get('BIGML_PREDICTION_DOMAIN',
+                                         BIGML_DOMAIN)
+# Whether a prediction server is being used or not
+PREDICTION_SERVER_ON = (BIGML_DOMAIN != BIGML_PREDICTION_DOMAIN)
+
+# Protocol for prediction server
+BIGML_PREDICTION_PROTOCOL = os.environ.get('BIGML_PREDICTION_PROTOCOL',
+                                           'https')
+
 # Check BigML.io host’s SSL certificate
 # DO NOT CHANGE IT.
 VERIFY = (BIGML_DOMAIN == "bigml.io")
+
+# Check prediction server's SSL certificate
+# DO NOT CHANGE IT.
+VERIFY_PREDICTION_SERVER = (BIGML_PREDICTION_DOMAIN == "bigml.com")
 
 # Base URL
 BIGML_URL = 'https://%s/andromeda/' % BIGML_DOMAIN
 # Development Mode URL
 BIGML_DEV_URL = 'https://%s/dev/andromeda/' % BIGML_DOMAIN
+
+# Prediction URL
+BIGML_PREDICTION_URL = '%s://%s/andromeda/' % (BIGML_PREDICTION_PROTOCOL,
+                                               BIGML_PREDICTION_DOMAIN)
 
 # Basic resources
 SOURCE_PATH = 'source'
@@ -415,14 +433,16 @@ class BigML(object):
 
         if dev_mode:
             self.url = BIGML_DEV_URL
+            self.prediction_url = BIGML_DEV_URL
         else:
             self.url = BIGML_URL
+            self.prediction_url = BIGML_PREDICTION_URL
 
         # Base Resource URLs
         self.source_url = self.url + SOURCE_PATH
         self.dataset_url = self.url + DATASET_PATH
         self.model_url = self.url + MODEL_PATH
-        self.prediction_url = self.url + PREDICTION_PATH
+        self.prediction_url = self.prediction_url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
 
@@ -430,7 +450,7 @@ class BigML(object):
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)
 
-    def _create(self, url, body):
+    def _create(self, url, body, verify=VERIFY):
         """Creates a new remote resource.
 
         Posts `body` in JSON to `url` to create a new remote resource.
@@ -451,37 +471,49 @@ class BigML(object):
             "status": {
                 "code": code,
                 "message": "The resource couldn't be created"}}
-        try:
-            response = requests.post(url + self.auth,
-                                     headers=SEND_JSON,
-                                     data=body, verify=VERIFY)
 
-            code = response.status_code
+        # If a prediction server is in use, the first prediction request might
+        # return a HTTP_ACCEPTED (202) while the model or ensemble is being
+        # downloaded.
+        code = HTTP_ACCEPTED
+        while code == HTTP_ACCEPTED:
+            try:
+                print url + self.auth
+                response = requests.post(url + self.auth,
+                                         headers=SEND_JSON,
+                                         data=body, verify=verify)
 
-            if code == HTTP_CREATED:
-                location = response.headers['location']
-                resource = json.loads(response.content, 'utf-8')
-                resource_id = resource['resource']
-                error = None
-            elif code in [HTTP_BAD_REQUEST,
-                          HTTP_UNAUTHORIZED,
-                          HTTP_PAYMENT_REQUIRED,
-                          HTTP_FORBIDDEN,
-                          HTTP_NOT_FOUND]:
-                error = json.loads(response.content, 'utf-8')
-                LOGGER.error(error_message(error, method='create'))
-            else:
-                LOGGER.error("Unexpected error (%s)" % code)
-                code = HTTP_INTERNAL_SERVER_ERROR
+                print response
 
-        except ValueError:
-            LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
+                code = response.status_code
+
+                if code in [HTTP_CREATED, HTTP_OK]:
+                    if 'location' in response.headers:
+                        location = response.headers['location']
+                    resource = json.loads(response.content, 'utf-8')
+                    resource_id = resource['resource']
+                    error = None
+                elif code == HTTP_ACCEPTED:
+                    pass
+                elif code in [HTTP_BAD_REQUEST,
+                              HTTP_UNAUTHORIZED,
+                              HTTP_PAYMENT_REQUIRED,
+                              HTTP_FORBIDDEN,
+                              HTTP_NOT_FOUND]:
+                    error = json.loads(response.content, 'utf-8')
+                    LOGGER.error(error_message(error, method='create'))
+                else:
+                    LOGGER.error("Unexpected error (%s)" % code)
+                    code = HTTP_INTERNAL_SERVER_ERROR
+
+            except ValueError:
+                LOGGER.error("Malformed response")
+            except requests.ConnectionError:
+                LOGGER.error("Connection error")
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -719,7 +751,7 @@ class BigML(object):
 
         resource = self._get("%s%s" % (self.url, resource_id))
         if resource['code'] == HTTP_OK:
-            if  MODEL_RE.match(resource_id):
+            if MODEL_RE.match(resource_id):
                 return resource['object']['model']['model_fields']
             else:
                 return resource['object']['fields']
@@ -1299,7 +1331,8 @@ class BigML(object):
                     "ensemble": ensemble_id})
 
             body = json.dumps(args)
-            return self._create(self.prediction_url, body)
+            return self._create(self.prediction_url, body,
+                                verify=VERIFY_PREDICTION_SERVER)
 
     def get_prediction(self, prediction):
         """Retrieves a prediction.

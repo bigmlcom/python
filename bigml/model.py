@@ -478,7 +478,6 @@ class Model(object):
             for (key, value) in empty_fields:
                 del input_data[key]
 
-
             if by_name:
                 # Checks input_data keys against field names and filters the
                 # ones used in the model
@@ -502,7 +501,6 @@ class Model(object):
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
             return {}
-
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):

@@ -478,14 +478,14 @@ class Model(object):
             for (key, value) in empty_fields:
                 del input_data[key]
 
-
             if by_name:
                 # Checks input_data keys against field names and filters the
                 # ones used in the model
                 wrong_keys = [key for key in input_data.keys() if not key
                               in self.all_inverted_fields]
+
                 if wrong_keys:
-                    LOGGER.error("Wrong field names in input data: %s" %
+                    LOGGER.info("Wrong field names in input data: %s" %
                                  ", ".join(wrong_keys))
                 input_data = dict(
                     [[self.inverted_fields[key], value]
@@ -501,7 +501,6 @@ class Model(object):
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
             return {}
-
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False):

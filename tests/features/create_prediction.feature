@@ -14,7 +14,7 @@ Feature: Create Predictions
 
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa |
+        | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
     
     Scenario: Successfully creating a prediction from a source in a remote location:
         Given I create a data source using the url "<url>"
@@ -28,7 +28,7 @@ Feature: Create Predictions
 
         Examples:
         | url                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
-        | s3://bigml-public/csv/iris.csv | 10      | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa |
+        | s3://bigml-public/csv/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
 
     Scenario: Successfully creating a prediction from a asynchronous uploaded file:
         Given I create a data source uploading a "<data>" file in asynchronous mode
@@ -43,4 +43,4 @@ Feature: Create Predictions
 
         Examples:
         | data                | time_1  | time_2 | time_3 | time_4 | data_input    | objective | prediction  |
-        | ../data/iris.csv | 10      | 10     | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa || time_3 |
+        | ../data/iris.csv | 10      | 10     | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |

@@ -17,4 +17,4 @@ Feature: Create Predictions in DEV mode
 
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 1} | 000004    | Iris-setosa |
+        | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |

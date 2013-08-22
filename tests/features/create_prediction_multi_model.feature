@@ -20,4 +20,4 @@ Feature: Create Predictions from Multi Models
 
         Examples:
         | data             | time_1  | time_2 | time_3 | params                         |  tag  |  data_input    | objective | prediction  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  {"petal length": 1} | 000004    | Iris-setosa |
+        | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  {"petal width": 0.5} | 000004    | Iris-setosa |

@@ -22,4 +22,4 @@ Feature: Create Batch Predictions from Multi Models
 
         Examples:
         | data             | time_1  | time_2 | time_3 | params                         |  tag  |  data_input    | path | predictions  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  [{"petal length": 1}, {"petal length": 6, "petal width": 2}, {"petal length": 4, "petal width": 1.5}]  | ./tmp | ["Iris-setosa", "Iris-virginica", "Iris-versicolor"] |
+        | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  [{"petal width": 0.5}, {"petal length": 6, "petal width": 2}, {"petal length": 4, "petal width": 1.5}]  | ./tmp | ["Iris-setosa", "Iris-virginica", "Iris-versicolor"] |

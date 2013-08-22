@@ -78,7 +78,11 @@ def read_votes(votes_files, to_prediction, data_locale=None):
             if len(row) > 2:
                 distribution = ast.literal_eval(row[2])
                 instances = int(row[3])
-            prediction_row = [prediction, float(row[1]), order,
+                try:
+                    confidence = float(row[1])
+                except ValueError:
+                    confidence = 0
+            prediction_row = [prediction, confidence, order,
                               distribution, instances]
             votes[index].append_row(prediction_row)
             index += 1

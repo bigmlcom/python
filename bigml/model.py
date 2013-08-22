@@ -215,8 +215,9 @@ class Model(object):
                 # ones used in the model
                 wrong_keys = [key for key in input_data.keys() if not key
                               in self.all_inverted_fields]
+
                 if wrong_keys:
-                    LOGGER.error("Wrong field names in input data: %s" %
+                    LOGGER.info("Wrong field names in input data: %s" %
                                  ", ".join(wrong_keys))
                 input_data = dict(
                     [[self.inverted_fields[key], value]

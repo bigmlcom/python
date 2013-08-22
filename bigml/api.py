@@ -1273,9 +1273,9 @@ class BigML(object):
                 wrong_keys = [key for key in input_data.keys() if not key
                               in inverted_fields]
                 if wrong_keys:
-                    LOGGER.error(("Some input fields are"
-                                  " not used in the model: %s") %
-                                 ", ".join(wrong_keys))
+                    LOGGER.info(("Some input fields are"
+                                 " not used in the model: %s") %
+                                ", ".join(wrong_keys))
                 input_data = dict(
                     [[inverted_fields[key], value]
                      for key, value in input_data.items()

@@ -164,6 +164,7 @@ class MultiVote(object):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
+
         error_values = [prediction['confidence']
                         for prediction in instance.predictions]
         max_error = max(error_values)
@@ -246,6 +247,9 @@ class MultiVote(object):
                                     "prediction method. Try creating your"
                                     " model anew.")
         if self.is_regression():
+            for prediction in self.predictions:
+                if prediction['confidence'] is None:
+                    prediction['confidence'] = 0
             function = NUMERICAL_COMBINATION_METHODS.get(method,
                                                          self.__class__.avg)
             return function(self, with_confidence=with_confidence)

@@ -18,7 +18,7 @@ Feature: Compare Predictions
 
         Examples:
         | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 1}                    | 000004    | Iris-setosa |
+        | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5}                   | 000004    | Iris-setosa |
         | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 6, "petal width": 2}  | 000004    | Iris-virginica |
         | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 4, "petal width": 1.5}| 000004    | Iris-versicolor |
         | ../data/spam.csv | 20      | 20     | 20     | {"Message": "Mobile call"}            | 000000    | spam    |

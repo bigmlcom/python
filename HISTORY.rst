@@ -8,7 +8,7 @@ History
 
 - Fixes temporarily problems in predictions for regression models and
   ensembles
-- Adds en-gb to the list of available locales, avoiding spurious warnings.
+- Adds en-gb to the list of available locales, avoiding spurious warnings
 
 0.7.4 (2013-08-17)
 ~~~~~~~~~~~~~~~~~~

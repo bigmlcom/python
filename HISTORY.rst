@@ -3,6 +3,13 @@
 History
 -------
 
+0.7.5 (2013-08-22)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes temporarily problems in predictions for regression models and
+  ensembles
+- Adds en-gb to the list of available locales, avoiding spurious warnings
+
 0.7.4 (2013-08-17)
 ~~~~~~~~~~~~~~~~~~
 

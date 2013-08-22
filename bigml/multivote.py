@@ -161,9 +161,9 @@ class MultiVote(object):
         if instance.predictions and not all(['confidence' in prediction
                                              for prediction
                                              in instance.predictions]):
-            sys.exit("Not enough data to use the selected "
-                     "prediction method. Try creating your"
-                     " model anew.")
+            raise Exception("Not enough data to use the selected "
+                            "prediction method. Try creating your"
+                            " model anew.")
 
         error_values = [prediction['confidence']
                         for prediction in instance.predictions]

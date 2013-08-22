@@ -3,6 +3,11 @@
 History
 -------
 
+0.7.5 (2013-08-22)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes temporarily the confidence=None value error
+
 0.7.4 (2013-08-17)
 ~~~~~~~~~~~~~~~~~~
 

@@ -45,10 +45,11 @@ def term_matches(text, forms_list, options):
     """
 
     # basic pattern that should be changed to the tokenizer behaviour
-    flags = 0
+    flags = re.U
     if not options.get('case_sensitive', False):
         flags = re.I
-    pattern = re.compile(r'\b%s\b' % '\\b|\\b'.join(forms_list), flags=flags)
+    expression = ur'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
+    pattern = re.compile(expression, flags=flags)
     matches = re.findall(pattern, text)
     return len(matches)
 

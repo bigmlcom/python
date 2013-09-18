@@ -270,7 +270,7 @@ class Tree(object):
                     args.append("%s=None" % (slug))
         if input_map:
             args.append("data={}")
-        predictor_definition = (u"def predict_%s" %
+        predictor_definition = (u"# -*- coding: utf-8 -*-\ndef predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
         predictor = u"%s(%s):\n" % (predictor_definition,
@@ -300,11 +300,11 @@ class Tree(object):
 
         forms_list = term_forms[field_name][term]
         options = term_analysis[field_name]
-        flags = 0
+        flags = re.U
         if not options.get('case_sensitive', False):
             flags = re.I
-        pattern = re.compile(r'\\b%s\\b' % '\\\\b|\\\\b'.join(forms_list),
-                             flags=flags)
+        expression = ur'(\\b|_)%s(\\b|_)' % '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
+        pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
         return len(matches)
         """

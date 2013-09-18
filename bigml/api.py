@@ -304,7 +304,7 @@ def error_message(resource, resource_type='resource', method=None):
             return error
         elif code == HTTP_PAYMENT_REQUIRED:
             error += (u'\nYou\'ll need to buy some more credits to perform'
-                      u'the chosen action')
+                      u' the chosen action')
             return error
 
     return "Invalid %s structure:\n\n%s" % (resource_type, resource)

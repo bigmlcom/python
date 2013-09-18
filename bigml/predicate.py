@@ -44,7 +44,6 @@ def term_matches(text, forms_list, options):
 
     """
 
-    # basic pattern that should be changed to the tokenizer behaviour
     flags = re.U
     if not options.get('case_sensitive', False):
         flags = re.I

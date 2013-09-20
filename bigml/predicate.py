@@ -46,7 +46,7 @@ def term_matches(text, forms_list, options):
 
     flags = re.U
     if not options.get('case_sensitive', False):
-        flags = re.I
+        flags = (re.I | flags)
     expression = ur'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
     pattern = re.compile(expression, flags=flags)
     matches = re.findall(pattern, text)

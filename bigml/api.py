@@ -286,14 +286,19 @@ def error_message(resource, resource_type='resource', method=None):
                 'message' in error_info['status']):
             error = error_info['status']['message']
         if code == HTTP_NOT_FOUND and method == 'get':
+            alternate_message = ''
+            if BIGML_DOMAIN != 'bigml.io':
+                alternate_message = (
+                    u'- The %s was not created in %s.\n' % (
+                        resource_type, BIGML_DOMAIN))                    
             error += (
                 u'\nCouldn\'t find a %s matching the given'
-                u' id. The most probable causes are:\n\n'
-                u'- a typo in the %s\'s id\n'
-                u'- the %s id belongs to another user\n'
+                u' id. The most probable causes are:\n\n%s'
+                u'- A typo in the %s\'s id.\n'
+                u'- The %s id cannot be accessed with your credentials.\n'
                 u'\nDouble-check your %s and'
                 u' credentials info and retry.' % (
-                    resource_type, resource_type,
+                    resource_type, alternate_message, resource_type,
                     resource_type, resource_type))
             return error
         if code == HTTP_UNAUTHORIZED:
@@ -304,7 +309,7 @@ def error_message(resource, resource_type='resource', method=None):
             return error
         elif code == HTTP_PAYMENT_REQUIRED:
             error += (u'\nYou\'ll need to buy some more credits to perform'
-                      u'the chosen action')
+                      u' the chosen action')
             return error
 
     return "Invalid %s structure:\n\n%s" % (resource_type, resource)

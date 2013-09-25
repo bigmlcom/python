@@ -40,11 +40,19 @@ OPERATOR = {
 TM_TOKENS = 'tokens_only'
 TM_FULL_TERM = 'full_terms_only'
 TM_ALL = 'all'
+FULL_TERM_PATTERN = re.compile(r'^.+\b.+$', re.U)
+RELATIONS = {
+    '<=': 'no more than %s %s',
+    '>=': '%s %s at most',
+    '>': 'more than %s %s',
+    '<': 'less than %s %s'
+}
+
 
 def term_matches(text, forms_list, options):
     """ Counts the number of occurences of the words in forms_list in the text
 
-        You the terms in forms_list can either be tokens or full terms. The
+        The terms in forms_list can either be tokens or full terms. The
         matching for tokens is contains and for full terms is equals.
     """
     token_mode = options.get('token_mode', TM_TOKENS)
@@ -53,13 +61,13 @@ def term_matches(text, forms_list, options):
     if token_mode == TM_FULL_TERM:
         return full_term_match(text, first_term, case_sensitive)
     else:
-        # In token_mode='all' we will match full terms using equals and 
+        # In token_mode='all' we will match full terms using equals and
         # tokens using contains
         if token_mode == TM_ALL and len(forms_list) == 1:
-            pattern = re.compile(r'^.+\b.+$', re.U)
-            if re.match(pattern, first_term):
+            if re.match(FULL_TERM_PATTERN, first_term):
                 return full_term_match(text, first_term, case_sensitive)
         return term_matches_tokens(text, forms_list, case_sensitive)
+
 
 def full_term_match(text, full_term, case_sensitive):
     """Counts the match for full terms according to the case_sensitive option
@@ -68,10 +76,11 @@ def full_term_match(text, full_term, case_sensitive):
     if not case_sensitive:
         text = text.lower()
         full_term = full_term.lower()
-    return int(text == full_term)
+    return 1 if text == full_term else 0
+
 
 def get_tokens_flags(case_sensitive):
-    """Sets flags for regular expression matching depending on text analysis
+    """Returns flags for regular expression matching depending on text analysis
        options
 
     """
@@ -84,7 +93,7 @@ def get_tokens_flags(case_sensitive):
 def term_matches_tokens(text, forms_list, case_sensitive):
     """ Counts the number of occurences of the words in forms_list in the text
 
-    """   
+    """
     flags = get_tokens_flags(case_sensitive)
     expression = ur'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
     pattern = re.compile(expression, flags=flags)
@@ -112,8 +121,7 @@ class Predicate(object):
             if token_mode == TM_FULL_TERM:
                 return True
             if token_mode == TM_ALL:
-                pattern = re.compile(r'^.+\b.+$', re.U)
-                return re.match(pattern, self.term)
+                return re.match(FULL_TERM_PATTERN, self.term)
         return False
 
     def to_rule(self, fields, label='name'):
@@ -131,22 +139,10 @@ class Predicate(object):
             else:
                 relation_literal = 'is equal to' if full_term else 'contains'
                 if not full_term:
-                    if self.operator == '<=':
-                        relation_suffix = (
-                            'no more than %s %s' %
-                            (self.value, plural('time', self.value)))
-                    elif self.operator == '>=':
-                        relation_suffix = (
-                            '%s %s at most' %
-                            (self.value, plural('time', self.value)))
-                    elif self.operator == '>' and self.value != 0:
-                        relation_suffix = (
-                            'more than %s %s' %
-                            (self.value, plural('time', self.value)))
-                    elif self.operator == '<':
-                        relation_suffix = (
-                            'less than %s %s' %
-                            (self.value, plural('time', self.value)))
+                    if self.operator != '>' or self.value != 0:
+                        relation_suffix = (RELATIONS[self.operator] %
+                                           (self.value,
+                                            plural('time', self.value)))
             return u"%s %s %s %s" % (name, relation_literal,
                                      self.term, relation_suffix)
         return u"%s %s %s" % (name,

@@ -23,6 +23,7 @@ to send requests to BigML.io.
 
 """
 from bigml.predicate import Predicate
+from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
 
 # Map operator str to its corresponding python operator
@@ -296,9 +297,9 @@ class Tree(object):
         body += """
     import re
 
-    tm_tokens = 'tokens_only'
-    tm_full_term = 'full_terms_only'
-    tm_all = 'all'
+    tm_tokens = '%s'
+    tm_full_term = '%s'
+    tm_all = '%s'
 
 
     def term_matches(text, field_name, term):
@@ -313,7 +314,7 @@ class Tree(object):
         if token_mode == tm_full_term:
             return full_term_match(text, first_term, case_sensitive)
         else:
-            # In token_mode='all' we will match full terms using equals and 
+            # In token_mode='all' we will match full terms using equals and
             # tokens using contains
             if token_mode == tm_all and len(forms_list) == 1:
                 pattern = re.compile(r'^.+\\b.+$', re.U)
@@ -323,17 +324,18 @@ class Tree(object):
 
 
     def full_term_match(text, full_term, case_sensitive):
-        \"\"\"Counts the match for full terms according to the case_sensitive option
+        \"\"\"Counts the match for full terms according to the case_sensitive
+              option
 
         \"\"\"
         if not case_sensitive:
             text = text.lower()
             full_term = full_term.lower()
-        return int(text == full_term)
+        return 1 if text == full_term else 0
 
     def get_tokens_flags(case_sensitive):
-        \"\"\"Sets flags for regular expression matching depending on text analysis
-           options
+        \"\"\"Returns flags for regular expression matching depending on text
+              analysis options
 
         \"\"\"
         flags = re.U
@@ -343,15 +345,17 @@ class Tree(object):
 
 
     def term_matches_tokens(text, forms_list, case_sensitive):
-        \"\"\" Counts the number of occurences of the words in forms_list in the text
+        \"\"\" Counts the number of occurences of the words in forms_list in
+               the text
 
         \"\"\"
         flags = get_tokens_flags(case_sensitive)
         expression = ur'(\\b|_)%s(\\b|_)' % '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
         pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
-        return len(matches)        
-"""
+        return len(matches)
+""" % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
+
         term_analysis_options = set(map(lambda x: x[0],
                                         term_analysis_predicates))
         term_analysis_predicates = set(term_analysis_predicates)
@@ -400,4 +404,3 @@ class Tree(object):
 """
 
         return body
-

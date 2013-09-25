@@ -55,7 +55,6 @@ import sys
 import locale
 import os
 import json
-import re
 
 from bigml.api import FINISHED
 from bigml.api import (get_status, error_message, BigML, get_model_id,

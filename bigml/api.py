@@ -290,7 +290,7 @@ def error_message(resource, resource_type='resource', method=None):
             if BIGML_DOMAIN != 'bigml.io':
                 alternate_message = (
                     u'- The %s was not created in %s.\n' % (
-                        resource_type, BIGML_DOMAIN))                    
+                        resource_type, BIGML_DOMAIN))
             error += (
                 u'\nCouldn\'t find a %s matching the given'
                 u' id. The most probable causes are:\n\n%s'

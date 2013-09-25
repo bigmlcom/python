@@ -40,6 +40,8 @@ MAX_ARGS_LENGTH = 10
 
 INDENT = u'    '
 
+TERM_OPTIONS = ["case_sensitive", "token_mode"]
+
 
 class Tree(object):
     """A tree-like predictive model.
@@ -223,7 +225,7 @@ class Tree(object):
                     value = repr(child.predicate.value)
                 if optype == 'text':
                     body += (
-                        u"%sif (term_matches(%s, \"%s\", \"%s\") %s %s):\n" %
+                        u"%sif (term_matches(%s, \"%s\", u\"%s\") %s %s):\n" %
                         (INDENT * depth,
                          map_data(self.fields[child.predicate.field]['slug'],
                          False),
@@ -293,21 +295,63 @@ class Tree(object):
         # static content
         body += """
     import re
+
+    tm_tokens = 'tokens_only'
+    tm_full_term = 'full_terms_only'
+    tm_all = 'all'
+
+
     def term_matches(text, field_name, term):
         \"\"\" Counts the number of occurences of term and its variants in text
 
         \"\"\"
-
-        forms_list = term_forms[field_name][term]
+        forms_list = term_forms[field_name].get(term, [term])
         options = term_analysis[field_name]
+        token_mode = options.get('token_mode', tm_tokens)
+        case_sensitive = options.get('case_sensitive', False)
+        first_term = forms_list[0]
+        if token_mode == tm_full_term:
+            return full_term_match(text, first_term, case_sensitive)
+        else:
+            # In token_mode='all' we will match full terms using equals and 
+            # tokens using contains
+            if token_mode == tm_all and len(forms_list) == 1:
+                pattern = re.compile(r'^.+\\b.+$', re.U)
+                if re.match(pattern, first_term):
+                    return full_term_match(text, first_term, case_sensitive)
+            return term_matches_tokens(text, forms_list, case_sensitive)
+
+
+    def full_term_match(text, full_term, case_sensitive):
+        \"\"\"Counts the match for full terms according to the case_sensitive option
+
+        \"\"\"
+        if not case_sensitive:
+            text = text.lower()
+            full_term = full_term.lower()
+        return int(text == full_term)
+
+    def get_tokens_flags(case_sensitive):
+        \"\"\"Sets flags for regular expression matching depending on text analysis
+           options
+
+        \"\"\"
         flags = re.U
-        if not options.get('case_sensitive', False):
+        if not case_sensitive:
             flags = (re.I | flags)
+        return flags
+
+
+    def term_matches_tokens(text, forms_list, case_sensitive):
+        \"\"\" Counts the number of occurences of the words in forms_list in the text
+
+        \"\"\"
+        flags = get_tokens_flags(case_sensitive)
         expression = ur'(\\b|_)%s(\\b|_)' % '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
         pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
-        return len(matches)
-        """
+        return len(matches)        
+"""
         term_analysis_options = set(map(lambda x: x[0],
                                         term_analysis_predicates))
         term_analysis_predicates = set(term_analysis_predicates)
@@ -318,23 +362,28 @@ class Tree(object):
             body += """
         \"%s\": {""" % field['slug']
             for option in field['term_analysis']:
-                body += """
-            \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
+                if option in TERM_OPTIONS:
+                    body += """
+                \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
             body += """
         },"""
         body += """
     }"""
         if term_analysis_predicates:
             term_forms = {}
+            fields = self.fields
             for field_id, term in term_analysis_predicates:
-                field = self.fields[field_id]
-                all_forms = field['summary'].get('term_forms', {})
-                terms = [term]
-                terms.extend(all_forms.get(term, []))
-
+                alternatives = []
+                field = fields[field_id]
                 if field['slug'] not in term_forms:
                     term_forms[field['slug']] = {}
-                term_forms[field['slug']][term] = terms
+                all_forms = field['summary'].get('term_forms', {})
+                if all_forms:
+                    alternatives = all_forms.get(term, [])
+                    if alternatives:
+                        terms = [term]
+                        terms.extend(all_forms.get(term, []))
+                        term_forms[field['slug']][term] = terms
             body += """
     term_forms = {"""
             for field in term_forms:
@@ -342,7 +391,7 @@ class Tree(object):
         \"%s\": {""" % field
                 for term in term_forms[field]:
                     body += """
-            \"%s\": %s,""" % (term, term_forms[field][term])
+            u\"%s\": %s,""" % (term, term_forms[field][term])
                 body += """
         },
                 """

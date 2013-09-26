@@ -87,7 +87,8 @@ ENSEMBLE_PATH = 'ensemble'
 ID_PATTERN = '[a-f0-9]{24}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
 DATASET_RE = re.compile(r'^(public/)?%s/%s$' % (DATASET_PATH, ID_PATTERN))
-MODEL_RE = re.compile(r'^(public/)?%s/%s$' % (MODEL_PATH, ID_PATTERN))
+MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
+    MODEL_PATH, ID_PATTERN))
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))

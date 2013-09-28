@@ -106,12 +106,18 @@ def invert_dictionary(dictionary, field='name'):
                 for key, value in dictionary.items()])
 
 
-def slugify(name):
+def slugify(name, reserved_keywords=None, prefix=''):
     """Translates a field name into a variable name.
 
     """
     name = unidecode.unidecode(name).lower()
-    return re.sub(r'\W+', '_', name)
+    name = re.sub(r'\W+', '_', name)
+    if name[0].isdigit():
+        name = "field_" + name
+    if reserved_keywords:
+        if name in reserved_keywords:
+            name = prefix + name
+    return name
 
 
 def localize(number):

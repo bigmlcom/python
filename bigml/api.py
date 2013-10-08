@@ -478,13 +478,9 @@ class BigML(object):
         code = HTTP_ACCEPTED
         while code == HTTP_ACCEPTED:
             try:
-                print url + self.auth
                 response = requests.post(url + self.auth,
                                          headers=SEND_JSON,
                                          data=body, verify=verify)
-
-                print response
-
                 code = response.status_code
 
                 if code in [HTTP_CREATED, HTTP_OK]:

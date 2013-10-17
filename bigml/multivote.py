@@ -77,7 +77,7 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
         ws_n = ws_norm
     else:
         ws_n = float(ws_n)
-        ws_z = float(ws_z)
+    ws_z = float(ws_z)
     ws_z2 = ws_z * ws_z
     ws_factor = ws_z2 / ws_n
     ws_sqrt = math.sqrt((ws_p * (1 - ws_p) + ws_factor / 4) / ws_n)

@@ -73,7 +73,33 @@ def make_the_model_public(step):
     world.model = resource['object']
 
 @step(r'I check the model status using the model\'s public url')
-def build_local_model_from_public_url(step):
+def model_from_public_url(step):
     world.model = world.api.get_model("public/%s" % world.model['resource'])
     assert get_status(world.model)['code'] == FINISHED
 
+@step(r'I make the model shared')
+def make_the_model_shared(step):
+    resource = world.api.update_model(world.model['resource'],
+                                      {'shared': True})
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED
+    world.location = resource['location']
+    world.model = resource['object']
+
+@step(r'I get the model sharing info')
+def get_sharing_info(step):
+    world.shared_hash = world.model['shared_hash']
+    world.sharing_key = world.model['sharing_key']
+
+@step(r'I check the model status using the model\'s shared url')
+def model_from_shared_url(step):
+    world.model = world.api.get_model("shared/model/%s" % world.shared_hash)
+    assert get_status(world.model)['code'] == FINISHED
+
+@step(r'I check the model status using the model\'s shared key')
+def model_from_shared_key(step):
+   
+    username = os.environ.get("BIGML_USERNAME")
+    world.model = world.api.get_model(world.model['resource'],
+        shared_username=username, shared_api_key=world.sharing_key)
+    assert get_status(world.model)['code'] == FINISHED

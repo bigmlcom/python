@@ -60,13 +60,12 @@ def term_matches(text, forms_list, options):
     first_term = forms_list[0]
     if token_mode == TM_FULL_TERM:
         return full_term_match(text, first_term, case_sensitive)
-    else:
-        # In token_mode='all' we will match full terms using equals and
-        # tokens using contains
-        if token_mode == TM_ALL and len(forms_list) == 1:
-            if re.match(FULL_TERM_PATTERN, first_term):
-                return full_term_match(text, first_term, case_sensitive)
-        return term_matches_tokens(text, forms_list, case_sensitive)
+    # In token_mode='all' we will match full terms using equals and
+    # tokens using contains
+    if token_mode == TM_ALL and len(forms_list) == 1:
+        if re.match(FULL_TERM_PATTERN, first_term):
+            return full_term_match(text, first_term, case_sensitive)
+    return term_matches_tokens(text, forms_list, case_sensitive)
 
 
 def full_term_match(text, full_term, case_sensitive):

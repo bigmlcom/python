@@ -3,6 +3,13 @@
 History
 -------
 
+0.9.0 (2013-10-08)
+~~~~~~~~~~~~~~~~~~
+
+- Adds the environment variables and adapts the create_prediction method
+  to create predictions using a different prediction server.
+- Support for shared models.
+
 0.8.0 (2013-08-10)
 ~~~~~~~~~~~~~~~~~~
 

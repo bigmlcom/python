@@ -22,9 +22,12 @@ to make predictions locally or embedded into your application without needing
 to send requests to BigML.io.
 
 """
+import keyword
+
 from bigml.predicate import Predicate
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
+
 
 # Map operator str to its corresponding python operator
 PYTHON_OPERATOR = {
@@ -36,6 +39,7 @@ PYTHON_OPERATOR = {
     ">=": ">=",
     ">": ">"
 }
+
 
 MAX_ARGS_LENGTH = 10
 
@@ -226,12 +230,14 @@ class Tree(object):
                     value = repr(child.predicate.value)
                 if optype == 'text':
                     body += (
-                        u"%sif (term_matches(%s, \"%s\", u\"%s\") %s %s):\n" %
+                        u"%sif (term_matches(%s, \"%s\", %s\"%s\") %s %s):\n" %
                         (INDENT * depth,
                          map_data(self.fields[child.predicate.field]['slug'],
                          False),
                          self.fields[child.predicate.field]['slug'],
-                         child.predicate.term,
+                         ('u' if isinstance(child.predicate.term, unicode)
+                          else ''),
+                         child.predicate.term.replace("\"", "\\\""),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
                     term_analysis_fields.append((child.predicate.field,
@@ -265,15 +271,18 @@ class Tree(object):
         parameters = sort_fields(self.fields)
         if not input_map:
             input_map = len(parameters) > MAX_ARGS_LENGTH
+        reserved_keywords = keyword.kwlist if not input_map else None
+        prefix = "_" if not input_map else ""
         for field in [(key, val) for key, val in parameters]:
-            slug = slugify(self.fields[field[0]]['name'])
+            slug = slugify(self.fields[field[0]]['name'],
+                           reserved_keywords=reserved_keywords, prefix=prefix)
             self.fields[field[0]].update(slug=slug)
             if not input_map:
                 if field[0] != self.objective_field:
                     args.append("%s=None" % (slug))
         if input_map:
             args.append("data={}")
-        predictor_definition = (u"# -*- coding: utf-8 -*-\ndef predict_%s" %
+        predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_field]['slug'])
         depth = len(predictor_definition) + 1
         predictor = u"%s(%s):\n" % (predictor_definition,
@@ -350,7 +359,7 @@ class Tree(object):
 
         \"\"\"
         flags = get_tokens_flags(case_sensitive)
-        expression = ur'(\\b|_)%s(\\b|_)' % '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
+        expression = ur'(\\b|_)%%s(\\b|_)' %% '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
         pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
         return len(matches)

@@ -777,6 +777,54 @@ keys:
    dictionary with an error code and a message. It will be ``None``
    otherwise.
 
+Public and Shared resources
+---------------------------
+
+The previous examples use resources that were created by the same user
+that asks for its retrieval or modification. If a user wants to share one
+of its resources, she can make them public or share them. Declaring a resource
+public means that anyone can see the resource. This can be applied to datasets
+and models. To turn a dataset public, just update its ``private`` property::
+
+    api.update_dataset('dataset/5143a51a37203f2cf7000972', {'private': false})
+
+and any user will be able to download it using its id prepended by ``public``::
+
+    api.get_dataset('public/dataset/5143a51a37203f2cf7000972')
+
+In the models' case, you can also choose if you want the model to be fully
+downloadable or just accesible to make predictions. This is controlled with the
+``white_box`` property. If you want to publish your model completely, just
+use::
+
+    api.update_model('model/5143a51a37203f2cf7000956', {'private': false,
+                     'white_box': true})
+
+Both public models and datasets, will be openly accessible for anyone,
+registered or not, from the web
+gallery.
+
+Still, you may want to share your models with other users, but without making
+them public for everyone. This can be achieved by setting the ``shared``
+property::
+
+    api.update_model('model/5143a51a37203f2cf7000956', {'shared': true})
+
+Shared models can be accessed using its share hash (propery ``shared_hash``
+in the original model)::
+
+    api.get_model('shared/model/d53iw39euTdjsgesj7382ufhwnD')
+
+or by using its original id with the creator user as username and a specific
+sharing api_key you will find as property ``sharing_api_key`` in the original
+model::
+
+    api.get_model('model/5143a51a37203f2cf7000956', shared_username='creator',
+                  shared_api_key='c972018dc5f2789e65c74ba3170fda31d02e00c3')
+
+Only users with the share link or credentials information will be able to
+access your shared models.
+
 Local Models
 ------------
 

@@ -29,6 +29,18 @@ from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
 
 
+# Map operator str to its corresponding python operator
+PYTHON_OPERATOR = {
+    "<": "<",
+    "<=": "<=",
+    "=": "==",
+    "!=": "!=",
+    "/=": "!=",
+    ">=": ">=",
+    ">": ">"
+}
+
+
 MAX_ARGS_LENGTH = 10
 
 INDENT = u'    '

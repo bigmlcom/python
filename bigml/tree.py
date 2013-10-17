@@ -22,81 +22,12 @@ to make predictions locally or embedded into your application without needing
 to send requests to BigML.io.
 
 """
+import keyword
+
 from bigml.predicate import Predicate
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
 
-# Map operator str to its corresponding python operator
-PYTHON_OPERATOR = {
-    "<": "<",
-    "<=": "<=",
-    "=": "==",
-    "!=": "!=",
-    "/=": "!=",
-    ">=": ">=",
-    ">": ">"
-}
-
-# reserved words that can't be used as variable names
-PYTHON_KEYWORDS = [
-    "and",
-    "assert",
-    "break",
-    "class",
-    "continue",
-    "def",
-    "del",
-    "elif",
-    "else",
-    "except",
-    "exec",
-    "finally",
-    "for",
-    "from",
-    "global",
-    "if",
-    "import",
-    "in",
-    "is",
-    "lambda",
-    "not",
-    "or",
-    "pass",
-    "print",
-    "raise",
-    "return",
-    "try",
-    "while ",
-    "Data",
-    "Float",
-    "Int",
-    "Numeric",
-    "Oxphys",
-    "array",
-    "close",
-    "float",
-    "int",
-    "input",
-    "open",
-    "range",
-    "type",
-    "write",
-    "zeros",
-    "acos",
-    "asin",
-    "atan",
-    "cos",
-    "e",
-    "exp",
-    "fabs",
-    "floor",
-    "log",
-    "log10",
-    "pi",
-    "sin",
-    "sqrt",
-    "tan"
-]
 
 MAX_ARGS_LENGTH = 10
 
@@ -328,7 +259,7 @@ class Tree(object):
         parameters = sort_fields(self.fields)
         if not input_map:
             input_map = len(parameters) > MAX_ARGS_LENGTH
-        reserved_keywords = PYTHON_KEYWORDS if not input_map else None
+        reserved_keywords = keyword.kwlist if not input_map else None
         prefix = "_" if not input_map else ""
         for field in [(key, val) for key, val in parameters]:
             slug = slugify(self.fields[field[0]]['name'],

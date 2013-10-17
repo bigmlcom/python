@@ -489,8 +489,6 @@ class BigML(object):
                     resource = json.loads(response.content, 'utf-8')
                     resource_id = resource['resource']
                     error = None
-                elif code == HTTP_ACCEPTED:
-                    pass
                 elif code in [HTTP_BAD_REQUEST,
                               HTTP_UNAUTHORIZED,
                               HTTP_PAYMENT_REQUIRED,
@@ -498,18 +496,22 @@ class BigML(object):
                               HTTP_NOT_FOUND]:
                     error = json.loads(response.content, 'utf-8')
                     LOGGER.error(error_message(error, method='create'))
-                else:
+                elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)" % code)
                     code = HTTP_INTERNAL_SERVER_ERROR
 
             except ValueError:
                 LOGGER.error("Malformed response")
+                code = HTTP_INTERNAL_SERVER_ERROR
             except requests.ConnectionError:
                 LOGGER.error("Connection error")
+                code = HTTP_INTERNAL_SERVER_ERROR
             except requests.Timeout:
                 LOGGER.error("Request timed out")
+                code = HTTP_INTERNAL_SERVER_ERROR
             except requests.RequestException:
                 LOGGER.error("Ambiguous exception occurred")
+                code = HTTP_INTERNAL_SERVER_ERROR
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -536,7 +538,7 @@ class BigML(object):
             "status": {
                 "code": HTTP_INTERNAL_SERVER_ERROR,
                 "message": "The resource couldn't be retrieved"}}
-        auth = (self.auth if shared_username is None or shared_api_key is None
+        auth = (self.auth if shared_username is None
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
         try:

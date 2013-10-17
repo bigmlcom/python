@@ -514,7 +514,8 @@ class BigML(object):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def _get(self, url, query_string=''):
+    def _get(self, url, query_string='',
+             shared_username=None, shared_api_key=None):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -535,7 +536,9 @@ class BigML(object):
             "status": {
                 "code": HTTP_INTERNAL_SERVER_ERROR,
                 "message": "The resource couldn't be retrieved"}}
-
+        auth = (self.auth if shared_username is None or shared_api_key is None
+                else "?username=%s;api_key=%s" % (
+                    shared_username, shared_api_key))
         try:
             response = requests.get(url + self.auth + query_string,
                                     headers=ACCEPT_JSON,
@@ -1212,7 +1215,8 @@ class BigML(object):
             body = json.dumps(args)
             return self._create(self.model_url, body)
 
-    def get_model(self, model, query_string=''):
+    def get_model(self, model, query_string='',
+                  shared_username=None, shared_api_key=None):
         """Retrieves a model.
 
            The model parameter should be a string containing the
@@ -1221,17 +1225,22 @@ class BigML(object):
            until it reaches the FINISHED or FAULTY state, the function will
            return a dict that encloses the model values and state info
            available at the time it is called.
+
+           If this is a shared model, the username and sharing api key must
+           also be provided.
         """
         model_id = get_model_id(model)
         if model_id:
             return self._get("%s%s" % (self.url, model_id),
-                             query_string=query_string)
+                             query_string=query_string,
+                             shared_username=shared_username,
+                             shared_api_key=shared_api_key)
 
-    def model_is_ready(self, model):
+    def model_is_ready(self, model, **kwargs):
         """Checks whether a model's status is FINISHED.
 
         """
-        resource = self.get_model(model)
+        resource = self.get_model(model, **kwargs)
         return (resource['code'] == HTTP_OK and
                 get_status(resource)['code'] == FINISHED)
 

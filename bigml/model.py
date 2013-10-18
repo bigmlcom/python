@@ -112,6 +112,15 @@ def retrieve_model(api, model_id):
     return model
 
 
+def extract_objective(objective_field):
+    """Extract the objective field id from the model structure
+
+    """
+    if isinstance(objective_field, list):
+        return objective_field[0]
+    return objective_field
+
+
 class Model(object):
     """ A lightweight wrapper around a Tree model.
 
@@ -157,13 +166,16 @@ class Model(object):
                         fields[field]['name'] = field_info['name']
                 else:
                     fields = model['model']['fields']
+                objective_field = model['objective_fields']
+                self.objective_field = extract_objective(objective_field)
+                self.uniquify_varnames(fields)
                 self.inverted_fields = invert_dictionary(fields)
                 self.all_inverted_fields = invert_dictionary(model['model']
                                                              ['fields'])
                 self.tree = Tree(
                     model['model']['root'],
                     fields,
-                    model['objective_fields'])
+                    self.objective_field)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)
@@ -179,6 +191,38 @@ class Model(object):
             raise Exception("Cannot create the Model instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
+
+    def uniquify_varnames(self, fields):
+        """Tests if the fields names are unique. If they aren't, a
+           transformation is applied to ensure unicity.
+
+        """
+        unique_names = set([fields[key]['name'] for key in fields])
+        if len(unique_names) < len(fields):
+            self.transform_repeated_names(fields)
+
+    def transform_repeated_names(self, fields):
+        """If a field name is repeated, it will be transformed adding its
+           column number. If that combination is also a field name, the
+           field id will be added.
+
+        """
+        # The objective field treated first to avoid changing it.
+        unique_names = [fields[self.objective_field]['name']]
+
+        field_ids = [field_id for field_id in fields
+                     if field_id != self.objective_field]
+        for field_id in field_ids:
+            new_name = fields[field_id]['name']
+            if new_name in unique_names:
+                new_name = "{0}{1}".format(fields[field_id]['name'],
+                                           fields[field_id]['column_number'])
+                if new_name in unique_names:
+                    new_name = "{0}_{1}".format(new_name, field_id)
+                fields[field_id]['name'] = new_name
+            unique_names.append(new_name)
+
+            
 
     def resource(self):
         """Returns the model resource ID

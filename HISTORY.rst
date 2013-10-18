@@ -3,6 +3,11 @@
 History
 -------
 
+0.9.1 (2013-10-17)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes duplication changing field names in local model if they are not unique.
+
 0.9.0 (2013-10-08)
 ~~~~~~~~~~~~~~~~~~
 

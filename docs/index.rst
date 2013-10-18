@@ -777,12 +777,12 @@ keys:
    dictionary with an error code and a message. It will be ``None``
    otherwise.
 
-Public and Shared resources
+Public and shared resources
 ---------------------------
 
 The previous examples use resources that were created by the same user
-that asks for its retrieval or modification. If a user wants to share one
-of its resources, she can make them public or share them. Declaring a resource
+that asks for their retrieval or modification. If a user wants to share one
+of her resources, she can make them public or share them. Declaring a resource
 public means that anyone can see the resource. This can be applied to datasets
 and models. To turn a dataset public, just update its ``private`` property::
 
@@ -810,13 +810,13 @@ property::
 
     api.update_model('model/5143a51a37203f2cf7000956', {'shared': true})
 
-Shared models can be accessed using its share hash (propery ``shared_hash``
+Shared models can be accessed using their share hash (propery ``shared_hash``
 in the original model)::
 
     api.get_model('shared/model/d53iw39euTdjsgesj7382ufhwnD')
 
-or by using its original id with the creator user as username and a specific
-sharing api_key you will find as property ``sharing_api_key`` in the original
+or by using their original id with the creator user as username and a specific
+sharing api_key you will find as property ``sharing_api_key`` in the updated
 model::
 
     api.get_model('model/5143a51a37203f2cf7000956', shared_username='creator',

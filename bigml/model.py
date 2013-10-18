@@ -112,6 +112,15 @@ def retrieve_model(api, model_id):
     return model
 
 
+def extract_objective(objective_field):
+    """Extract the objective field id from the model structure
+
+    """
+    if isinstance(objective_field, list):
+        return objective_field[0]
+    return objective_field
+
+
 class Model(object):
     """ A lightweight wrapper around a Tree model.
 
@@ -158,18 +167,15 @@ class Model(object):
                 else:
                     fields = model['model']['fields']
                 objective_field = model['objective_fields']
-                if isinstance(objective_field, list):
-                    self.objective_field = objective_field[0]
-                else:
-                    self.objective_field = objective_field
-                self.change_repeated_varnames(fields)
+                self.objective_field = extract_objective(objective_field)
+                self.uniquify_varnames(fields)
                 self.inverted_fields = invert_dictionary(fields)
                 self.all_inverted_fields = invert_dictionary(model['model']
                                                              ['fields'])
                 self.tree = Tree(
                     model['model']['root'],
                     fields,
-                    model['objective_fields'])
+                    self.objective_field)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)
@@ -186,7 +192,7 @@ class Model(object):
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
 
-    def change_repeated_varnames(self, fields):
+    def uniquify_varnames(self, fields):
         """Tests if the fields names are unique. If they aren't, a
            transformation is applied to ensure unicity.
 

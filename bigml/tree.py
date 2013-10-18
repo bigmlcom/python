@@ -55,11 +55,7 @@ class Tree(object):
     def __init__(self, tree, fields, objective_field=None):
 
         self.fields = fields
-        if objective_field and isinstance(objective_field, list):
-            self.objective_field = objective_field[0]
-        else:
-            self.objective_field = objective_field
-
+        self.objective_field = objective_field
         self.output = tree['output']
 
         if tree['predicate'] is True:

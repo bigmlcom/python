@@ -121,6 +121,18 @@ def extract_objective(objective_field):
     return objective_field
 
 
+def print_importance(field_importance, fields, out=sys.stdout):
+    """Print a field importance structure
+
+    """
+    count = 1
+    for [field, importance] in field_importance:
+        out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
+                       fields[field]['name'],
+                       round(importance, 4) * 100)))
+        count += 1
+
+
 class Model(object):
     """ A lightweight wrapper around a Tree model.
 
@@ -438,16 +450,11 @@ class Model(object):
                                group[1],
                                "" if group[1] == 1 else "s")))
 
-        def print_importance(out=sys.stdout):
+        def print_field_importance(out=sys.stdout):
             """Prints field importance
 
             """
-            count = 1
-            for [field, importance] in self.field_importance:
-                out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
-                               self.tree.fields[field]['name'],
-                               round(importance, 4) * 100)))
-                count += 1
+            print_importance(self.field_importance, self.tree.fields, out=out)
 
         def extract_common_path(groups):
             """Extracts the common segment of the prediction path for a group
@@ -499,7 +506,7 @@ class Model(object):
 
         if self.field_importance:
             out.write(u"Field importance:\n")
-            print_importance(out=out)
+            print_field_importance(out=out)
 
         extract_common_path(groups)
 

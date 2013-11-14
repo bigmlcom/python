@@ -54,10 +54,10 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
     status = get_status(world.ensemble)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the ensemble "{id}"'.format(id=world.ensemble['resource']))
-           status = get_status(world.ensemble)
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        step.given('I get the ensemble "{id}"'.format(id=world.ensemble['resource']))
+        status = get_status(world.ensemble)
     assert status['code'] == int(code1)
 
 @step(r'I wait until the ensemble is ready less than (\d+)')

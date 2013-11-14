@@ -38,11 +38,12 @@ ensemble = Ensemble(ensemble, api)
 ensemble.predict({"petal length": 3, "petal width": 1})
 
 """
+import sys
 import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
-from bigml.model import retrieve_model
+from bigml.model import Model, retrieve_model, print_importance
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
@@ -123,3 +124,32 @@ class Ensemble(object):
                                                           by_name=by_name)
             votes = MultiVote(votes_split.predictions)
         return votes.combine(method=method, with_confidence=with_confidence)
+
+    def field_importance_data(self):
+        """Computes field importance based on the field importance information
+           of the individual models in the ensemble.
+
+        """
+        field_importance = {}
+        field_names = {}
+        for model_id in self.model_ids:
+            local_model = Model(model_id)
+            for field_info in local_model.field_importance:
+                field_id = field_info[0]
+                if not field_info[0] in field_importance:
+                    field_importance[field_id] = 0.0
+                    name = local_model.tree.fields[field_id]['name']
+                    field_names[field_id] = {'name': name}
+                field_importance[field_id] += field_info[1]
+        number_of_models = len(self.model_ids)
+        for field_id in field_importance.keys():
+            field_importance[field_id] /= number_of_models
+        return map(list, sorted(field_importance.items(), key=lambda x: x[1],
+                                reverse=True)), field_names
+
+    def print_importance(self, out=sys.stdout):
+        """Prints ensemble field importance
+
+        """
+        field_importance, field_names = self.field_importance_data()
+        print_importance(field_importance, field_names, out=out) 

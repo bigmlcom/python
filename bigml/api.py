@@ -110,6 +110,14 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
+RESOURCE_RE = {
+    'source': SOURCE_RE,
+    'dataset': DATASET_RE,
+    'model': MODEL_RE,
+    'prediction': PREDICTION_RE,
+    'evaluation': EVALUATION_RE,
+    'ensemble': ENSEMBLE_RE}
+
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -165,6 +173,20 @@ def get_resource(regex, resource):
     if isinstance(resource, basestring) and regex.match(resource):
         return resource
     raise ValueError("Cannot find resource id for %s" % resource)
+
+
+def get_resource_type(resource):
+    """Returns the associated resource type for a resource
+
+    """
+    if isinstance(resource, dict) and 'resource' in resource:
+        resource = resource['resource']
+    if not isinstance(resource, basestring):
+        raise ValueError("Failed to parse a resource string or structure.")
+    for resource_type, resource_re in RESOURCE_RE.items():
+        if resource_re.match(resource):
+            return resource_type
+    return None
 
 
 def get_source_id(source):

@@ -93,8 +93,10 @@ INDENT = u'    '
 
 STORAGE = './storage'
 
+ONLY_MODEL = 'only_model=true'
+EXCLUDE_ROOT = 'exclude=root;shorten=true'
 
-def retrieve_model(api, model_id):
+def retrieve_model(api, model_id, query_string=''):
     """ Retrieves model info either from a local repo or from the remote server
 
     """
@@ -108,7 +110,7 @@ def retrieve_model(api, model_id):
             raise ValueError("The file %s contains no JSON")
         except IOError:
             pass
-    model = check_resource(model_id, api.get_model, 'only_model=true')
+    model = check_resource(model_id, api.get_model, query_string)
     return model
 
 
@@ -141,20 +143,25 @@ class Model(object):
 
     """
 
-    def __init__(self, model, api=None):
+    def __init__(self, model, api=None, shorten=False):
 
+        query_string = ONLY_MODEL
+        if shorten:
+            query_string += ';%s' % EXCLUDE_ROOT
         if (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
             self.resource_id = model['resource']
         else:
             if api is None:
-                api = BigML(storage=STORAGE)
+                storage = None if shorten else STORAGE
+                api = BigML(storage=storage)
             self.resource_id = get_model_id(model)
             if self.resource_id is None:
                 raise Exception(error_message(model,
                                               resource_type='model',
                                               method='get'))
-            model = retrieve_model(api, self.resource_id)
+            model = retrieve_model(api, self.resource_id,
+                                   query_string=query_string)
 
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']
@@ -174,7 +181,8 @@ class Model(object):
                                         " the complete list of fields.")
                     for field in fields:
                         field_info = model['model']['fields'][field]
-                        fields[field]['summary'] = field_info['summary']
+                        if not shorten:
+                            fields[field]['summary'] = field_info['summary']
                         fields[field]['name'] = field_info['name']
                 else:
                     fields = model['model']['fields']
@@ -184,10 +192,12 @@ class Model(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.all_inverted_fields = invert_dictionary(model['model']
                                                              ['fields'])
-                self.tree = Tree(
-                    model['model']['root'],
-                    fields,
-                    self.objective_field)
+                if not shorten:
+                    self.tree = Tree(
+                        model['model']['root'],
+                        fields,
+                        self.objective_field)
+                self.fields = fields
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)
@@ -282,7 +292,7 @@ class Model(object):
                 input_data = dict(
                     [[key, value]
                         for key, value in input_data.items()
-                        if key in self.tree.fields])
+                        if key in self.fields])
             return input_data
         else:
             LOGGER.error("Failed to read input data in the expected"
@@ -301,7 +311,7 @@ class Model(object):
         input_data = self.filter_input_data(input_data, by_name=by_name)
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.tree.fields)
+        cast(input_data, self.fields)
 
         prediction_info = self.tree.predict(input_data)
         prediction, path, confidence, distribution, instances = prediction_info
@@ -319,7 +329,7 @@ class Model(object):
 
         """
         docstring = (u"Predictor for %s from %s\n" % (
-            self.tree.fields[self.tree.objective_field]['name'],
+            self.fields[self.tree.objective_field]['name'],
             self.resource_id))
         self.description = (unicode(markdown_cleanup(
             self.description).strip())
@@ -454,7 +464,7 @@ class Model(object):
             """Prints field importance
 
             """
-            print_importance(self.field_importance, self.tree.fields, out=out)
+            print_importance(self.field_importance, self.fields, out=out)
 
         def extract_common_path(groups):
             """Extracts the common segment of the prediction path for a group
@@ -485,7 +495,7 @@ class Model(object):
             """
             if value is None:
                 return ""
-            objective_type = tree.fields[tree.objective_field]['optype']
+            objective_type = self.fields[tree.objective_field]['optype']
             if objective_type == 'numeric':
                 return u" [Error: %s]" % value
             else:
@@ -512,7 +522,7 @@ class Model(object):
 
         for group in [x[0] for x in predictions]:
             details = groups[group]['details']
-            path = [prediction.to_rule(tree.fields) for
+            path = [prediction.to_rule(self.fields) for
                     prediction in groups[group]['total'][0]]
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
@@ -527,7 +537,7 @@ class Model(object):
             for j in range(0, len(details)):
                 subgroup = details[j]
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
-                path = [prediction.to_rule(tree.fields) for
+                path = [prediction.to_rule(self.fields) for
                         prediction in subgroup[0]]
                 path_chain = " and ".join(path) if len(path) else "(root node)"
                 out.write(utf8(u"    · %.2f%%: %s%s\n" %
@@ -547,10 +557,10 @@ class Model(object):
                       input_fields if key != self.tree.objective_field]
         args = []
         for field in input_fields:
-            slug = slugify(self.tree.fields[field[0]]['name'])
-            self.tree.fields[field[0]].update(slug=slug)
+            slug = slugify(self.fields[field[0]]['name'])
+            self.fields[field[0]].update(slug=slug)
             if field[0] != self.tree.objective_field:
-                args.append("\"" + self.tree.fields[field[0]]['slug'] + "\"")
+                args.append("\"" + self.fields[field[0]]['slug'] + "\"")
         output = \
 u"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -587,7 +597,7 @@ class CSVInput(object):
         prefixes = []
         suffixes = []
         count = 0
-        fields = self.tree.fields
+        fields = self.fields
         for key in [key[0] for key in input_fields
                     if key != self.tree.objective_field]:
             input_type = ('None' if not fields[key]['datatype'] in
@@ -741,11 +751,11 @@ if count > 0:
             value_as_string = unicode(value_as_string, "utf-8")
 
         objective_field = self.tree.objective_field
-        if self.tree.fields[objective_field]['optype'] == 'numeric':
+        if self.fields[objective_field]['optype'] == 'numeric':
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
-            datatype = self.tree.fields[objective_field]['datatype']
+            datatype = self.fields[objective_field]['datatype']
             cast_function = PYTHON_FUNC.get(datatype, None)
             if cast_function is not None:
                 return cast_function(value_as_string)

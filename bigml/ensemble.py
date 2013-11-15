@@ -133,12 +133,12 @@ class Ensemble(object):
         field_importance = {}
         field_names = {}
         for model_id in self.model_ids:
-            local_model = Model(model_id)
+            local_model = Model(model_id, shorten=True)
             for field_info in local_model.field_importance:
                 field_id = field_info[0]
                 if not field_info[0] in field_importance:
                     field_importance[field_id] = 0.0
-                    name = local_model.tree.fields[field_id]['name']
+                    name = local_model.fields[field_id]['name']
                     field_names[field_id] = {'name': name}
                 field_importance[field_id] += field_info[1]
         number_of_models = len(self.model_ids)

@@ -48,6 +48,7 @@ from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
+from bigml.basemodel import BaseModel
 
 
 class Ensemble(object):
@@ -133,7 +134,7 @@ class Ensemble(object):
         field_importance = {}
         field_names = {}
         for model_id in self.model_ids:
-            local_model = Model(model_id, shorten=True)
+            local_model = BaseModel(model_id)
             for field_info in local_model.field_importance:
                 field_id = field_info[0]
                 if not field_info[0] in field_importance:

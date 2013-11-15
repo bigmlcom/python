@@ -3,6 +3,13 @@
 History
 -------
 
+0.9.2 (2013-11-15)
+~~~~~~~~~~~~~~~~~~
+
+- Adding a function printing field importance to ensembles.
+- Changing Model to add a lightweight BaseModel class with no Tree
+  information.
+
 0.9.1 (2013-10-17)
 ~~~~~~~~~~~~~~~~~~
 

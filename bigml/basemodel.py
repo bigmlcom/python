@@ -25,6 +25,7 @@ is used for local predictions.
 import logging
 LOGGER = logging.getLogger('BigML')
 
+import sys
 import locale
 import os
 import json
@@ -32,7 +33,7 @@ import json
 from bigml.api import FINISHED
 from bigml.api import (get_status, error_message, BigML, get_model_id,
                        check_resource)
-from bigml.util import invert_dictionary
+from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
 
 
@@ -64,6 +65,20 @@ def extract_objective(objective_field):
     if isinstance(objective_field, list):
         return objective_field[0]
     return objective_field
+
+
+def print_importance(instance, out=sys.stdout):
+    """Print a field importance structure
+
+    """
+    count = 1
+    field_importance, fields = instance.field_importance_data()
+    print field_importance
+    for [field, importance] in field_importance:
+        out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
+                       fields[field]['name'],
+                       round(importance, 4) * 100)))
+        count += 1
 
 
 class BaseModel(object):
@@ -175,3 +190,15 @@ class BaseModel(object):
 
         """
         return self.resource_id
+
+    def field_importance_data(self):
+        """Returns field importance related info
+
+        """
+        return self.field_importance, self.fields
+
+    def print_importance(self, out=sys.stdout):
+        """Prints the importance data
+
+        """
+        print_importance(self, out=out)

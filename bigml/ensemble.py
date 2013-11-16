@@ -43,12 +43,12 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
-from bigml.model import Model, retrieve_model, print_importance
+from bigml.model import Model, retrieve_model
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
-from bigml.basemodel import BaseModel
+from bigml.basemodel import BaseModel, print_importance
 
 
 class Ensemble(object):
@@ -152,5 +152,4 @@ class Ensemble(object):
         """Prints ensemble field importance
 
         """
-        field_importance, field_names = self.field_importance_data()
-        print_importance(field_importance, field_names, out=out) 
+        print_importance(self, out=out) 

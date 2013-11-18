@@ -1080,6 +1080,9 @@ class BigML(object):
            available at the time it is called.
 
         """
+        resource_type = get_resource_type(source)
+        if not SOURCE_PATH == resource_type:
+            raise Exception("A source id is needed. %s found." % resource_type)
         source_id = get_source_id(source)
         if source_id:
             return self._get("%s%s" % (self.url, source_id),
@@ -1089,6 +1092,9 @@ class BigML(object):
         """Checks whether a source' status is FINISHED.
 
         """
+        resource_type = get_resource_type(source)
+        if not SOURCE_PATH == resource_type:
+            raise Exception("A source id is needed. %s found." % resource_type)
         source = self.get_source(source)
         return (source['code'] == HTTP_OK and
                 get_status(source)['code'] == FINISHED)
@@ -1105,6 +1111,9 @@ class BigML(object):
         Updates remote `source` with `changes'.
 
         """
+        resource_type = get_resource_type(source)
+        if not SOURCE_PATH == resource_type:
+            raise Exception("A source id is needed. %s found." % resource_type)
         source_id = get_source_id(source)
         if source_id:
             body = json.dumps(changes)
@@ -1114,6 +1123,9 @@ class BigML(object):
         """Deletes a remote source permanently.
 
         """
+        resource_type = get_resource_type(source)
+        if not SOURCE_PATH == resource_type:
+            raise Exception("A source id is needed. %s found." % resource_type)
         source_id = get_source_id(source)
         if source_id:
             return self._delete("%s%s" % (self.url, source_id))
@@ -1177,6 +1189,10 @@ class BigML(object):
            return a dict that encloses the dataset values and state info
            available at the time it is called.
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             return self._get("%s%s" % (self.url, dataset_id),
@@ -1186,6 +1202,10 @@ class BigML(object):
         """Check whether a dataset' status is FINISHED.
 
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed. %s found." %
+                            resource_type)
         resource = self.get_dataset(dataset)
         return (resource['code'] == HTTP_OK and
                 get_status(resource)['code'] == FINISHED)
@@ -1200,6 +1220,10 @@ class BigML(object):
         """Updates a dataset.
 
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             body = json.dumps(changes)
@@ -1209,6 +1233,10 @@ class BigML(object):
         """Deletes a dataset.
 
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             return self._delete("%s%s" % (self.url, dataset_id))
@@ -1223,6 +1251,11 @@ class BigML(object):
         """Creates a model.
 
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed to create a"
+                            " model. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
 
         if dataset_id:
@@ -1255,6 +1288,10 @@ class BigML(object):
            If this is a shared model, the username and sharing api key must
            also be provided.
         """
+        resource_type = get_resource_type(model)
+        if not MODEL_PATH == resource_type:
+            raise Exception("A model id is needed. %s found." %
+                            resource_type)
         model_id = get_model_id(model)
         if model_id:
             return self._get("%s%s" % (self.url, model_id),
@@ -1266,6 +1303,10 @@ class BigML(object):
         """Checks whether a model's status is FINISHED.
 
         """
+        resource_type = get_resource_type(model)
+        if not MODEL_PATH == resource_type:
+            raise Exception("A model id is needed. %s found." %
+                            resource_type)
         resource = self.get_model(model, **kwargs)
         return (resource['code'] == HTTP_OK and
                 get_status(resource)['code'] == FINISHED)
@@ -1280,6 +1321,10 @@ class BigML(object):
         """Updates a model.
 
         """
+        resource_type = get_resource_type(model)
+        if not MODEL_PATH == resource_type:
+            raise Exception("A model id is needed. %s found." %
+                            resource_type)
         model_id = get_model_id(model)
         if model_id:
             body = json.dumps(changes)
@@ -1289,6 +1334,10 @@ class BigML(object):
         """Deletes a model.
 
         """
+        resource_type = get_resource_type(model)
+        if not MODEL_PATH == resource_type:
+            raise Exception("A model id is needed. %s found." %
+                            resource_type)
         model_id = get_model_id(model)
         if model_id:
             return self._delete("%s%s" % (self.url, model_id))
@@ -1374,6 +1423,10 @@ class BigML(object):
         """Retrieves a prediction.
 
         """
+        resource_type = get_resource_type(prediction)
+        if not PREDICTION_PATH == resource_type:
+            raise Exception("A prediction id is needed. %s found." %
+                            resource_type)
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             return self._get("%s%s" % (self.url, prediction_id))
@@ -1388,6 +1441,10 @@ class BigML(object):
         """Updates a prediction.
 
         """
+        resource_type = get_resource_type(prediction)
+        if not PREDICTION_PATH == resource_type:
+            raise Exception("A prediction id is needed. %s found." %
+                            resource_type)
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             body = json.dumps(changes)
@@ -1397,6 +1454,10 @@ class BigML(object):
         """Deletes a prediction.
 
         """
+        resource_type = get_resource_type(prediction)
+        if not PREDICTION_PATH == resource_type:
+            raise Exception("A prediction id is needed. %s found." %
+                            resource_type)
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
             return self._delete("%s%s" % (self.url, prediction_id))
@@ -1430,7 +1491,11 @@ class BigML(object):
 
         if args is None:
             args = {}
-
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed as second argument"
+                            " to create an evaluation. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             if wait_time > 0:
@@ -1448,7 +1513,8 @@ class BigML(object):
             resource_id = get_ensemble_id(model_or_ensemble)
             args_update(self.ensemble_is_ready)
         else:
-            raise Exception("A model or ensemble id is needed to create an"
+            raise Exception("A model or ensemble id is needed as first"
+                            " argument to create an"
                             " evaluation. %s found." % resource_type)
 
         body = json.dumps(args)
@@ -1464,6 +1530,10 @@ class BigML(object):
            return a dict that encloses the evaluation values and state info
            available at the time it is called.
         """
+        resource_type = get_resource_type(evaluation)
+        if not EVALUATION_PATH == resource_type:
+            raise Exception("A evaluation id is needed. %s found." %
+                            resource_type)
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
             return self._get("%s%s" % (self.url, evaluation_id))
@@ -1478,6 +1548,10 @@ class BigML(object):
         """Updates an evaluation.
 
         """
+        resource_type = get_resource_type(evaluation)
+        if not EVALUATION_PATH == resource_type:
+            raise Exception("A evaluation id is needed. %s found." %
+                            resource_type)
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
             body = json.dumps(changes)
@@ -1487,6 +1561,10 @@ class BigML(object):
         """Deletes an evaluation.
 
         """
+        resource_type = get_resource_type(evaluation)
+        if not EVALUATION_PATH == resource_type:
+            raise Exception("A evaluation id is needed. %s found." %
+                            resource_type)
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
             return self._delete("%s%s" % (self.url, evaluation_id))
@@ -1501,6 +1579,11 @@ class BigML(object):
         """Creates an ensemble.
 
         """
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed to create an"
+                            " ensemble. %s found." %
+                            resource_type)
         dataset_id = get_dataset_id(dataset)
 
         if dataset_id:
@@ -1528,6 +1611,10 @@ class BigML(object):
            return a dict that encloses the ensemble values and state info
            available at the time it is called.
         """
+        resource_type = get_resource_type(ensemble)
+        if not ENSEMBLE_PATH == resource_type:
+            raise Exception("A ensemble id is needed. %s found." %
+                            resource_type)
         ensemble_id = get_ensemble_id(ensemble)
         if ensemble_id:
             return self._get("%s%s" % (self.url, ensemble_id),
@@ -1537,6 +1624,10 @@ class BigML(object):
         """Checks whether a ensemble's status is FINISHED.
 
         """
+        resource_type = get_resource_type(ensemble)
+        if not ENSEMBLE_PATH == resource_type:
+            raise Exception("A ensemble id is needed. %s found." %
+                            resource_type)
         resource = self.get_ensemble(ensemble)
         return (resource['code'] == HTTP_OK and
                 get_status(resource)['code'] == FINISHED)
@@ -1551,6 +1642,10 @@ class BigML(object):
         """Updates a ensemble.
 
         """
+        resource_type = get_resource_type(ensemble)
+        if not ENSEMBLE_PATH == resource_type:
+            raise Exception("A ensemble id is needed. %s found." %
+                            resource_type)
         ensemble_id = get_ensemble_id(ensemble)
         if ensemble_id:
             body = json.dumps(changes)
@@ -1560,6 +1655,10 @@ class BigML(object):
         """Deletes a ensemble.
 
         """
+        resource_type = get_resource_type(ensemble)
+        if not ENSEMBLE_PATH == resource_type:
+            raise Exception("A ensemble id is needed. %s found." %
+                            resource_type)
         ensemble_id = get_ensemble_id(ensemble)
         if ensemble_id:
             return self._delete("%s%s" % (self.url, ensemble_id))

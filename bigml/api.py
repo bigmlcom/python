@@ -1137,20 +1137,19 @@ class BigML(object):
         if args is None:
             args = {}
 
-        try:
+        resource_type = get_resource_type(source_or_dataset)
+        if resource_type == SOURCE_PATH:
             source_id = get_source_id(source_or_dataset)
-        except ValueError:
-            source_id = None
-        if source_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.source_is_ready(source_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
-            args.update({
-                "source": source_id})
-        else:
+            if source_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not self.source_is_ready(source_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    "source": source_id})
+        elif resource_type == DATASET_PATH:
             dataset_id = get_dataset_id(source_or_dataset)
             if dataset_id:
                 if wait_time > 0:
@@ -1161,6 +1160,9 @@ class BigML(object):
                         count += 1
             args.update({
                 "origin_dataset": dataset_id})
+        else:
+            raise Exception("A source or dataset id is needed to create a"
+                            " dataset. %s found." % resource_type)
 
         body = json.dumps(args)
         return self._create(self.dataset_url, body)
@@ -1304,7 +1306,9 @@ class BigML(object):
         """
         ensemble_id = None
         model_id = None
-        try:
+
+        resource_type = get_resource_type(model_or_ensemble)
+        if resource_type == ENSEMBLE_PATH:
             ensemble_id = get_ensemble_id(model_or_ensemble)
             if ensemble_id is not None:
                 if wait_time > 0:
@@ -1320,8 +1324,11 @@ class BigML(object):
                     LOGGER.error("The ensemble has no valid model"
                                  " information: %s" % str(exc))
                     model_id = None
-        except ValueError:
+        elif resource_type == MODEL_PATH:
             model_id = get_model_id(model_or_ensemble)
+        else:
+            raise Exception("A model or ensemble id is needed to create a"
+                            " prediction. %s found." % resource_type)
 
         if model_id is not None:
             if ensemble_id is None:
@@ -1405,6 +1412,22 @@ class BigML(object):
         """Creates a new evaluation.
 
         """
+
+        def args_update(check_resource_is_ready):
+            """Updates args when the resource is ready
+
+            """
+            if resource_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not check_resource_is_ready(resource_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    resource_type: resource_id,
+                    "dataset": dataset_id})
+
         if args is None:
             args = {}
 
@@ -1417,32 +1440,16 @@ class BigML(object):
                     time.sleep(wait_time)
                     count += 1
 
-        try:
-            model_id = get_model_id(model_or_ensemble)
-        except ValueError:
-            model_id = None
-        if model_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.model_is_ready(model_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
-            args.update({
-                "model": model_id,
-                "dataset": dataset_id})
+        resource_type = get_resource_type(model_or_ensemble)
+        if resource_type == MODEL_PATH:
+            resource_id = get_model_id(model_or_ensemble)
+            args_update(self.model_is_ready)
+        elif resource_type == ENSEMBLE_PATH:
+            resource_id = get_ensemble_id(model_or_ensemble)
+            args_update(self.ensemble_is_ready)
         else:
-            ensemble_id = get_ensemble_id(model_or_ensemble)
-            if ensemble_id:
-                if wait_time > 0:
-                    count = 0
-                    while (not self.ensemble_is_ready(ensemble_id) and
-                           count < retries):
-                        time.sleep(wait_time)
-                        count += 1
-                args.update({
-                    "ensemble": ensemble_id,
-                    "dataset": dataset_id})
+            raise Exception("A model or ensemble id is needed to create an"
+                            " evaluation. %s found." % resource_type)
 
         body = json.dumps(args)
         return self._create(self.evaluation_url, body)

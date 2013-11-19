@@ -9,6 +9,8 @@ History
 - Adding a function printing field importance to ensembles.
 - Changing Model to add a lightweight BaseModel class with no Tree
   information.
+- Adding function to get resource type from resource id or structure.
+- Adding resource type checks to REST functions.
 
 0.9.1 (2013-10-17)
 ~~~~~~~~~~~~~~~~~~

@@ -906,6 +906,17 @@ to each prediction, or even ``probability weighted``::
 that weights each vote by using the probability associated to the training
 distribution at the prediction node.
 
+There's also a ``threshold`` method that uses an additional set of options:
+threshold and category. The category is predicted if and only if
+the number of predictions for that category is at least the threshold value.
+Otherwise, the prediction is plurality for the rest of predicted values.
+
+An example of ``threshold`` combination method would be::
+
+    model.predict({'petal length': 0.9, 'petal width': 3.0}, method=3,
+                  options={'threshold': 3, 'category': 'Iris-virginica'})
+
+
 When making predictions on a test set with a large number of models,
 ``batch_predict`` can be useful to log each model's predictions in a
 separated file. It expects a list of input data values and the directory path

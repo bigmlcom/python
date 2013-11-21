@@ -54,10 +54,10 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
     status = get_status(world.ensemble)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the ensemble "{id}"'.format(id=world.ensemble['resource']))
-           status = get_status(world.ensemble)
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        step.given('I get the ensemble "{id}"'.format(id=world.ensemble['resource']))
+        status = get_status(world.ensemble)
     assert status['code'] == int(code1)
 
 @step(r'I wait until the ensemble is ready less than (\d+)')
@@ -68,3 +68,12 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 @step(r'I create a local Ensemble$')
 def create_local_ensemble(step):
     world.local_ensemble = Ensemble(world.ensemble_id, world.api)
+
+@step(r'I create a local Ensemble with the last (\d+) models$')
+def create_local_ensemble_with_list(step, number_of_models):
+    world.local_ensemble = Ensemble(world.models[-int(number_of_models):], world.api)
+
+@step(r'the field importance text is (.*?)$')
+def field_importance_print(step, field_importance):
+    field_importance_data = world.local_ensemble.field_importance_data()[0]
+    assert field_importance_data == json.loads(field_importance)

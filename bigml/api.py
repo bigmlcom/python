@@ -195,7 +195,7 @@ def check_resource_type(resource, expected_resource, message=None):
     """
     resource_type = get_resource_type(resource)
     if not expected_resource == resource_type:
-        raise Exception("%s\n%s found." % (message, resource_type))
+        raise Exception("%s\nFound %s." % (message, resource_type))
 
 
 def get_source_id(source):
@@ -255,6 +255,18 @@ def get_resource_id(resource):
         return resource
     else:
         return
+
+
+def resource_is_ready(resource):
+    """Checks a fully fledged resource structure and returns True if finished.
+
+    """
+    if not isinstance(resource, dict) or not 'error' in resource:
+        raise Exception("No valid resource structure found")
+    if resource['error'] is not None:
+        raise Exception(resource['error']['status']['message'])
+    return (resource['code'] == HTTP_OK and
+            get_status(resource)['code'] == FINISHED)
 
 
 def get_status(resource):
@@ -1103,8 +1115,7 @@ class BigML(object):
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")
         source = self.get_source(source)
-        return (source['code'] == HTTP_OK and
-                get_status(source)['code'] == FINISHED)
+        return resource_is_ready(source)
 
     def list_sources(self, query_string=''):
         """Lists all your remote sources.
@@ -1208,8 +1219,7 @@ class BigML(object):
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
         resource = self.get_dataset(dataset)
-        return (resource['code'] == HTTP_OK and
-                get_status(resource)['code'] == FINISHED)
+        return resource_is_ready(resource)
 
     def list_datasets(self, query_string=''):
         """Lists all your datasets.
@@ -1299,8 +1309,7 @@ class BigML(object):
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
         resource = self.get_model(model, **kwargs)
-        return (resource['code'] == HTTP_OK and
-                get_status(resource)['code'] == FINISHED)
+        return resource_is_ready(resource)
 
     def list_models(self, query_string=''):
         """Lists all your models.
@@ -1597,8 +1606,7 @@ class BigML(object):
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
         resource = self.get_ensemble(ensemble)
-        return (resource['code'] == HTTP_OK and
-                get_status(resource)['code'] == FINISHED)
+        return resource_is_ready(resource)
 
     def list_ensembles(self, query_string=''):
         """Lists all your ensembles.

@@ -26,23 +26,29 @@ import math
 PLURALITY = 'plurality'
 CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
+THRESHOLD = 'threshold'
 PLURALITY_CODE = 0
 CONFIDENCE_CODE = 1
 PROBABILITY_CODE = 2
+THRESHOLD_CODE = 3
+
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']
 COMBINATION_WEIGHTS = {
     PLURALITY: None,
     CONFIDENCE: 'confidence',
-    PROBABILITY: 'probability'}
+    PROBABILITY: 'probability',
+    THRESHOLD: None,}
 COMBINER_MAP = {
     PLURALITY_CODE: PLURALITY,
     CONFIDENCE_CODE: CONFIDENCE,
-    PROBABILITY_CODE: PROBABILITY}
+    PROBABILITY_CODE: PROBABILITY,
+    THRESHOLD_CODE: THRESHOLD}
 WEIGHT_KEYS = {
     PLURALITY: None,
     CONFIDENCE: ['confidence'],
-    PROBABILITY: ['distribution', 'count']}
+    PROBABILITY: ['distribution', 'count'],
+    THRESHOLD: None}
 
 DEFAULT_METHOD = 0
 
@@ -222,7 +228,7 @@ class MultiVote(object):
             return self.predictions[-1]['order'] + 1
         return 0
 
-    def combine(self, method=DEFAULT_METHOD, with_confidence=False):
+    def combine(self, method=DEFAULT_METHOD, with_confidence=False, options=None):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
@@ -254,7 +260,11 @@ class MultiVote(object):
                                                          self.__class__.avg)
             return function(self, with_confidence=with_confidence)
         else:
-            if method == PROBABILITY:
+            if (method == THRESHOLD):
+                if options is None:
+                    options = []
+                predictions = self.single_out_category(options)
+            elif method == PROBABILITY:
                 predictions = MultiVote([])
                 predictions.predictions = self.probability_weight()
             else:
@@ -412,6 +422,36 @@ class MultiVote(object):
             LOGGER.warning("Failed to add the prediction.\n"
                            "The minimal key for the prediction is 'prediction'"
                            ":\n{'prediction': 'Iris-virginica'")
+
+    def single_out_category(self, options):
+        """Singles out the votes for a chosen category and returns a prediction
+           for this category iff the number of votes reaches at least the given
+           threshold.
+
+        """
+        if options is None or any(not option in options for option in
+                                  ["threshold", "category"]):
+            raise Exception("No category and threshold information was"
+                            " found. Add threshold and category info."
+                            " E.g. {\"threshold\": 6, \"category\":"
+                            " \"Iris-virginica\"}.")
+        length = len(self.predictions)
+        if (options["threshold"] > length):
+            raise Exception("You cannot set a threshold value larger than "
+                            "%s. The ensemble has not enough models to use"
+                            " this threshold value." % length)
+        if (options["threshold"] < 1):
+            raise Exception("The threshold must be a positive value")
+        category_predictions = []
+        rest_of_predictions = []
+        for prediction in self.predictions:
+            if (prediction['prediction'] == options["category"]):
+                category_predictions.append(prediction)
+            else:
+                rest_of_predictions.append(prediction)
+        if (len(category_predictions) >= options["threshold"]):
+            return MultiVote(category_predictions)
+        return MultiVote(rest_of_predictions)
 
     def append_row(self, prediction_row,
                    prediction_headers=PREDICTION_HEADERS):

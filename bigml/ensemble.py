@@ -95,7 +95,7 @@ class Ensemble(object):
         return self.model_ids
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False):
+                with_confidence=False, options=None):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -124,7 +124,8 @@ class Ensemble(object):
             votes_split = self.multi_model.generate_votes(input_data,
                                                           by_name=by_name)
             votes = MultiVote(votes_split.predictions)
-        return votes.combine(method=method, with_confidence=with_confidence)
+        return votes.combine(method=method, with_confidence=with_confidence,
+                             options=options)
 
     def field_importance_data(self):
         """Computes field importance based on the field importance information

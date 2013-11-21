@@ -3,7 +3,7 @@
 History
 -------
 
-0.10.0 (2013-11-15)
+0.10.0 (2013-11-21)
 ~~~~~~~~~~~~~~~~~~~
 
 - Adding a function printing field importance to ensembles.

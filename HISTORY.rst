@@ -3,6 +3,11 @@
 History
 -------
 
+0.10.1 (2013-11-25)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding threshold combiner to MultiModel objects.
+
 0.10.0 (2013-11-21)
 ~~~~~~~~~~~~~~~~~~~
 

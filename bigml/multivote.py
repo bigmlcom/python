@@ -228,12 +228,13 @@ class MultiVote(object):
             return self.predictions[-1]['order'] + 1
         return 0
 
-    def combine(self, method=DEFAULT_METHOD, with_confidence=False, options=None):
+    def combine(self, method=DEFAULT_METHOD, with_confidence=False,
+                options=None):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
            method will determine the voting method (plurality, confidence
-           weighted or probability weighted).
+           weighted, probability weighted or threshold).
            If with_confidence is true, the combined confidence (as a weighted
            average of the confidences of votes for the combined prediction)
            will also be given.
@@ -262,7 +263,7 @@ class MultiVote(object):
         else:
             if (method == THRESHOLD):
                 if options is None:
-                    options = []
+                    options = {}
                 predictions = self.single_out_category(options)
             elif method == PROBABILITY:
                 predictions = MultiVote([])

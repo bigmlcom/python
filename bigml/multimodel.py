@@ -112,7 +112,7 @@ class MultiModel(object):
         return [model.resource() for model in self.models]
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False):
+                with_confidence=False, options=None):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -122,10 +122,13 @@ class MultiModel(object):
                   CONFIDENCE_CODE
               2 - probability weighted majority vote / average:
                   PROBABILITY_CODE
+              3 - threshold filtered vote / doesn't apply:
+                  THRESHOLD_COD
         """
 
         votes = self.generate_votes(input_data, by_name=by_name)
-        return votes.combine(method=method, with_confidence=with_confidence)
+        return votes.combine(method=method, with_confidence=with_confidence,
+                             options=options)
 
     def generate_votes(self, input_data, by_name=True):
         """ Generates a MultiVote object that contains the predictions

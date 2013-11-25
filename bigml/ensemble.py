@@ -105,6 +105,8 @@ class Ensemble(object):
                   CONFIDENCE_CODE
               2 - probability weighted majority vote / average:
                   PROBABILITY_CODE
+              3 - threshold filtered vote / doesn't apply:
+                  THRESHOLD_CODE
         """
 
         if len(self.models_splits) > 1:

@@ -63,7 +63,7 @@ from bigml.util import DEFAULT_LOCALE
 from bigml.tree import Tree
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_model, print_importance
-from bigml.basemodel import ONLY_MODEL, EXCLUDE_ROOT
+from bigml.basemodel import ONLY_MODEL
 
 
 PYTHON_CONV = {
@@ -111,7 +111,6 @@ class Model(BaseModel):
     """
 
     def __init__(self, model, api=None):
-
 
         if not (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
@@ -174,7 +173,7 @@ class Model(BaseModel):
 
                 if wrong_keys:
                     LOGGER.info("Wrong field names in input data: %s" %
-                                 ", ".join(wrong_keys))
+                                ", ".join(wrong_keys))
                 input_data = dict(
                     [[self.inverted_fields[key], value]
                         for key, value in input_data.items()

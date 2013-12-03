@@ -845,10 +845,7 @@ class BigML(object):
             resource = self._get("%s%s" % (self.url, resource_id))
             status = get_status(resource)
             code = status['code']
-            if code in STATUSES:
-                return STATUSES[code]
-            else:
-                return "UNKNOWN"
+            return STATUSES.get(code, "UNKNOWN")
         else:
             status = get_status(resource)
             if status['code'] != UPLOADING:

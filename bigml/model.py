@@ -142,7 +142,7 @@ class Model(BaseModel):
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
 
-    def fields(self, out=sys.stdout):
+    def list_fields(self, out=sys.stdout):
         """Describes and return the fields for this model.
 
         """

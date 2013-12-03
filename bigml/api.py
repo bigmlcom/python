@@ -585,7 +585,7 @@ class BigML(object):
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
         try:
-            response = requests.get(url + self.auth + query_string,
+            response = requests.get(url + auth + query_string,
                                     headers=ACCEPT_JSON,
                                     verify=VERIFY)
             code = response.status_code

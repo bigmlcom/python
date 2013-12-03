@@ -155,4 +155,4 @@ class Ensemble(object):
         """Prints ensemble field importance
 
         """
-        print_importance(self, out=out) 
+        print_importance(self, out=out)

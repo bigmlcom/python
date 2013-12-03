@@ -40,6 +40,7 @@ from bigml.util import DEFAULT_LOCALE
 ONLY_MODEL = 'only_model=true'
 EXCLUDE_ROOT = 'exclude=root;shorten=true'
 
+
 def retrieve_model(api, model_id, query_string=''):
     """ Retrieves model info either from a local repo or from the remote server
 
@@ -90,7 +91,6 @@ class BaseModel(object):
     """
 
     def __init__(self, model, api=None):
-
 
         if (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):

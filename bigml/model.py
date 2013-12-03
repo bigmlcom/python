@@ -62,7 +62,7 @@ from bigml.util import (slugify, markdown_cleanup,
 from bigml.util import DEFAULT_LOCALE
 from bigml.tree import Tree
 from bigml.predicate import Predicate
-from bigml.basemodel import BaseModel, retrieve_model
+from bigml.basemodel import BaseModel, retrieve_model, print_importance
 from bigml.basemodel import ONLY_MODEL, EXCLUDE_ROOT
 
 

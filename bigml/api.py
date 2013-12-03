@@ -841,16 +841,20 @@ class BigML(object):
 
         """
         resource_id = get_resource_id(resource)
-        if not resource_id:
-            LOGGER.error("Wrong resource id")
-            return
-        resource = self._get("%s%s" % (self.url, resource_id))
-        status = get_status(resource)
-        code = status['code']
-        if code in STATUSES:
-            return STATUSES[code]
+        if resource_id:
+            resource = self._get("%s%s" % (self.url, resource_id))
+            status = get_status(resource)
+            code = status['code']
+            if code in STATUSES:
+                return STATUSES[code]
+            else:
+                return "UNKNOWN"
         else:
-            return "UNKNOWN"
+            status = get_status(resource)
+            if status['code'] != UPLOADING:
+                LOGGER.error("Wrong resource id")
+                return
+            return STATUSES[UPLOADING]
 
     def check_resource(self, resource, get_method,
                        query_string='', wait_time=1):

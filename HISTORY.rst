@@ -3,6 +3,14 @@
 History
 -------
 
+0.10.2 (2013-12-02)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixes bug in summarize method of local models: field importance report
+  crashed.
+- Fixes bug in status method of the BigML connection object: status for
+  async uploads of source files crashed while uploading.
+
 0.10.1 (2013-11-25)
 ~~~~~~~~~~~~~~~~~~~
 

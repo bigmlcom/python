@@ -27,6 +27,7 @@ import keyword
 from bigml.predicate import Predicate
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
+from bigml.multivote import ws_confidence
 
 
 # Map operator str to its corresponding python operator
@@ -47,7 +48,54 @@ INDENT = u'    '
 
 TERM_OPTIONS = ["case_sensitive", "token_mode"]
 
+LAST_PREDICTION = 0
+PROPORTIONAL = 1
+BINS_LIMIT = 10
 
+
+def get_instances(distribution):
+    """Returns the total number of instances in a distribution
+
+    """
+    return sum(x[1] for x in distribution) if distribution else 0
+
+
+def merge_distributions(distribution, new_distribution):
+    """Adds up a new distribution structure to a map formatted distribution
+
+    """
+    for value, instances in new_distribution.items():
+        if not value in distribution:
+            distribution[value] = 0
+        distribution[value] += instances
+    return distribution
+
+
+def merge_bins(distribution, limit):
+    """Merges the bins of a regression distribution to the given limit number
+
+    """
+    length = len(distribution)
+    if limit < 1 or length <= limit or length < 2:
+        return distribution
+    index_to_merge = 2
+    shortest = float('inf')
+    for index in range(1, length):
+        distance = distribution[index][0] - distribution[index - 1][0]
+        if distance < shortest:
+            shortest = distance
+            index_to_merge = index
+    new_distribution = distribution[: index_to_merge - 1]
+    left = distribution[index_to_merge - 1]
+    right = distribution[index_to_merge]
+    new_bin = [(left[0] * left[1] + right[0] * right[1]) /
+               (left[1] + right[1]), left[1] + right[1]]
+    new_distribution.append(new_bin)
+    if index_to_merge < (length - 1):
+        new_distribution.extend(distribution[(index_to_merge + 1):])
+    return merge_bins(new_distribution, limit)
+        
+    
 class Tree(object):
     """A tree-like predictive model.
 
@@ -128,27 +176,88 @@ class Tree(object):
             }]
         return leaves
 
-    def predict(self, input_data, path=None):
+    def predict(self, input_data, path=None, missing_strategy=LAST_PREDICTION):
         """Makes a prediction based on a number of field values.
 
-        The input fields must be keyed by Id.
+        The input fields must be keyed by Id. There are two possible
+        strategies to predict when the value for the splitting field
+        is missing:
+            0 - LAST_PREDICTION: the last issued prediction is returned.
+            1 - PROPORTIONAL: as we cannot choose between the two branches
+                in the tree that stem from this split, we consider both. The
+                algorithm goes on until the final leaves are reached and
+                all their predictions are used to decide the final prediction.
+        """
+        if path is None:
+            path = []
+        if missing_strategy == PROPORTIONAL:
+            final_distribution = self.predict_proportional(input_data,
+                                                           path=path)
+            is_regression = all([not isinstance(category, basestring) for
+                                 category in final_distribution])
+
+            if is_regression:
+                # sort elements by their mean
+                distribution = [list(element) for element in
+                                sorted(final_distribution.items(),
+                                       key=lambda x: x[0])]
+                distribution = merge_bins(distribution, BINS_LIMIT)
+                predictions = []
+                instances = []
+                for prediction, instances in distribution:
+                    predictions.append(prediction)
+                    total_instances.append(instances)
+                prediction = sum(predictions) / sum(total_instances)
+                confidence = None
+                return (prediction, path, confidence,
+                        distribution, total_instances)
+            else:
+                distribution = [list(element) for element in
+                                sorted(final_distribution.items(),
+                                       key=lambda x: -x[1])]
+                return (distribution[0][0], path, 
+                        ws_confidence(distribution[0][0], final_distribution),
+                        distribution, get_instances(distribution))
+          
+        else:
+            if self.children and split(self.children) in input_data:
+                for child in self.children:
+                    if child.predicate.apply(input_data, self.fields):
+                        path.append(child.predicate.to_rule(self.fields))
+                        return child.predict(input_data, path)
+            return (self.output, path, self.confidence,
+                    self.distribution, get_instances(self.distribution))
+
+    def predict_proportional(self, input_data, path=None):
+        """Makes a predictions based on a number of field values averaging
+           the predictions of the leaves that fall in a subtree.
+
+           Each time a splitting field has no value assigned, we consider
+           both branches of the split to be true, merging their
+           predictions.
 
         """
-        def get_instances(distribution):
-            """Returns the total number of instances in a distribution
-
-            """
-            return sum(x[1] for x in distribution) if distribution else 0
 
         if path is None:
             path = []
-        if self.children and split(self.children) in input_data:
+
+        final_distribution = {}
+        if not self.children:
+            return merge_distributions({}, dict((x[0], x[1])
+                                                for x in self.distribution))
+        if split(self.children) in input_data:
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
-                    path.append(child.predicate.to_rule(self.fields))
-                    return child.predict(input_data, path)
-        return (self.output, path, self.confidence,
-                self.distribution, get_instances(self.distribution))
+                    new_rule = child.predicate.to_rule(self.fields)
+                    if not new_rule in path:
+                        path.append(new_rule)
+                    return child.predict_proportional(input_data, path)
+        else:
+            for child in self.children:
+                final_distribution = merge_distributions(
+                    final_distribution,
+                    child.predict_proportional(input_data, path))
+            return final_distribution
 
     def generate_rules(self, depth=0):
         """Translates a tree model into a set of IF-THEN rules.

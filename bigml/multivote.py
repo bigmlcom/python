@@ -73,9 +73,6 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
     ws_p = distribution[prediction]
     if ws_p < 0:
         raise ValueError("The distribution weight must be a positive value")
-    if ws_n < 1:
-        raise ValueError("The total of instances in the distribution must be"
-                         " a positive integer")
     ws_norm = float(sum(distribution.values()))
     if not ws_norm == 1.0:
         ws_p = ws_p / ws_norm
@@ -83,6 +80,9 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
         ws_n = ws_norm
     else:
         ws_n = float(ws_n)
+    if ws_n < 1:
+        raise ValueError("The total of instances in the distribution must be"
+                         " a positive integer")
     ws_z = float(ws_z)
     ws_z2 = ws_z * ws_z
     ws_factor = ws_z2 / ws_n

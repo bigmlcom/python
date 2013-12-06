@@ -223,12 +223,12 @@ class Fields(object):
             out.flush()
 
     def preferred_fields(self):
-        """Returns only preferred fields.
+        """Returns only preferred fields. If preferred is not set, all fields
+           are selected.
 
         """
-
         return {key: field for key, field in self.fields.iteritems()
-                if field['preferred']}
+                if ((not 'preferred' in field) or field['preferred'])}
 
     def validate_input_data(self, input_data, out=sys.stdout):
         """Validates whether types for input data match types in the

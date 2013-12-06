@@ -100,6 +100,7 @@ MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
+BATCH_PREDICTION_PATH = 'batchprediction'
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
@@ -110,13 +111,15 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
+BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH, ID_PATTERN))
 RESOURCE_RE = {
     'source': SOURCE_RE,
     'dataset': DATASET_RE,
     'model': MODEL_RE,
     'prediction': PREDICTION_RE,
     'evaluation': EVALUATION_RE,
-    'ensemble': ENSEMBLE_RE}
+    'ensemble': ENSEMBLE_RE,
+    'batcprediction': BATCH_PREDICTION_RE}
 
 
 # Headers
@@ -226,17 +229,24 @@ def get_prediction_id(prediction):
 
 
 def get_evaluation_id(evaluation):
-    """Returns a evaluation/id.
+    """Returns an evaluation/id.
 
     """
     return get_resource(EVALUATION_RE, evaluation)
 
 
 def get_ensemble_id(ensemble):
-    """Returns a ensemble/id.
+    """Returns an ensemble/id.
 
     """
     return get_resource(ENSEMBLE_RE, ensemble)
+
+
+def get_batch_prediction_id(batch_prediction):
+    """Returns a batchprediction/id.
+
+    """
+    return get_resource(BATCH_PREDICTION_RE, batch_prediction)
 
 
 def get_resource_id(resource):
@@ -491,6 +501,7 @@ class BigML(object):
         self.prediction_url = self.prediction_url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
+        self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -1638,3 +1649,104 @@ class BigML(object):
         ensemble_id = get_ensemble_id(ensemble)
         if ensemble_id:
             return self._delete("%s%s" % (self.url, ensemble_id))
+
+    ##########################################################################
+    #
+    # Batch Predictions
+    # https://bigml.com/developers/batch_predictions
+    #
+    ##########################################################################
+    def create_batch_prediction(self, model_or_ensemble, dataset,
+                                args=None, wait_time=3, retries=10):
+        """Creates a new batch prediction.
+
+        """
+
+        def args_update(check_resource_is_ready):
+            """Updates args when the resource is ready
+
+            """
+            if resource_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not check_resource_is_ready(resource_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    resource_type: resource_id,
+                    "dataset": dataset_id})
+
+        if args is None:
+            args = {}
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed as second argument"
+                            " to create a batch prediction. %s found." %
+                            resource_type)
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+
+        resource_type = get_resource_type(model_or_ensemble)
+        if resource_type == MODEL_PATH:
+            resource_id = get_model_id(model_or_ensemble)
+            args_update(self.model_is_ready)
+        elif resource_type == ENSEMBLE_PATH:
+            resource_id = get_ensemble_id(model_or_ensemble)
+            args_update(self.ensemble_is_ready)
+        else:
+            raise Exception("A model or ensemble id is needed as first"
+                            " argument to create a"
+                            " batch prediction. %s found." % resource_type)
+
+        body = json.dumps(args)
+        return self._create(self.batch_prediction_url, body)
+
+    def get_batch_prediction(self, batch_prediction):
+        """Retrieves a batch prediction.
+
+           The batch_prediction parameter should be a string containing the
+           batch_prediction id or the dict returned by create_batch_prediction.
+           As batch_prediction is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the batch_prediction values and state
+           info available at the time it is called.
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_preidiction)
+        if batch_prediction_id:
+            return self._get("%s%s" % (self.url, batch_prediction_id))
+
+    def list_batch_predictions(self, query_string=''):
+        """Lists all your batch predictions.
+
+        """
+        return self._list(self.batch_prediction_url, query_string)
+
+    def update_batch_prediction(self, batch_prediction, changes):
+        """Updates a batch prediction.
+
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, batch_prediction_id), body)
+
+    def delete_batch_prediction(self, batch_prediction):
+        """Deletes a batch prediction.
+
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            return self._delete("%s%s" % (self.url, batch_prediction_id))

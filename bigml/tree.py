@@ -50,7 +50,7 @@ TERM_OPTIONS = ["case_sensitive", "token_mode"]
 
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
-BINS_LIMIT = 10
+BINS_LIMIT = 32
 
 
 def get_instances(distribution):

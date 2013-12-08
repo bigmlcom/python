@@ -38,7 +38,7 @@ def i_create_an_evaluation(step):
 
 
 @step(r'I create an evaluation for the ensemble with the dataset$')
-def i_create_an_evaluation(step):
+def i_create_an_evaluation_ensemble(step):
     dataset = world.dataset.get('resource')
     ensemble = world.ensemble.get('resource')
     resource = world.api.create_evaluation(ensemble, dataset)

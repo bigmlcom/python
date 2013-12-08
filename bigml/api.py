@@ -119,8 +119,8 @@ RESOURCE_RE = {
     'prediction': PREDICTION_RE,
     'evaluation': EVALUATION_RE,
     'ensemble': ENSEMBLE_RE,
-    'batcprediction': BATCH_PREDICTION_RE}
-
+    'batchprediction': BATCH_PREDICTION_RE}
+DOWNLOAD_DIR = '/download'
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -403,6 +403,27 @@ def assign_dir(path):
         return None
 
 
+def stream_copy(response, filename):
+    """Copies the contents of a response stream to a local file.
+
+    """
+    file_size = 0
+    path = os.path.dirname(filename)
+    check_dir(path)
+    try:
+        with open(filename, 'wb') as file_handle:
+            for chunk in response.iter_content(chunk_size=1024): 
+                if chunk:
+                    file_handle.write(chunk)
+                    file_handle.flush()
+                    file_size += len(chunk)
+    except IOError:
+        pass
+    return file_size
+    
+
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -539,7 +560,6 @@ class BigML(object):
                                          headers=SEND_JSON,
                                          data=body, verify=verify)
                 code = response.status_code
-
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:
                         location = response.headers['location']
@@ -658,6 +678,7 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be listed"}}
         try:
+
             response = requests.get(url + self.auth + query_string,
                                     headers=ACCEPT_JSON, verify=VERIFY)
             code = response.status_code
@@ -783,6 +804,36 @@ class BigML(object):
         return {
             'code': code,
             'error': error}
+
+    def _download(self, url, filename=None):
+        """Retrieves a remote file.
+
+        Uses HTTP GET to download a file object with a BigML `url`.
+        """
+        code = HTTP_INTERNAL_SERVER_ERROR
+        file_object = None
+
+        response = requests.get(url + self.auth,
+                                verify=VERIFY, stream=True)
+        code = response.status_code
+
+        if code == HTTP_OK:
+            if filename is None:
+                file_object = response.raw
+            else:
+                file_size = stream_copy(response, filename)
+                if file_size == 0:
+                    LOGGER.error("Error copying file to %s" % filename)
+                else:
+                    file_object = filename
+        elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+            error = response.content
+            LOGGER.error("Error downloading: %s" % error)
+        else:
+            LOGGER.error("Unexpected error (%s)" % code)
+            code = HTTP_INTERNAL_SERVER_ERROR
+
+        return file_object
 
     ##########################################################################
     #
@@ -1720,9 +1771,23 @@ class BigML(object):
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        batch_prediction_id = get_batch_prediction_id(batch_preidiction)
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
         if batch_prediction_id:
             return self._get("%s%s" % (self.url, batch_prediction_id))
+
+    def download_batch_prediction(self, batch_prediction, filename=None):
+        """Retrieves the batch predictions file.
+
+           Downloads predictions, that are stored in a remote CSV file. If
+           a path is given in filename, the contents of the file are downloaded
+           and saved locally. A file-like object is returned otherwise.
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                    message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            return self._download("%s%s%s" % (self.url, batch_prediction_id,
+                                              DOWNLOAD_DIR), filename=filename)
 
     def list_batch_predictions(self, query_string=''):
         """Lists all your batch predictions.

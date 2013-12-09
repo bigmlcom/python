@@ -3,6 +3,13 @@
 History
 -------
 
+1.0.0 (2013-12-09)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding more info to error messages in REST methods.
+- Adding new missing fields strategy in predict method.
+- Fixes bug in shared models: credentials where not properly set.
+
 0.10.2 (2013-12-02)
 ~~~~~~~~~~~~~~~~~~~
 

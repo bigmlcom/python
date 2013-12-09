@@ -347,6 +347,9 @@ def error_message(resource, resource_type='resource', method=None):
         if ('status' in error_info and
                 'message' in error_info['status']):
             error = error_info['status']['message']
+            extra = error_info['status'].get('extra', None)
+            if extra is not None:
+                error += ": %s" % extra
         if code == HTTP_NOT_FOUND and method == 'get':
             alternate_message = ''
             if BIGML_DOMAIN != 'bigml.io':
@@ -585,7 +588,7 @@ class BigML(object):
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
         try:
-            response = requests.get(url + self.auth + query_string,
+            response = requests.get(url + auth + query_string,
                                     headers=ACCEPT_JSON,
                                     verify=VERIFY)
             code = response.status_code

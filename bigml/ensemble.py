@@ -43,7 +43,7 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
-from bigml.model import Model, retrieve_model
+from bigml.model import retrieve_model
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE

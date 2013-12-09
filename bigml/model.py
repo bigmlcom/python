@@ -60,7 +60,7 @@ from bigml.util import (slugify, markdown_cleanup,
                         prefix_as_comment, utf8,
                         find_locale, cast)
 from bigml.util import DEFAULT_LOCALE
-from bigml.tree import Tree
+from bigml.tree import Tree, LAST_PREDICTION
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_model, print_importance
 from bigml.basemodel import ONLY_MODEL
@@ -142,8 +142,8 @@ class Model(BaseModel):
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
 
-    def fields(self, out=sys.stdout):
-        """Describes and return the fields for this model.
+    def list_fields(self, out=sys.stdout):
+        """Prints descriptions of the fields for this model.
 
         """
         self.tree.list_fields(out)
@@ -190,7 +190,8 @@ class Model(BaseModel):
             return {}
 
     def predict(self, input_data, by_name=True,
-                print_path=False, out=sys.stdout, with_confidence=False):
+                print_path=False, out=sys.stdout, with_confidence=False,
+                missing_strategy=LAST_PREDICTION):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -203,7 +204,8 @@ class Model(BaseModel):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        prediction_info = self.tree.predict(input_data)
+        prediction_info = self.tree.predict(input_data,
+                                            missing_strategy=missing_strategy)
         prediction, path, confidence, distribution, instances = prediction_info
 
         # Prediction path

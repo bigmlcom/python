@@ -223,8 +223,8 @@ class Fields(object):
             out.flush()
 
     def preferred_fields(self):
-        """Returns only preferred fields. If preferred is not set, all fields
-           are selected.
+        """Returns fields where attribute preferred is set to True or where
+           it isn't set at all.
 
         """
         return {key: field for key, field in self.fields.iteritems()

@@ -9,7 +9,7 @@ History
 - Adding more info to error messages in REST methods.
 - Adding new missing fields strategy in predict method.
 - Fixes bug in shared models: credentials where not properly set.
-Missing
+
 0.10.2 (2013-12-02)
 ~~~~~~~~~~~~~~~~~~~
 

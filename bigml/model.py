@@ -143,7 +143,7 @@ class Model(BaseModel):
                             model)
 
     def list_fields(self, out=sys.stdout):
-        """Describes and return the fields for this model.
+        """Prints descriptions of the fields for this model.
 
         """
         self.tree.list_fields(out)

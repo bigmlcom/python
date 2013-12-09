@@ -94,8 +94,8 @@ def merge_bins(distribution, limit):
     if index_to_merge < (length - 1):
         new_distribution.extend(distribution[(index_to_merge + 1):])
     return merge_bins(new_distribution, limit)
-        
-    
+
+
 class Tree(object):
     """A tree-like predictive model.
 
@@ -203,7 +203,7 @@ class Tree(object):
                                        key=lambda x: x[0])]
                 distribution = merge_bins(distribution, BINS_LIMIT)
                 predictions = []
-                instances = []
+                total_instances = []
                 for prediction, instances in distribution:
                     predictions.append(prediction)
                     total_instances.append(instances)
@@ -215,10 +215,10 @@ class Tree(object):
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: -x[1])]
-                return (distribution[0][0], path, 
+                return (distribution[0][0], path,
                         ws_confidence(distribution[0][0], final_distribution),
                         distribution, get_instances(distribution))
-          
+
         else:
             if self.children and split(self.children) in input_data:
                 for child in self.children:
@@ -229,7 +229,7 @@ class Tree(object):
                     self.distribution, get_instances(self.distribution))
 
     def predict_proportional(self, input_data, path=None):
-        """Makes a predictions based on a number of field values averaging
+        """Makes a prediction based on a number of field values averaging
            the predictions of the leaves that fall in a subtree.
 
            Each time a splitting field has no value assigned, we consider

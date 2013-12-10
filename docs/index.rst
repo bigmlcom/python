@@ -608,6 +608,46 @@ number of models to be built in parallel). A higher ``tlp`` results in faster
 ensemble creation, but it will consume more credits. The default value for
 ``number_of_models`` is 10 and for ``tlp`` is 1.
 
+Creating batch predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We have shown how to create predictions individually, but when the amount
+of predictions to make increases, this procedure is far from optimal. In this
+case, the more efficient way of predicting remotely is to create a dataset
+containing the input data you want your model to predict from and giving its
+id and the one of the model to the ``create_batch_prediction`` api call::
+
+    batch_prediction = api.create_batch_prediction(model, dataset, {
+        "name": "my batch prediction", "all_fields":true,
+        "header":true,
+        "confidence":true})
+
+In this example, the ``all_fields`` will cause all the values given as input
+data to be included in the prediction output, ``header`` controls whether a
+headers line is included in the file or not and ``confidence`` set to true
+will cause the confidence of the prediction to be appended. If none of these
+arguments is given, the resulting file will contain the name of the
+objective field as a header row followed by the predictions.
+
+As for the rest of resources, the create method will return an incomplete
+object, that can be updated by issuing the corresponding
+``api.get_batch_prediction`` call until it reaches a ``FINISHED`` status.
+Then you can download the created predictions file using::
+
+    api.download_batch_prediction('batchprediction/526fc344035d071ea3031d70',
+        filename='my_dir/my_predictions.csv')
+
+that will cause the resulting file to be copied to the local file given in
+``filename``. If no ``filename`` is provided, the method returns a file-like
+object that can be read as a stream::
+
+    response = api.download_batch_prediction(
+        'batchprediction/526fc344035d071ea3031d70')
+    for chunk in response.iter_content(chunk_size=1024): 
+        if chunk:
+            print chunk
+
+
 Reading Resources
 -----------------
 

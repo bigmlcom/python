@@ -100,6 +100,7 @@ MODEL_PATH = 'model'
 PREDICTION_PATH = 'prediction'
 EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
+BATCH_PREDICTION_PATH = 'batchprediction'
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
@@ -110,14 +111,16 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
+BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH, ID_PATTERN))
 RESOURCE_RE = {
     'source': SOURCE_RE,
     'dataset': DATASET_RE,
     'model': MODEL_RE,
     'prediction': PREDICTION_RE,
     'evaluation': EVALUATION_RE,
-    'ensemble': ENSEMBLE_RE}
-
+    'ensemble': ENSEMBLE_RE,
+    'batchprediction': BATCH_PREDICTION_RE}
+DOWNLOAD_DIR = '/download'
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -226,17 +229,24 @@ def get_prediction_id(prediction):
 
 
 def get_evaluation_id(evaluation):
-    """Returns a evaluation/id.
+    """Returns an evaluation/id.
 
     """
     return get_resource(EVALUATION_RE, evaluation)
 
 
 def get_ensemble_id(ensemble):
-    """Returns a ensemble/id.
+    """Returns an ensemble/id.
 
     """
     return get_resource(ENSEMBLE_RE, ensemble)
+
+
+def get_batch_prediction_id(batch_prediction):
+    """Returns a batchprediction/id.
+
+    """
+    return get_resource(BATCH_PREDICTION_RE, batch_prediction)
 
 
 def get_resource_id(resource):
@@ -393,6 +403,27 @@ def assign_dir(path):
         return None
 
 
+def stream_copy(response, filename):
+    """Copies the contents of a response stream to a local file.
+
+    """
+    file_size = 0
+    path = os.path.dirname(filename)
+    check_dir(path)
+    try:
+        with open(filename, 'wb') as file_handle:
+            for chunk in response.iter_content(chunk_size=1024): 
+                if chunk:
+                    file_handle.write(chunk)
+                    file_handle.flush()
+                    file_size += len(chunk)
+    except IOError:
+        file_size = 0
+    return file_size
+    
+
+
+
 ##############################################################################
 #
 # Patch for requests
@@ -491,6 +522,7 @@ class BigML(object):
         self.prediction_url = self.prediction_url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
+        self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -528,7 +560,6 @@ class BigML(object):
                                          headers=SEND_JSON,
                                          data=body, verify=verify)
                 code = response.status_code
-
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:
                         location = response.headers['location']
@@ -647,6 +678,7 @@ class BigML(object):
                 "code": code,
                 "message": "The resource couldn't be listed"}}
         try:
+
             response = requests.get(url + self.auth + query_string,
                                     headers=ACCEPT_JSON, verify=VERIFY)
             code = response.status_code
@@ -772,6 +804,36 @@ class BigML(object):
         return {
             'code': code,
             'error': error}
+
+    def _download(self, url, filename=None):
+        """Retrieves a remote file.
+
+        Uses HTTP GET to download a file object with a BigML `url`.
+        """
+        code = HTTP_INTERNAL_SERVER_ERROR
+        file_object = None
+
+        response = requests.get(url + self.auth,
+                                verify=VERIFY, stream=True)
+        code = response.status_code
+
+        if code == HTTP_OK:
+            if filename is None:
+                file_object = response.raw
+            else:
+                file_size = stream_copy(response, filename)
+                if file_size == 0:
+                    LOGGER.error("Error copying file to %s" % filename)
+                else:
+                    file_object = filename
+        elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+            error = response.content
+            LOGGER.error("Error downloading: %s" % error)
+        else:
+            LOGGER.error("Unexpected error (%s)" % code)
+            code = HTTP_INTERNAL_SERVER_ERROR
+
+        return file_object
 
     ##########################################################################
     #
@@ -1638,3 +1700,118 @@ class BigML(object):
         ensemble_id = get_ensemble_id(ensemble)
         if ensemble_id:
             return self._delete("%s%s" % (self.url, ensemble_id))
+
+    ##########################################################################
+    #
+    # Batch Predictions
+    # https://bigml.com/developers/batch_predictions
+    #
+    ##########################################################################
+    def create_batch_prediction(self, model_or_ensemble, dataset,
+                                args=None, wait_time=3, retries=10):
+        """Creates a new batch prediction.
+
+        """
+
+        def args_update(check_resource_is_ready):
+            """Updates args when the resource is ready
+
+            """
+            if resource_id:
+                if wait_time > 0:
+                    count = 0
+                    while (not check_resource_is_ready(resource_id) and
+                           count < retries):
+                        time.sleep(wait_time)
+                        count += 1
+                args.update({
+                    resource_type: resource_id,
+                    "dataset": dataset_id})
+
+        if args is None:
+            args = {}
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed as second argument"
+                            " to create a batch prediction. %s found." %
+                            resource_type)
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            if wait_time > 0:
+                count = 0
+                while (not self.dataset_is_ready(dataset_id) and
+                       count < retries):
+                    time.sleep(wait_time)
+                    count += 1
+
+        resource_type = get_resource_type(model_or_ensemble)
+        if resource_type == MODEL_PATH:
+            resource_id = get_model_id(model_or_ensemble)
+            args_update(self.model_is_ready)
+        elif resource_type == ENSEMBLE_PATH:
+            resource_id = get_ensemble_id(model_or_ensemble)
+            args_update(self.ensemble_is_ready)
+        else:
+            raise Exception("A model or ensemble id is needed as first"
+                            " argument to create a"
+                            " batch prediction. %s found." % resource_type)
+
+        body = json.dumps(args)
+        return self._create(self.batch_prediction_url, body)
+
+    def get_batch_prediction(self, batch_prediction):
+        """Retrieves a batch prediction.
+
+           The batch_prediction parameter should be a string containing the
+           batch_prediction id or the dict returned by create_batch_prediction.
+           As batch_prediction is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the batch_prediction values and state
+           info available at the time it is called.
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            return self._get("%s%s" % (self.url, batch_prediction_id))
+
+    def download_batch_prediction(self, batch_prediction, filename=None):
+        """Retrieves the batch predictions file.
+
+           Downloads predictions, that are stored in a remote CSV file. If
+           a path is given in filename, the contents of the file are downloaded
+           and saved locally. A file-like object is returned otherwise.
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                    message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            return self._download("%s%s%s" % (self.url, batch_prediction_id,
+                                              DOWNLOAD_DIR), filename=filename)
+
+    def list_batch_predictions(self, query_string=''):
+        """Lists all your batch predictions.
+
+        """
+        return self._list(self.batch_prediction_url, query_string)
+
+    def update_batch_prediction(self, batch_prediction, changes):
+        """Updates a batch prediction.
+
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, batch_prediction_id), body)
+
+    def delete_batch_prediction(self, batch_prediction):
+        """Deletes a batch prediction.
+
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            return self._delete("%s%s" % (self.url, batch_prediction_id))

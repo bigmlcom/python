@@ -58,3 +58,7 @@ def i_want_api_dev_mode(step):
     ensembles = world.api.list_ensembles()
     assert ensembles['code'] == HTTP_OK
     world.init_ensembles_count = ensembles['meta']['total_count']
+
+    batch_predictions = world.api.list_batch_predictions()
+    assert batch_predictions['code'] == HTTP_OK
+    world.init_batch_predictions_count = batch_predictions['meta']['total_count']

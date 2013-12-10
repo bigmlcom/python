@@ -418,7 +418,7 @@ def stream_copy(response, filename):
                     file_handle.flush()
                     file_size += len(chunk)
     except IOError:
-        pass
+        file_size = 0
     return file_size
     
 

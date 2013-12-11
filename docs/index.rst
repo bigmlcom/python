@@ -614,18 +614,18 @@ Creating batch predictions
 We have shown how to create predictions individually, but when the amount
 of predictions to make increases, this procedure is far from optimal. In this
 case, the more efficient way of predicting remotely is to create a dataset
-containing the input data you want your model to predict from and giving its
+containing the input data you want your model to predict from and to give its
 id and the one of the model to the ``create_batch_prediction`` api call::
 
     batch_prediction = api.create_batch_prediction(model, dataset, {
-        "name": "my batch prediction", "all_fields":true,
-        "header":true,
-        "confidence":true})
+        "name": "my batch prediction", "all_fields": True,
+        "header": True,
+        "confidence": True})
 
-In this example, the ``all_fields`` will cause all the values given as input
+In this example, setting ``all_fields`` to true causes the input
 data to be included in the prediction output, ``header`` controls whether a
 headers line is included in the file or not and ``confidence`` set to true
-will cause the confidence of the prediction to be appended. If none of these
+causes the confidence of the prediction to be appended. If none of these
 arguments is given, the resulting file will contain the name of the
 objective field as a header row followed by the predictions.
 
@@ -637,15 +637,16 @@ Then you can download the created predictions file using::
     api.download_batch_prediction('batchprediction/526fc344035d071ea3031d70',
         filename='my_dir/my_predictions.csv')
 
-that will cause the resulting file to be copied to the local file given in
+that will copy the output predictions to the local file given in
 ``filename``. If no ``filename`` is provided, the method returns a file-like
 object that can be read as a stream::
 
+    CHUNK_SIZE = 1024
     response = api.download_batch_prediction(
         'batchprediction/526fc344035d071ea3031d70')
-    for chunk in response.iter_content(chunk_size=1024): 
-        if chunk:
-            print chunk
+    chunk = response.read(CHUNK_SIZE)
+    if chunk:
+        print chunk
 
 
 Reading Resources

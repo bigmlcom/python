@@ -622,7 +622,7 @@ id and the one of the model to the ``create_batch_prediction`` api call::
         "header": True,
         "confidence": True})
 
-In this example, setting the ``all_fields`` to true causes the input
+In this example, setting ``all_fields`` to true causes the input
 data to be included in the prediction output, ``header`` controls whether a
 headers line is included in the file or not and ``confidence`` set to true
 causes the confidence of the prediction to be appended. If none of these

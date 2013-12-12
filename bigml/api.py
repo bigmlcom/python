@@ -314,7 +314,8 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
     """
     def get_kwargs(resource_id):
         if not (EVALUATION_RE.match(resource_id) or
-                PREDICTION_RE.match(resource_id)):
+                PREDICTION_RE.match(resource_id) or
+                BATCH_PREDICTION_RE.match(resource_id)):
             return {'query_string': query_string}
         return {}
 

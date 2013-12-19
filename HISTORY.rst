@@ -3,6 +3,11 @@
 History
 -------
 
+0.10.3 (2013-12-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixes bug in local ensembles with more than 200 fields
+
 0.10.2 (2013-12-02)
 ~~~~~~~~~~~~~~~~~~~
 

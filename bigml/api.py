@@ -112,7 +112,8 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
-BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH, ID_PATTERN))
+BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
+                                               ID_PATTERN))
 RESOURCE_RE = {
     'source': SOURCE_RE,
     'dataset': DATASET_RE,
@@ -419,7 +420,7 @@ def stream_copy(response, filename):
     check_dir(path)
     try:
         with open(filename, 'wb') as file_handle:
-            for chunk in response.iter_content(chunk_size=1024): 
+            for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     file_handle.write(chunk)
                     file_handle.flush()
@@ -864,11 +865,11 @@ class BigML(object):
             create_args = {}
         else:
             create_args = copy.deepcopy(args)
-        
+
         if len(dataset_ids) == 1:
             create_args.update({
                 "dataset": dataset_ids[0]})
-        else: 
+        else:
             create_args.update({
                 "datasets": dataset_ids})
 
@@ -1795,7 +1796,7 @@ class BigML(object):
            and saved locally. A file-like object is returned otherwise.
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
-                    message="A batch prediction id is needed.")
+                            message="A batch prediction id is needed.")
         batch_prediction_id = get_batch_prediction_id(batch_prediction)
         if batch_prediction_id:
             return self._download("%s%s%s" % (self.url, batch_prediction_id,

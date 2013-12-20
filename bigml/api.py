@@ -296,7 +296,8 @@ def get_status(resource):
     return status
 
 
-def check_resource(resource, get_method, query_string='', wait_time=1):
+def check_resource(resource, get_method, query_string='', wait_time=1,
+                   retries=None):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method
@@ -306,10 +307,12 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
            prediction, api.get_prediction
            evaluation, api.get_evaluation
            ensemble, api.get_ensemble
+           batch_prediction, api.get_batch_prediction
        it calls the get_method on the resource with the given query_string
        and waits with sleeping intervals of wait_time
        until the resource is in a final state (either FINISHED
-       or FAULTY)
+       or FAULTY). The number of retries can be limited using the retries
+       parameter.
 
     """
     def get_kwargs(resource_id):
@@ -330,7 +333,9 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
             raise ValueError("Failed to extract a valid resource id to check.")
         kwargs = get_kwargs(resource_id)
 
-    while True:
+    count = 0
+    while retries is None or count < retries:
+        count += 1
         status = get_status(resource)
         code = status['code']
         if code == FINISHED:
@@ -1321,30 +1326,35 @@ class BigML(object):
     # https://bigml.com/developers/models
     #
     ##########################################################################
-    def create_model(self, dataset, args=None, wait_time=3, retries=10):
-        """Creates a model.
+    def create_model(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates a model from a `dataset` or a list o `datasets`.
 
         """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed to create a"
-                                    " model.")
-        dataset_id = get_dataset_id(dataset)
+        dataset_ids = []
+        if not isinstance(datasets, list):
+            origin_datasets = [datasets]
+        else:
+            origin_datasets = datasets
+        for dataset in origin_datasets:
+            check_resource_type(dataset, DATASET_PATH,
+                                message="A dataset id is needed to create a"
+                                        " model.")
+            dataset = check_resource(dataset, self.get_dataset,
+                                     wait_time=wait_time, retries=retries)
 
-        if dataset_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
+            dataset_ids.append(get_dataset_id(dataset))
 
-            if args is None:
-                args = {}
+        if args is None:
+            args = {}
+        if len(dataset_ids) == 1:
+           args.update({
+            "dataset": dataset_ids[0]})
+        else: 
             args.update({
-                "dataset": dataset_id})
+                "datasets": dataset_ids})
 
-            body = json.dumps(args)
-            return self._create(self.model_url, body)
+        body = json.dumps(args)
+        return self._create(self.model_url, body)
 
     def get_model(self, model, query_string='',
                   shared_username=None, shared_api_key=None):

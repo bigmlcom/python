@@ -52,6 +52,8 @@ def setup_resources(feature):
     world.ensembles = []
     world.batch_predictions = []
 
+    world.dataset_ids = []
+
 @after.each_feature
 def cleanup_resources(feature):
 
@@ -122,3 +124,7 @@ def cleanup_resources(feature):
     assert world.final_evaluations_count == world.init_evaluations_count
     assert world.final_ensembles_count == world.init_ensembles_count
     assert world.final_batch_predictions_count == world.init_batch_predictions_count
+
+@after.each_scenario
+def cleanup_resources(scenario):
+    world.dataset_ids = []

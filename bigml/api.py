@@ -42,6 +42,7 @@ import os
 import re
 import locale
 import pprint
+import copy
 
 from threading import Thread
 
@@ -426,8 +427,6 @@ def stream_copy(response, filename):
     except IOError:
         file_size = 0
     return file_size
-    
-
 
 
 ##############################################################################
@@ -840,6 +839,40 @@ class BigML(object):
             code = HTTP_INTERNAL_SERVER_ERROR
 
         return file_object
+
+    def _set_create_from_datasets_args(self, datasets, args=None,
+                                       wait_time=3, retries=10):
+        """Builds args dictionary for the create call from a `dataset` or a
+           list of `datasets`.
+
+        """
+        dataset_ids = []
+        if not isinstance(datasets, list):
+            origin_datasets = [datasets]
+        else:
+            origin_datasets = datasets
+        for dataset in origin_datasets:
+            check_resource_type(dataset, DATASET_PATH,
+                                message="A dataset id is needed to create a"
+                                        " model.")
+            dataset = check_resource(dataset, self.get_dataset,
+                                     wait_time=wait_time, retries=retries)
+
+            dataset_ids.append(get_dataset_id(dataset))
+
+        if args is None:
+            create_args = {}
+        else:
+            create_args = copy.deepcopy(args)
+        
+        if len(dataset_ids) == 1:
+            create_args.update({
+                "dataset": dataset_ids[0]})
+        else: 
+            create_args.update({
+                "datasets": dataset_ids})
+
+        return create_args
 
     ##########################################################################
     #
@@ -1330,30 +1363,10 @@ class BigML(object):
         """Creates a model from a `dataset` or a list o `datasets`.
 
         """
-        dataset_ids = []
-        if not isinstance(datasets, list):
-            origin_datasets = [datasets]
-        else:
-            origin_datasets = datasets
-        for dataset in origin_datasets:
-            check_resource_type(dataset, DATASET_PATH,
-                                message="A dataset id is needed to create a"
-                                        " model.")
-            dataset = check_resource(dataset, self.get_dataset,
-                                     wait_time=wait_time, retries=retries)
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
 
-            dataset_ids.append(get_dataset_id(dataset))
-
-        if args is None:
-            args = {}
-        if len(dataset_ids) == 1:
-           args.update({
-            "dataset": dataset_ids[0]})
-        else: 
-            args.update({
-                "datasets": dataset_ids})
-
-        body = json.dumps(args)
+        body = json.dumps(create_args)
         return self._create(self.model_url, body)
 
     def get_model(self, model, query_string='',
@@ -1636,28 +1649,16 @@ class BigML(object):
     # https://bigml.com/developers/ensembles
     #
     ##########################################################################
-    def create_ensemble(self, dataset, args=None, wait_time=3, retries=10):
-        """Creates an ensemble.
+    def create_ensemble(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates an ensemble from a dataset or a list of datasets.
 
         """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
 
-        if dataset_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
 
-            if args is None:
-                args = {}
-            args.update({
-                "dataset": dataset_id})
-            body = json.dumps(args)
-            return self._create(self.ensemble_url, body)
+        body = json.dumps(create_args)
+        return self._create(self.ensemble_url, body)
 
     def get_ensemble(self, ensemble, query_string=''):
         """Retrieves an ensemble.

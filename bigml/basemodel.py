@@ -37,7 +37,7 @@ from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
 
 
-ONLY_MODEL = 'only_model=true'
+ONLY_MODEL = 'only_model=true;limit=-1'
 EXCLUDE_ROOT = 'exclude=root;shorten=true'
 
 

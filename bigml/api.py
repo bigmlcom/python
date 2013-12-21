@@ -346,6 +346,7 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
             raise ValueError(status)
         time.sleep(wait_time)
         resource = get_method(resource, **kwargs)
+    return resource
 
 
 def error_message(resource, resource_type='resource', method=None):

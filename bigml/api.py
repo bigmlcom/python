@@ -42,6 +42,7 @@ import os
 import re
 import locale
 import pprint
+import copy
 
 from threading import Thread
 
@@ -111,7 +112,8 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
-BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH, ID_PATTERN))
+BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
+                                               ID_PATTERN))
 RESOURCE_RE = {
     'source': SOURCE_RE,
     'dataset': DATASET_RE,
@@ -296,7 +298,8 @@ def get_status(resource):
     return status
 
 
-def check_resource(resource, get_method, query_string='', wait_time=1):
+def check_resource(resource, get_method, query_string='', wait_time=1,
+                   retries=None):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method
@@ -306,10 +309,12 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
            prediction, api.get_prediction
            evaluation, api.get_evaluation
            ensemble, api.get_ensemble
+           batch_prediction, api.get_batch_prediction
        it calls the get_method on the resource with the given query_string
        and waits with sleeping intervals of wait_time
        until the resource is in a final state (either FINISHED
-       or FAULTY)
+       or FAULTY). The number of retries can be limited using the retries
+       parameter.
 
     """
     def get_kwargs(resource_id):
@@ -330,7 +335,9 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
             raise ValueError("Failed to extract a valid resource id to check.")
         kwargs = get_kwargs(resource_id)
 
-    while True:
+    count = 0
+    while retries is None or count < retries:
+        count += 1
         status = get_status(resource)
         code = status['code']
         if code == FINISHED:
@@ -339,6 +346,7 @@ def check_resource(resource, get_method, query_string='', wait_time=1):
             raise ValueError(status)
         time.sleep(wait_time)
         resource = get_method(resource, **kwargs)
+    return resource
 
 
 def error_message(resource, resource_type='resource', method=None):
@@ -413,7 +421,7 @@ def stream_copy(response, filename):
     check_dir(path)
     try:
         with open(filename, 'wb') as file_handle:
-            for chunk in response.iter_content(chunk_size=1024): 
+            for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     file_handle.write(chunk)
                     file_handle.flush()
@@ -421,8 +429,6 @@ def stream_copy(response, filename):
     except IOError:
         file_size = 0
     return file_size
-    
-
 
 
 ##############################################################################
@@ -835,6 +841,40 @@ class BigML(object):
             code = HTTP_INTERNAL_SERVER_ERROR
 
         return file_object
+
+    def _set_create_from_datasets_args(self, datasets, args=None,
+                                       wait_time=3, retries=10):
+        """Builds args dictionary for the create call from a `dataset` or a
+           list of `datasets`.
+
+        """
+        dataset_ids = []
+        if not isinstance(datasets, list):
+            origin_datasets = [datasets]
+        else:
+            origin_datasets = datasets
+        for dataset in origin_datasets:
+            check_resource_type(dataset, DATASET_PATH,
+                                message="A dataset id is needed to create a"
+                                        " model.")
+            dataset = check_resource(dataset, self.get_dataset,
+                                     wait_time=wait_time, retries=retries)
+
+            dataset_ids.append(get_dataset_id(dataset))
+
+        if args is None:
+            create_args = {}
+        else:
+            create_args = copy.deepcopy(args)
+
+        if len(dataset_ids) == 1:
+            create_args.update({
+                "dataset": dataset_ids[0]})
+        else:
+            create_args.update({
+                "datasets": dataset_ids})
+
+        return create_args
 
     ##########################################################################
     #
@@ -1321,30 +1361,15 @@ class BigML(object):
     # https://bigml.com/developers/models
     #
     ##########################################################################
-    def create_model(self, dataset, args=None, wait_time=3, retries=10):
-        """Creates a model.
+    def create_model(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates a model from a `dataset` or a list o `datasets`.
 
         """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed to create a"
-                                    " model.")
-        dataset_id = get_dataset_id(dataset)
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
 
-        if dataset_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
-
-            if args is None:
-                args = {}
-            args.update({
-                "dataset": dataset_id})
-
-            body = json.dumps(args)
-            return self._create(self.model_url, body)
+        body = json.dumps(create_args)
+        return self._create(self.model_url, body)
 
     def get_model(self, model, query_string='',
                   shared_username=None, shared_api_key=None):
@@ -1626,28 +1651,16 @@ class BigML(object):
     # https://bigml.com/developers/ensembles
     #
     ##########################################################################
-    def create_ensemble(self, dataset, args=None, wait_time=3, retries=10):
-        """Creates an ensemble.
+    def create_ensemble(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates an ensemble from a dataset or a list of datasets.
 
         """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
 
-        if dataset_id:
-            if wait_time > 0:
-                count = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
-                    time.sleep(wait_time)
-                    count += 1
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
 
-            if args is None:
-                args = {}
-            args.update({
-                "dataset": dataset_id})
-            body = json.dumps(args)
-            return self._create(self.ensemble_url, body)
+        body = json.dumps(create_args)
+        return self._create(self.ensemble_url, body)
 
     def get_ensemble(self, ensemble, query_string=''):
         """Retrieves an ensemble.
@@ -1784,7 +1797,7 @@ class BigML(object):
            and saved locally. A file-like object is returned otherwise.
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
-                    message="A batch prediction id is needed.")
+                            message="A batch prediction id is needed.")
         batch_prediction_id = get_batch_prediction_id(batch_prediction)
         if batch_prediction_id:
             return self._download("%s%s%s" % (self.url, batch_prediction_id,

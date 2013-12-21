@@ -44,7 +44,7 @@ LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
 from bigml.model import retrieve_model
-from bigml.model import STORAGE
+from bigml.model import STORAGE, ONLY_MODEL
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
@@ -84,7 +84,8 @@ class Ensemble(object):
             self.models_splits = [models[index:(index + max_models)] for index
                                   in range(0, number_of_models, max_models)]
         if len(self.models_splits) == 1:
-            models = [retrieve_model(self.api, model_id)
+            models = [retrieve_model(self.api, model_id,
+                                     query_string=ONLY_MODEL)
                       for model_id in self.models_splits[0]]
             self.multi_model = MultiModel(models)
 

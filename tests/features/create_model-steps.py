@@ -37,6 +37,15 @@ def i_create_a_model(step):
     world.model = resource['object']
     world.models.append(resource['resource'])
 
+@step(r'I create a model from a dataset list$')
+def i_create_a_model_from_dataset_list(step):
+    resource = world.api.create_model(world.dataset_ids)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.model = resource['object']
+    world.models.append(resource['resource'])
+
 @step(r'I wait until the model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()

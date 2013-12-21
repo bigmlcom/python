@@ -103,6 +103,7 @@ EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
 BATCH_PREDICTION_PATH = 'batchprediction'
 
+
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
@@ -167,6 +168,19 @@ STATUSES = {
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
+
+
+def resource_getters(api):
+    """Given an api object, returns a dict of getters, one for each resource
+
+    """
+    return {
+        'source': api.get_source,
+        'dataset': api.get_dataset,
+        'model': api.get_model,
+        'ensemble': api.get_ensemble,
+        'prediction': api.get_prediction,
+        'evaluation': api.get_evaluation}
 
 
 def get_resource(regex, resource):
@@ -429,6 +443,35 @@ def stream_copy(response, filename):
     except IOError:
         file_size = 0
     return file_size
+
+
+def http_ok(resource):
+    """Checking the validity of the http return code
+
+    """
+    if 'code' in resource:
+        return resource['code'] in [HTTP_OK, HTTP_CREATED]
+
+
+def count(listing):
+    """Count of existing resources
+
+    """
+    if 'query_total' in listing:
+        return listing['query_total']
+
+
+def ok(resource):
+    """Waits until the resource is finished and returns True on success
+
+    """
+    if http_ok(resource):
+        resource_type = get_resource_type(resource)
+        check_resource(resource, GET_RESOURCE[resource_type])
+        return True
+    else:
+        log_message("The resource couldn't be created: %s"  %
+            resource['error'])
 
 
 ##############################################################################
@@ -843,7 +886,7 @@ class BigML(object):
         return file_object
 
     def _set_create_from_datasets_args(self, datasets, args=None,
-                                       wait_time=3, retries=10):
+                                       wait_time=3, retries=10, key=None):
         """Builds args dictionary for the create call from a `dataset` or a
            list of `datasets`.
 
@@ -868,11 +911,15 @@ class BigML(object):
             create_args = copy.deepcopy(args)
 
         if len(dataset_ids) == 1:
+            if key is None:
+                key = "dataset"
             create_args.update({
-                "dataset": dataset_ids[0]})
+                key: dataset_ids[0]})
         else:
+            if key is None:
+                key = "datasets"
             create_args.update({
-                "datasets": dataset_ids})
+                key: dataset_ids})
 
         return create_args
 
@@ -1259,7 +1306,7 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source_or_dataset, args=None,
+    def create_dataset(self, source_or_datasets, args=None,
                        wait_time=3, retries=10):
         """Creates a remote dataset.
 
@@ -1270,36 +1317,36 @@ class BigML(object):
 
         """
         if args is None:
-            args = {}
-
-        resource_type = get_resource_type(source_or_dataset)
-        if resource_type == SOURCE_PATH:
-            source_id = get_source_id(source_or_dataset)
-            if source_id:
-                if wait_time > 0:
-                    count = 0
-                    while (not self.source_is_ready(source_id) and
-                           count < retries):
-                        time.sleep(wait_time)
-                        count += 1
-                args.update({
-                    "source": source_id})
-        elif resource_type == DATASET_PATH:
-            dataset_id = get_dataset_id(source_or_dataset)
-            if dataset_id:
-                if wait_time > 0:
-                    count = 0
-                    while (not self.dataset_is_ready(dataset_id) and
-                           count < retries):
-                        time.sleep(wait_time)
-                        count += 1
-            args.update({
-                "origin_dataset": dataset_id})
+            create_args = {}
         else:
-            raise Exception("A source or dataset id is needed to create a"
-                            " dataset. %s found." % resource_type)
+            create_args = copy.deepcopy(args)
+        if isinstance(source_or_datasets, list):
+            create_args = self._set_create_from_datasets_args(
+                source_or_datasets, args=create_args, wait_time=wait_time,
+                retries=retries, key="origin_datasets")
+        else:
+            resource_type = get_resource_type(source_or_datasets)
+            if resource_type == SOURCE_PATH:
+                source_id = get_source_id(source_or_datasets)
+                if source_id:
+                    if wait_time > 0:
+                        count = 0
+                        while (not self.source_is_ready(source_id) and
+                               count < retries):
+                            time.sleep(wait_time)
+                            count += 1
+                    create_args.update({
+                        "source": source_id})
+            elif resource_type == DATASET_PATH:
+                create_args = self._set_create_from_datasets_args(
+                    source_or_datasets, args=create_args, wait_time=wait_time,
+                    retries=retries, key="origin_dataset")
+            else:
+                raise Exception("A source, dataset or list of dataset ids"
+                                " are needed to create a"
+                                " dataset. %s found." % resource_type)
 
-        body = json.dumps(args)
+        body = json.dumps(create_args)
         return self._create(self.dataset_url, body)
 
     def get_dataset(self, dataset, query_string=''):

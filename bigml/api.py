@@ -170,19 +170,6 @@ STATUSES = {
 }
 
 
-def resource_getters(api):
-    """Given an api object, returns a dict of getters, one for each resource
-
-    """
-    return {
-        'source': api.get_source,
-        'dataset': api.get_dataset,
-        'model': api.get_model,
-        'ensemble': api.get_ensemble,
-        'prediction': api.get_prediction,
-        'evaluation': api.get_evaluation}
-
-
 def get_resource(regex, resource):
     """Returns a resource/id.
 
@@ -457,21 +444,8 @@ def count(listing):
     """Count of existing resources
 
     """
-    if 'query_total' in listing:
-        return listing['query_total']
-
-
-def ok(resource):
-    """Waits until the resource is finished and returns True on success
-
-    """
-    if http_ok(resource):
-        resource_type = get_resource_type(resource)
-        check_resource(resource, GET_RESOURCE[resource_type])
-        return True
-    else:
-        log_message("The resource couldn't be created: %s"  %
-            resource['error'])
+    if 'meta' in listing and 'query_total' in listing['meta']:
+        return listing['meta']['query_total']
 
 
 ##############################################################################
@@ -577,6 +551,13 @@ class BigML(object):
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)
+        self.getters = {
+            'source': self.get_source,
+            'dataset': self.get_dataset,
+            'model': self.get_model,
+            'ensemble': self.get_ensemble,
+            'prediction': self.get_prediction,
+            'evaluation': self.get_evaluation}
 
     def _create(self, url, body, verify=VERIFY):
         """Creates a new remote resource.
@@ -922,6 +903,18 @@ class BigML(object):
                 key: dataset_ids})
 
         return create_args
+
+    def ok(self, resource):
+        """Waits until the resource is finished and returns True on success
+
+        """
+        if http_ok(resource):
+            resource_type = get_resource_type(resource)
+            reource = check_resource(resource, self.getters[resource_type])
+            return True
+        else:
+            LOGGER.error("The resource couldn't be created: %s"  %
+                resource['error'])
 
     ##########################################################################
     #

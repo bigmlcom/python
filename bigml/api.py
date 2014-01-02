@@ -915,8 +915,8 @@ class BigML(object):
                                            self.getters[resource_type]))
             return True
         else:
-            LOGGER.error("The resource couldn't be created: %s"  %
-                resource['error'])
+            LOGGER.error("The resource couldn't be created: %s" %
+                         resource['error'])
 
     ##########################################################################
     #

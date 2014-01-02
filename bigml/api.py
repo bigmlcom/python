@@ -905,12 +905,14 @@ class BigML(object):
         return create_args
 
     def ok(self, resource):
-        """Waits until the resource is finished and returns True on success
+        """Waits until the resource is finished or faulty, updates it and
+           returns True on success
 
         """
         if http_ok(resource):
             resource_type = get_resource_type(resource)
-            reource = check_resource(resource, self.getters[resource_type])
+            resource.update(check_resource(resource,
+                                           self.getters[resource_type]))
             return True
         else:
             LOGGER.error("The resource couldn't be created: %s"  %

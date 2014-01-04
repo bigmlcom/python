@@ -3,6 +3,11 @@
 History
 -------
 
+1.0.1 (2014-01-05)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing the source for ensemble field importance computations
+
 1.0.0 (2013-12-09)
 ~~~~~~~~~~~~~~~~~~~
 

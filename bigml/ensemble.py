@@ -77,6 +77,7 @@ class Ensemble(object):
             ensemble = check_resource(ensemble, self.api.get_ensemble)
             models = ensemble['object']['models']
         self.model_ids = models
+        self.distributions = ensemble['object'].get('distributions', None)
         number_of_models = len(models)
         if max_models is None:
             self.models_splits = [models]
@@ -137,15 +138,36 @@ class Ensemble(object):
         """
         field_importance = {}
         field_names = {}
-        for model_id in self.model_ids:
-            local_model = BaseModel(model_id)
-            for field_info in local_model.field_importance:
-                field_id = field_info[0]
-                if not field_info[0] in field_importance:
-                    field_importance[field_id] = 0.0
-                    name = local_model.fields[field_id]['name']
-                    field_names[field_id] = {'name': name}
-                field_importance[field_id] += field_info[1]
+        if (self.distributions is not None and
+            isinstance(self.distributions, list) and
+            all('importance' in item for item in self.distributions)):
+            # Extracts importance from ensemble information
+            importances = [model_info['importance'] for model_info in
+                           self.distributions]
+            for index in range(0, len(importances)):
+                model_info = importances[index]
+                local_model = None
+                for field_info in model_info:
+                    field_id = field_info[0]
+                    if not field_id in field_importance:
+                        field_importance[field_id] = 0.0
+                        if local_model is None:
+                            local_model = BaseModel(self.model_ids[index])
+                        name = local_model.fields[field_id]['name']
+                        field_names[field_id] = {'name': name}
+                    field_importance[field_id] += field_info[1]
+        else:
+            # Old ensembles, extracts importance from model information
+            for model_id in self.model_ids:
+                local_model = BaseModel(model_id)
+                for field_info in local_model.field_importance:
+                    field_id = field_info[0]
+                    if not field_info[0] in field_importance:
+                        field_importance[field_id] = 0.0
+                        name = local_model.fields[field_id]['name']
+                        field_names[field_id] = {'name': name}
+                    field_importance[field_id] += field_info[1]
+ 
         number_of_models = len(self.model_ids)
         for field_id in field_importance.keys():
             field_importance[field_id] /= number_of_models

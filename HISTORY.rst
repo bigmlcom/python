@@ -6,7 +6,8 @@ History
 1.0.1 (2014-01-05)
 ~~~~~~~~~~~~~~~~~~~
 
-- Changing the source for ensemble field importance computations
+- Changing the source for ensemble field importance computations.
+- Fixes bug in http_ok adding the valid state for updates.
 
 1.0.0 (2013-12-09)
 ~~~~~~~~~~~~~~~~~~~

@@ -74,7 +74,6 @@ def print_importance(instance, out=sys.stdout):
     """
     count = 1
     field_importance, fields = instance.field_importance_data()
-    print field_importance
     for [field, importance] in field_importance:
         out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
                        fields[field]['name'],

@@ -437,7 +437,7 @@ def http_ok(resource):
 
     """
     if 'code' in resource:
-        return resource['code'] in [HTTP_OK, HTTP_CREATED]
+        return resource['code'] in [HTTP_OK, HTTP_CREATED, HTTP_ACCEPTED]
 
 
 def count(listing):

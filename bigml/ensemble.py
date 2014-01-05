@@ -72,12 +72,14 @@ class Ensemble(object):
             except ValueError:
                 raise ValueError('Failed to verify the list of models. Check '
                                  'your model id values.')
+            self.distributions = None
         else:
             self.ensemble_id = get_ensemble_id(ensemble)
             ensemble = check_resource(ensemble, self.api.get_ensemble)
             models = ensemble['object']['models']
+            self.distributions = ensemble['object'].get('distributions', None)
         self.model_ids = models
-        self.distributions = ensemble['object'].get('distributions', None)
+
         number_of_models = len(models)
         if max_models is None:
             self.models_splits = [models]

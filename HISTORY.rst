@@ -3,6 +3,12 @@
 History
 -------
 
+1.0.2 (2014-01-20)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixes bug in create calls: the user provided args dictionaries were
+  updated inside the calls.
+
 1.0.1 (2014-01-05)
 ~~~~~~~~~~~~~~~~~~~
 

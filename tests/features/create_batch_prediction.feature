@@ -32,4 +32,4 @@ Feature: Create Batch Predictions
 
         Examples:
         | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       |
-        | ../data/iris.csv | 30      | 30     | 5                | 1   | 30     | 30     | ./tmp/batch_predictions.csv | ./check_files/batch_predictions_e.csv |
+        | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | ./tmp/batch_predictions.csv | ./check_files/batch_predictions_e.csv |

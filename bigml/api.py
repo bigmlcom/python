@@ -42,7 +42,6 @@ import os
 import re
 import locale
 import pprint
-import copy
 
 from threading import Thread
 
@@ -611,8 +610,8 @@ class BigML(object):
             except ValueError:
                 LOGGER.error("Malformed response")
                 code = HTTP_INTERNAL_SERVER_ERROR
-            except requests.ConnectionError:
-                LOGGER.error("Connection error")
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s" % str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
             except requests.Timeout:
                 LOGGER.error("Request timed out")
@@ -668,8 +667,8 @@ class BigML(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s" % str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -727,8 +726,8 @@ class BigML(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s" % str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -786,8 +785,8 @@ class BigML(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s" % str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -825,8 +824,8 @@ class BigML(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s" % str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -886,10 +885,9 @@ class BigML(object):
 
             dataset_ids.append(get_dataset_id(dataset))
 
-        if args is None:
-            create_args = {}
-        else:
-            create_args = copy.deepcopy(args)
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
 
         if len(dataset_ids) == 1:
             if key is None:
@@ -1019,10 +1017,11 @@ class BigML(object):
         """Creates a new source using a URL
 
         """
-        if args is None:
-            args = {}
-        args.update({"remote": url})
-        body = json.dumps(args)
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        create_args.update({"remote": url})
+        body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
     def _create_local_source(self, file_name, args=None):
@@ -1032,10 +1031,13 @@ class BigML(object):
         content what limited the size of local files to a small number of GBs.
 
         """
-        if args is None:
-            args = {}
-        elif 'source_parser' in args:
-            args['source_parser'] = json.dumps(args['source_parser'])
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        if 'source_parser' in create_args:
+            create_args['source_parser'] = json.dumps(
+                create_args['source_parser'])
 
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
@@ -1054,7 +1056,7 @@ class BigML(object):
         try:
             response = requests.post(self.source_url + self.auth,
                                      files=files,
-                                     data=args, verify=VERIFY)
+                                     data=create_args, verify=VERIFY)
 
             code = response.status_code
 
@@ -1074,8 +1076,8 @@ class BigML(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError:
-            LOGGER.error("Connection error")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s" % str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -1124,11 +1126,12 @@ class BigML(object):
             pct = 100 - ((total - current) * 100) / (total)
             console_log("Uploaded %s out of %s bytes [%s%%]" % (
                 localize(current), localize(total), pct))
-
-        if args is None:
-            args = {}
-        elif 'source_parser' in args:
-            args['source_parser'] = json.dumps(args['source_parser'])
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        if 'source_parser' in create_args:
+            create_args['source_parser'] = json.dumps(
+                create_args['source_parser'])
 
         resource_id = None
         location = None
@@ -1137,13 +1140,13 @@ class BigML(object):
 
         try:
             if isinstance(file_name, basestring):
-                args.update({os.path.basename(file_name):
-                             open(file_name, "rb")})
+                create_args.update({os.path.basename(file_name):
+                                    open(file_name, "rb")})
             else:
-                args = args.items()
+                create_args = create_args.items()
                 name = '<none>'
-                args.append(MultipartParam(name, filename=name,
-                                           fileobj=file_name))
+                create_args.append(MultipartParam(name, filename=name,
+                                                  fileobj=file_name))
 
         except IOError, exception:
             sys.exit("Error: cannot read training set. %s" % str(exception))
@@ -1157,14 +1160,15 @@ class BigML(object):
                                       'code': UPLOADING,
                                       'progress': 0.0}},
                 'error': error}
-            upload_args = (args, source)
+            upload_args = (create_args, source)
             thread = Thread(target=self._upload_source,
                             args=upload_args,
                             kwargs={'out': out})
             thread.start()
             return source
         return self._process_source(resource_id, location, resource,
-                                    args=args, progress_bar=progress_bar,
+                                    args=create_args,
+                                    progress_bar=progress_bar,
                                     callback=draw_progress_bar, out=out)
 
     def _process_source(self, resource_id, location, resource,
@@ -1213,7 +1217,7 @@ class BigML(object):
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except urllib2.URLError, exception:
-            LOGGER.error("Error establishing connection")
+            LOGGER.error("Error establishing connection: %s" % str(exception))
             error = exception.args
         return {
             'code': code,
@@ -1311,10 +1315,10 @@ class BigML(object):
         request is not sent until the `source` has been created successfuly.
 
         """
-        if args is None:
-            create_args = {}
-        else:
-            create_args = copy.deepcopy(args)
+        create_args = {}
+        if args is not None:
+            create_args.update(args) 
+
         if isinstance(source_or_datasets, list):
             create_args = self._set_create_from_datasets_args(
                 source_or_datasets, args=create_args, wait_time=wait_time,
@@ -1533,19 +1537,19 @@ class BigML(object):
                     [[inverted_fields[key], value]
                      for key, value in input_data.items()
                      if key in inverted_fields])
-
-            if args is None:
-                args = {}
-            args.update({
+            create_args = {}
+            if args is not None:
+                create_args.update(args)
+            create_args.update({
                 "input_data": input_data})
             if ensemble_id is None:
-                args.update({
+                create_args.update({
                     "model": model_id})
             else:
-                args.update({
+                create_args.update({
                     "ensemble": ensemble_id})
 
-            body = json.dumps(args)
+            body = json.dumps(create_args)
             return self._create(self.prediction_url, body,
                                 verify=VERIFY_PREDICTION_SERVER)
 
@@ -1597,6 +1601,9 @@ class BigML(object):
         """Creates a new evaluation.
 
         """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
 
         def args_update(check_resource_is_ready):
             """Updates args when the resource is ready
@@ -1609,12 +1616,10 @@ class BigML(object):
                            count < retries):
                         time.sleep(wait_time)
                         count += 1
-                args.update({
+                create_args.update({
                     resource_type: resource_id,
                     "dataset": dataset_id})
 
-        if args is None:
-            args = {}
         resource_type = get_resource_type(dataset)
         if not DATASET_PATH == resource_type:
             raise Exception("A dataset id is needed as second argument"
@@ -1641,7 +1646,7 @@ class BigML(object):
                             " argument to create an"
                             " evaluation. %s found." % resource_type)
 
-        body = json.dumps(args)
+        body = json.dumps(create_args)
         return self._create(self.evaluation_url, body)
 
     def get_evaluation(self, evaluation):
@@ -1768,7 +1773,9 @@ class BigML(object):
         """Creates a new batch prediction.
 
         """
-
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
         def args_update(check_resource_is_ready):
             """Updates args when the resource is ready
 
@@ -1780,12 +1787,10 @@ class BigML(object):
                            count < retries):
                         time.sleep(wait_time)
                         count += 1
-                args.update({
+                create_args.update({
                     resource_type: resource_id,
                     "dataset": dataset_id})
 
-        if args is None:
-            args = {}
         resource_type = get_resource_type(dataset)
         if not DATASET_PATH == resource_type:
             raise Exception("A dataset id is needed as second argument"
@@ -1812,7 +1817,7 @@ class BigML(object):
                             " argument to create a"
                             " batch prediction. %s found." % resource_type)
 
-        body = json.dumps(args)
+        body = json.dumps(create_args)
         return self._create(self.batch_prediction_url, body)
 
     def get_batch_prediction(self, batch_prediction):

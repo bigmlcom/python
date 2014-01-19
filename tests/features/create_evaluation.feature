@@ -30,4 +30,4 @@ Feature: Create Evaluations
 
         Examples:
         | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | measure       | value  |
-        | ../data/iris.csv | 30      | 30     | 5                | 1   | 30     | 30     | average_phi   | 0.9   |
+        | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | average_phi   | 0.9   |

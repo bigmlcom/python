@@ -3,20 +3,27 @@
 History
 -------
 
+1.0.3 (2014-01-21)
+~~~~~~~~~~~~~~~~~~
+
+- Fixes bug in regressions predictions with ensembles and plurality without
+  confidence information. Predictions values were not normalized.
+- Updating copyright information
+
 1.0.2 (2014-01-20)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Fixes bug in create calls: the user provided args dictionaries were
   updated inside the calls.
 
 1.0.1 (2014-01-05)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Changing the source for ensemble field importance computations.
 - Fixes bug in http_ok adding the valid state for updates.
 
 1.0.0 (2013-12-09)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Adding more info to error messages in REST methods.
 - Adding new missing fields strategy in predict method.

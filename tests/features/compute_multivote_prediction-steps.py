@@ -44,12 +44,31 @@ def compute_prediction(step, method):
     except ValueError:
         assert False, "Incorrect method"
 
+@step(r'I compute the prediction without confidence using method "(.*)"$')
+def compute_prediction_no_confidence(step, method):
+    try:
+        world.combined_prediction_nc = world.multivote.combine(int(method))
+    except ValueError:
+        assert False, "Incorrect method"
+
 @step(r'the combined prediction is "(.*)"$')
 def check_combined_prediction(step, prediction):
 
     if world.multivote.is_regression():
         try:
             assert round(world.combined_prediction, 6) == round(float(prediction), 6)
+        except ValueError, exc:
+            assert False, str(exc)
+    else:
+        assert world.combined_prediction == prediction
+
+@step(r'the combined prediction without confidence is "(.*)"$')
+def check_combined_prediction_no_confidence(step, prediction):
+
+    if world.multivote.is_regression():
+        try:
+            assert round(world.combined_prediction_nc, 6) == round(
+                float(prediction), 6)
         except ValueError, exc:
             assert False, str(exc)
     else:

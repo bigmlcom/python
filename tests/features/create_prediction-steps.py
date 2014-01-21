@@ -22,7 +22,7 @@ def i_create_a_prediction(step, data=None):
 
 @step(r'the prediction for "(.*)" is "(.*)"')
 def the_prediction_is(step, objective, prediction):
-    assert world.prediction['prediction'][objective] == prediction
+    assert str(world.prediction['prediction'][objective]) == prediction
 
 @step(r'I create an ensemble prediction for "(.*)"')
 def i_create_an_ensemble_prediction(step, data=None):

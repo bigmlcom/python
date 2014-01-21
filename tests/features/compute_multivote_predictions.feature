@@ -5,7 +5,9 @@ Feature: Compute MultiVote predictions
     Scenario: Successfully computing predictions combinations:
         Given I create a MultiVote for the set of predictions in file <predictions>
         When I compute the prediction with confidence using method "<method>"
+        And I compute the prediction without confidence using method "<method>"
         Then the combined prediction is "<prediction>"
+        And the combined prediction without confidence is "<prediction>"
         And the confidence for the combined prediction is <confidence>
 
         Examples:

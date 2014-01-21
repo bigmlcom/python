@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012-2014 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -121,7 +121,7 @@ class MultiVote(object):
         if with_confidence:
             return ((result / total, confidence / total) if total > 0 else
                     (float('nan'), 0))
-        return result if total > 0 else float('nan')
+        return result / total if total > 0 else float('nan')
 
     @classmethod
     def error_weighted(cls, instance, with_confidence=False):

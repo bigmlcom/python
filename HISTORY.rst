@@ -3,6 +3,12 @@
 History
 -------
 
+1.0.4 (2014-01-21)
+~~~~~~~~~~~~~~~~~~
+
+- Adding a summarize method to local ensembles with data distribution
+  and field importance information.
+
 1.0.3 (2014-01-21)
 ~~~~~~~~~~~~~~~~~~
 

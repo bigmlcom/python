@@ -102,6 +102,19 @@ def extract_objective(objective_field):
     return objective_field
 
 
+def print_distribution(distribution, out=sys.stdout):
+    """Prints distribution data
+
+    """
+    total = reduce(lambda x, y: x + y,
+                   [group[1] for group in distribution])
+    for group in distribution:
+        out.write(utf8(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
+                       round(group[1] * 1.0 / total, 4) * 100,
+                       group[1],
+                       "" if group[1] == 1 else "s")))
+
+
 class Model(BaseModel):
     """ A lightweight wrapper around a Tree model.
 
@@ -339,18 +352,6 @@ class Model(BaseModel):
 
         """
         tree = self.tree
-
-        def print_distribution(distribution, out=sys.stdout):
-            """Prints distribution data
-
-            """
-            total = reduce(lambda x, y: x + y,
-                           [group[1] for group in distribution])
-            for group in distribution:
-                out.write(utf8(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
-                               round(group[1] * 1.0 / total, 4) * 100,
-                               group[1],
-                               "" if group[1] == 1 else "s")))
 
         def extract_common_path(groups):
             """Extracts the common segment of the prediction path for a group

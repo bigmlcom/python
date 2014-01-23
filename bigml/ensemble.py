@@ -43,7 +43,7 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
-from bigml.model import retrieve_model
+from bigml.model import retrieve_model, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
@@ -181,3 +181,49 @@ class Ensemble(object):
 
         """
         print_importance(self, out=out)
+
+
+    def get_data_distribution(self, distribution_type="training"):
+        """Returns the required data distribution by adding the distributions
+           in the models
+
+        """
+        ensemble_distribution = []
+        categories = []
+        for model_distribution in self.distributions:
+            summary = model_distribution[distribution_type]
+            if 'bins' in summary:
+                distribution = summary['bins']
+            elif 'counts' in summary:
+                distribution = summary['counts']
+            elif 'categories' in summary:
+                distribution = summary['categories']
+            for point, instances in distribution:
+                if point in categories:
+                    ensemble_distribution[categories.index(point)][1] += instances
+                else:
+                    categories.append(point)
+                    ensemble_distribution.append([point, instances])
+
+        return sorted(ensemble_distribution,  key=lambda x: x[0])
+
+
+    def summarize(self, out=sys.stdout):
+        """Prints ensemble summary. Only field importance at present.
+
+        """
+        distribution = self.get_data_distribution("training")
+
+        out.write(u"Data distribution:\n")
+        print_distribution(distribution, out=out)
+        out.write(u"\n\n")
+
+        predictions = self.get_data_distribution("predictions")
+
+        out.write(u"Predicted distribution:\n")
+        print_distribution(predictions, out=out)
+        out.write(u"\n\n")
+
+        out.write(u"Field importance:\n")
+        self.print_importance(out=out)
+        out.flush()

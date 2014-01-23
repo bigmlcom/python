@@ -147,7 +147,8 @@ class Model(BaseModel):
                 self.tree = Tree(
                     model['model']['root'],
                     self.fields,
-                    self.objective_field)
+                    self.objective_field,
+                    model['model']['distribution']['training'])
             else:
                 raise Exception("The model isn't finished yet")
         else:

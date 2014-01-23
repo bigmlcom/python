@@ -37,8 +37,7 @@ from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
 
 
-ONLY_MODEL = 'only_model=true;limit=-1'
-EXCLUDE_ROOT = 'exclude=root;shorten=true'
+ONLY_MODEL = 'only_model=true;shorten=true'
 
 
 def retrieve_model(api, model_id, query_string=''):
@@ -81,6 +80,16 @@ def print_importance(instance, out=sys.stdout):
         count += 1
 
 
+def check_model_structure(model):
+    """Checks the model structure to see if it contains all the needed keys
+
+    """
+    return (isinstance(model, dict) and 'resource' in model and
+        model['resource'] is not None and
+        ('object' in model and 'model' in model['object'] or
+         'model' in model))
+
+
 class BaseModel(object):
     """ A lightweight wrapper of the basic model information
 
@@ -91,8 +100,8 @@ class BaseModel(object):
 
     def __init__(self, model, api=None):
 
-        if (isinstance(model, dict) and 'resource' in model and
-                model['resource'] is not None):
+        resource_check = check_model_structure(model)
+        if resource_check:
             self.resource_id = model['resource']
         else:
             # If only the model id is provided, the short version of the model
@@ -104,9 +113,14 @@ class BaseModel(object):
                 raise Exception(error_message(model,
                                               resource_type='model',
                                               method='get'))
-            query_string = '%s;%s' % (ONLY_MODEL, EXCLUDE_ROOT)
+            query_string = ONLY_MODEL
             model = retrieve_model(api, self.resource_id,
                                    query_string=query_string)
+            # Stored copies of the model structure might lack some necessary
+            # keys
+            if not check_model_structure(model):
+                model = api.get_model(self.resource_id,
+                                      query_string=query_string)
 
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']

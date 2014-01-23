@@ -3,6 +3,15 @@
 History
 -------
 
+1.0.5 (2014-01-22)
+~~~~~~~~~~~~~~~~~~
+
+- Improving BaseModel and Model. If they receive a partial model
+  structure with a correct model id, the needed model resource is downloaded
+  and stored (if storage is enabled in the given api connection).
+- Improving local ensemble. Adding a new `fields` attribute that
+  contains all the fields used in its models.
+
 1.0.4 (2014-01-21)
 ~~~~~~~~~~~~~~~~~~
 
@@ -14,7 +23,7 @@ History
 
 - Fixes bug in regressions predictions with ensembles and plurality without
   confidence information. Predictions values were not normalized.
-- Updating copyright information
+- Updating copyright information.
 
 1.0.2 (2014-01-20)
 ~~~~~~~~~~~~~~~~~~
@@ -39,7 +48,7 @@ History
 0.10.3 (2013-12-19)
 ~~~~~~~~~~~~~~~~~~~
 
-- Fixes bug in local ensembles with more than 200 fields
+- Fixes bug in local ensembles with more than 200 fields.
 
 0.10.2 (2013-12-02)
 ~~~~~~~~~~~~~~~~~~~

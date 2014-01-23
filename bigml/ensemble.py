@@ -43,7 +43,7 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
-from bigml.model import retrieve_model, print_distribution
+from bigml.model import Model, retrieve_model, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
@@ -79,6 +79,7 @@ class Ensemble(object):
             models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions', None)
         self.model_ids = models
+        self.fields = self.all_model_fields()
 
         number_of_models = len(models)
         if max_models is None:
@@ -90,7 +91,7 @@ class Ensemble(object):
             models = [retrieve_model(self.api, model_id,
                                      query_string=ONLY_MODEL)
                       for model_id in self.models_splits[0]]
-            self.multi_model = MultiModel(models)
+            self.multi_model = MultiModel(models, self.api)
 
     def list_models(self):
         """Lists all the model/ids that compound the ensemble.
@@ -118,9 +119,10 @@ class Ensemble(object):
             # sequentially used to generate the votes for the prediction
             votes = MultiVote([])
             for models_split in self.models_splits:
-                models = [retrieve_model(self.api, model_id)
+                models = [retrieve_model(self.api, model_id,
+                                         query_string=ONLY_MODEL)
                           for model_id in models_split]
-                multi_model = MultiModel(models)
+                multi_model = MultiModel(models, api=self.api)
                 votes_split = multi_model.generate_votes(input_data,
                                                          by_name=by_name)
                 votes.extend(votes_split.predictions)
@@ -148,25 +150,22 @@ class Ensemble(object):
                            self.distributions]
             for index in range(0, len(importances)):
                 model_info = importances[index]
-                local_model = None
                 for field_info in model_info:
                     field_id = field_info[0]
                     if not field_id in field_importance:
                         field_importance[field_id] = 0.0
-                        if local_model is None:
-                            local_model = BaseModel(self.model_ids[index])
-                        name = local_model.fields[field_id]['name']
+                        name = self.fields[field_id]['name']
                         field_names[field_id] = {'name': name}
                     field_importance[field_id] += field_info[1]
         else:
             # Old ensembles, extracts importance from model information
             for model_id in self.model_ids:
-                local_model = BaseModel(model_id)
+                local_model = BaseModel(model_id, api=self.api)
                 for field_info in local_model.field_importance:
                     field_id = field_info[0]
                     if not field_info[0] in field_importance:
                         field_importance[field_id] = 0.0
-                        name = local_model.fields[field_id]['name']
+                        name = self.fields[field_id]['name']
                         field_names[field_id] = {'name': name}
                     field_importance[field_id] += field_info[1]
  
@@ -181,7 +180,6 @@ class Ensemble(object):
 
         """
         print_importance(self, out=out)
-
 
     def get_data_distribution(self, distribution_type="training"):
         """Returns the required data distribution by adding the distributions
@@ -200,13 +198,13 @@ class Ensemble(object):
                 distribution = summary['categories']
             for point, instances in distribution:
                 if point in categories:
-                    ensemble_distribution[categories.index(point)][1] += instances
+                    ensemble_distribution[
+                        categories.index(point)][1] += instances
                 else:
                     categories.append(point)
                     ensemble_distribution.append([point, instances])
 
         return sorted(ensemble_distribution,  key=lambda x: x[0])
-
 
     def summarize(self, out=sys.stdout):
         """Prints ensemble summary. Only field importance at present.
@@ -227,3 +225,14 @@ class Ensemble(object):
         out.write(u"Field importance:\n")
         self.print_importance(out=out)
         out.flush()
+
+    def all_model_fields(self):
+        """Retrieves the fields used as predictors in all the ensemble
+           models
+
+        """
+        fields = {}
+        for model_id in self.model_ids:
+            local_model = Model(model_id, self.api)
+            fields.update(local_model.fields)
+        return fields

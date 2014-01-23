@@ -1288,6 +1288,9 @@ You can also use ``local_model.get_data_distribution()`` and
 prediction basic distribution
 information as a list (suitable to draw histograms or any further processing).
 
+Local ensembles have a ``local_ensemble.summarize()`` method too, the output
+in this case shows only the data distribution and field importance sections.
+
 Running the Tests
 -----------------
 

@@ -100,7 +100,8 @@ class Tree(object):
     """A tree-like predictive model.
 
     """
-    def __init__(self, tree, fields, objective_field=None):
+    def __init__(self, tree, fields, objective_field=None,
+                 root_distribution=None):
 
         self.fields = fields
         self.objective_field = objective_field
@@ -134,7 +135,7 @@ class Tree(object):
             elif 'categories' in summary:
                 self.distribution = summary['categories']
         else:
-            summary = self.fields[self.objective_field]['summary']
+            summary = root_distribution
             if 'bins' in summary:
                 self.distribution = summary['bins']
             elif 'counts' in summary:

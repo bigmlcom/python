@@ -180,14 +180,9 @@ class Model(BaseModel):
                 del input_data[key]
 
             if by_name:
-                # Checks input_data keys against field names and filters the
-                # ones used in the model
-                wrong_keys = [key for key in input_data.keys() if not key
-                              in self.all_inverted_fields]
-
-                if wrong_keys:
-                    LOGGER.info("Wrong field names in input data: %s" %
-                                ", ".join(wrong_keys))
+                # We no longer check that the input data keys match some of
+                # the dataset fields. We only remove the keys that are not
+                # used as predictors in the model
                 input_data = dict(
                     [[self.inverted_fields[key], value]
                         for key, value in input_data.items()

@@ -36,8 +36,10 @@ from bigml.api import (get_status, error_message, BigML, get_model_id,
 from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
 
-
-ONLY_MODEL = 'only_model=true;shorten=true'
+# Query string to ask for fields: only the ones in the model, with summary
+# (needed for the list of terms in text fields) and
+# no pagination (all the model fields)
+ONLY_MODEL = 'only_model=true;limit=-1;'
 
 
 def retrieve_model(api, model_id, query_string=''):
@@ -100,8 +102,7 @@ class BaseModel(object):
 
     def __init__(self, model, api=None):
 
-        resource_check = check_model_structure(model)
-        if resource_check:
+        if check_model_structure(model):
             self.resource_id = model['resource']
         else:
             # If only the model id is provided, the short version of the model
@@ -143,14 +144,10 @@ class BaseModel(object):
                         if 'summary' in field_info:
                             fields[field]['summary'] = field_info['summary']
                         fields[field]['name'] = field_info['name']
-                else:
-                    fields = model['model']['fields']
                 objective_field = model['objective_fields']
                 self.objective_field = extract_objective(objective_field)
                 self.uniquify_varnames(fields)
                 self.inverted_fields = invert_dictionary(fields)
-                self.all_inverted_fields = invert_dictionary(model['model']
-                                                             ['fields'])
                 self.fields = fields
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',

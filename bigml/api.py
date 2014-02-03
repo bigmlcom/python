@@ -556,7 +556,8 @@ class BigML(object):
             'model': self.get_model,
             'ensemble': self.get_ensemble,
             'prediction': self.get_prediction,
-            'evaluation': self.get_evaluation}
+            'evaluation': self.get_evaluation,
+            'batchprediction': self.get_batch_prediction}
 
     def _create(self, url, body, verify=VERIFY):
         """Creates a new remote resource.

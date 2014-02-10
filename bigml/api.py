@@ -1318,7 +1318,7 @@ class BigML(object):
         """
         create_args = {}
         if args is not None:
-            create_args.update(args) 
+            create_args.update(args)
 
         if isinstance(source_or_datasets, list):
             create_args = self._set_create_from_datasets_args(
@@ -1777,6 +1777,7 @@ class BigML(object):
         create_args = {}
         if args is not None:
             create_args.update(args)
+
         def args_update(check_resource_is_ready):
             """Updates args when the resource is ready
 

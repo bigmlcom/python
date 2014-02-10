@@ -87,9 +87,9 @@ def check_model_structure(model):
 
     """
     return (isinstance(model, dict) and 'resource' in model and
-        model['resource'] is not None and
-        ('object' in model and 'model' in model['object'] or
-         'model' in model))
+            model['resource'] is not None and
+            ('object' in model and 'model' in model['object'] or
+             'model' in model))
 
 
 class BaseModel(object):

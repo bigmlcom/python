@@ -575,7 +575,6 @@ class Tree(object):
                 u"%s %s THEN" % (alternate, " AND ".join(conditions)))
             body += u" %s\n" % value
 
-
         return body
 
     def tableau(self, out):

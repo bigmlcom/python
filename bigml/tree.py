@@ -96,6 +96,15 @@ def merge_bins(distribution, limit):
     return merge_bins(new_distribution, limit)
 
 
+def tableau_string(text):
+    """Transforms to a string representation in Tableau
+
+    """
+    value = repr(text)
+    if isinstance(text, unicode):
+        return value[1:]
+
+
 class Tree(object):
     """A tree-like predictive model.
 
@@ -521,7 +530,7 @@ class Tree(object):
         return body
 
     def tableau_body(self, body=u"", conditions=None, cmv=None):
-        """Translate the model into a set of "if" statemets in Tableau syntax
+        """Translate the model into a set of "if" statements in Tableau syntax
 
         `depth` controls the size of indentation. As soon as a value is missing
         that node is returned without further evaluation.
@@ -545,7 +554,7 @@ class Tree(object):
                 if self.fields[self.objective_field]['optype'] == 'numeric':
                     value = self.output
                 else:
-                    value = repr(self.output)
+                    value = tableau_string(self.output) 
                 body += (u"%s\n" % value)
                 cmv.append(self.fields[field]['name'])
                 alternate = u"ELSEIF"
@@ -554,8 +563,7 @@ class Tree(object):
             for child in self.children:
                 optype = self.fields[child.predicate.field]['optype']
                 if optype == 'text':
-                    body = (u"This function cannot be represented in tableau "
-                            u"syntax.")
+                    return u""
                 if (optype == 'numeric'):
                     value = child.predicate.value
                 else:
@@ -570,7 +578,7 @@ class Tree(object):
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output
             else:
-                value = repr(self.output)
+                value = tableau_string(self.output) 
             body += (
                 u"%s %s THEN" % (alternate, " AND ".join(conditions)))
             body += u" %s\n" % value
@@ -581,5 +589,9 @@ class Tree(object):
         """Writes a Tableau function that implements the model.
 
         """
-        out.write(utf8(self.tableau_body()))
+        body = self.tableau_body()
+        if not body:
+            return False
+        out.write(utf8(body))
         out.flush()
+        return True

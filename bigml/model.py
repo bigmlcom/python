@@ -269,9 +269,13 @@ class Model(BaseModel):
         if hadoop:
             return "Hadoop output not available."
         else:
-            self.tree.tableau(out)
-            out.write(u"END\n")
-            out.flush
+            response = self.tree.tableau(out)
+            if response:
+                out.write(u"END\n")
+            else:
+                out.write(u"\nThis function cannot be represented "
+                          u"in Tableau syntax.\n")
+            out.flush()
             return None
 
     def group_prediction(self):

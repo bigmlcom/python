@@ -335,9 +335,9 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
             raise ValueError("Failed to extract a valid resource id to check.")
         kwargs = get_kwargs(resource_id)
 
-    count = 0
-    while retries is None or count < retries:
-        count += 1
+    counter = 0
+    while retries is None or counter < retries:
+        counter += 1
         status = get_status(resource)
         code = status['code']
         if code == FINISHED:
@@ -1330,11 +1330,11 @@ class BigML(object):
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
                     if wait_time > 0:
-                        count = 0
+                        counter = 0
                         while (not self.source_is_ready(source_id) and
-                               count < retries):
+                               counter < retries):
                             time.sleep(wait_time)
-                            count += 1
+                            counter += 1
                     create_args.update({
                         "source": source_id})
             elif resource_type == DATASET_PATH:
@@ -1496,11 +1496,11 @@ class BigML(object):
             ensemble_id = get_ensemble_id(model_or_ensemble)
             if ensemble_id is not None:
                 if wait_time > 0:
-                    count = 0
+                    counter = 0
                     while (not self.ensemble_is_ready(ensemble_id) and
-                           count < retries):
+                           counter < retries):
                         time.sleep(wait_time)
-                        count += 1
+                        counter += 1
                 try:
                     ensemble = self.get_ensemble(ensemble_id)
                     model_id = ensemble['object']['models'][0]
@@ -1517,11 +1517,11 @@ class BigML(object):
         if model_id is not None:
             if ensemble_id is None:
                 if wait_time > 0:
-                    count = 0
+                    counter = 0
                     while (not self.model_is_ready(model_id) and
-                           count < retries):
+                           counter < retries):
                         time.sleep(wait_time)
-                        count += 1
+                        counter += 1
 
             if input_data is None:
                 input_data = {}
@@ -1612,11 +1612,11 @@ class BigML(object):
             """
             if resource_id:
                 if wait_time > 0:
-                    count = 0
+                    counter = 0
                     while (not check_resource_is_ready(resource_id) and
-                           count < retries):
+                           counter < retries):
                         time.sleep(wait_time)
-                        count += 1
+                        counter += 1
                 create_args.update({
                     resource_type: resource_id,
                     "dataset": dataset_id})
@@ -1629,11 +1629,11 @@ class BigML(object):
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             if wait_time > 0:
-                count = 0
+                counter = 0
                 while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
+                       counter < retries):
                     time.sleep(wait_time)
-                    count += 1
+                    counter += 1
 
         resource_type = get_resource_type(model_or_ensemble)
         if resource_type == MODEL_PATH:
@@ -1784,11 +1784,11 @@ class BigML(object):
             """
             if resource_id:
                 if wait_time > 0:
-                    count = 0
+                    counter = 0
                     while (not check_resource_is_ready(resource_id) and
-                           count < retries):
+                           counter < retries):
                         time.sleep(wait_time)
-                        count += 1
+                        counter += 1
                 create_args.update({
                     resource_type: resource_id,
                     "dataset": dataset_id})
@@ -1801,11 +1801,11 @@ class BigML(object):
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             if wait_time > 0:
-                count = 0
+                counter = 0
                 while (not self.dataset_is_ready(dataset_id) and
-                       count < retries):
+                       counter < retries):
                     time.sleep(wait_time)
-                    count += 1
+                    counter += 1
 
         resource_type = get_resource_type(model_or_ensemble)
         if resource_type == MODEL_PATH:

@@ -1146,10 +1146,10 @@ helpful to understand how the model works internally.
          species = Iris-setosa
 
 
-Python and Hadoop-ready Generation
-----------------------------------
+Python, Tableau and Hadoop-ready Generation
+-------------------------------------------
 
-If you prefer you can also generate a Python function that implements the model
+If you prefer, you can also generate a Python function that implements the model
 and that can be useful to make the model actionable right away with ``local_model.python()``.
 
 ::
@@ -1223,6 +1223,26 @@ assuming you are in the Hadoop home directory, your input file is in the
 corresponding dfs directory
 (``/home/hduser/hadoop/input.csv`` in this example) and the output will
 be placed at ``/home/hduser/hadoop/output_dir`` (inside the dfs directory).
+
+Tableau-ready rules are also available through ``local_model.tableau()`` for
+all the models except those that use text predictors.
+
+::
+    local_model.tableau()
+    IF ISNULL([petal width]) THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND ISNULL([petal length]) THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND [petal length]>4.85 THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND [petal length]<=4.85 AND ISNULL([sepal width]) THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND [petal length]<=4.85 AND [sepal width]>3.1 THEN 'Iris-versicolor'
+    ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND [petal length]<=4.85 AND [sepal width]<=3.1 THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND ISNULL([petal length]) THEN 'Iris-versicolor'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND [petal length]>4.95 AND [petal width]>1.55 AND [petal length]>5.45 THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND [petal length]>4.95 AND [petal width]>1.55 AND [petal length]<=5.45 THEN 'Iris-versicolor'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND [petal length]>4.95 AND [petal width]<=1.55 THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND [petal length]<=4.95 AND [petal width]>1.65 THEN 'Iris-virginica'
+    ELSEIF [petal width]>0.8 AND [petal width]<=1.75 AND [petal length]<=4.95 AND [petal width]<=1.65 THEN 'Iris-versicolor'
+    ELSEIF [petal width]<=0.8 THEN 'Iris-setosa'
+    END
 
 
 Summary generation

@@ -519,3 +519,68 @@ class Tree(object):
 """
 
         return body
+
+    def tableau_body(self, body=u"", conditions=None, cmv=None):
+        """Translate the model into a set of "if" statemets in Tableau syntax
+
+        `depth` controls the size of indentation. As soon as a value is missing
+        that node is returned without further evaluation.
+
+        """
+
+        if cmv is None:
+            cmv = []
+        if conditions is None:
+            conditions = []
+            alternate = u"IF"
+        else:
+            alternate = u"ELSEIF"
+
+        if self.children:
+            field = split(self.children)
+            if not self.fields[field]['name'] in cmv:
+                conditions.append("ISNULL([%s])" % self.fields[field]['name'])
+                body += (u"%s %s THEN " %
+                         (alternate, " AND ".join(conditions)))
+                if self.fields[self.objective_field]['optype'] == 'numeric':
+                    value = self.output
+                else:
+                    value = repr(self.output)
+                body += (u"%s\n" % value)
+                cmv.append(self.fields[field]['name'])
+                alternate = u"ELSEIF"
+                del conditions[-1]
+
+            for child in self.children:
+                optype = self.fields[child.predicate.field]['optype']
+                if optype == 'text':
+                    body = (u"This function cannot be represented in tableau "
+                            u"syntax.")
+                if (optype == 'numeric'):
+                    value = child.predicate.value
+                else:
+                    value = repr(child.predicate.value)
+                conditions.append("[%s]%s%s" % (
+                    self.fields[child.predicate.field]['name'],
+                    PYTHON_OPERATOR[child.predicate.operator],
+                    value))
+                body = child.tableau_body(body, conditions[:], cmv=cmv[:])
+                del conditions[-1]
+        else:
+            if self.fields[self.objective_field]['optype'] == 'numeric':
+                value = self.output
+            else:
+                value = repr(self.output)
+            body += (
+                u"%s %s THEN" % (alternate, " AND ".join(conditions)))
+            body += u" %s\n" % value
+
+
+        return body
+
+    def tableau(self, out):
+        """Writes a Tableau function that implements the model.
+
+        """
+        out.write(utf8(self.tableau_body()))
+        out.flush()

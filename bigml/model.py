@@ -260,6 +260,24 @@ class Model(BaseModel):
         else:
             return self.tree.python(out, self.docstring())
 
+    def tableau(self, out=sys.stdout, hadoop=False):
+        """Returns a basic tableau function that implements the model.
+
+        `out` is file descriptor to write the tableau code.
+
+        """
+        if hadoop:
+            return "Hadoop output not available."
+        else:
+            response = self.tree.tableau(out)
+            if response:
+                out.write(u"END\n")
+            else:
+                out.write(u"\nThis function cannot be represented "
+                          u"in Tableau syntax.\n")
+            out.flush()
+            return None
+
     def group_prediction(self):
         """Groups in categories or bins the predicted data
 

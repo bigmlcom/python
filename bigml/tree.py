@@ -96,6 +96,15 @@ def merge_bins(distribution, limit):
     return merge_bins(new_distribution, limit)
 
 
+def tableau_string(text):
+    """Transforms to a string representation in Tableau
+
+    """
+    value = repr(text)
+    if isinstance(text, unicode):
+        return value[1:]
+
+
 class Tree(object):
     """A tree-like predictive model.
 
@@ -519,3 +528,70 @@ class Tree(object):
 """
 
         return body
+
+    def tableau_body(self, body=u"", conditions=None, cmv=None):
+        """Translate the model into a set of "if" statements in Tableau syntax
+
+        `depth` controls the size of indentation. As soon as a value is missing
+        that node is returned without further evaluation.
+
+        """
+
+        if cmv is None:
+            cmv = []
+        if conditions is None:
+            conditions = []
+            alternate = u"IF"
+        else:
+            alternate = u"ELSEIF"
+
+        if self.children:
+            field = split(self.children)
+            if not self.fields[field]['name'] in cmv:
+                conditions.append("ISNULL([%s])" % self.fields[field]['name'])
+                body += (u"%s %s THEN " %
+                         (alternate, " AND ".join(conditions)))
+                if self.fields[self.objective_field]['optype'] == 'numeric':
+                    value = self.output
+                else:
+                    value = tableau_string(self.output) 
+                body += (u"%s\n" % value)
+                cmv.append(self.fields[field]['name'])
+                alternate = u"ELSEIF"
+                del conditions[-1]
+
+            for child in self.children:
+                optype = self.fields[child.predicate.field]['optype']
+                if optype == 'text':
+                    return u""
+                if (optype == 'numeric'):
+                    value = child.predicate.value
+                else:
+                    value = repr(child.predicate.value)
+                conditions.append("[%s]%s%s" % (
+                    self.fields[child.predicate.field]['name'],
+                    PYTHON_OPERATOR[child.predicate.operator],
+                    value))
+                body = child.tableau_body(body, conditions[:], cmv=cmv[:])
+                del conditions[-1]
+        else:
+            if self.fields[self.objective_field]['optype'] == 'numeric':
+                value = self.output
+            else:
+                value = tableau_string(self.output) 
+            body += (
+                u"%s %s THEN" % (alternate, " AND ".join(conditions)))
+            body += u" %s\n" % value
+
+        return body
+
+    def tableau(self, out):
+        """Writes a Tableau function that implements the model.
+
+        """
+        body = self.tableau_body()
+        if not body:
+            return False
+        out.write(utf8(body))
+        out.flush()
+        return True

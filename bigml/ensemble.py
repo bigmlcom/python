@@ -143,8 +143,8 @@ class Ensemble(object):
         field_importance = {}
         field_names = {}
         if (self.distributions is not None and
-            isinstance(self.distributions, list) and
-            all('importance' in item for item in self.distributions)):
+                isinstance(self.distributions, list) and
+                all('importance' in item for item in self.distributions)):
             # Extracts importance from ensemble information
             importances = [model_info['importance'] for model_info in
                            self.distributions]
@@ -168,7 +168,7 @@ class Ensemble(object):
                         name = self.fields[field_id]['name']
                         field_names[field_id] = {'name': name}
                     field_importance[field_id] += field_info[1]
- 
+
         number_of_models = len(self.model_ids)
         for field_id in field_importance.keys():
             field_importance[field_id] /= number_of_models

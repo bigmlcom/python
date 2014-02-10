@@ -3,10 +3,15 @@
 History
 -------
 
+1.1.0 (2014-02-10)
+~~~~~~~~~~~~~~~~~~
+
+- Adding Tableau-ready ouput to local model code generators.
+
 1.0.6 (2014-02-03)
 ~~~~~~~~~~~~~~~~~~
 
-- Fixing getters: getter for batch predictions was missing
+- Fixing getters: getter for batch predictions was missing.
 
 1.0.5 (2014-01-22)
 ~~~~~~~~~~~~~~~~~~

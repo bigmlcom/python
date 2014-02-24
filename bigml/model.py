@@ -149,6 +149,7 @@ class Model(BaseModel):
                     self.fields,
                     self.objective_field,
                     model['model']['distribution']['training'])
+                self.terms = {}
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -318,6 +319,12 @@ class Model(BaseModel):
             """
             if isinstance(tree.predicate, Predicate):
                 path.append(tree.predicate)
+                if tree.predicate.term:
+                    term = tree.predicate.term
+                    if not tree.predicate.field in self.terms:
+                        self.terms[tree.predicate.field] = []
+                    if not term in self.terms[tree.predicate.field]:
+                        self.terms[tree.predicate.field].append(term)
 
             if len(tree.children) == 0:
                 add_to_groups(groups, tree.output,

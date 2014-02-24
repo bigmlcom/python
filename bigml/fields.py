@@ -133,7 +133,7 @@ class Fields(object):
         elif isinstance(key, int):
             try:
                 id = self.fields_by_column_number[key]
-            except KeyError:
+            except KeyError, exc:
                 sys.exit("Error: field column number '%s' does not exist" %
                          key)
             return id

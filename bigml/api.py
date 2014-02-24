@@ -1330,7 +1330,7 @@ class BigML(object):
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
                     if wait_time > 0:
-                        counter = 0
+                        fcounter = 0
                         while (not self.source_is_ready(source_id) and
                                counter < retries):
                             time.sleep(wait_time)

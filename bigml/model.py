@@ -144,11 +144,15 @@ class Model(BaseModel):
         if ('model' in model and isinstance(model['model'], dict)):
             status = get_status(model)
             if ('code' in status and status['code'] == FINISHED):
+                distribution = model['model']['distribution']['training']
+                self.ids_map = {}
                 self.tree = Tree(
                     model['model']['root'],
                     self.fields,
-                    self.objective_field,
-                    model['model']['distribution']['training'])
+                    objective_field=self.objective_field,
+                    root_distribution=distribution,
+                    parent_id=None,
+                    ids_map=self.ids_map)
                 self.terms = {}
             else:
                 raise Exception("The model isn't finished yet")
@@ -240,37 +244,55 @@ class Model(BaseModel):
                      prefix_as_comment(INDENT * 2, self.description))
         return docstring
 
-    def rules(self, out=sys.stdout):
+    def get_ids_path(self, filter_id):
+        """Builds the list of ids that go from a given id to the tree root
+
+        """
+        ids_path = None
+        if filter_id is not None and self.tree.id is not None:
+            if not filter_id in self.ids_map:
+                raise ValueError("The given id does not exist.")
+            else:
+                ids_path = [filter_id]
+                last_id = filter_id
+                while self.ids_map[last_id].parent_id is not None:
+                    ids_path.append(self.ids_map[last_id].parent_id)
+                    last_id = self.ids_map[last_id].parent_id
+        return ids_path
+
+    def rules(self, out=sys.stdout, filter_id=None):
         """Returns a IF-THEN rule set that implements the model.
 
         `out` is file descriptor to write the rules.
 
         """
+        ids_path = self.get_ids_path(filter_id)
+        return self.tree.rules(out, ids_path=ids_path)
 
-        return self.tree.rules(out)
-
-    def python(self, out=sys.stdout, hadoop=False):
+    def python(self, out=sys.stdout, hadoop=False, filter_id=None):
         """Returns a basic python function that implements the model.
 
         `out` is file descriptor to write the python code.
 
         """
+        ids_path = self.get_ids_path(filter_id)
         if hadoop:
-            return (self.hadoop_python_mapper(out=out) or
+            return (self.hadoop_python_mapper(out=out, ids_path=ids_path) or
                     self.hadoop_python_reducer(out=out))
         else:
-            return self.tree.python(out, self.docstring())
+            return self.tree.python(out, self.docstring(), ids_path=ids_path)
 
-    def tableau(self, out=sys.stdout, hadoop=False):
+    def tableau(self, out=sys.stdout, hadoop=False, filter_id=None):
         """Returns a basic tableau function that implements the model.
 
         `out` is file descriptor to write the tableau code.
 
         """
+        ids_path = self.get_ids_path(filter_id)
         if hadoop:
             return "Hadoop output not available."
         else:
-            response = self.tree.tableau(out)
+            response = self.tree.tableau(out, ids_path=ids_path)
             if response:
                 out.write(u"END\n")
             else:
@@ -454,7 +476,7 @@ class Model(BaseModel):
                                 confidence_error(subgroup[2]))))
         out.flush()
 
-    def hadoop_python_mapper(self, out=sys.stdout):
+    def hadoop_python_mapper(self, out=sys.stdout, ids_path=None):
         """Returns a hadoop mapper header to make predictions in python
 
         """
@@ -603,7 +625,8 @@ u"""            self.MISSING_TOKENS = ['?']
         out.flush()
 
         self.tree.python(out, self.docstring(),
-                         input_map=True)
+                         input_map=True,
+                         ids_path=ids_path)
         output = \
 u"""
 csv = CSVInput()

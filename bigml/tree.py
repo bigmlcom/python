@@ -103,6 +103,21 @@ def tableau_string(text):
     value = repr(text)
     if isinstance(text, unicode):
         return value[1:]
+    return value
+
+
+def filter_nodes(nodes_list, ids=None):
+    """Filters the contents of a nodes_list. If some of the nodes is in the
+       ids list, the rest of nodes are removed
+
+    """
+    nodes = nodes_list[:]
+    if ids is not None:
+        for node in nodes:
+            if node.id in ids:
+                nodes = [node]
+                break
+    return nodes
 
 
 class Tree(object):
@@ -110,7 +125,7 @@ class Tree(object):
 
     """
     def __init__(self, tree, fields, objective_field=None,
-                 root_distribution=None):
+                 root_distribution=None, parent_id=None, ids_map=None):
 
         self.fields = fields
         self.objective_field = objective_field
@@ -124,11 +139,22 @@ class Tree(object):
                 tree['predicate']['field'],
                 tree['predicate']['value'],
                 tree['predicate'].get('term', None))
+        if 'id' in tree:
+            self.id = tree['id']
+            self.parent_id = parent_id
+            if isinstance(ids_map, dict):
+                ids_map[self.id] = self
+        else:
+            self.id = None
 
         children = []
         if 'children' in tree:
             for child in tree['children']:
-                children.append(Tree(child, self.fields, objective_field))
+                children.append(Tree(child,
+                                     self.fields,
+                                     objective_field=objective_field,
+                                     parent_id=self.id,
+                                     ids_map=ids_map))
 
         self.children = children
         self.count = tree['count']
@@ -269,18 +295,19 @@ class Tree(object):
                     child.predict_proportional(input_data, path))
             return final_distribution
 
-    def generate_rules(self, depth=0):
+    def generate_rules(self, depth=0, ids_path=None):
         """Translates a tree model into a set of IF-THEN rules.
 
         """
         rules = u""
         if self.children:
-            for child in self.children:
+            children = filter_nodes(self.children, ids=ids_path)
+            for child in children:
                 rules += (u"%s IF %s %s\n" %
                          (INDENT * depth,
                           child.predicate.to_rule(self.fields, 'slug'),
                           "AND" if child.children else "THEN"))
-                rules += child.generate_rules(depth + 1)
+                rules += child.generate_rules(depth + 1, ids_path=ids_path)
         else:
             rules += (u"%s %s = %s\n" %
                      (INDENT * depth,
@@ -289,7 +316,7 @@ class Tree(object):
                       self.output))
         return rules
 
-    def rules(self, out):
+    def rules(self, out, ids_path=None):
         """Prints out an IF-THEN rule version of the tree.
 
         """
@@ -297,10 +324,10 @@ class Tree(object):
 
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
-        out.write(utf8(self.generate_rules()))
+        out.write(utf8(self.generate_rules(ids_path=ids_path)))
         out.flush()
 
-    def python_body(self, depth=1, cmv=None, input_map=False):
+    def python_body(self, depth=1, cmv=None, input_map=False, ids_path=None):
         """Translate the model into a set of "if" python statements.
 
         `depth` controls the size of indentation. As soon as a value is missing
@@ -323,7 +350,8 @@ class Tree(object):
         body = u""
         term_analysis_fields = []
         if self.children:
-            field = split(self.children)
+            children = filter_nodes(self.children, ids=ids_path)
+            field = split(children)
             if not self.fields[field]['slug'] in cmv:
                 body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
@@ -337,7 +365,7 @@ class Tree(object):
                          value))
                 cmv.append(self.fields[field]['slug'])
 
-            for child in self.children:
+            for child in children:
                 optype = self.fields[child.predicate.field]['optype']
                 if (optype == 'numeric' or optype == 'text'):
                     value = child.predicate.value
@@ -366,7 +394,8 @@ class Tree(object):
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
                 next_level = child.python_body(depth + 1, cmv=cmv[:],
-                                               input_map=input_map)
+                                               input_map=input_map,
+                                               ids_path=ids_path)
                 body += next_level[0]
                 term_analysis_fields.extend(next_level[1])
         else:
@@ -378,7 +407,7 @@ class Tree(object):
 
         return body, term_analysis_fields
 
-    def python(self, out, docstring, input_map=False):
+    def python(self, out, docstring, input_map=False, ids_path=None):
         """Writes a python function that implements the model.
 
         """
@@ -404,7 +433,8 @@ class Tree(object):
                                    (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        body, term_analysis_predicates = self.python_body(input_map=input_map)
+        body, term_analysis_predicates = self.python_body(input_map=input_map,
+                                                          ids_path=ids_path)
         terms_body = ""
         if term_analysis_predicates:
             terms_body = self.term_analysis_body(term_analysis_predicates)
@@ -529,7 +559,7 @@ class Tree(object):
 
         return body
 
-    def tableau_body(self, body=u"", conditions=None, cmv=None):
+    def tableau_body(self, body=u"", conditions=None, cmv=None, ids_path=None):
         """Translate the model into a set of "if" statements in Tableau syntax
 
         `depth` controls the size of indentation. As soon as a value is missing
@@ -546,7 +576,8 @@ class Tree(object):
             alternate = u"ELSEIF"
 
         if self.children:
-            field = split(self.children)
+            children = filter_nodes(self.children, ids=ids_path)
+            field = split(children)
             if not self.fields[field]['name'] in cmv:
                 conditions.append("ISNULL([%s])" % self.fields[field]['name'])
                 body += (u"%s %s THEN " %
@@ -560,7 +591,7 @@ class Tree(object):
                 alternate = u"ELSEIF"
                 del conditions[-1]
 
-            for child in self.children:
+            for child in children:
                 optype = self.fields[child.predicate.field]['optype']
                 if optype == 'text':
                     return u""
@@ -572,24 +603,25 @@ class Tree(object):
                     self.fields[child.predicate.field]['name'],
                     PYTHON_OPERATOR[child.predicate.operator],
                     value))
-                body = child.tableau_body(body, conditions[:], cmv=cmv[:])
+                body = child.tableau_body(body, conditions[:], cmv=cmv[:],
+                                          ids_path=ids_path)
                 del conditions[-1]
         else:
             if self.fields[self.objective_field]['optype'] == 'numeric':
                 value = self.output
             else:
-                value = tableau_string(self.output) 
+                value = tableau_string(self.output)
             body += (
                 u"%s %s THEN" % (alternate, " AND ".join(conditions)))
             body += u" %s\n" % value
 
         return body
 
-    def tableau(self, out):
+    def tableau(self, out, ids_path=None):
         """Writes a Tableau function that implements the model.
 
         """
-        body = self.tableau_body()
+        body = self.tableau_body(ids_path=ids_path)
         if not body:
             return False
         out.write(utf8(body))

@@ -260,16 +260,17 @@ class Model(BaseModel):
                     last_id = self.ids_map[last_id].parent_id
         return ids_path
 
-    def rules(self, out=sys.stdout, filter_id=None):
+    def rules(self, out=sys.stdout, filter_id=None, subtree=True):
         """Returns a IF-THEN rule set that implements the model.
 
         `out` is file descriptor to write the rules.
 
         """
         ids_path = self.get_ids_path(filter_id)
-        return self.tree.rules(out, ids_path=ids_path)
+        return self.tree.rules(out, ids_path=ids_path, subtree=subtree)
 
-    def python(self, out=sys.stdout, hadoop=False, filter_id=None):
+    def python(self, out=sys.stdout, hadoop=False,
+               filter_id=None, subtree=True):
         """Returns a basic python function that implements the model.
 
         `out` is file descriptor to write the python code.
@@ -277,12 +278,16 @@ class Model(BaseModel):
         """
         ids_path = self.get_ids_path(filter_id)
         if hadoop:
-            return (self.hadoop_python_mapper(out=out, ids_path=ids_path) or
+            return (self.hadoop_python_mapper(out=out,
+                                              ids_path=ids_path,
+                                              subtree=subtree) or
                     self.hadoop_python_reducer(out=out))
         else:
-            return self.tree.python(out, self.docstring(), ids_path=ids_path)
+            return self.tree.python(out, self.docstring(), ids_path=ids_path,
+                                    subtree=subtree)
 
-    def tableau(self, out=sys.stdout, hadoop=False, filter_id=None):
+    def tableau(self, out=sys.stdout, hadoop=False,
+                filter_id=None, subtree=True):
         """Returns a basic tableau function that implements the model.
 
         `out` is file descriptor to write the tableau code.
@@ -292,7 +297,8 @@ class Model(BaseModel):
         if hadoop:
             return "Hadoop output not available."
         else:
-            response = self.tree.tableau(out, ids_path=ids_path)
+            response = self.tree.tableau(out, ids_path=ids_path,
+                                         subtree=subtree)
             if response:
                 out.write(u"END\n")
             else:

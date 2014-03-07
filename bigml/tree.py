@@ -231,6 +231,7 @@ class Tree(object):
                 algorithm goes on until the final leaves are reached and
                 all their predictions are used to decide the final prediction.
         """
+                
         if path is None:
             path = []
         if missing_strategy == PROPORTIONAL:
@@ -257,7 +258,7 @@ class Tree(object):
             else:
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
-                                       key=lambda x: -x[1])]
+                                       key=lambda x: (-x[1], x[0]))]
                 return (distribution[0][0], path,
                         ws_confidence(distribution[0][0], final_distribution),
                         distribution, get_instances(distribution))

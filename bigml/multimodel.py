@@ -43,6 +43,7 @@ LOGGER = logging.getLogger('BigML')
 import csv
 import ast
 from bigml.model import Model
+from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
@@ -112,7 +113,8 @@ class MultiModel(object):
         return [model.resource() for model in self.models]
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False, options=None):
+                with_confidence=False, options=None,
+                missing_strategy=LAST_PREDICTION):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -126,11 +128,13 @@ class MultiModel(object):
                   THRESHOLD_COD
         """
 
-        votes = self.generate_votes(input_data, by_name=by_name)
+        votes = self.generate_votes(input_data, by_name=by_name,
+                                    missing_strategy=missing_strategy)
         return votes.combine(method=method, with_confidence=with_confidence,
                              options=options)
 
-    def generate_votes(self, input_data, by_name=True):
+    def generate_votes(self, input_data, by_name=True,
+                       missing_strategy=LAST_PREDICTION):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
@@ -138,7 +142,8 @@ class MultiModel(object):
         for order in range(0, len(self.models)):
             model = self.models[order]
             prediction_info = model.predict(input_data, by_name=by_name,
-                                            with_confidence=True)
+                                            with_confidence=True,
+                                            missing_strategy=missing_strategy)
             prediction, confidence, distribution, instances = prediction_info
             prediction_row = [prediction, confidence, order,
                               distribution, instances]
@@ -146,7 +151,8 @@ class MultiModel(object):
         return votes
 
     def batch_predict(self, input_data_list, output_file_path,
-                      by_name=True, reuse=False):
+                      by_name=True, reuse=False,
+                      missing_strategy=LAST_PREDICTION):
         """Makes predictions for a list of input data.
 
            The predictions generated for each model are stored in an output
@@ -174,7 +180,8 @@ class MultiModel(object):
             for input_data in input_data_list:
                 prediction = model.predict(input_data,
                                            by_name=by_name,
-                                           with_confidence=True)
+                                           with_confidence=True,
+                                           missing_strategy=missing_strategy)
                 if isinstance(prediction[0], basestring):
                     prediction[0] = prediction[0].encode("utf-8")
                 predictions_file.writerow(prediction)

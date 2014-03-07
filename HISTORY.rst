@@ -2,6 +2,14 @@
 
 History
 -------
+1.2.0 (2014-03-07)
+~~~~~~~~~~~~~~~~~~
+
+- Adding proportional missing strategy to MultiModel and solving tie breaks
+  differences with the remote predictions.
+- Adding new output options to model's python, rules and tableau outputs: 
+  ability to extract the branch of the model leading to a certain node with
+  or without the hanging subtree.
 
 1.1.0 (2014-02-10)
 ~~~~~~~~~~~~~~~~~~

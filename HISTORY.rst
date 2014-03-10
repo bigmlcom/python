@@ -10,6 +10,7 @@ History
 - Adding new output options to model's python, rules and tableau outputs: 
   ability to extract the branch of the model leading to a certain node with
   or without the hanging subtree.
+- Adding HTTP_TOO_MANY_REQUESTS error handling in REST API calls.
 
 1.1.0 (2014-02-10)
 ~~~~~~~~~~~~~~~~~~

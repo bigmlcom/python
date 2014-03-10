@@ -107,7 +107,7 @@ def tableau_string(text):
 
 
 def filter_nodes(nodes_list, ids=None, subtree=True):
-    """Filters the contents of a nodes_list. If some of the nodes is in the
+    """Filters the contents of a nodes_list. If any of the nodes is in the
        ids list, the rest of nodes are removed. If none is in the ids list
        we include or exclude the nodes depending on the subtree flag.
 
@@ -231,7 +231,7 @@ class Tree(object):
                 algorithm goes on until the final leaves are reached and
                 all their predictions are used to decide the final prediction.
         """
-                
+
         if path is None:
             path = []
         if missing_strategy == PROPORTIONAL:
@@ -603,7 +603,7 @@ class Tree(object):
                 if self.fields[self.objective_field]['optype'] == 'numeric':
                     value = self.output
                 else:
-                    value = tableau_string(self.output) 
+                    value = tableau_string(self.output)
                 body += (u"%s\n" % value)
                 cmv.append(self.fields[field]['name'])
                 alternate = u"ELSEIF"

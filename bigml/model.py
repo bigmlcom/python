@@ -482,7 +482,8 @@ class Model(BaseModel):
                                 confidence_error(subgroup[2]))))
         out.flush()
 
-    def hadoop_python_mapper(self, out=sys.stdout, ids_path=None):
+    def hadoop_python_mapper(self, out=sys.stdout, ids_path=None,
+                             subtree=True):
         """Returns a hadoop mapper header to make predictions in python
 
         """
@@ -632,7 +633,8 @@ u"""            self.MISSING_TOKENS = ['?']
 
         self.tree.python(out, self.docstring(),
                          input_map=True,
-                         ids_path=ids_path)
+                         ids_path=ids_path,
+                         subtree=subtree)
         output = \
 u"""
 csv = CSVInput()

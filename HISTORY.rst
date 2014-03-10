@@ -6,7 +6,7 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Adding proportional missing strategy to MultiModel and solving tie breaks
-  differences with the remote predictions.
+  in remote predictions.
 - Adding new output options to model's python, rules and tableau outputs: 
   ability to extract the branch of the model leading to a certain node with
   or without the hanging subtree.

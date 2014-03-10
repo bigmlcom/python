@@ -1353,9 +1353,9 @@ class BigML(object):
                     if wait_time > 0:
                         fcounter = 0
                         while (not self.source_is_ready(source_id) and
-                               counter < retries):
+                               fcounter < retries):
                             time.sleep(wait_time)
-                            counter += 1
+                            fcounter += 1
                     create_args.update({
                         "source": source_id})
             elif resource_type == DATASET_PATH:

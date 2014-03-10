@@ -216,8 +216,8 @@ class Fields(object):
         """
         for field in [(val['name'], val['optype'], val['column_number'])
                       for _, val in sorted(self.fields.items(),
-                                             key=lambda k:
-                                             k[1]['column_number'])]:
+                                           key=lambda k:
+                                           k[1]['column_number'])]:
             out.write('[%-32s: %-16s: %-8s]\n' % (field[0],
                                                   field[1], field[2]))
             out.flush()

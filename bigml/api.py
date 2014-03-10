@@ -139,6 +139,7 @@ HTTP_PAYMENT_REQUIRED = 402
 HTTP_FORBIDDEN = 403
 HTTP_NOT_FOUND = 404
 HTTP_METHOD_NOT_ALLOWED = 405
+HTTP_TOO_MANY_REQUESTS = 429
 HTTP_LENGTH_REQUIRED = 411
 HTTP_INTERNAL_SERVER_ERROR = 500
 
@@ -391,6 +392,10 @@ def error_message(resource, resource_type='resource', method=None):
         if code == HTTP_BAD_REQUEST:
             error += u'\nDouble-check the arguments for the call, please.'
             return error
+        if code == HTTP_TOO_MANY_REQUESTS:
+            error += (u'\nToo many requests. Please stop '
+                      u' requests for a while before resuming.')
+            return error
         elif code == HTTP_PAYMENT_REQUIRED:
             error += (u'\nYou\'ll need to buy some more credits to perform'
                       u' the chosen action')
@@ -601,7 +606,8 @@ class BigML(object):
                               HTTP_UNAUTHORIZED,
                               HTTP_PAYMENT_REQUIRED,
                               HTTP_FORBIDDEN,
-                              HTTP_NOT_FOUND]:
+                              HTTP_NOT_FOUND,
+                              HTTP_TOO_MANY_REQUESTS]:
                     error = json.loads(response.content, 'utf-8')
                     LOGGER.error(error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
@@ -659,7 +665,10 @@ class BigML(object):
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
                 error = None
-            elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(error_message(error, method='get'))
             else:
@@ -719,7 +728,10 @@ class BigML(object):
                 meta = resource['meta']
                 resources = resource['objects']
                 error = None
-            elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
@@ -777,7 +789,8 @@ class BigML(object):
                 error = None
             elif code in [HTTP_UNAUTHORIZED,
                           HTTP_PAYMENT_REQUIRED,
-                          HTTP_METHOD_NOT_ALLOWED]:
+                          HTTP_METHOD_NOT_ALLOWED,
+                          HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(error_message(error, method='update'))
             else:
@@ -816,7 +829,10 @@ class BigML(object):
 
             if code == HTTP_NO_CONTENT:
                 error = None
-            elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(error_message(error, method='delete'))
             else:
@@ -857,7 +873,10 @@ class BigML(object):
                     LOGGER.error("Error copying file to %s" % filename)
                 else:
                     file_object = filename
-        elif code in [HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED, HTTP_NOT_FOUND]:
+        elif code in [HTTP_BAD_REQUEST,
+                      HTTP_UNAUTHORIZED,
+                      HTTP_NOT_FOUND,
+                      HTTP_TOO_MANY_REQUESTS]:
             error = response.content
             LOGGER.error("Error downloading: %s" % error)
         else:
@@ -1069,7 +1088,8 @@ class BigML(object):
             elif code in [HTTP_BAD_REQUEST,
                           HTTP_UNAUTHORIZED,
                           HTTP_PAYMENT_REQUIRED,
-                          HTTP_NOT_FOUND]:
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
@@ -1210,7 +1230,8 @@ class BigML(object):
             if code in [HTTP_BAD_REQUEST,
                         HTTP_UNAUTHORIZED,
                         HTTP_PAYMENT_REQUIRED,
-                        HTTP_NOT_FOUND]:
+                        HTTP_NOT_FOUND,
+                        HTTP_TOO_MANY_REQUESTS]:
                 content = exception.read()
                 error = json.loads(content, 'utf-8')
             else:
@@ -1330,11 +1351,11 @@ class BigML(object):
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
                     if wait_time > 0:
-                        counter = 0
+                        fcounter = 0
                         while (not self.source_is_ready(source_id) and
-                               counter < retries):
+                               fcounter < retries):
                             time.sleep(wait_time)
-                            counter += 1
+                            fcounter += 1
                     create_args.update({
                         "source": source_id})
             elif resource_type == DATASET_PATH:

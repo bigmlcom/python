@@ -424,6 +424,7 @@ You can query the status of any resource with the ``status`` method::
     api.status(prediction)
     api.status(evaluation)
     api.status(ensemble)
+    api.status(batch_prediction)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -669,6 +670,7 @@ You can list resources with the appropriate api method::
     api.list_predictions()
     api.list_evaluations()
     api.list_ensembles()
+    api.list_batch_predictions()
 
 you will receive a dictionary with the following keys:
 
@@ -790,6 +792,21 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_prediction(prediction, {"name": "new name"})
     api.update_evaluation(evaluation, {"name": "new name"})
     api.update_ensemble(ensemble, {"name": "new name"})
+    api.update_batch_prediction(batch_prediction, {"name": "new name"})
+
+Updates can change resource general properties, such as the ``name`` or
+``description`` attributes of a dataset, or specific properties. As an example,
+let's say that your source has a certain field whose contents are
+numeric integers. BigML will assign a numeric type to the field, but you
+might want it to be used as a categorical field. You could change
+its type to ``categorical`` by calling::
+
+    api.update_source(source, {"fields": {"000001": {"optype": "categorical"}}})
+
+where ``000001`` is the field id that corresponds to the updated field.
+You will find detailed information about
+the updatable attributes of each resource in
+`BigML developer's documentation <https://bigml.com/developers>`_.
 
 Deleting Resources
 ------------------
@@ -805,6 +822,7 @@ each type of resource.
     api.delete_prediction(prediction)
     api.delete_evaluation(evaluation)
     api.delete_ensemble(ensemble)
+    api.delete_batch_prediction(batch_prediction)
 
 Each of the calls above will return a dictionary with the following
 keys:
@@ -1228,6 +1246,7 @@ Tableau-ready rules are also available through ``local_model.tableau()`` for
 all the models except those that use text predictors.
 
 ::
+
     local_model.tableau()
     IF ISNULL([petal width]) THEN 'Iris-virginica'
     ELSEIF [petal width]>0.8 AND [petal width]>1.75 AND ISNULL([petal length]) THEN 'Iris-virginica'

@@ -23,6 +23,14 @@ to send requests to BigML.io.
 
 """
 import keyword
+import numbers
+import math
+
+try:
+    import numpy
+    from scipy import stats
+except ImportError:
+    pass
 
 from bigml.predicate import Predicate
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
@@ -96,6 +104,51 @@ def merge_bins(distribution, limit):
     return merge_bins(new_distribution, limit)
 
 
+def mean(distribution):
+    """Computes the mean of a distribution in the [[point, instances]] syntax
+
+    """
+    addition = 0.0
+    count = 0.0
+    for point, instances in distribution:
+        addition += point * instances
+        count += instances
+    if count > 0:
+        return addition / count
+    return float('nan')
+
+
+def unbiased_sample_variance(distribution, distribution_mean=None):
+    """Computes the standard deviation of a distribution in the
+       [[point, instances]] syntax
+
+    """
+    addition = 0.0
+    count = 0.0
+    if mean is None or not isinstance(distribution_mean, numbers.Number):
+        distribution_mean = mean(distribution)
+    for point, instances in distribution:
+        addition += ((point - distribution_mean) ** 2) * instances
+        count += instances
+    if count > 1:
+        return addition / (count - 1)
+    return float('nan')
+
+
+def regression_error(distribution_variance, population, z=1.96):
+    """Computes the variance error
+
+    """
+    if population > 0:
+        chi_distribution = stats.chi2(population)
+        ppf = chi_distribution.ppf(1 - math.erf(z / math.sqrt(2)))
+        if ppf != 0:
+            error = distribution_variance * (population - 1) / ppf
+            error = error * ((math.sqrt(population) + z) ** 2)
+            return math.sqrt(error / population)
+    return float('nan')
+
+
 def tableau_string(text):
     """Transforms to a string representation in Tableau
 
@@ -164,6 +217,7 @@ class Tree(object):
                                      subtree=subtree))
 
         self.children = children
+        self.regression = self.is_regression()
         self.count = tree['count']
         self.confidence = tree.get('confidence', None)
         if 'distribution' in tree:
@@ -201,6 +255,25 @@ class Tree(object):
             out.flush()
         return self.fields
 
+    def is_regression(self):
+        """Checks if the subtree structure can be a regression
+
+        """
+        def is_classification(node):
+            """Checks if the node's value is a category
+
+            """
+            return isinstance(node.output, basestring)
+
+        classification = is_classification(self)
+        if classification:
+            return False
+        if not self.children:
+            return True
+        else:
+            return not any([is_classification(child)
+                           for child in self.children])
+
     def get_leaves(self):
         """Returns a list that includes all the leaves of the tree.
 
@@ -237,22 +310,19 @@ class Tree(object):
         if missing_strategy == PROPORTIONAL:
             final_distribution = self.predict_proportional(input_data,
                                                            path=path)
-            is_regression = all([not isinstance(category, basestring) for
-                                 category in final_distribution])
 
-            if is_regression:
+            if self.regression:
                 # sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: x[0])]
                 distribution = merge_bins(distribution, BINS_LIMIT)
-                predictions = []
-                total_instances = []
-                for prediction, instances in distribution:
-                    predictions.append(prediction)
-                    total_instances.append(instances)
-                prediction = sum(predictions) / sum(total_instances)
-                confidence = None
+                prediction = mean(distribution)
+                total_instances = sum([instances
+                                       for _, instances in distribution])
+                confidence = regression_error(
+                    unbiased_sample_variance(distribution, prediction),
+                    total_instances)
                 return (prediction, path, confidence,
                         distribution, total_instances)
             else:

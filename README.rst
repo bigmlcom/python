@@ -33,7 +33,7 @@ Requirements
 
 Python 2.6 and Python 2.7 are currently supported by these bindings.
 
-The only mandatory third-party dependencies are the
+The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
 `poster <http://atlee.ca/software/poster/#download>`_ and
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ libraries. These
@@ -42,6 +42,14 @@ libraries are automatically installed during the setup.
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
 libraries is ``simplejson`` is not found.
+
+Additional `numpy <http://www.numpy.org/>`_ and
+`scipy <http://www.scipy.org/>`_ libraries are needed in case you want to use
+local predictions for regression models (including the error information)
+using proportional missing strategy. As these are quite heavy libraries and
+they are so seldom used, they are not included in the automatic installation
+dependencies. The test suite includes some tests that will need these
+libraries to be installed.
 
 Installation
 ------------
@@ -55,6 +63,25 @@ You can also install the development version of the bindings directly
 from the Git repository::
 
     $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
+
+Running the Tests
+-----------------
+
+To run the tests you will need to install
+`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
+
+    $ pip install lettuce
+
+and set up your authentication via environment variables, as explained
+below. With that in place, you can run the test suite simply by::
+
+    $ cd tests
+    $ lettuce
+
+Some tests need the `numpy <http://www.numpy.org/>`_ and
+`scipy <http://www.scipy.org/>`_ libraries to be installed too. They are not
+automatically installed as a dependency, as they are quite heavy and very
+seldom used.
 
 Importing the module
 --------------------

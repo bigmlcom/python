@@ -60,7 +60,7 @@ from bigml.util import (slugify, markdown_cleanup,
                         prefix_as_comment, utf8,
                         find_locale, cast)
 from bigml.util import DEFAULT_LOCALE
-from bigml.tree import Tree, LAST_PREDICTION
+from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_model, print_importance
 from bigml.basemodel import ONLY_MODEL
@@ -160,6 +160,13 @@ class Model(BaseModel):
             raise Exception("Cannot create the Model instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
+        if self.tree.regression:
+            try:
+                import numpy
+                import scipy
+                self.regression_ready = True
+            except ImportError:
+                self.regression_ready = False
 
     def list_fields(self, out=sys.stdout):
         """Prints descriptions of the fields for this model.
@@ -212,6 +219,14 @@ class Model(BaseModel):
         `by_name` to input them directly keyed by id.
 
         """
+        # Checks if this is a regression model, using PROPORTIONAL
+        # missing_strategy
+        if (self.tree.regression and missing_strategy == PROPORTIONAL and
+                not self.regression_ready):
+            raise ImportError("Failed to find the numpy and scipy libraries,"
+                              " needed to use proportional missing strategy"
+                              " for regressions. Please install them before"
+                              " using local predictions for the model.") 
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
 

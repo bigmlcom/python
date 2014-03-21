@@ -20,9 +20,33 @@ def i_create_a_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
+@step(r'I create a proportional missing strategy prediction for "(.*)"')
+def i_create_a_proportional_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    model = world.model['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction(model, data,
+                                           args={'missing_strategy': 1})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+
 @step(r'the prediction for "(.*)" is "(.*)"')
 def the_prediction_is(step, objective, prediction):
     assert str(world.prediction['prediction'][objective]) == prediction
+
+
+@step(r'the confidence for the prediction is "(.*)"')
+def the_confidence_is(step, confidence):
+    local_confidence = round(float(world.prediction['confidence']), 4)
+    confidence = round(float(confidence), 4)
+    assert local_confidence == confidence
+
 
 @step(r'I create an ensemble prediction for "(.*)"')
 def i_create_an_ensemble_prediction(step, data=None):

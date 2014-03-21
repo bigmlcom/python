@@ -2,6 +2,13 @@
 
 History
 -------
+
+1.2.1 (2014-03-19)
+~~~~~~~~~~~~~~~~~~
+
+- Adding error to regression local predictions using proportional missing
+  strategy.
+
 1.2.0 (2014-03-07)
 ~~~~~~~~~~~~~~~~~~
 

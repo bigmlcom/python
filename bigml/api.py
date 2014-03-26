@@ -1079,7 +1079,6 @@ class BigML(object):
                                      data=create_args, verify=VERIFY)
 
             code = response.status_code
-
             if code == HTTP_CREATED:
                 location = response.headers['location']
                 resource = json.loads(response.content, 'utf-8')
@@ -1225,7 +1224,6 @@ class BigML(object):
         except ValueError:
             LOGGER.error("Malformed response")
         except urllib2.HTTPError, exception:
-            LOGGER.error("Error %s", exception.code)
             code = exception.code
             if code in [HTTP_BAD_REQUEST,
                         HTTP_UNAUTHORIZED,
@@ -1234,6 +1232,7 @@ class BigML(object):
                         HTTP_TOO_MANY_REQUESTS]:
                 content = exception.read()
                 error = json.loads(content, 'utf-8')
+                LOGGER.error(error_message(error, method='create'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR

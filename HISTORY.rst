@@ -3,6 +3,12 @@
 History
 -------
 
+1.2.2 (2014-03-26)
+~~~~~~~~~~~~~~~~~~
+
+- Changing error message when create_source calls result in http errors
+  to standarize them.
+
 1.2.1 (2014-03-19)
 ~~~~~~~~~~~~~~~~~~
 

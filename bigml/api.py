@@ -58,7 +58,7 @@ except ImportError:
 
 from bigml.util import (invert_dictionary, localize, is_url, check_dir,
                         clear_console_line, reset_console_line, console_log,
-                        maybe_save)
+                        maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE
 
 register_openers()
@@ -168,6 +168,9 @@ STATUSES = {
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
+
+# Minimum query string to get model fields
+TINY_MODEL = "exclude=root"
 
 
 def get_resource(regex, resource):
@@ -345,7 +348,7 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
             return resource
         elif code == FAULTY:
             raise ValueError(status)
-        time.sleep(wait_time)
+        time.sleep(get_exponential_wait(wait_time, counter))
         resource = get_method(resource, **kwargs)
     return resource
 
@@ -902,8 +905,8 @@ class BigML(object):
                                         " model.")
             dataset = check_resource(dataset, self.get_dataset,
                                      wait_time=wait_time, retries=retries)
-
-            dataset_ids.append(get_dataset_id(dataset))
+            if resource_is_ready(dataset):
+                dataset_ids.append(get_dataset_id(dataset))
 
         create_args = {}
         if args is not None:
@@ -949,23 +952,38 @@ class BigML(object):
         the resource keyed by Id.
 
         """
-        if isinstance(resource, dict) and 'resource' in resource:
+
+        def _get_fields_key(resource):
+            """Returns the fields key from a resource dict
+
+            """
+            if resource['code'] == HTTP_OK:
+                if MODEL_RE.match(resource_id):
+                    return resource['object']['model']['model_fields']
+                else:
+                    return resource['object']['fields']
+            return None
+
+        if isinstance(resource, dict) and 'resource' in resource:                           
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
               SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
               MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
             resource_id = resource
+            resource = self._get("%s%s" % (self.url, resource_id))
         else:
             LOGGER.error("Wrong resource id")
             return
+        # Tries to extract fields information from resource dict. If it fails,
+        # a get remote call is used to retrieve the resource by id.
+        fields = None
+        try:
+            fields = _get_fields_key(resource)
+        except KeyError:
+            resource = self._get("%s%s" % (self.url, resource_id))
+            fields = _get_fields_key(resource)
 
-        resource = self._get("%s%s" % (self.url, resource_id))
-        if resource['code'] == HTTP_OK:
-            if MODEL_RE.match(resource_id):
-                return resource['object']['model']['model_fields']
-            else:
-                return resource['object']['fields']
-        return None
+        return fields
 
     def pprint(self, resource, out=sys.stdout):
         """Pretty prints a resource or part of it.
@@ -1349,14 +1367,13 @@ class BigML(object):
             if resource_type == SOURCE_PATH:
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
-                    if wait_time > 0:
-                        fcounter = 0
-                        while (not self.source_is_ready(source_id) and
-                               fcounter < retries):
-                            time.sleep(wait_time)
-                            fcounter += 1
-                    create_args.update({
-                        "source": source_id})
+                    print source_id
+                    source = check_resource(source_id, self.get_source,
+                                            wait_time=wait_time,
+                                            retries=retries)
+                    if resource_is_ready(source):
+                        create_args.update({
+                            "source": source_id})
             elif resource_type == DATASET_PATH:
                 create_args = self._set_create_from_datasets_args(
                     source_or_datasets, args=create_args, wait_time=wait_time,
@@ -1504,8 +1521,9 @@ class BigML(object):
     #
     ##########################################################################
     def create_prediction(self, model_or_ensemble, input_data=None,
-                          by_name=True, args=None, wait_time=3, retries=10):
+                          args=None, wait_time=3, retries=10, by_name=True):
         """Creates a new prediction.
+           The by_name argument is now deprecated. It will be removed.
 
         """
         ensemble_id = None
@@ -1515,64 +1533,36 @@ class BigML(object):
         if resource_type == ENSEMBLE_PATH:
             ensemble_id = get_ensemble_id(model_or_ensemble)
             if ensemble_id is not None:
-                if wait_time > 0:
-                    counter = 0
-                    while (not self.ensemble_is_ready(ensemble_id) and
-                           counter < retries):
-                        time.sleep(wait_time)
-                        counter += 1
-                try:
-                    ensemble = self.get_ensemble(ensemble_id)
-                    model_id = ensemble['object']['models'][0]
-                except (KeyError, IndexError), exc:
-                    LOGGER.error("The ensemble has no valid model"
-                                 " information: %s" % str(exc))
-                    model_id = None
+                ensemble = check_resource(ensemble_id, self.get_ensemble,
+                                          wait_time=wait_time, retries=retries)
+                resource_is_ready(ensemble)
         elif resource_type == MODEL_PATH:
             model_id = get_model_id(model_or_ensemble)
+            model = check_resource(model_id, self.get_model,
+                                   query_string=TINY_MODEL,
+                                   wait_time=wait_time, retries=retries)
+            resource_is_ready(model)
         else:
             raise Exception("A model or ensemble id is needed to create a"
                             " prediction. %s found." % resource_type)
 
-        if model_id is not None:
-            if ensemble_id is None:
-                if wait_time > 0:
-                    counter = 0
-                    while (not self.model_is_ready(model_id) and
-                           counter < retries):
-                        time.sleep(wait_time)
-                        counter += 1
-
-            if input_data is None:
-                input_data = {}
-            elif by_name:
-                fields = self.get_fields(model_id)
-                inverted_fields = invert_dictionary(fields)
-                wrong_keys = [key for key in input_data.keys() if not key
-                              in inverted_fields]
-                if wrong_keys:
-                    LOGGER.info(("Some input fields are"
-                                 " not used in the model: %s") %
-                                ", ".join(wrong_keys))
-                input_data = dict(
-                    [[inverted_fields[key], value]
-                     for key, value in input_data.items()
-                     if key in inverted_fields])
-            create_args = {}
-            if args is not None:
-                create_args.update(args)
+        if input_data is None:
+            input_data = {}
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        create_args.update({
+            "input_data": input_data})
+        if ensemble_id is None:
             create_args.update({
-                "input_data": input_data})
-            if ensemble_id is None:
-                create_args.update({
-                    "model": model_id})
-            else:
-                create_args.update({
-                    "ensemble": ensemble_id})
+                "model": model_id})
+        else:
+            create_args.update({
+                "ensemble": ensemble_id})
 
-            body = json.dumps(create_args)
-            return self._create(self.prediction_url, body,
-                                verify=VERIFY_PREDICTION_SERVER)
+        body = json.dumps(create_args)
+        return self._create(self.prediction_url, body,
+                            verify=VERIFY_PREDICTION_SERVER)
 
     def get_prediction(self, prediction):
         """Retrieves a prediction.
@@ -1626,20 +1616,17 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        def args_update(check_resource_is_ready):
+        def args_update(get_method):
             """Updates args when the resource is ready
 
             """
             if resource_id:
-                if wait_time > 0:
-                    counter = 0
-                    while (not check_resource_is_ready(resource_id) and
-                           counter < retries):
-                        time.sleep(wait_time)
-                        counter += 1
-                create_args.update({
-                    resource_type: resource_id,
-                    "dataset": dataset_id})
+                resource = check_resource(resource_id, get_method,
+                                          wait_time=wait_time, retries=retries)
+                if resource_is_ready(resource):
+                    create_args.update({
+                        resource_type: resource_id,
+                        "dataset": dataset_id})
 
         resource_type = get_resource_type(dataset)
         if not DATASET_PATH == resource_type:
@@ -1648,27 +1635,23 @@ class BigML(object):
                             resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
-            if wait_time > 0:
-                counter = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       counter < retries):
-                    time.sleep(wait_time)
-                    counter += 1
+            dataset = check_resource(dataset_id, self.get_dataset,
+                                     wait_time=wait_time, retries=retries)
+            if resource_is_ready(dataset):
+                resource_type = get_resource_type(model_or_ensemble)
+                if resource_type == MODEL_PATH:
+                    resource_id = get_model_id(model_or_ensemble)
+                    args_update(self.get_model)
+                elif resource_type == ENSEMBLE_PATH:
+                    resource_id = get_ensemble_id(model_or_ensemble)
+                    args_update(self.get_ensemble)
+                else:
+                    raise Exception("A model or ensemble id is needed as first"
+                                    " argument to create an"
+                                    " evaluation. %s found." % resource_type)
 
-        resource_type = get_resource_type(model_or_ensemble)
-        if resource_type == MODEL_PATH:
-            resource_id = get_model_id(model_or_ensemble)
-            args_update(self.model_is_ready)
-        elif resource_type == ENSEMBLE_PATH:
-            resource_id = get_ensemble_id(model_or_ensemble)
-            args_update(self.ensemble_is_ready)
-        else:
-            raise Exception("A model or ensemble id is needed as first"
-                            " argument to create an"
-                            " evaluation. %s found." % resource_type)
-
-        body = json.dumps(create_args)
-        return self._create(self.evaluation_url, body)
+                body = json.dumps(create_args)
+                return self._create(self.evaluation_url, body)
 
     def get_evaluation(self, evaluation):
         """Retrieves an evaluation.
@@ -1798,20 +1781,17 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        def args_update(check_resource_is_ready):
+        def args_update(get_method):
             """Updates args when the resource is ready
 
             """
             if resource_id:
-                if wait_time > 0:
-                    counter = 0
-                    while (not check_resource_is_ready(resource_id) and
-                           counter < retries):
-                        time.sleep(wait_time)
-                        counter += 1
-                create_args.update({
-                    resource_type: resource_id,
-                    "dataset": dataset_id})
+                resource = check_resource(resource_id, get_method,
+                                          wait_time=wait_time, retries=retries)
+                if resource_is_ready(resource):
+                    create_args.update({
+                        resource_type: resource_id,
+                        "dataset": dataset_id})
 
         resource_type = get_resource_type(dataset)
         if not DATASET_PATH == resource_type:
@@ -1820,27 +1800,24 @@ class BigML(object):
                             resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
-            if wait_time > 0:
-                counter = 0
-                while (not self.dataset_is_ready(dataset_id) and
-                       counter < retries):
-                    time.sleep(wait_time)
-                    counter += 1
+            dataset = check_resource(dataset_id, self.get_dataset,
+                                     wait_time=wait_time, retries=retries)
+            if resource_is_ready(dataset):
+                resource_type = get_resource_type(model_or_ensemble)
+                if resource_type == MODEL_PATH:
+                    resource_id = get_model_id(model_or_ensemble)
+                    args_update(self.get_model)
+                elif resource_type == ENSEMBLE_PATH:
+                    resource_id = get_ensemble_id(model_or_ensemble)
+                    args_update(self.get_ensemble)
+                else:
+                    raise Exception("A model or ensemble id is needed as first"
+                                    " argument to create a"
+                                    " batch prediction. %s found." % 
+                                    resource_type)
 
-        resource_type = get_resource_type(model_or_ensemble)
-        if resource_type == MODEL_PATH:
-            resource_id = get_model_id(model_or_ensemble)
-            args_update(self.model_is_ready)
-        elif resource_type == ENSEMBLE_PATH:
-            resource_id = get_ensemble_id(model_or_ensemble)
-            args_update(self.ensemble_is_ready)
-        else:
-            raise Exception("A model or ensemble id is needed as first"
-                            " argument to create a"
-                            " batch prediction. %s found." % resource_type)
-
-        body = json.dumps(create_args)
-        return self._create(self.batch_prediction_url, body)
+                body = json.dumps(create_args)
+                return self._create(self.batch_prediction_url, body)
 
     def get_batch_prediction(self, batch_prediction):
         """Retrieves a batch prediction.

@@ -444,7 +444,14 @@ You can also use the ``check_resource`` function::
     check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
-FAULTY state.
+FAULTY state, or can also be used with ``wait_time`` and ``retries``
+arguments to control the pulling::
+
+    check_resource(resource, api.get_source, wait_time=2, retries=20)
+
+The ``wait_time`` value is used as seed to a wait
+interval that grows exponentially with the number of retries up to the given
+``retries`` limit.
 
 Creating sources
 ~~~~~~~~~~~~~~~~

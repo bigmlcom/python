@@ -8,6 +8,8 @@ History
 
 - Changing error message when create_source calls result in http errors
   to standarize them.
+- Simplifying create_prediction calls because now API accepts field names
+  as input_data keys.
 
 1.2.1 (2014-03-19)
 ~~~~~~~~~~~~~~~~~~

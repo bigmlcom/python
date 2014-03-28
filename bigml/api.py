@@ -964,7 +964,7 @@ class BigML(object):
                     return resource['object']['fields']
             return None
 
-        if isinstance(resource, dict) and 'resource' in resource:                           
+        if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
               SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
@@ -1367,7 +1367,6 @@ class BigML(object):
             if resource_type == SOURCE_PATH:
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
-                    print source_id
                     source = check_resource(source_id, self.get_source,
                                             wait_time=wait_time,
                                             retries=retries)
@@ -1813,7 +1812,7 @@ class BigML(object):
                 else:
                     raise Exception("A model or ensemble id is needed as first"
                                     " argument to create a"
-                                    " batch prediction. %s found." % 
+                                    " batch prediction. %s found." %
                                     resource_type)
 
                 body = json.dumps(create_args)

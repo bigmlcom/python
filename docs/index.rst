@@ -1139,6 +1139,23 @@ a csv file as input::
         input_data = fields.pair([float(val) for val in row], objective_field)
         prediction = local_model.predict(input_data, by_name=False)
 
+If missing values are present, the ``Fields`` object can return a dict
+with the ids of the fields that contain missing values and its count. The
+following example::
+
+    from bigml.fields import Fields
+
+    fields = Fields(dataset['object']['fields'])
+    fields.missing_values_fields()
+
+would output::
+
+    {'000003': 1, '000000': 1, '000001': 1}
+
+if the there was a missing value in each of the fields whose ids are
+``000003``, ``000000``, ``000001``. 
+
+
 
 Rule Generation
 ---------------

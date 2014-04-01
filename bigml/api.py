@@ -1497,8 +1497,12 @@ class BigML(object):
         if dataset_id:
             return self._delete("%s%s" % (self.url, dataset_id))
 
-    def error_counts(self, dataset):
-        """Returns the ids of the fields that contain errors and their number
+    def error_counts(self, dataset, raise_on_error=True):
+        """Returns the ids of the fields that contain errors and their number.
+
+           The dataset argument can be either a dataset resource structure
+           or a dataset id (that will be used to retrieve the associated
+           remote resource).
 
         """
         errors_dict = {}
@@ -1507,7 +1511,9 @@ class BigML(object):
                                 message="A dataset id is needed.")
             dataset_id = get_dataset_id(dataset)
             dataset = check_resource(dataset_id, self.get_dataset,
-                                     raise_on_error=True)
+                                     raise_on_error=raise_on_error)
+            if not raise_on_error and resource['error'] is not None:
+                dataset_id = None
         else:
             dataset_id = get_dataset_id(dataset)
         if dataset_id:

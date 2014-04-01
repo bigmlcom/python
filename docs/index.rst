@@ -1163,8 +1163,8 @@ method of the api::
     dataset = api.get_dataset("dataset/5339d42337203f233e000015")
     api.error_counts(dataset)
 
-The generated output is like the one in ``missing_counts``, error counts per
-field::
+The generated output is like the one in ``missing_counts``, that is, the error
+counts per field::
 
 {'000000': 1}
 

@@ -25,6 +25,8 @@ import locale
 import sys
 import os
 import json
+import math
+import random
 
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
@@ -441,3 +443,16 @@ def plural(text, num):
 
     """
     return "%s%s" % (text, "s"[num == 1:])
+
+
+def get_exponential_wait(wait_time, retry_count):
+    """Computes the exponential wait time used in next request using the
+       base values provided by the user:
+        - wait_time: starting wait time
+        - retries: total number of retries
+        - retries_left: retries left
+
+    """
+    delta = (retry_count ** 2) * wait_time / 2
+    exp_factor = delta if retry_count > 1 else 0
+    return wait_time + math.floor(random.random() * exp_factor)

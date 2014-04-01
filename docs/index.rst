@@ -444,7 +444,14 @@ You can also use the ``check_resource`` function::
     check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
-FAULTY state.
+FAULTY state, or can also be used with ``wait_time`` and ``retries``
+arguments to control the pulling::
+
+    check_resource(resource, api.get_source, wait_time=2, retries=20)
+
+The ``wait_time`` value is used as seed to a wait
+interval that grows exponentially with the number of retries up to the given
+``retries`` limit.
 
 Creating sources
 ~~~~~~~~~~~~~~~~
@@ -1131,6 +1138,23 @@ a csv file as input::
     for row in test_reader:
         input_data = fields.pair([float(val) for val in row], objective_field)
         prediction = local_model.predict(input_data, by_name=False)
+
+If missing values are present, the ``Fields`` object can return a dict
+with the ids of the fields that contain missing values and its count. The
+following example::
+
+    from bigml.fields import Fields
+
+    fields = Fields(dataset['object']['fields'])
+    fields.missing_values_fields()
+
+would output::
+
+    {'000003': 1, '000000': 1, '000001': 1}
+
+if the there was a missing value in each of the fields whose ids are
+``000003``, ``000000``, ``000001``. 
+
 
 
 Rule Generation

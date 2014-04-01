@@ -226,7 +226,7 @@ class Model(BaseModel):
             raise ImportError("Failed to find the numpy and scipy libraries,"
                               " needed to use proportional missing strategy"
                               " for regressions. Please install them before"
-                              " using local predictions for the model.") 
+                              " using local predictions for the model.")
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
 

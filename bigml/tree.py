@@ -135,16 +135,16 @@ def unbiased_sample_variance(distribution, distribution_mean=None):
     return float('nan')
 
 
-def regression_error(distribution_variance, population, z=1.96):
+def regression_error(distribution_variance, population, r_z=1.96):
     """Computes the variance error
 
     """
     if population > 0:
         chi_distribution = stats.chi2(population)
-        ppf = chi_distribution.ppf(1 - math.erf(z / math.sqrt(2)))
+        ppf = chi_distribution.ppf(1 - math.erf(r_z / math.sqrt(2)))
         if ppf != 0:
             error = distribution_variance * (population - 1) / ppf
-            error = error * ((math.sqrt(population) + z) ** 2)
+            error = error * ((math.sqrt(population) + r_z) ** 2)
             return math.sqrt(error / population)
     return float('nan')
 

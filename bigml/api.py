@@ -1497,6 +1497,26 @@ class BigML(object):
         if dataset_id:
             return self._delete("%s%s" % (self.url, dataset_id))
 
+    def error_counts(self, dataset):
+        """Returns the ids of the fields that contain errors and their number
+
+        """
+        errors_dict = {}
+        if not isinstance(dataset, dict) or not 'object' in dataset: 
+            check_resource_type(dataset, DATASET_PATH,
+                                message="A dataset id is needed.")
+            dataset_id = get_dataset_id(dataset)
+            dataset = check_resource(dataset_id, self.get_dataset,
+                                     raise_on_error=True)
+        else:
+            dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            errors = dataset.get('object', {}).get(
+                'status', {}).get('field_errors', {})
+            for field_id in errors:
+                errors_dict[field_id] = errors[field_id]['total']
+        return errors_dict
+
     ##########################################################################
     #
     # Models

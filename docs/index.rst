@@ -1146,7 +1146,7 @@ following example::
     from bigml.fields import Fields
 
     fields = Fields(dataset['object']['fields'])
-    fields.missing_values_fields()
+    fields.missing_counts()
 
 would output::
 
@@ -1155,6 +1155,18 @@ would output::
 if the there was a missing value in each of the fields whose ids are
 ``000003``, ``000000``, ``000001``. 
 
+You can also obtain the counts of errors per field using the ``errors_count``
+method of the api::
+
+    from bigml.api import BigML
+    api = BigML()
+    dataset = api.get_dataset("dataset/5339d42337203f233e000015")
+    api.error_counts(dataset)
+
+The generated output is like the one in ``missing_counts``, that is, the error
+counts per field::
+
+{'000000': 1}
 
 
 Rule Generation

@@ -3,13 +3,15 @@
 History
 -------
 
-1.2.2 (2014-03-26)
+1.2.2 (2014-04-01)
 ~~~~~~~~~~~~~~~~~~
 
 - Changing error message when create_source calls result in http errors
   to standarize them.
 - Simplifying create_prediction calls because now API accepts field names
   as input_data keys.
+- Adding missing_counts and error_counts to report the missing values and
+  error counts per field in the dataset
 
 1.2.1 (2014-03-19)
 ~~~~~~~~~~~~~~~~~~

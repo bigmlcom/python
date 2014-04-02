@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from urllib import urlencode
 from lettuce import step, world
 
-from bigml.api import HTTP_CREATED
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import UPLOADING
@@ -85,3 +85,9 @@ def wait_until_source_status_code_is(step, code1, code2, secs):
 @step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs):
     wait_until_source_status_code_is(step, FINISHED, FAULTY, secs)
+
+@step(r'I update the source with params "(.*)"')
+def i_update_source_with(step, data="{}"):
+    resource = world.api.update_source(world.source.get('resource'), json.loads(data))
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED

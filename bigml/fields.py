@@ -269,3 +269,20 @@ class Fields(object):
         for index in self.filtered_indexes:
             pair.append((self.headers[index], row[index]))
         return dict(pair)
+
+    def missing_counts(self):
+        """Returns the ids for the fields that contain missing values
+
+        """
+        summaries = [(field_id, field.get('summary', {}))
+                     for field_id, field in self.fields.items()]
+        if len(summaries) == 0:
+            raise ValueError("The structure has not enough information "
+                             "to extract the fields containing missing values."
+                             "Only datasets and models have such information. "
+                             "You could retry the get remote call "
+                             "'limit=-1' in the get remote call.")
+
+        return dict([(field_id, summary.get('missing_count', 0))
+                     for field_id, summary in summaries
+                     if summary.get('missing_count', 0) > 0])

@@ -81,7 +81,3 @@ def the_prediction_is_finished_in_less_than(step, secs):
 @step(r'I create a local ensemble prediction for "(.*)"$')
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
-
-@step(r'the local prediction is "(.*)"')
-def the_local_prediction_is(step, prediction):
-    assert world.local_prediction == prediction

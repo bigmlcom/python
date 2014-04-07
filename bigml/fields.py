@@ -46,23 +46,83 @@ import locale
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
+from bigml.api import get_resource_type
 
+SOURCE_TYPE = 'source'
+DATASET_TYPE = 'dataset'
+MODEL_TYPE = 'model'
+
+RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE]
+DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
+                          "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
+                          "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
+
+
+def get_fields_structure(resource):
+    """Returns the field structure for a resource
+
+    """
+    try:
+        resource_type = get_resource_type(resource)
+    except ValueError:
+        raise ValueError("Unknown resource structure")
+
+    if resource_type in RESOURCES_WITH_FIELDS:
+        if resource_type == SOURCE_TYPE:
+            locale = resource['object']['source_parser']['locale']
+            missing_tokens = resource['object'][
+                'source_parser']['missing_tokens']
+        else:
+            locale = resource['object']['locale']
+            missing_tokens = DEFAULT_MISSING_TOKENS       
+        if resource_type == MODEL_TYPE:
+            fields = resource['object']['model']['fields']
+        else:
+            fields = resource['object']['fields']
+        return fields, locale, missing_tokens
+    else:
+        return None
+    
 
 class Fields(object):
     """A class to deal with BigML auto-generated ids.
 
     """
-    def __init__(self, fields, missing_tokens=[''],
-                 data_locale=DEFAULT_LOCALE, verbose=False,
+    def __init__(self, resource_or_fields, missing_tokens=None,
+                 data_locale=None, verbose=False,
                  objective_field=None, objective_field_present=False,
                  include=None):
 
-        find_locale(data_locale, verbose)
-
-        self.fields = fields
-        self.fields_by_name = invert_dictionary(fields, 'name')
-        self.fields_by_column_number = invert_dictionary(fields,
+        # The constructor can be instantiated with resources or a fields
+        # structure. The structure is checked and fields structure is returned
+        # if a resource type is matched.
+        try:
+            resource_info = get_fields_structure(resource_or_fields)
+            if resource_info is None:
+                self.fields = None
+            else:
+                (self.fields,
+                 resource_locale,
+                 resource_missing_tokens) = resource_info
+                if data_locale is None:
+                    data_locale = resource_locale
+                if missing_tokens is None:
+                    if resource_missing_tokens:
+                        missing_tokens = resource_missing_tokens
+        except ValueError:
+            # If the resource structure is not in the expected set, fields
+            # structure is assumed
+            self.fields = resource_or_fields
+            if data_locale is None:
+                data_locale = DEFAULT_LOCALE
+            if missing_tokens is None:
+                missing_tokens = DEFAULT_MISSING_TOKENS
+        if self.fields is None:
+            raise ValueError("No fields structure was found.")
+        self.fields_by_name = invert_dictionary(self.fields, 'name')
+        self.fields_by_column_number = invert_dictionary(self.fields,
                                                          'column_number')
+        find_locale(data_locale, verbose)    
         self.missing_tokens = missing_tokens
         self.fields_columns = sorted(self.fields_by_column_number.keys())
         # Ids of the fields to be included

@@ -3,6 +3,12 @@
 History
 -------
 
+1.3.0 (2014-04-07)
+~~~~~~~~~~~~~~~~~~
+
+- Changing Fields object constructor to accept also source, dataset or model
+  resources
+
 1.2.2 (2014-04-01)
 ~~~~~~~~~~~~~~~~~~
 

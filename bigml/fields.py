@@ -59,7 +59,8 @@ DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
 
 
 def get_fields_structure(resource):
-    """Returns the field structure for a resource
+    """Returns the field structure for a resource, its locale and
+       missing_tokens
 
     """
     try:
@@ -81,7 +82,7 @@ def get_fields_structure(resource):
             fields = resource['object']['fields']
         return fields, locale, missing_tokens
     else:
-        return None
+        return None, None, None
     
 
 class Fields(object):
@@ -98,17 +99,14 @@ class Fields(object):
         # if a resource type is matched.
         try:
             resource_info = get_fields_structure(resource_or_fields)
-            if resource_info is None:
-                self.fields = None
-            else:
-                (self.fields,
-                 resource_locale,
-                 resource_missing_tokens) = resource_info
-                if data_locale is None:
-                    data_locale = resource_locale
-                if missing_tokens is None:
-                    if resource_missing_tokens:
-                        missing_tokens = resource_missing_tokens
+            (self.fields,
+             resource_locale,
+             resource_missing_tokens) = resource_info
+            if data_locale is None:
+                data_locale = resource_locale
+            if missing_tokens is None:
+                if resource_missing_tokens:
+                    missing_tokens = resource_missing_tokens
         except ValueError:
             # If the resource structure is not in the expected set, fields
             # structure is assumed

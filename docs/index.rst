@@ -1108,15 +1108,29 @@ combined to issue the final prediction::
 Fields
 ------
 
-Once you have a resource you can use the ``Fields`` class to generate a
+Once you have a resource, you can use the ``Fields`` class to generate a
 representation that will allow you to easily list fields, get fields ids, get a
 field id by name, column number, etc.
 
 ::
-
+    from bigml.api import BigML
     from bigml.fields import Fields
+    api = BigML()
+    source = api.get_source("source/5143a51a37203f2cf7000974")
 
+    fields = Fields(source)
+
+you can also instantiate the Fields object from the fields dict itself::
+
+    from bigml.api import BigML
+    from bigml.fields import Fields
+    api = BigML()
+    source = api.get_source("source/5143a51a37203f2cf7000974")
+    
     fields = Fields(source['object']['fields'])
+
+The newly instantiated Fields object will give direct methods to retrieve
+different fields properties::
 
     # Internal id of the 'sepal length' field
     fields.field_id('sepal length')
@@ -1144,8 +1158,11 @@ with the ids of the fields that contain missing values and its count. The
 following example::
 
     from bigml.fields import Fields
+    from bigml.api import BigML
+    api = BigML()
+    dataset = api.get_dataset("dataset/5339d42337203f233e000015")
 
-    fields = Fields(dataset['object']['fields'])
+    fields = Fields(dataset)
     fields.missing_counts()
 
 would output::

@@ -75,7 +75,7 @@ def get_fields_structure(resource):
                 'source_parser']['missing_tokens']
         else:
             locale = resource['object']['locale']
-            missing_tokens = DEFAULT_MISSING_TOKENS       
+            missing_tokens = resource['object']['missing_tokens']
         if resource_type == MODEL_TYPE:
             fields = resource['object']['model']['fields']
         else:

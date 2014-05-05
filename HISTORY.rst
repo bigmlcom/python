@@ -3,11 +3,16 @@
 History
 -------
 
+1.3.1 (2014-05-05)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the average_confidence method to local models.
+
 1.3.0 (2014-04-07)
 ~~~~~~~~~~~~~~~~~~
 
 - Changing Fields object constructor to accept also source, dataset or model
-  resources
+  resources.
 
 1.2.2 (2014-04-01)
 ~~~~~~~~~~~~~~~~~~
@@ -17,7 +22,7 @@ History
 - Simplifying create_prediction calls because now API accepts field names
   as input_data keys.
 - Adding missing_counts and error_counts to report the missing values and
-  error counts per field in the dataset
+  error counts per field in the dataset.
 
 1.2.1 (2014-03-19)
 ~~~~~~~~~~~~~~~~~~

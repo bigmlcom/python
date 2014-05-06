@@ -70,20 +70,20 @@ def get_fields_structure(resource):
 
     if resource_type in RESOURCES_WITH_FIELDS:
         if resource_type == SOURCE_TYPE:
-            locale = resource['object']['source_parser']['locale']
+            resource_locale = resource['object']['source_parser']['locale']
             missing_tokens = resource['object'][
                 'source_parser']['missing_tokens']
         else:
-            locale = resource['object']['locale']
+            resource_locale = resource['object']['locale']
             missing_tokens = resource['object']['missing_tokens']
         if resource_type == MODEL_TYPE:
             fields = resource['object']['model']['fields']
         else:
             fields = resource['object']['fields']
-        return fields, locale, missing_tokens
+        return fields, resource_locale, missing_tokens
     else:
         return None, None, None
-    
+
 
 class Fields(object):
     """A class to deal with BigML auto-generated ids.
@@ -120,7 +120,7 @@ class Fields(object):
         self.fields_by_name = invert_dictionary(self.fields, 'name')
         self.fields_by_column_number = invert_dictionary(self.fields,
                                                          'column_number')
-        find_locale(data_locale, verbose)    
+        find_locale(data_locale, verbose)
         self.missing_tokens = missing_tokens
         self.fields_columns = sorted(self.fields_by_column_number.keys())
         # Ids of the fields to be included

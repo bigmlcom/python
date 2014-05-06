@@ -714,3 +714,17 @@ if count > 0:
             if cast_function is not None:
                 return cast_function(value_as_string)
         return value_as_string
+
+    def average_confidence(self):
+        """Average for the confidence of the predictions resulting from
+           running the training data through the model
+
+        """
+        total = 0.0
+        cumulative_confidence = 0
+        groups = self.group_prediction()
+        for _, predictions in groups.items():
+            for _, count, confidence in predictions['details']:
+                cumulative_confidence += count * confidence
+                total += count
+        return float('nan') if total == 0.0 else cumulative_confidence 

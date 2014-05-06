@@ -1019,10 +1019,14 @@ class BigML(object):
                                                 [resource['object']
                                                  ['objective_fields'][0]]
                                                 ['name'])
-                input_data = (dict([[resource['object']['fields'][key]['name'],
-                                    value]
-                                    for key, value in
-                                    resource['object']['input_data'].items()]))
+                input_data = {}
+                for key, value in resource['object']['input_data'].items():
+                    try:
+                        name = resource['object']['fields'][key]['name']
+                    except KeyError:
+                        name = key
+                    input_data[name] = value
+
                 prediction = (
                     resource['object']['prediction']
                             [resource['object']['objective_fields'][0]])
@@ -1072,9 +1076,9 @@ class BigML(object):
 
             """
             if resource_id:
-                resource = check_resource(resource_id, get_method,
-                                          wait_time=wait_time, retries=retries,
-                                          raise_on_error=True)
+                check_resource(resource_id, get_method,
+                               wait_time=wait_time, retries=retries,
+                               raise_on_error=True)
                 args.update({
                     resource_type: resource_id,
                     "dataset": dataset_id})
@@ -1102,7 +1106,6 @@ class BigML(object):
                                 " %s found." % resource_type)
 
         return dataset_id and resource_id
-
 
     ##########################################################################
     #
@@ -1426,10 +1429,10 @@ class BigML(object):
             if resource_type == SOURCE_PATH:
                 source_id = get_source_id(source_or_datasets)
                 if source_id:
-                    source = check_resource(source_id, self.get_source,
-                                            wait_time=wait_time,
-                                            retries=retries,
-                                            raise_on_error=True)
+                    check_resource(source_id, self.get_source,
+                                   wait_time=wait_time,
+                                   retries=retries,
+                                   raise_on_error=True)
                     create_args.update({
                         "source": source_id})
             elif resource_type == DATASET_PATH:
@@ -1506,13 +1509,13 @@ class BigML(object):
 
         """
         errors_dict = {}
-        if not isinstance(dataset, dict) or not 'object' in dataset: 
+        if not isinstance(dataset, dict) or not 'object' in dataset:
             check_resource_type(dataset, DATASET_PATH,
                                 message="A dataset id is needed.")
             dataset_id = get_dataset_id(dataset)
             dataset = check_resource(dataset_id, self.get_dataset,
                                      raise_on_error=raise_on_error)
-            if not raise_on_error and resource['error'] is not None:
+            if not raise_on_error and dataset['error'] is not None:
                 dataset_id = None
         else:
             dataset_id = get_dataset_id(dataset)
@@ -1617,15 +1620,15 @@ class BigML(object):
         if resource_type == ENSEMBLE_PATH:
             ensemble_id = get_ensemble_id(model_or_ensemble)
             if ensemble_id is not None:
-                ensemble = check_resource(ensemble_id, self.get_ensemble,
-                                          wait_time=wait_time, retries=retries,
-                                          raise_on_error=True)
+                check_resource(ensemble_id, self.get_ensemble,
+                               wait_time=wait_time, retries=retries,
+                               raise_on_error=True)
         elif resource_type == MODEL_PATH:
             model_id = get_model_id(model_or_ensemble)
-            model = check_resource(model_id, self.get_model,
-                                   query_string=TINY_MODEL,
-                                   wait_time=wait_time, retries=retries,
-                                   raise_on_error=True)
+            check_resource(model_id, self.get_model,
+                           query_string=TINY_MODEL,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True)
         else:
             raise Exception("A model or ensemble id is needed to create a"
                             " prediction. %s found." % resource_type)
@@ -1839,7 +1842,7 @@ class BigML(object):
         origin_resources_checked = self.check_origin_dme(
             dataset, model_or_ensemble, create_args,
             wait_time=wait_time, retries=retries)
-                    
+
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_prediction_url, body)

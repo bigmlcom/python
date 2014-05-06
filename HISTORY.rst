@@ -3,10 +3,11 @@
 History
 -------
 
-1.3.1 (2014-05-05)
+1.3.1 (2014-05-06)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding the average_confidence method to local models.
+- Fixing bug in pprint for predictions with input data keyed by field names.
 
 1.3.0 (2014-04-07)
 ~~~~~~~~~~~~~~~~~~

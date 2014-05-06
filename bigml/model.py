@@ -727,5 +727,4 @@ if count > 0:
             for _, count, confidence in predictions['details']:
                 cumulative_confidence += count * confidence
                 total += count
-                print total, count, confidence
-        return cumulative_confidence / total
+        return float('nan') if total == 0.0 else cumulative_confidence 

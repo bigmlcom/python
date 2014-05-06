@@ -1019,10 +1019,14 @@ class BigML(object):
                                                 [resource['object']
                                                  ['objective_fields'][0]]
                                                 ['name'])
-                input_data = (dict([[resource['object']['fields'][key]['name'],
-                                    value]
-                                    for key, value in
-                                    resource['object']['input_data'].items()]))
+                input_data = {}
+                for key, value in resource['object']['input_data'].items():
+                    try:
+                        name = resource['object']['fields'][key]['name']
+                    except KeyError:
+                        name = key
+                    input_data[name] = value
+
                 prediction = (
                     resource['object']['prediction']
                             [resource['object']['objective_fields'][0]])

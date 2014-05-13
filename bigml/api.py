@@ -101,19 +101,30 @@ PREDICTION_PATH = 'prediction'
 EVALUATION_PATH = 'evaluation'
 ENSEMBLE_PATH = 'ensemble'
 BATCH_PREDICTION_PATH = 'batchprediction'
+CLUSTER_PATH = 'cluster'
+CENTROID_PATH = 'centroid'
+BATCH_CENTROID_PATH = 'batchcentroid'
 
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
+SHARED_PATTERN = '[a-zA-Z0-9]{27}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
 DATASET_RE = re.compile(r'^(public/)?%s/%s$' % (DATASET_PATH, ID_PATTERN))
-MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/model/[a-zA-Z0-9]{27}$' % (
-    MODEL_PATH, ID_PATTERN))
+MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
 ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
 BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
                                                ID_PATTERN))
+CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    CLUSTER_PATH, ID_PATTERN, CLUSTER_PATH, SHARED_PATTERN))
+CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
+BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
+                                             ID_PATTERN))
+
+
 RESOURCE_RE = {
     'source': SOURCE_RE,
     'dataset': DATASET_RE,
@@ -121,7 +132,10 @@ RESOURCE_RE = {
     'prediction': PREDICTION_RE,
     'evaluation': EVALUATION_RE,
     'ensemble': ENSEMBLE_RE,
-    'batchprediction': BATCH_PREDICTION_RE}
+    'batchprediction': BATCH_PREDICTION_RE,
+    'cluster': CLUSTER_RE,
+    'centroid': CENTROID_RE,
+    'batchcentroid': BATCH_CENTROID_RE}
 DOWNLOAD_DIR = '/download'
 
 # Headers
@@ -255,6 +269,27 @@ def get_batch_prediction_id(batch_prediction):
     return get_resource(BATCH_PREDICTION_RE, batch_prediction)
 
 
+def get_cluster_id(cluster):
+    """Returns a cluster/id.
+
+    """
+    return get_resource(CLUSTER_RE, cluster)
+
+
+def get_centroid_id(centroid):
+    """Returns a centroid/id.
+
+    """
+    return get_resource(CENTROID_RE, centroid)
+
+
+def get_batch_centroid_id(batch_centroid):
+    """Returns a batchcentroid/id.
+
+    """
+    return get_resource(BATCH_CENTROID_RE, batch_centroid)
+
+
 def get_resource_id(resource):
     """Returns the resource id if it falls in one of the registered types
 
@@ -267,7 +302,11 @@ def get_resource_id(resource):
             or MODEL_RE.match(resource)
             or PREDICTION_RE.match(resource)
             or EVALUATION_RE.match(resource)
-            or ENSEMBLE_RE.match(resource)):
+            or ENSEMBLE_RE.match(resource)
+            or BATCH_PREDICTION_RE.match(resource)
+            or CLUSTER_RE.match(resource)
+            or CENTROID_RE.match(resource)
+            or BATCH_CENTROID_RE.match(resource)):
         return resource
     else:
         return
@@ -566,6 +605,9 @@ class BigML(object):
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
         self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
+        self.cluster_url = self.url + CLUSTER_PATH
+        self.centroid_url = self.url + CENTROID_PATH
+        self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -577,7 +619,10 @@ class BigML(object):
             'ensemble': self.get_ensemble,
             'prediction': self.get_prediction,
             'evaluation': self.get_evaluation,
-            'batchprediction': self.get_batch_prediction}
+            'batchprediction': self.get_batch_prediction,
+            'cluster': self.get_cluster,
+            'centroid': self.get_centroid,
+            'batchcentroid': self.get_batch_centroid}
 
     def _create(self, url, body, verify=VERIFY):
         """Creates a new remote resource.
@@ -1011,7 +1056,8 @@ class BigML(object):
             if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
                     or MODEL_RE.match(resource_id)
                     or EVALUATION_RE.match(resource_id)
-                    or ENSEMBLE_RE.match(resource_id)):
+                    or ENSEMBLE_RE.match(resource_id)
+                    or CLUSTER_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
@@ -1062,12 +1108,15 @@ class BigML(object):
         return check_resource(resource, get_method,
                               query_string=query_string, wait_time=wait_time)
 
-    def check_origin_dme(self, dataset, model_or_ensemble, args, wait_time=3,
-                         retries=10):
-        """Returns True if the dataset, model or ensemble needed to build
+    def check_origins(self, dataset, model, args, model_types=None,
+                      wait_time=3, retries=10):
+        """Returns True if the dataset and model needed to build
            the batch prediction or evaluation are finished. The args given
            by the user are modified to include the related ids in the
            create call.
+
+           If model_types is a list, then we check any of the model types in
+           the list.
 
         """
 
@@ -1083,6 +1132,9 @@ class BigML(object):
                     resource_type: resource_id,
                     "dataset": dataset_id})
 
+        if model_types is None:
+            model_types = []
+
         resource_type = get_resource_type(dataset)
         if not DATASET_PATH == resource_type:
             raise Exception("A dataset id is needed as second argument"
@@ -1093,13 +1145,13 @@ class BigML(object):
             dataset = check_resource(dataset_id, self.get_dataset,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True)
-            resource_type = get_resource_type(model_or_ensemble)
-            if resource_type == MODEL_PATH:
-                resource_id = get_model_id(model_or_ensemble)
+            resource_type = get_resource_type(model)
+            if resource_type in model_types:
+                resource_id = get_resource_id(model)
+                args_update(self.getters[resource_type])
+            elif resource_type == MODEL_PATH:
+                resource_id = get_model_id(model)
                 args_update(self.get_model)
-            elif resource_type == ENSEMBLE_PATH:
-                resource_id = get_ensemble_id(model_or_ensemble)
-                args_update(self.get_ensemble)
             else:
                 raise Exception("A model or ensemble id is needed as first"
                                 " argument to create the resource."
@@ -1607,24 +1659,27 @@ class BigML(object):
     # https://bigml.com/developers/predictions
     #
     ##########################################################################
-    def create_prediction(self, model_or_ensemble, input_data=None,
+    def create_prediction(self, model, input_data=None,
                           args=None, wait_time=3, retries=10, by_name=True):
         """Creates a new prediction.
+           The model parameter can be:
+            - a simple model
+            - an ensemble
            The by_name argument is now deprecated. It will be removed.
 
         """
         ensemble_id = None
         model_id = None
 
-        resource_type = get_resource_type(model_or_ensemble)
+        resource_type = get_resource_type(model)
         if resource_type == ENSEMBLE_PATH:
-            ensemble_id = get_ensemble_id(model_or_ensemble)
+            ensemble_id = get_ensemble_id(model)
             if ensemble_id is not None:
                 check_resource(ensemble_id, self.get_ensemble,
                                wait_time=wait_time, retries=retries,
                                raise_on_error=True)
         elif resource_type == MODEL_PATH:
-            model_id = get_model_id(model_or_ensemble)
+            model_id = get_model_id(model)
             check_resource(model_id, self.get_model,
                            query_string=TINY_MODEL,
                            wait_time=wait_time, retries=retries,
@@ -1694,7 +1749,7 @@ class BigML(object):
     # https://bigml.com/developers/evaluations
     #
     ##########################################################################
-    def create_evaluation(self, model_or_ensemble, dataset,
+    def create_evaluation(self, model, dataset,
                           args=None, wait_time=3, retries=10):
         """Creates a new evaluation.
 
@@ -1703,8 +1758,9 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        origin_resources_checked = self.check_origin_dme(
-            dataset, model_or_ensemble, create_args,
+        model_types = [ENSEMBLE_PATH, MODEL_PATH]
+        origin_resources_checked = self.check_origins(
+            dataset, model, create_args, model_types=model_types,
             wait_time=wait_time, retries=retries)
 
         if origin_resources_checked:
@@ -1830,19 +1886,23 @@ class BigML(object):
     # https://bigml.com/developers/batch_predictions
     #
     ##########################################################################
-    def create_batch_prediction(self, model_or_ensemble, dataset,
+    def create_batch_prediction(self, model, dataset,
                                 args=None, wait_time=3, retries=10):
         """Creates a new batch prediction.
+
+           The model parameter can be:
+            - a simple model
+            - an ensemble
 
         """
         create_args = {}
         if args is not None:
             create_args.update(args)
 
-        origin_resources_checked = self.check_origin_dme(
-            dataset, model_or_ensemble, create_args,
+        model_types = [ENSEMBLE_PATH, MODEL_PATH]
+        origin_resources_checked = self.check_origins(
+            dataset, model, create_args, model_types=model_types,
             wait_time=wait_time, retries=retries)
-
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_prediction_url, body)
@@ -1903,3 +1963,236 @@ class BigML(object):
         batch_prediction_id = get_batch_prediction_id(batch_prediction)
         if batch_prediction_id:
             return self._delete("%s%s" % (self.url, batch_prediction_id))
+
+    ##########################################################################
+    #
+    # Clusters
+    # https://bigml.com/developers/clusters
+    #
+    ##########################################################################
+    def create_cluster(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates a cluster from a `dataset` or a list o `datasets`.
+
+        """
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.cluster_url, body)
+
+    def get_cluster(self, cluster, query_string='',
+                    shared_username=None, shared_api_key=None):
+        """Retrieves a cluster.
+
+           The model parameter should be a string containing the
+           cluster id or the dict returned by create_cluster.
+           As cluster is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the cluster values and state info
+           available at the time it is called.
+
+           If this is a shared cluster, the username and sharing api key must
+           also be provided.
+        """
+        check_resource_type(cluster, CLUSTER_PATH,
+                            message="A cluster id is needed.")
+        cluster_id = get_cluster_id(cluster)
+        if cluster_id:
+            return self._get("%s%s" % (self.url, cluster_id),
+                             query_string=query_string,
+                             shared_username=shared_username,
+                             shared_api_key=shared_api_key)
+
+    def cluster_is_ready(self, cluster, **kwargs):
+        """Checks whether a cluster's status is FINISHED.
+
+        """
+        check_resource_type(cluster, CLUSTER_PATH,
+                            message="A cluster id is needed.")
+        resource = self.get_cluster(cluster, **kwargs)
+        return resource_is_ready(resource)
+
+    def list_clusters(self, query_string=''):
+        """Lists all your clusters.
+
+        """
+        return self._list(self.cluster_url, query_string)
+
+    def update_cluster(self, cluster, changes):
+        """Updates a cluster.
+
+        """
+        check_resource_type(cluster, CLUSTER_PATH,
+                            message="A cluster id is needed.")
+        cluster_id = get_cluster_id(cluster)
+        if cluster_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, cluster_id), body)
+
+    def delete_cluster(self, cluster):
+        """Deletes a cluster.
+
+        """
+        check_resource_type(cluster, CLUSTER_PATH,
+                            message="A cluster id is needed.")
+        cluster_id = get_cluster_id(cluster)
+        if cluster_id:
+            return self._delete("%s%s" % (self.url, cluster_id))
+
+    ##########################################################################
+    #
+    # Centroids
+    # https://bigml.com/developers/centroids
+    #
+    ##########################################################################
+    def create_centroid(self, cluster, input_data=None,
+                        args=None, wait_time=3, retries=10):
+        """Creates a new centroid.
+
+        """
+        ensemble_id = None
+        model_id = None
+
+        resource_type = get_resource_type(cluster)
+        if resource_type == CLUSTER_PATH:
+            cluster_id = get_cluster_id(cluster)
+            check_resource(cluster_id, self.get_cluster,
+                           query_string=TINY_MODEL,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True)
+        else:
+            raise Exception("A cluster id is needed to create a"
+                            " centroid. %s found." % resource_type)
+
+        if input_data is None:
+            input_data = {}
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        create_args.update({
+            "input_data": input_data})
+        create_args.update({
+            "cluster": cluster_id})
+
+        body = json.dumps(create_args)
+        return self._create(self.centroid_url, body,
+                            verify=VERIFY)
+
+    def get_centroid(self, centroid):
+        """Retrieves a centroid.
+
+        """
+        check_resource_type(centroid, CENTROID_PATH,
+                            message="A centroid id is needed.")
+        centroid_id = get_centroid_id(centroid)
+        if centroid_id:
+            return self._get("%s%s" % (self.url, centroid_id))
+
+    def list_centroids(self, query_string=''):
+        """Lists all your centroids.
+
+        """
+        return self._list(self.centroid_url, query_string)
+
+    def update_centroid(self, centroid, changes):
+        """Updates a centroid.
+
+        """
+        check_resource_type(centroid, CENTROID_PATH,
+                            message="A centroid id is needed.")
+        centroid_id = get_centroid_id(centroid)
+        if centroid_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, centroid_id), body)
+
+    def delete_centroid(self, centroid):
+        """Deletes a centroid.
+
+        """
+        check_resource_type(centroid, CENTROID_PATH,
+                            message="A centroid id is needed.")
+        centroid_id = get_centroid_id(centroid)
+        if centroid_id:
+            return self._delete("%s%s" % (self.url, centroid_id))
+
+    ##########################################################################
+    #
+    # Batch Centroids
+    # https://bigml.com/developers/batch_centroids
+    #
+    ##########################################################################
+    def create_batch_centroid(self, cluster, dataset,
+                              args=None, wait_time=3, retries=10):
+        """Creates a new batch centroid.
+
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        model_types = [CLUSTER_PATH]
+        origin_resources_checked = self.check_origins(
+            dataset, cluster, create_args, model_types=model_types,
+            wait_time=wait_time, retries=retries)
+
+        if origin_resources_checked:
+            body = json.dumps(create_args)
+            return self._create(self.batch_centroid_url, body)
+
+    def get_batch_centroid(self, batch_centroid):
+        """Retrieves a batch centroid.
+
+           The batch_centroid parameter should be a string containing the
+           batch_centroid id or the dict returned by create_batch_centroid.
+           As batch_centroid is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the batch_centroid values and state
+           info available at the time it is called.
+        """
+        check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
+                            message="A batch centroid id is needed.")
+        batch_centroid_id = get_batch_centroid_id(batch_centroid)
+        if batch_centroid_id:
+            return self._get("%s%s" % (self.url, batch_centroid_id))
+
+    def download_batch_centroid(self, batch_centroid, filename=None):
+        """Retrieves the batch centroid file.
+
+           Downloads centroids, that are stored in a remote CSV file. If
+           a path is given in filename, the contents of the file are downloaded
+           and saved locally. A file-like object is returned otherwise.
+        """
+        check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
+                            message="A batch centroid id is needed.")
+        batch_centroid_id = get_batch_centroid_id(batch_centroid)
+        if batch_centroid_id:
+            return self._download("%s%s%s" % (self.url, batch_centroid_id,
+                                              DOWNLOAD_DIR), filename=filename)
+
+    def list_batch_centroids(self, query_string=''):
+        """Lists all your batch centroids.
+
+        """
+        return self._list(self.batch_centroid_url, query_string)
+
+    def update_batch_centroid(self, batch_centroid, changes):
+        """Updates a batch centroid.
+
+        """
+        check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
+                            message="A batch centroid id is needed.")
+        batch_centroid_id = get_batch_centroid_id(batch_centroid)
+        if batch_centroid_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, batch_centroid_id), body)
+
+    def delete_batch_centroid(self, batch_centroid):
+        """Deletes a batch centroid.
+
+        """
+        check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
+                            message="A batch centroid id is needed.")
+        batch_centroid_id = get_batch_centroid_id(batch_centroid)
+        if batch_centroid_id:
+            return self._delete("%s%s" % (self.url, batch_centroid_id))

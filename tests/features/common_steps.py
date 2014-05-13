@@ -62,3 +62,15 @@ def i_want_api_dev_mode(step):
     batch_predictions = world.api.list_batch_predictions()
     assert batch_predictions['code'] == HTTP_OK
     world.init_batch_predictions_count = batch_predictions['meta']['total_count']
+
+    clusters = world.api.list_clusters()
+    assert clusters['code'] == HTTP_OK
+    world.init_clusters_count = clusters['meta']['total_count']
+
+    centroids = world.api.list_centroids()
+    assert centroids['code'] == HTTP_OK
+    world.init_centroids_count = centroids['meta']['total_count']
+
+    batch_centroids = world.api.list_batch_centroids()
+    assert batch_centroids['code'] == HTTP_OK
+    world.init_batch_centroids_count = batch_centroids['meta']['total_count']

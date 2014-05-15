@@ -76,4 +76,7 @@ def create_local_ensemble_with_list(step, number_of_models):
 @step(r'the field importance text is (.*?)$')
 def field_importance_print(step, field_importance):
     field_importance_data = world.local_ensemble.field_importance_data()[0]
-    assert field_importance_data == json.loads(field_importance)
+    if field_importance_data == json.loads(field_importance):
+        assert True
+    else:
+        assert False, "Found %s, expected %s" % (field_importance_data, field_importance)

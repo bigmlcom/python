@@ -44,6 +44,18 @@ def setup_resources(feature):
     assert batch_predictions['code'] == HTTP_OK
     world.init_batch_predictions_count = batch_predictions['meta']['total_count']
 
+    clusters = world.api.list_clusters()
+    assert clusters['code'] == HTTP_OK
+    world.init_clusters_count = clusters['meta']['total_count']
+
+    centroids = world.api.list_centroids()
+    assert centroids['code'] == HTTP_OK
+    world.init_centroids_count = centroids['meta']['total_count']
+
+    batch_centroids = world.api.list_batch_centroids()
+    assert batch_centroids['code'] == HTTP_OK
+    world.init_batch_centroids_count = batch_centroids['meta']['total_count']
+
     world.sources = []
     world.datasets = []
     world.models = []
@@ -51,6 +63,9 @@ def setup_resources(feature):
     world.evaluations = []
     world.ensembles = []
     world.batch_predictions = []
+    world.clusters = []
+    world.centroids = []
+    world.batch_centroids = []
 
     world.dataset_ids = []
     world.fields_properties_dict = {}
@@ -89,6 +104,19 @@ def cleanup_resources(feature):
         world.api.delete_batch_prediction(id)
     world.batch_predictions = []
 
+    for id in world.clusters:
+        world.api.delete_cluster(id)
+    world.clusters = [] 
+
+    for id in world.centroids:
+        world.api.delete_centroid(id)
+    world.centroids = []
+
+    for id in world.batch_centroids:
+        world.api.delete_batch_centroid(id)
+    world.batch_centroids = []
+
+
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
     world.final_sources_count = sources['meta']['total_count']
@@ -117,6 +145,19 @@ def cleanup_resources(feature):
     assert batch_predictions['code'] == HTTP_OK
     world.final_batch_predictions_count = batch_predictions['meta']['total_count']
 
+    clusters = world.api.list_clusters()
+    assert clusters['code'] == HTTP_OK
+    world.final_clusters_count = clusters['meta']['total_count']
+
+    centroids = world.api.list_centroids()
+    assert centroids['code'] == HTTP_OK
+    world.final_centroids_count = centroids['meta']['total_count']
+
+    batch_centroids = world.api.list_batch_centroids()
+    assert batch_centroids['code'] == HTTP_OK
+    world.final_batch_centroids_count = batch_centroids['meta']['total_count']
+
+
     assert world.final_sources_count == world.init_sources_count
     assert world.final_datasets_count == world.init_datasets_count
     assert world.final_models_count == world.init_models_count
@@ -124,6 +165,9 @@ def cleanup_resources(feature):
     assert world.final_evaluations_count == world.init_evaluations_count
     assert world.final_ensembles_count == world.init_ensembles_count
     assert world.final_batch_predictions_count == world.init_batch_predictions_count
+    assert world.final_clusters_count == world.init_clusters_count
+    assert world.final_centroids_count == world.init_centroids_count
+    assert world.final_batch_centroids_count == world.init_batch_centroids_count
 
 @after.each_scenario
 def cleanup_resources(scenario):

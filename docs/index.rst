@@ -378,6 +378,184 @@ where the detailed result objects include ``mean_absolute_error``,
 `developers documentation <https://bigml.com/developers/evaluations>`_ for
 more info on the meaning of these measures.
 
+Cluster
+-------
+
+For unsupervised learning problems, the cluster is used to classify in a
+limited number of groups your training data. The cluster structure is defined
+by the centers of each group of data, named centroids, and the data enclosed
+in the group. As for in the model's case, the cluster is a white-box resource
+and can be retrieved as a JSON::
+
+    >>> cluster = api.get_cluster(cluster)
+    >>> api.pprint(cluster['object'])
+    {   'balance_fields': True,
+        'category': 0,
+        'cluster_datasets': {   '000000': '', '000001': '', '000002': ''},
+        'cluster_datasets_ids': {   '000000': '53739b9ae4b0dad82b0a65e6',
+                                    '000001': '53739b9ae4b0dad82b0a65e7',
+                                    '000002': '53739b9ae4b0dad82b0a65e8'},
+        'cluster_seed': '2c249dda00fbf54ab4cdd850532a584f286af5b6',
+        'clusters': {   'clusters': [   {   'center': {   '000000': 58.5,
+                                                          '000001': 26.8314,
+                                                          '000002': 44.27907,
+                                                          '000003': 14.37209},
+                                            'count': 56,
+                                            'distance': {   'bins': [   [   0.69602,
+                                                                            2],
+                                                                        [ ... ]
+                                                                        [   3.77052,
+                                                                            1]],
+                                                            'maximum': 3.77052,
+                                                            'mean': 1.61711,
+                                                            'median': 1.52146,
+                                                            'minimum': 0.69237,
+                                                            'population': 56,
+                                                            'standard_deviation': 0.6161,
+                                                            'sum': 90.55805,
+                                                            'sum_squares': 167.31926,
+                                                            'variance': 0.37958},
+                                            'id': '000000',
+                                            'name': 'Cluster 0'},
+                                        {   'center': {   '000000': 50.06,
+                                                          '000001': 34.28,
+                                                          '000002': 14.62,
+                                                          '000003': 2.46},
+                                            'count': 50,
+                                            'distance': {   'bins': [   [   0.16917,
+                                                                            1],
+                                                                        [ ... ]
+                                                                        [   4.94699,
+                                                                            1]],
+                                                            'maximum': 4.94699,
+                                                            'mean': 1.50725,
+                                                            'median': 1.3393,
+                                                            'minimum': 0.16917,
+                                                            'population': 50,
+                                                            'standard_deviation': 1.00994,
+                                                            'sum': 75.36252,
+                                                            'sum_squares': 163.56918,
+                                                            'variance': 1.01998},
+                                            'id': '000001',
+                                            'name': 'Cluster 1'},
+                                        {   'center': {   '000000': 68.15625,
+                                                          '000001': 31.25781,
+                                                          '000002': 55.48438,
+                                                          '000003': 19.96875},
+                                            'count': 44,
+                                            'distance': {   'bins': [   [   0.36825,
+                                                                            1],
+                                                                        [ ... ]
+                                                                        [   3.87216,
+                                                                            1]],
+                                                            'maximum': 3.87216,
+                                                            'mean': 1.67264,
+                                                            'median': 1.63705,
+                                                            'minimum': 0.36825,
+                                                            'population': 44,
+                                                            'standard_deviation': 0.78905,
+                                                            'sum': 73.59627,
+                                                            'sum_squares': 149.87194,
+                                                            'variance': 0.6226},
+                                            'id': '000002',
+                                            'name': 'Cluster 2'}],
+                        'fields': {   '000000': {   'column_number': 0,
+                                                    'datatype': 'int8',
+                                                    'name': 'sepal length',
+                                                    'optype': 'numeric',
+                                                    'order': 0,
+                                                    'preferred': True,
+                                                    'summary': {   'bins': [   [   43.75,
+                                                                                   4],
+                                                                               [ ... ]
+                                                                               [   79,
+                                                                                   1]],
+                                                                   'maximum': 79,
+                                                                   'mean': 58.43333,
+                                                                   'median': 57.7889,
+                                                                   'minimum': 43,
+                                                                   'missing_count': 0,
+                                                                   'population': 150,
+                                                                   'splits': [   45.15258,
+                                                                                 46.72525,
+                                                                              72.04226,
+                                                                                 76.47461],
+                                                                   'standard_deviation': 8.28066,
+                                                                   'sum': 8765,
+                                                                   'sum_squares': 522385,
+                                                                   'variance': 68.56935}},
+                                                                    [ ... ]
+                                                                                 [   25,
+                                                                                     3]],
+                                                                   'maximum': 25,
+                                                                   'mean': 11.99333,
+                                                                   'median': 13.28483,
+                                                                   'minimum': 1,
+                                                                   'missing_count': 0,
+                                                                   'population': 150,
+                                                                   'standard_deviation': 7.62238,
+                                                                   'sum': 1799,
+                                                                   'sum_squares': 30233,
+                                                                   'variance': 58.10063}}}},
+        'code': 202,
+        'columns': 4,
+        'created': '2014-05-14T16:36:40.993000',
+        'credits': 0.017578125,
+        'credits_per_prediction': 0.0,
+        'dataset': 'dataset/53739b88c8db63122b000411',
+        'dataset_field_types': {   'categorical': 1,
+                                   'datetime': 0,
+                                   'numeric': 4,
+                                   'preferred': 5,
+                                   'text': 0,
+                                   'total': 5},
+        'dataset_status': True,
+        'dataset_type': 0,
+        'description': '',
+        'excluded_fields': ['000004'],
+        'field_scales': None,
+        'fields_meta': {   'count': 4,
+                           'limit': 1000,
+                           'offset': 0,
+                           'query_total': 4,
+                           'total': 4},
+        'input_fields': ['000000', '000001', '000002', '000003'],
+        'k': 3,
+        'locale': 'es-ES',
+        'max_columns': 5,
+        'max_rows': 150,
+        'name': 'my iris',
+        'number_of_batchcentroids': 0,
+        'number_of_centroids': 0,
+        'number_of_public_centroids': 0,
+        'out_of_bag': False,
+        'price': 0.0,
+        'private': True,
+        'range': [1, 150],
+        'replacement': False,
+        'resource': 'cluster/53739b98d994972da7001de9',
+        'rows': 150,
+        'sample_rate': 1.0,
+        'scales': {   '000000': 0.22445382597655375,
+                      '000001': 0.4264213814821549,
+                      '000002': 0.10528680248949522,
+                      '000003': 0.2438379900517961},
+        'shared': False,
+        'size': 4608,
+        'source': 'source/53739b24d994972da7001ddd',
+        'source_status': True,
+        'status': {   'code': 5,
+                      'elapsed': 1009,
+                      'message': 'The cluster has been created',
+                      'progress': 1.0},
+        'subscription': True,
+        'tags': [],
+        'updated': '2014-05-14T16:40:26.234728',
+        'white_box': False}
+
+(Note that we have abbreviated the output in the snippet above for
+readability: the full predictive cluster you'll get is going to contain
+much more details).
 
 Creating Resources
 ------------------
@@ -433,6 +611,9 @@ You can query the status of any resource with the ``status`` method::
     api.status(evaluation)
     api.status(ensemble)
     api.status(batch_prediction)
+    api.status(cluster)
+    api.status(centroid)
+    api.status(batch_centroid)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -545,8 +726,10 @@ dataset extracting the 80% of instances from an existing one, you could use::
 Creating models
 ~~~~~~~~~~~~~~~
 
-Once you have created a dataset, you can create a model. The only
-required argument to create a model is a dataset id. You can also
+Once you have created a dataset you can create a model from it. If you don't
+select one, the model will use the last field of the dataset as objective
+field. The only required argument to create a model is a dataset id.
+You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Models section of the Developer's
 documentation <https://bigml.com/developers/models>`_.
@@ -559,7 +742,26 @@ invocation::
         "name": "my model", "input_fields": ["000000", "000001"], "range": [1, 10]})
 
 Again, the model is scheduled for creation, and you can retrieve its
-status at any time by means of ``api.status(model)`` .
+status at any time by means of ``api.status(model)``.
+
+Creating clusters
+~~~~~~~~~~~~~~~~~
+
+If your dataset has no fields showing the objective information to
+predict for the training data, you can still build a cluster
+that will group similar data around
+some automatically chosen points (centroids). Again, the only required
+argument to create a cluster is the dataset id. You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Clusters section of the Developer's
+documentation <https://bigml.com/developers/clusters>`_.
+
+Let's create a cluster from a given dataset::
+
+    cluster = api.create_cluster(dataset, {"name": "my cluster",
+                                           "k": 5})
+
+that will create a cluster with 5 centroids.
 
 Creating predictions
 ~~~~~~~~~~~~~~~~~~~~
@@ -576,6 +778,21 @@ method. You can also give the prediction a name::
 To see the prediction you can use ``pprint``::
 
     api.pprint(prediction)
+
+Creating centroids
+~~~~~~~~~~~~~~~~~~
+
+To obtain the centroid associated to new input data, you
+can now use the ``create_centroid`` method. Give the method a cluster
+identifier and the input data to obtain the centroid.
+You can also give the centroid predicition a name::
+
+    centroid = api.create_centroid(cluster,
+                                   {"sepal length": 5,
+                                    "sepal width": 2.5,
+                                    "petal length": 2,
+                                    "petal width": 4},
+                                    {"name": "my centroid"})
 
 Creating evaluations
 ~~~~~~~~~~~~~~~~~~~~
@@ -665,6 +882,19 @@ object that can be read as a stream::
         print chunk
 
 
+Creating batch centroids
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+As described in the previous section, it is also possible to make centroids'
+predictions in batch. First you create a dataset
+containing the input data you want your cluster to relate to a centroid.
+The ``create_batch_centroid`` call will need the id of the dataset and the
+cluster to assign a centroid to each input data::
+
+    batch_centroid = api.create_batch_centroid(cluster, dataset, {
+        "name": "my batch centroid", "all_fields": True,
+        "header": True})
+
 Reading Resources
 -----------------
 
@@ -686,6 +916,9 @@ You can list resources with the appropriate api method::
     api.list_evaluations()
     api.list_ensembles()
     api.list_batch_predictions()
+    api.list_clusters()
+    api.list_centroids()
+    api.list_batch_centroids()
 
 you will receive a dictionary with the following keys:
 
@@ -808,6 +1041,9 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_evaluation(evaluation, {"name": "new name"})
     api.update_ensemble(ensemble, {"name": "new name"})
     api.update_batch_prediction(batch_prediction, {"name": "new name"})
+    api.update_cluster(cluster, {"name": "new name"})
+    api.update_centroid(centroid, {"name": "new name"})
+    api.update_batch_centroid(batch_centroid, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -838,6 +1074,9 @@ each type of resource.
     api.delete_evaluation(evaluation)
     api.delete_ensemble(ensemble)
     api.delete_batch_prediction(batch_prediction)
+    api.delete_cluster(cluster)
+    api.delete_centroid(centroid)
+    api.delete_batch_centroid(batch_centroid)
 
 Each of the calls above will return a dictionary with the following
 keys:

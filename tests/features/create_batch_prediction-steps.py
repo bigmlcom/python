@@ -66,9 +66,27 @@ def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
     assert status['code'] == int(code1)
 
 
+@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
+    start = datetime.utcnow()
+    step.given('I get the batch centroid "{id}"'.format(id=world.batch_centroid['resource']))
+    status = get_status(world.batch_centroid)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+        time.sleep(3)
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        step.given('I get the batch centroid "{id}"'.format(id=world.batch_centroid['resource']))
+        status = get_status(world.batch_centroid)
+    assert status['code'] == int(code1)
+
+
 @step(r'I wait until the batch prediction is ready less than (\d+)')
 def the_batch_prediction_is_finished_in_less_than(step, secs):
     wait_until_batch_prediction_status_code_is(step, FINISHED, FAULTY, secs)
+
+@step(r'I wait until the batch centroid is ready less than (\d+)')
+def the_batch_centroid_is_finished_in_less_than(step, secs):
+    wait_until_batch_centroid_status_code_is(step, FINISHED, FAULTY, secs)
 
 
 @step(r'I download the created predictions file to "(.*)"')
@@ -78,6 +96,12 @@ def i_download_predictions_file(step, filename):
     assert file_object is not None
     world.output = file_object
     
+@step(r'I download the created centroid file to "(.*)"')
+def i_download_centroid_file(step, filename):
+    file_object = world.api.download_batch_centroid(
+        world.batch_centroid, filename=filename)
+    assert file_object is not None
+    world.output = file_object
 
 @step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):
@@ -104,3 +128,18 @@ def i_check_predictions(step, check_file):
         assert True
     except Exception, exc:
         assert False, str(exc)
+
+@step(r'the batch centroid file is like "(.*)"')
+def i_check_batch_centroid(step, check_file):
+    i_check_predictions(step, check_file)
+
+@step(r'I create a batch centroid for the dataset$')
+def i_create_a_batch_prediction_with_cluster(step):
+    dataset = world.dataset.get('resource')
+    cluster = world.cluster.get('resource')
+    resource = world.api.create_batch_centroid(cluster, dataset)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.batch_centroid = resource['object']
+    world.batch_centroids.append(resource['resource'])

@@ -3,6 +3,11 @@
 History
 -------
 
+1.4.0 (2014-05-14)
+~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods to manage clusters, centroids and batch centroids
+
 1.3.1 (2014-05-06)
 ~~~~~~~~~~~~~~~~~~
 

@@ -21,6 +21,20 @@ def i_create_a_prediction(step, data=None):
     world.predictions.append(resource['resource'])
 
 
+@step(r'I create a centroid for "(.*)"')
+def i_create_a_centroid(step, data=None):
+    if data is None:
+        data = "{}"
+    cluster = world.cluster['resource']
+    data = json.loads(data)
+    resource = world.api.create_centroid(cluster, data)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.centroid = resource['object']
+    world.centroids.append(resource['resource'])
+
+
 @step(r'I create a proportional missing strategy prediction for "(.*)"')
 def i_create_a_proportional_prediction(step, data=None):
     if data is None:
@@ -39,6 +53,11 @@ def i_create_a_proportional_prediction(step, data=None):
 @step(r'the prediction for "(.*)" is "(.*)"')
 def the_prediction_is(step, objective, prediction):
     assert str(world.prediction['prediction'][objective]) == prediction
+
+
+@step(r'the centroid is "(.*)"')
+def the_centroid_is(step, centroid):
+    assert str(world.centroid['centroid']['name']) == centroid
 
 
 @step(r'the confidence for the prediction is "(.*)"')

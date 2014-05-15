@@ -33,3 +33,19 @@ Feature: Create Batch Predictions
         Examples:
         | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       |
         | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./check_files/batch_predictions_e.csv |
+
+    Scenario: Successfully creating a batch centroid from a cluster:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a cluster
+        And I wait until the cluster is ready less than <time_3> secs
+        When I create a batch centroid for the dataset
+        And I wait until the batch centroid is ready less than <time_4> secs
+        And I download the created centroid file to "<local_file>"
+        Then the batch centroid file is like "<predictions_file>"
+
+        Examples:
+        | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
+        | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |

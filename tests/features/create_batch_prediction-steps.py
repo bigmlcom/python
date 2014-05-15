@@ -138,7 +138,6 @@ def i_create_a_batch_prediction_with_cluster(step):
     dataset = world.dataset.get('resource')
     cluster = world.cluster.get('resource')
     resource = world.api.create_batch_centroid(cluster, dataset)
-    print resource
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']

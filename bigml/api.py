@@ -2050,9 +2050,7 @@ class BigML(object):
         """Creates a new centroid.
 
         """
-        ensemble_id = None
-        model_id = None
-
+        cluster_id = None
         resource_type = get_resource_type(cluster)
         if resource_type == CLUSTER_PATH:
             cluster_id = get_cluster_id(cluster)

@@ -756,10 +756,10 @@ include in the request all the additional arguments accepted by BigML
 and documented in the `Clusters section of the Developer's
 documentation <https://bigml.com/developers/clusters>`_.
 
-Let's create a cluster form a given dataset::
+Let's create a cluster from a given dataset::
 
     cluster = api.create_cluster(dataset, {"name": "my cluster",
-                                 "k": 5})
+                                           "k": 5})
 
 that will create a cluster with 5 centroids.
 

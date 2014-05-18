@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BigML'
-copyright = u'2012, The BigML Team'
+copyright = u'2011 - 2014, The BigML Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

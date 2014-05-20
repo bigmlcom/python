@@ -133,6 +133,11 @@ def i_check_predictions(step, check_file):
 def i_check_batch_centroid(step, check_file):
     i_check_predictions(step, check_file)
 
+
+@step(r'I check the batch centroid is ok')
+def i_check_batch_centroid_is_ok(step):
+    assert world.api.ok(world.batch_centroid)
+
 @step(r'I create a batch centroid for the dataset$')
 def i_create_a_batch_prediction_with_cluster(step):
     dataset = world.dataset.get('resource')

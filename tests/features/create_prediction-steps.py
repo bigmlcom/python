@@ -59,6 +59,9 @@ def the_prediction_is(step, objective, prediction):
 def the_centroid_is(step, centroid):
     assert str(world.centroid['centroid_name']) == centroid
 
+@step(r'I check the centroid is ok')
+def the_centroid_is_ok(step):
+    assert world.api.ok(world.centroid)
 
 @step(r'the confidence for the prediction is "(.*)"')
 def the_confidence_is(step, confidence):

@@ -42,6 +42,7 @@ Feature: Create Batch Predictions
         And I create a cluster
         And I wait until the cluster is ready less than <time_3> secs
         When I create a batch centroid for the dataset
+        And I check the batch centroid is ok
         And I wait until the batch centroid is ready less than <time_4> secs
         And I download the created centroid file to "<local_file>"
         Then the batch centroid file is like "<predictions_file>"

@@ -53,6 +53,7 @@ Feature: Create Predictions
         And I create a cluster
         And I wait until the cluster is ready less than <time_3> secs
         When I create a centroid for "<data_input>"
+        And I check the centroid is ok
         Then the centroid is "<centroid>"
 
         Examples:

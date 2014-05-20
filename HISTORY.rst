@@ -3,15 +3,20 @@
 History
 -------
 
+1.4.2 (2014-05-20)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug when using api.ok method for centroids and batch centroids.
+
 1.4.1 (2014-05-19)
 ~~~~~~~~~~~~~~~~~~
 
-- Docs and test updates
+- Docs and test updates.
 
 1.4.0 (2014-05-14)
 ~~~~~~~~~~~~~~~~~~
 
-- Adding REST methods to manage clusters, centroids and batch centroids
+- Adding REST methods to manage clusters, centroids and batch centroids.
 
 1.3.1 (2014-05-06)
 ~~~~~~~~~~~~~~~~~~

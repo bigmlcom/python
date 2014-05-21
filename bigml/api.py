@@ -63,35 +63,26 @@ from bigml.util import DEFAULT_LOCALE
 
 register_openers()
 
+# Default domain and protocol
+DEFAULT_DOMAIN = 'bigml.io'
+DEFAULT_PREDICTION_DOMAIN = 'bigml.com'
+DEFAULT_PROTOCOL = 'https'
+
 # Base Domain
-BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', 'bigml.io')
+BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', DEFAULT_DOMAIN)
 
 # Domain for prediction server
 BIGML_PREDICTION_DOMAIN = os.environ.get('BIGML_PREDICTION_DOMAIN',
                                          BIGML_DOMAIN)
-# Whether a prediction server is being used or not
-PREDICTION_SERVER_ON = (BIGML_DOMAIN != BIGML_PREDICTION_DOMAIN)
 
 # Protocol for prediction server
 BIGML_PREDICTION_PROTOCOL = os.environ.get('BIGML_PREDICTION_PROTOCOL',
-                                           'https')
-
-# Check BigML.io host’s SSL certificate
-# DO NOT CHANGE IT.
-VERIFY = (BIGML_DOMAIN == "bigml.io")
-
-# Check prediction server's SSL certificate
-# DO NOT CHANGE IT.
-VERIFY_PREDICTION_SERVER = (BIGML_PREDICTION_DOMAIN == "bigml.com")
+                                           DEFAULT_PROTOCOL)
 
 # Base URL
-BIGML_URL = 'https://%s/andromeda/' % BIGML_DOMAIN
+BIGML_URL = '%s://%s/andromeda/'
 # Development Mode URL
-BIGML_DEV_URL = 'https://%s/dev/andromeda/' % BIGML_DOMAIN
-
-# Prediction URL
-BIGML_PREDICTION_URL = '%s://%s/andromeda/' % (BIGML_PREDICTION_PROTOCOL,
-                                               BIGML_PREDICTION_DOMAIN)
+BIGML_DEV_URL = '%s://%s/dev/andromeda/'
 
 # Basic resources
 SOURCE_PATH = 'source'
@@ -406,60 +397,6 @@ def exception_on_error(resource):
         raise Exception(resource['error']['status']['message'])
 
 
-def error_message(resource, resource_type='resource', method=None):
-    """Error message for each type of resource
-
-    """
-    error = None
-    error_info = None
-    if isinstance(resource, dict):
-        if 'error' in resource:
-            error_info = resource['error']
-        elif ('code' in resource
-              and 'status' in resource):
-            error_info = resource
-    if error_info is not None and 'code' in error_info:
-        code = error_info['code']
-        if ('status' in error_info and
-                'message' in error_info['status']):
-            error = error_info['status']['message']
-            extra = error_info['status'].get('extra', None)
-            if extra is not None:
-                error += ": %s" % extra
-        if code == HTTP_NOT_FOUND and method == 'get':
-            alternate_message = ''
-            if BIGML_DOMAIN != 'bigml.io':
-                alternate_message = (
-                    u'- The %s was not created in %s.\n' % (
-                        resource_type, BIGML_DOMAIN))
-            error += (
-                u'\nCouldn\'t find a %s matching the given'
-                u' id. The most probable causes are:\n\n%s'
-                u'- A typo in the %s\'s id.\n'
-                u'- The %s id cannot be accessed with your credentials.\n'
-                u'\nDouble-check your %s and'
-                u' credentials info and retry.' % (
-                    resource_type, alternate_message, resource_type,
-                    resource_type, resource_type))
-            return error
-        if code == HTTP_UNAUTHORIZED:
-            error += u'\nDouble-check your credentials, please.'
-            return error
-        if code == HTTP_BAD_REQUEST:
-            error += u'\nDouble-check the arguments for the call, please.'
-            return error
-        if code == HTTP_TOO_MANY_REQUESTS:
-            error += (u'\nToo many requests. Please stop '
-                      u' requests for a while before resuming.')
-            return error
-        elif code == HTTP_PAYMENT_REQUIRED:
-            error += (u'\nYou\'ll need to buy some more credits to perform'
-                      u' the chosen action')
-            return error
-
-    return "Invalid %s structure:\n\n%s" % (resource_type, resource)
-
-
 def assign_dir(path):
     """Silently checks the path for existence or creates it.
 
@@ -552,7 +489,7 @@ class BigML(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False, storage=None):
+                 debug=False, set_locale=False, storage=None, domain=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -565,6 +502,10 @@ class BigML(object):
 
         If storage is set to a directory name, the resources obtained in
         CRU operations will be stored in the given directory.
+
+        If domain is set, the api will point to the specified domain. Default
+        will be the one in the environment variable `BIGML_DOMAIN` or
+        `bigml.io` if missing.
 
         """
 
@@ -592,24 +533,7 @@ class BigML(object):
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
 
-        if dev_mode:
-            self.url = BIGML_DEV_URL
-            self.prediction_url = BIGML_DEV_URL
-        else:
-            self.url = BIGML_URL
-            self.prediction_url = BIGML_PREDICTION_URL
-
-        # Base Resource URLs
-        self.source_url = self.url + SOURCE_PATH
-        self.dataset_url = self.url + DATASET_PATH
-        self.model_url = self.url + MODEL_PATH
-        self.prediction_url = self.prediction_url + PREDICTION_PATH
-        self.evaluation_url = self.url + EVALUATION_PATH
-        self.ensemble_url = self.url + ENSEMBLE_PATH
-        self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
-        self.cluster_url = self.url + CLUSTER_PATH
-        self.centroid_url = self.url + CENTROID_PATH
-        self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
+        self._set_api_urls(dev_mode=dev_mode, domain=domain)
 
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
@@ -626,7 +550,58 @@ class BigML(object):
             'centroid': self.get_centroid,
             'batchcentroid': self.get_batch_centroid}
 
-    def _create(self, url, body, verify=VERIFY):
+    def _set_api_urls(self, dev_mode=False, domain=None):
+        """Sets the urls that point to the REST api methods for each resource
+
+        """
+        if domain is None:
+            self.general_domain = BIGML_DOMAIN
+            self.prediction_domain = BIGML_PREDICTION_DOMAIN
+            self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
+        # If the domain for predictions is different from the general domain,
+        # a dictionary is used to set its attributes
+        elif isinstance(domain, dict):
+            self.general_domain = domain.get("domain", BIGML_DOMAIN)
+            self.prediction_domain = domain.get("prediction_domain",
+                                                BIGML_PREDICTION_DOMAIN)
+            self.prediction_protocol = domain.get("prediction_protocol",
+                                                  BIGML_PREDICTION_PROTOCOL)
+        elif isinstance(domain, basestring):
+            self.general_domain = domain
+            self.prediction_domain = domain
+            self.prediction_protocol = DEFAULT_PROTOCOL
+        else:
+            raise ValueError("The expected types to set a specific domain"
+                             " are a string or a Domains object")
+        self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
+        prediction_server = self.general_domain != self.prediction_domain
+        self.verify_prediction = (
+            self.prediction_domain == DEFAULT_PREDICTION_DOMAIN or
+            self.prediction_domain.lower().endswith(DEFAULT_DOMAIN))
+
+        if dev_mode:
+            self.url = BIGML_DEV_URL % (DEFAULT_PROTOCOL, self.general_domain)
+            self.prediction_url = BIGML_DEV_URL % (DEFAULT_PROTOCOL,
+                                                   self.general_domain)
+        else:
+            self.url = BIGML_URL % (DEFAULT_PROTOCOL, self.general_domain)
+            self.prediction_url = BIGML_URL % (
+                self.prediction_protocol, self.prediction_domain)
+
+        # Base Resource URLs
+        self.source_url = self.url + SOURCE_PATH
+        self.dataset_url = self.url + DATASET_PATH
+        self.model_url = self.url + MODEL_PATH
+        self.prediction_url = self.prediction_url + PREDICTION_PATH
+        self.evaluation_url = self.url + EVALUATION_PATH
+        self.ensemble_url = self.url + ENSEMBLE_PATH
+        self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
+        self.cluster_url = self.url + CLUSTER_PATH
+        self.centroid_url = self.url + CENTROID_PATH
+        self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
+
+
+    def _create(self, url, body, verify=None):
         """Creates a new remote resource.
 
         Posts `body` in JSON to `url` to create a new remote resource.
@@ -652,6 +627,8 @@ class BigML(object):
         # return a HTTP_ACCEPTED (202) while the model or ensemble is being
         # downloaded.
         code = HTTP_ACCEPTED
+        if verify is None:
+            verify = self.verify
         while code == HTTP_ACCEPTED:
             try:
                 response = requests.post(url + self.auth,
@@ -671,7 +648,7 @@ class BigML(object):
                               HTTP_NOT_FOUND,
                               HTTP_TOO_MANY_REQUESTS]:
                     error = json.loads(response.content, 'utf-8')
-                    LOGGER.error(error_message(error, method='create'))
+                    LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)" % code)
                     code = HTTP_INTERNAL_SERVER_ERROR
@@ -720,7 +697,7 @@ class BigML(object):
         try:
             response = requests.get(url + auth + query_string,
                                     headers=ACCEPT_JSON,
-                                    verify=VERIFY)
+                                    verify=self.verify)
 
             code = response.status_code
 
@@ -733,7 +710,7 @@ class BigML(object):
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
-                LOGGER.error(error_message(error, method='get'))
+                LOGGER.error(self.error_message(error, method='get'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -783,7 +760,7 @@ class BigML(object):
         try:
 
             response = requests.get(url + self.auth + query_string,
-                                    headers=ACCEPT_JSON, verify=VERIFY)
+                                    headers=ACCEPT_JSON, verify=self.verify)
             code = response.status_code
 
             if code == HTTP_OK:
@@ -842,7 +819,7 @@ class BigML(object):
         try:
             response = requests.put(url + self.auth,
                                     headers=SEND_JSON,
-                                    data=body, verify=VERIFY)
+                                    data=body, verify=self.verify)
 
             code = response.status_code
 
@@ -855,7 +832,7 @@ class BigML(object):
                           HTTP_METHOD_NOT_ALLOWED,
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
-                LOGGER.error(error_message(error, method='update'))
+                LOGGER.error(self.error_message(error, method='update'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -887,7 +864,7 @@ class BigML(object):
                 "message": "The resource couldn't be deleted"}}
 
         try:
-            response = requests.delete(url + self.auth, verify=VERIFY)
+            response = requests.delete(url + self.auth, verify=self.verify)
             code = response.status_code
 
             if code == HTTP_NO_CONTENT:
@@ -897,7 +874,7 @@ class BigML(object):
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
-                LOGGER.error(error_message(error, method='delete'))
+                LOGGER.error(self.error_message(error, method='delete'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -924,7 +901,7 @@ class BigML(object):
         file_object = None
 
         response = requests.get(url + self.auth,
-                                verify=VERIFY, stream=True)
+                                verify=self.verify, stream=True)
         code = response.status_code
 
         if code == HTTP_OK:
@@ -999,6 +976,59 @@ class BigML(object):
         else:
             LOGGER.error("The resource couldn't be created: %s" %
                          resource['error'])
+
+    def error_message(self, resource, resource_type='resource', method=None):
+        """Error message for each type of resource
+
+        """
+        error = None
+        error_info = None
+        if isinstance(resource, dict):
+            if 'error' in resource:
+                error_info = resource['error']
+            elif ('code' in resource
+                  and 'status' in resource):
+                error_info = resource
+        if error_info is not None and 'code' in error_info:
+            code = error_info['code']
+            if ('status' in error_info and
+                    'message' in error_info['status']):
+                error = error_info['status']['message']
+                extra = error_info['status'].get('extra', None)
+                if extra is not None:
+                    error += ": %s" % extra
+            if code == HTTP_NOT_FOUND and method == 'get':
+                alternate_message = ''
+                if self.general_domain != DEFAULT_DOMAIN:
+                    alternate_message = (
+                        u'- The %s was not created in %s.\n' % (
+                            resource_type, self.general_domain))
+                error += (
+                    u'\nCouldn\'t find a %s matching the given'
+                    u' id. The most probable causes are:\n\n%s'
+                    u'- A typo in the %s\'s id.\n'
+                    u'- The %s id cannot be accessed with your credentials.\n'
+                    u'\nDouble-check your %s and'
+                    u' credentials info and retry.' % (
+                        resource_type, alternate_message, resource_type,
+                        resource_type, resource_type))
+                return error
+            if code == HTTP_UNAUTHORIZED:
+                error += u'\nDouble-check your credentials, please.'
+                return error
+            if code == HTTP_BAD_REQUEST:
+                error += u'\nDouble-check the arguments for the call, please.'
+                return error
+            if code == HTTP_TOO_MANY_REQUESTS:
+                error += (u'\nToo many requests. Please stop '
+                          u' requests for a while before resuming.')
+                return error
+            elif code == HTTP_PAYMENT_REQUIRED:
+                error += (u'\nYou\'ll need to buy some more credits to perform'
+                          u' the chosen action')
+                return error
+
+        return "Invalid %s structure:\n\n%s" % (resource_type, resource)
 
     ##########################################################################
     #
@@ -1211,7 +1241,7 @@ class BigML(object):
         try:
             response = requests.post(self.source_url + self.auth,
                                      files=files,
-                                     data=create_args, verify=VERIFY)
+                                     data=create_args, verify=self.verify)
 
             code = response.status_code
             if code == HTTP_CREATED:
@@ -1367,7 +1397,7 @@ class BigML(object):
                         HTTP_TOO_MANY_REQUESTS]:
                 content = exception.read()
                 error = json.loads(content, 'utf-8')
-                LOGGER.error(error_message(error, method='create'))
+                LOGGER.error(self.error_message(error, method='create'))
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -1707,7 +1737,7 @@ class BigML(object):
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,
-                            verify=VERIFY_PREDICTION_SERVER)
+                            verify=self.verify_prediction)
 
     def get_prediction(self, prediction):
         """Retrieves a prediction.
@@ -2077,7 +2107,7 @@ class BigML(object):
 
         body = json.dumps(create_args)
         return self._create(self.centroid_url, body,
-                            verify=VERIFY)
+                            verify=self.verify)
 
     def get_centroid(self, centroid):
         """Retrieves a centroid.

@@ -31,7 +31,7 @@ import os
 import json
 
 from bigml.api import FINISHED
-from bigml.api import (get_status, error_message, BigML, get_model_id,
+from bigml.api import (get_status, BigML, get_model_id,
                        check_resource)
 from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
@@ -111,9 +111,9 @@ class BaseModel(object):
                 api = BigML()
             self.resource_id = get_model_id(model)
             if self.resource_id is None:
-                raise Exception(error_message(model,
-                                              resource_type='model',
-                                              method='get'))
+                raise Exception(api.error_message(model,
+                                                  resource_type='model',
+                                                  method='get'))
             query_string = ONLY_MODEL
             model = retrieve_model(api, self.resource_id,
                                    query_string=query_string)

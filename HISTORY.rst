@@ -3,6 +3,12 @@
 History
 -------
 
+1.4.3 (2014-05-21)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the ability to change the remote server domain in the API
+  connection constructor (for VPCs).
+
 1.4.2 (2014-05-20)
 ~~~~~~~~~~~~~~~~~~
 

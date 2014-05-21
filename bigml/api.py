@@ -60,24 +60,10 @@ from bigml.util import (invert_dictionary, localize, is_url, check_dir,
                         clear_console_line, reset_console_line, console_log,
                         maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE
+from bigml.domain import Domain
+from bigml.domain import DEFAULT_DOMAIN, DEFAULT_PROTOCOL
 
 register_openers()
-
-# Default domain and protocol
-DEFAULT_DOMAIN = 'bigml.io'
-DEFAULT_PREDICTION_DOMAIN = 'bigml.com'
-DEFAULT_PROTOCOL = 'https'
-
-# Base Domain
-BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', DEFAULT_DOMAIN)
-
-# Domain for prediction server
-BIGML_PREDICTION_DOMAIN = os.environ.get('BIGML_PREDICTION_DOMAIN',
-                                         BIGML_DOMAIN)
-
-# Protocol for prediction server
-BIGML_PREDICTION_PROTOCOL = os.environ.get('BIGML_PREDICTION_PROTOCOL',
-                                           DEFAULT_PROTOCOL)
 
 # Base URL
 BIGML_URL = '%s://%s/andromeda/'
@@ -505,7 +491,8 @@ class BigML(object):
 
         If domain is set, the api will point to the specified domain. Default
         will be the one in the environment variable `BIGML_DOMAIN` or
-        `bigml.io` if missing.
+        `bigml.io` if missing. The expected domain argument is a string or a
+        Domain object. See Domain class for details.
 
         """
 
@@ -555,30 +542,13 @@ class BigML(object):
 
         """
         if domain is None:
-            self.general_domain = BIGML_DOMAIN
-            self.prediction_domain = BIGML_PREDICTION_DOMAIN
-            self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
-        # If the domain for predictions is different from the general domain,
-        # a dictionary is used to set its attributes
-        elif isinstance(domain, dict):
-            self.general_domain = domain.get("domain", BIGML_DOMAIN)
-            self.prediction_domain = domain.get("prediction_domain",
-                                                BIGML_PREDICTION_DOMAIN)
-            self.prediction_protocol = domain.get("prediction_protocol",
-                                                  BIGML_PREDICTION_PROTOCOL)
+            domain = Domain()
         elif isinstance(domain, basestring):
-            self.general_domain = domain
-            self.prediction_domain = domain
-            self.prediction_protocol = DEFAULT_PROTOCOL
-        else:
-            raise ValueError("The expected types to set a specific domain"
-                             " are a string or a Domains object")
-        self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
-        prediction_server = self.general_domain != self.prediction_domain
-        self.verify_prediction = (
-            self.prediction_domain == DEFAULT_PREDICTION_DOMAIN or
-            self.prediction_domain.lower().endswith(DEFAULT_DOMAIN))
-
+            domain = Domain(domain=domain)
+        elif not isinstance(domain, Domain):
+            raise ValueError("The domain must be set using a Domain object.")
+        # Setting the general and prediction domain options
+        domain.set_domain(self)
         if dev_mode:
             self.url = BIGML_DEV_URL % (DEFAULT_PROTOCOL, self.general_domain)
             self.prediction_url = BIGML_DEV_URL % (DEFAULT_PROTOCOL,

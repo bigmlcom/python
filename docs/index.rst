@@ -103,6 +103,43 @@ environment by passing the parameter ``dev_mode``::
 
     api = BigML(dev_mode=True)
 
+For Virtual Private Cloud setups, you can change the remote server domain
+to the VPC particular one by either setting the ``BIGML_DOMAIN`` environment
+variable to your VPC subdomain::
+
+    export BIGML_DOMAIN=my_VPC.bigml.io
+
+or even setting it when instantiating your connection::
+
+    api = BigML(domain="my_VPC.bigml.io")
+
+The corresponding SSL REST calls will be directed to your private domain
+henceforth.
+
+You can also set up your connection to use a particular predict-server
+only for predictions. In order to do so, you'll need to specify a ``Domain``
+object, where you can set up the general domain name as well as the
+particular prediction domain name.
+
+    from bigml.domain import Domain
+    from bigml.api import BigML
+
+    domain_info = Domain(prediction_domain="my_prediction_server.bigml.com",
+                         prediction_protocol="http")
+
+    api = BigML(domain=domain_info)
+
+Finally, you can combine all the options and change both the general domain
+server, and the prediction domain server.
+
+    from bigml.domain import Domain
+    from bigml.api import BigML
+    domain_info = Domain(domain="my_VPC.bigml.io",
+                         prediction_domain="my_prediction_server.bigml.com",
+                         prediction_protocol="https")
+
+    api = BigML(domain=domain_info)
+
 Quick Start
 -----------
 

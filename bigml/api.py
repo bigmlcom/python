@@ -548,7 +548,11 @@ class BigML(object):
         elif not isinstance(domain, Domain):
             raise ValueError("The domain must be set using a Domain object.")
         # Setting the general and prediction domain options
-        domain.set_domain(self)
+        self.general_domain = domain.general_domain
+        self.prediction_domain = domain.prediction_domain
+        self.prediction_protocol = domain.prediction_protocol
+        self.verify = domain.verify
+        self.verify_prediction = domain.verify_prediction
         if dev_mode:
             self.url = BIGML_DEV_URL % (DEFAULT_PROTOCOL, self.general_domain)
             self.prediction_url = BIGML_DEV_URL % (DEFAULT_PROTOCOL,

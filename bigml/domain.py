@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2013-2014 BigML
+# Copyright 2014 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -90,13 +90,3 @@ class Domain(object):
         self.verify_prediction = (
             (self.prediction_domain.lower().endswith(DEFAULT_DOMAIN) and
              self.prediction_protocol == DEFAULT_PROTOCOL))
-
-    def set_domain(self, api):
-        """Set the domain related attributes in the api connection instance
-
-        """
-        api.general_domain = self.general_domain
-        api.prediction_domain = self.prediction_domain
-        api.prediction_protocol = self.prediction_protocol
-        api.verify = self.verify
-        api.verify_prediction = self.verify_prediction

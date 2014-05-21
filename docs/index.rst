@@ -109,7 +109,7 @@ variable to your VPC subdomain::
 
     export BIGML_DOMAIN=my_VPC.bigml.io
 
-or even setting it when instantiating your connection::
+or setting it when instantiating your connection::
 
     api = BigML(domain="my_VPC.bigml.io")
 

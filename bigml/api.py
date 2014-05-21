@@ -1465,12 +1465,20 @@ class BigML(object):
     # https://bigml.com/developers/datasets
     #
     ##########################################################################
-    def create_dataset(self, source_or_datasets, args=None,
+    def create_dataset(self, origin_resource, args=None,
                        wait_time=3, retries=10):
         """Creates a remote dataset.
 
-        Uses remote `source` or `dataset` to create a new dataset using the
+        Uses a remote resource to create a new dataset using the
         arguments in `args`.
+        The allowed remote resources can be:
+            - source
+            - dataset
+            - list of datasets
+            - cluster
+        In the case of using cluster id as origin_resources, a centroid must
+        also be provided in the args argument. The first centroid is used
+        otherwise.
         If `wait_time` is higher than 0 then the dataset creation
         request is not sent until the `source` has been created successfuly.
 
@@ -1479,14 +1487,16 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        if isinstance(source_or_datasets, list):
+        if isinstance(origin_resource, list):
+            # mutidatasets
             create_args = self._set_create_from_datasets_args(
                 source_or_datasets, args=create_args, wait_time=wait_time,
                 retries=retries, key="origin_datasets")
         else:
-            resource_type = get_resource_type(source_or_datasets)
+            # dataset from source
+            resource_type = get_resource_type(origin_resource)
             if resource_type == SOURCE_PATH:
-                source_id = get_source_id(source_or_datasets)
+                source_id = get_source_id(origin_resource)
                 if source_id:
                     check_resource(source_id, self.get_source,
                                    wait_time=wait_time,
@@ -1494,13 +1504,34 @@ class BigML(object):
                                    raise_on_error=True)
                     create_args.update({
                         "source": source_id})
+            # dataset from dataset
             elif resource_type == DATASET_PATH:
                 create_args = self._set_create_from_datasets_args(
-                    source_or_datasets, args=create_args, wait_time=wait_time,
+                    origin_resource, args=create_args, wait_time=wait_time,
                     retries=retries, key="origin_dataset")
+            # dataset from cluster and centroid
+            elif resource_type == CLUSTER_PATH:
+                cluster_id = get_cluster_id(origin_resource)
+                cluster = check_resource(cluster_id, self.get_cluster,
+                                         wait_time=wait_time,
+                                         retries=retries,
+                                         raise_on_error=True)
+                if not 'centroid' in create_args:
+                    try:
+                        centroid = cluster['object'][
+                            'cluster_datasets_ids'].keys()[0]
+                        create_args.update({'centroid': centroid})
+                    except KeyError:
+                        raise KeyError("Failed to generate the dataset. A "
+                                       "centroid id is needed in the args "
+                                       "argument to generate a dataset from "
+                                       "a cluster.")
+                create_args.update({'cluster': cluster_id})
+                print create_args
             else:
-                raise Exception("A source, dataset or list of dataset ids"
-                                " are needed to create a"
+                raise Exception("A source, dataset, list of dataset ids"
+                                " or cluster id plus centroid id are needed"
+                                " to create a"
                                 " dataset. %s found." % resource_type)
 
         body = json.dumps(create_args)

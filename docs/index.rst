@@ -760,6 +760,24 @@ dataset extracting the 80% of instances from an existing one, you could use::
 
     dataset = api.create_dataset(origin_dataset, {"sample_rate": 0.8})
 
+It is also possible to generate a dataset from a list of datasets
+(multidataset)::
+
+    dataset1 = api.create_dataset(source1)
+    dataset2 = api.create_dataset(source2)
+    multidataset = api.create_dataset([dataset1, dataset2])
+
+Clusters can also be used to generate datasets containing the instances
+grouped around each centroid. You will need the cluster id and the centroid id
+to reference the dataset to be created. For instance,::
+
+    cluster = api.create_cluster(dataset)
+    cluster_dataset_1 = api.create_dataset(cluster,
+                                           args={'centroid': '000000'})
+
+would generate a new dataset containing the subset of instances in the cluster
+associated to the centroid id ``000000``.
+
 Creating models
 ~~~~~~~~~~~~~~~
 

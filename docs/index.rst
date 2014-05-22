@@ -116,7 +116,7 @@ or setting it when instantiating your connection::
 The corresponding SSL REST calls will be directed to your private domain
 henceforth.
 
-You can also set up your connection to use a particular predict-server
+You can also set up your connection to use a particular PredictServer
 only for predictions. In order to do so, you'll need to specify a ``Domain``
 object, where you can set up the general domain name as well as the
 particular prediction domain name.

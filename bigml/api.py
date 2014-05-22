@@ -1527,7 +1527,6 @@ class BigML(object):
                                        "argument to generate a dataset from "
                                        "a cluster.")
                 create_args.update({'cluster': cluster_id})
-                print create_args
             else:
                 raise Exception("A source, dataset, list of dataset ids"
                                 " or cluster id plus centroid id are needed"

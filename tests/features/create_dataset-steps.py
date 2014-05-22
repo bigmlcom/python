@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta
 from lettuce import *
 from bigml.api import HTTP_CREATED
+from bigml.api import HTTP_OK
 from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
@@ -17,6 +18,7 @@ def i_create_a_dataset(step):
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
+
 
 @step(r'I create a dataset with "(.*)"')
 def i_create_a_dataset_with(step, data="{}"):
@@ -79,3 +81,23 @@ def i_compare_datasets_instances(step):
 @step(r'the proportion of instances between datasets is (.*)$')
 def proportion_datasets_instances(step, rate):
     assert int(world.datasets_instances[1] * float(rate)) == world.datasets_instances[0]
+
+@step(r'I create a dataset from the cluster and the centroid$')
+def i_create_a_dataset_from_cluster_centroid(step):
+    resource = world.api.create_dataset(
+        world.cluster['resource'],
+        args={'centroid': world.centroid['centroid_id']})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.dataset = resource['object']
+    world.datasets.append(resource['resource'])
+
+@step(r'I check that the dataset is created for the cluster and the centroid$')
+def i_check_dataset_from_cluster_centroid(step):
+    cluster = world.api.get_cluster(world.cluster['resource'])
+    world.status = cluster['code']
+    assert world.status == HTTP_OK
+    assert "dataset/%s" % (
+        cluster['object']['cluster_datasets'][
+            world.centroid['centroid_id']]) == world.dataset['resource']

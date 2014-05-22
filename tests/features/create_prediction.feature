@@ -45,7 +45,7 @@ Feature: Create Predictions
         | data                | time_1  | time_2 | time_3 | time_4 | data_input    | objective | prediction  |
         | ../data/iris.csv | 10      | 10     | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
 
-    Scenario: Successfully creating a centroid:
+    Scenario: Successfully creating a centroid and the associated dataset:
         Given I create a data source uploading a "<data>" file
         And I wait until the source is ready less than <time_1> secs
         And I create a dataset
@@ -55,6 +55,9 @@ Feature: Create Predictions
         When I create a centroid for "<data_input>"
         And I check the centroid is ok
         Then the centroid is "<centroid>"
+        And I create a dataset from the cluster and the centroid
+        And I wait until the dataset is ready less than <time_2> secs
+        And I check that the dataset is created for the cluster and the centroid
 
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | centroid  |

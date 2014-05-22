@@ -75,6 +75,10 @@ def cleanup_resources(feature):
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
+    # first delete clusters to be able to delete datasets generated from them
+    for id in world.clusters:
+        world.api.delete_cluster(id)
+    world.clusters = []
 
     for id in world.sources:
         world.api.delete_source(id)
@@ -104,10 +108,6 @@ def cleanup_resources(feature):
         world.api.delete_batch_prediction(id)
     world.batch_predictions = []
 
-    for id in world.clusters:
-        world.api.delete_cluster(id)
-    world.clusters = [] 
-
     for id in world.centroids:
         world.api.delete_centroid(id)
     world.centroids = []
@@ -115,7 +115,6 @@ def cleanup_resources(feature):
     for id in world.batch_centroids:
         world.api.delete_batch_centroid(id)
     world.batch_centroids = []
-
 
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
@@ -141,13 +140,13 @@ def cleanup_resources(feature):
     assert ensembles['code'] == HTTP_OK
     world.final_ensembles_count = ensembles['meta']['total_count']
 
-    batch_predictions = world.api.list_batch_predictions()
-    assert batch_predictions['code'] == HTTP_OK
-    world.final_batch_predictions_count = batch_predictions['meta']['total_count']
-
     clusters = world.api.list_clusters()
     assert clusters['code'] == HTTP_OK
     world.final_clusters_count = clusters['meta']['total_count']
+
+    batch_predictions = world.api.list_batch_predictions()
+    assert batch_predictions['code'] == HTTP_OK
+    world.final_batch_predictions_count = batch_predictions['meta']['total_count']
 
     centroids = world.api.list_centroids()
     assert centroids['code'] == HTTP_OK

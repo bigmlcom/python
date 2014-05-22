@@ -55,7 +55,7 @@ import sys
 import locale
 
 from bigml.api import FINISHED
-from bigml.api import (error_message, BigML, get_model_id, get_status)
+from bigml.api import (BigML, get_model_id, get_status)
 from bigml.util import (slugify, markdown_cleanup,
                         prefix_as_comment, utf8,
                         find_locale, cast)
@@ -131,9 +131,9 @@ class Model(BaseModel):
                 api = BigML(storage=STORAGE)
             self.resource_id = get_model_id(model)
             if self.resource_id is None:
-                raise Exception(error_message(model,
-                                              resource_type='model',
-                                              method='get'))
+                raise Exception(api.error_message(model,
+                                                  resource_type='model',
+                                                  method='get'))
             query_string = ONLY_MODEL
             model = retrieve_model(api, self.resource_id,
                                    query_string=query_string)

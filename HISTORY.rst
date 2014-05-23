@@ -3,6 +3,12 @@
 History
 -------
 
+1.4.4 (2014-05-23)
+~~~~~~~~~~~~~~~~~~
+
+- Adding shared urls to datasets.
+- Fixing bug: error renaming variables.
+
 1.4.3 (2014-05-22)
 ~~~~~~~~~~~~~~~~~~
 

@@ -87,7 +87,8 @@ BATCH_CENTROID_PATH = 'batchcentroid'
 ID_PATTERN = '[a-f0-9]{24}'
 SHARED_PATTERN = '[a-zA-Z0-9]{27}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
-DATASET_RE = re.compile(r'^(public/)?%s/%s$' % (DATASET_PATH, ID_PATTERN))
+DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))
 MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
@@ -1490,7 +1491,7 @@ class BigML(object):
         if isinstance(origin_resource, list):
             # mutidatasets
             create_args = self._set_create_from_datasets_args(
-                source_or_datasets, args=create_args, wait_time=wait_time,
+                origin_resource, args=create_args, wait_time=wait_time,
                 retries=retries, key="origin_datasets")
         else:
             # dataset from source

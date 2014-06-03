@@ -2,6 +2,7 @@ import json
 import os
 from lettuce import step, world
 from bigml.model import Model
+from bigml.cluster import Cluster
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 
@@ -22,6 +23,31 @@ def i_create_a_local_prediction(step, data=None):
         data = "{}"
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data)
+
+
+@step(r'I create a local cluster')
+def i_create_a_local_cluster(step):
+    world.local_cluster = Cluster(world.cluster)
+
+
+@step(r'I create a local centroid for "(.*)"')
+def i_create_a_local_centroid(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_centroid = world.local_cluster.centroid(data)
+
+
+@step(r'the local centroid is "(.*)" with distance "(.*)"')
+def the_local_centroid_is(step, centroid, distance):
+    if str(world.local_centroid['centroid_name']) == centroid:
+        assert True
+    else:
+        assert False, "Found: %s, expected: %s" % (str(world.local_centroid['centroid_name']), centroid)
+    if str(world.local_centroid['distance']) == distance:
+        assert True
+    else:
+        assert False, "Found: %s, expected: %s" % (str(world.local_centroid['distance']), distance)
 
 
 @step(r'I create a proportional missing strategy local prediction for "(.*)"')

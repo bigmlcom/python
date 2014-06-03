@@ -90,7 +90,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     return list(terms_set)
 
 
-class Cluster(object):
+class Cluster(ModelFields):
     """ A lightweight wrapper around a cluster model.
 
     Uses a BigML remote cluster model to build a local version that can be used
@@ -176,12 +176,14 @@ class Cluster(object):
                     terms, self.term_forms[field_id],
                     self.tag_clouds.get(field_id, []))
                 del input_data[field_id]
-        nearest = {'centroid_id': None, 'distance': float('inf')}
+        nearest = {'centroid_id': None, 'centroid_name': None,
+                   'distance': float('inf')}
         for centroid in self.centroids:
             distance = centroid.distance(input_data, unique_terms, self.scales,
                                          stop_distance=nearest['distance'])
             if distance is not None:
                 nearest = {'centroid_id': centroid.centroid_id,
+                           'centroid_name': centroid.name,
                            'distance': distance}
         nearest['distance'] = math.sqrt(nearest['distance'])
         return nearest

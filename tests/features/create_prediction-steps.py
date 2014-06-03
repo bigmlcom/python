@@ -55,9 +55,23 @@ def the_prediction_is(step, objective, prediction):
     assert str(world.prediction['prediction'][objective]) == prediction
 
 
-@step(r'the centroid is "(.*)"')
+@step(r'the centroid is "([^\"]*)" with distance "(.*)"$')
+def the_centroid_is_with_distance(step, centroid, distance):
+    if str(world.centroid['centroid_name']) == centroid:
+        assert True
+    else:
+        assert False, "Found: %s, expected: %s" % (str(world.centroid['centroid_name']), centroid)
+    if str(world.centroid['distance']) == distance:
+        assert True
+    else:
+        assert False, "Found: %s, expected: %s" % (str(world.centroid['distance']), distance)
+
+@step(r'the centroid is "([^\"]*)"$')
 def the_centroid_is(step, centroid):
-    assert str(world.centroid['centroid_name']) == centroid
+    if str(world.centroid['centroid_name']) == centroid:
+        assert True
+    else:
+        assert False, "Found: %s, expected: %s" % (str(world.centroid['centroid_name']), centroid)
 
 @step(r'I check the centroid is ok')
 def the_centroid_is_ok(step):

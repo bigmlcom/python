@@ -67,3 +67,27 @@ Feature: Compare Predictions
         | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |
         | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.2629     |
         | ../data/grades.csv | 10      | 10     | 10     | {}                   | 000005    | 68.62224       | 27.5358    |
+
+    Scenario: Successfully comparing centroids with text options:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset with "<options>"
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a cluster
+        And I wait until the cluster is ready less than <time_3> secs
+        And I create a local cluster
+        When I create a centroid for "<data_input>"
+        Then the centroid is "<centroid>" with distance "<distance>"
+        And I create a local centroid for "<data_input>"
+        Then the local centroid is "<centroid>" with distance "<distance>"
+
+        Examples:
+        | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}} |{"Type": "ham", "Message": "Mobile call"}             | Cluster 4   | 0.355662432703   |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}} |{"Type": "ham", "Message": "A normal message"}        | Cluster 0   | 0.5     |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false}}}} |{"Type": "ham", "Message": "Mobiles calls"}          | Cluster 0     | 0.5    |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false}}}} |{"Type": "ham", "Message": "A normal message"}       | Cluster 0     | 0.5     |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true}}}} |{"Type": "ham", "Message": "Mobile call"}            | Cluster 1      | 0.397937927384   |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true}}}} |{"Type": "ham", "Message": "A normal message"}       | Cluster 2     | 0.388196601125    |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"token_mode": "full_terms_only"}}}} |{"Type": "ham", "Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}       | Cluster 0      | 0.5     |
+        | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"term_analysis": {"token_mode": "full_terms_only"}}}} |{"Type": "ham", "Message": "Ok"}       | Cluster 0    | 0.478833312167     |

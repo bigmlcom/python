@@ -35,6 +35,7 @@ from bigml.api import (get_status, BigML, get_model_id,
                        check_resource, get_resource_type)
 from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
+from bigml.modelfields import ModelFields
 
 # Query string to ask for fields: only the ones in the model, with summary
 # (needed for the list of terms in text fields) and
@@ -95,7 +96,7 @@ def check_model_structure(model):
              'model' in model))
 
 
-class BaseModel(object):
+class BaseModel(ModelFields):
     """ A lightweight wrapper of the basic model information
 
     Uses a BigML remote model to build a local version that contains the
@@ -148,10 +149,9 @@ class BaseModel(object):
                             fields[field]['summary'] = field_info['summary']
                         fields[field]['name'] = field_info['name']
                 objective_field = model['objective_fields']
-                self.objective_field = extract_objective(objective_field)
-                self.uniquify_varnames(fields)
-                self.inverted_fields = invert_dictionary(fields)
-                self.fields = fields
+                ModelFields.__init__(
+                    self, fields,
+                    objective_id=extract_objective(objective_field))
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)
@@ -167,36 +167,6 @@ class BaseModel(object):
             raise Exception("Cannot create the BaseModel instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
                             model)
-
-    def uniquify_varnames(self, fields):
-        """Tests if the fields names are unique. If they aren't, a
-           transformation is applied to ensure unicity.
-
-        """
-        unique_names = set([fields[key]['name'] for key in fields])
-        if len(unique_names) < len(fields):
-            self.transform_repeated_names(fields)
-
-    def transform_repeated_names(self, fields):
-        """If a field name is repeated, it will be transformed adding its
-           column number. If that combination is also a field name, the
-           field id will be added.
-
-        """
-        # The objective field treated first to avoid changing it.
-        unique_names = [fields[self.objective_field]['name']]
-
-        field_ids = [field_id for field_id in fields
-                     if field_id != self.objective_field]
-        for field_id in field_ids:
-            new_name = fields[field_id]['name']
-            if new_name in unique_names:
-                new_name = "{0}{1}".format(fields[field_id]['name'],
-                                           fields[field_id]['column_number'])
-                if new_name in unique_names:
-                    new_name = "{0}_{1}".format(new_name, field_id)
-                fields[field_id]['name'] = new_name
-            unique_names.append(new_name)
 
     def resource(self):
         """Returns the model resource ID

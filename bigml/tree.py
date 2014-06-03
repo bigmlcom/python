@@ -187,7 +187,7 @@ class Tree(object):
                  subtree=True):
 
         self.fields = fields
-        self.objective_field = objective_field
+        self.objective_id = objective_field
         self.output = tree['output']
 
         if tree['predicate'] is True:
@@ -244,13 +244,13 @@ class Tree(object):
 
         """
         out.write(utf8(u'<%-32s : %s>\n' % (
-            self.fields[self.objective_field]['name'],
-            self.fields[self.objective_field]['optype'])))
+            self.fields[self.objective_id]['name'],
+            self.fields[self.objective_id]['optype'])))
         out.flush()
 
         for field in [(val['name'], val['optype']) for key, val in
                       sort_fields(self.fields)
-                      if key != self.objective_field]:
+                      if key != self.objective_id]:
             out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
@@ -391,8 +391,8 @@ class Tree(object):
         else:
             rules += (u"%s %s = %s\n" %
                      (INDENT * depth,
-                      (self.fields[self.objective_field]['slug']
-                       if self.objective_field else "Prediction"),
+                      (self.fields[self.objective_id]['slug']
+                       if self.objective_id else "Prediction"),
                       self.output))
         return rules
 
@@ -439,7 +439,7 @@ class Tree(object):
                 body += (u"%sif (%s is None):\n" %
                         (INDENT * depth,
                          map_data(self.fields[field]['slug'], True)))
-                if self.fields[self.objective_field]['optype'] == 'numeric':
+                if self.fields[self.objective_id]['optype'] == 'numeric':
                     value = self.output
                 else:
                     value = repr(self.output)
@@ -483,7 +483,7 @@ class Tree(object):
                 body += next_level[0]
                 term_analysis_fields.extend(next_level[1])
         else:
-            if self.fields[self.objective_field]['optype'] == 'numeric':
+            if self.fields[self.objective_id]['optype'] == 'numeric':
                 value = self.output
             else:
                 value = repr(self.output)
@@ -507,12 +507,12 @@ class Tree(object):
                            reserved_keywords=reserved_keywords, prefix=prefix)
             self.fields[field[0]].update(slug=slug)
             if not input_map:
-                if field[0] != self.objective_field:
+                if field[0] != self.objective_id:
                     args.append("%s=None" % (slug))
         if input_map:
             args.append("data={}")
         predictor_definition = (u"def predict_%s" %
-                                self.fields[self.objective_field]['slug'])
+                                self.fields[self.objective_id]['slug'])
         depth = len(predictor_definition) + 1
         predictor = u"%s(%s):\n" % (predictor_definition,
                                    (",\n" + " " * depth).join(args))
@@ -670,7 +670,7 @@ class Tree(object):
                 conditions.append("ISNULL([%s])" % self.fields[field]['name'])
                 body += (u"%s %s THEN " %
                          (alternate, " AND ".join(conditions)))
-                if self.fields[self.objective_field]['optype'] == 'numeric':
+                if self.fields[self.objective_id]['optype'] == 'numeric':
                     value = self.output
                 else:
                     value = tableau_string(self.output)
@@ -695,7 +695,7 @@ class Tree(object):
                                           ids_path=ids_path, subtree=subtree)
                 del conditions[-1]
         else:
-            if self.fields[self.objective_field]['optype'] == 'numeric':
+            if self.fields[self.objective_id]['optype'] == 'numeric':
                 value = self.output
             else:
                 value = tableau_string(self.output)

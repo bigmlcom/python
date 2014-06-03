@@ -149,7 +149,7 @@ class Model(BaseModel):
                 self.tree = Tree(
                     model['model']['root'],
                     self.fields,
-                    objective_field=self.objective_field,
+                    objective_field=self.objective_id,
                     root_distribution=distribution,
                     parent_id=None,
                     ids_map=self.ids_map)
@@ -179,36 +179,6 @@ class Model(BaseModel):
 
         """
         return self.tree.get_leaves()
-
-    def filter_input_data(self, input_data, by_name=True):
-        """Filters the keys given in input_data checking against model fields
-
-        """
-
-        if isinstance(input_data, dict):
-            empty_fields = [(key, value) for (key, value) in input_data.items()
-                            if value is None]
-            for (key, value) in empty_fields:
-                del input_data[key]
-
-            if by_name:
-                # We no longer check that the input data keys match some of
-                # the dataset fields. We only remove the keys that are not
-                # used as predictors in the model
-                input_data = dict(
-                    [[self.inverted_fields[key], value]
-                        for key, value in input_data.items()
-                        if key in self.inverted_fields])
-            else:
-                input_data = dict(
-                    [[key, value]
-                        for key, value in input_data.items()
-                        if key in self.fields])
-            return input_data
-        else:
-            LOGGER.error("Failed to read input data in the expected"
-                         " {field:value} format.")
-            return {}
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
@@ -250,7 +220,7 @@ class Model(BaseModel):
 
         """
         docstring = (u"Predictor for %s from %s\n" % (
-            self.fields[self.tree.objective_field]['name'],
+            self.fields[self.tree.objective_id]['name'],
             self.resource_id))
         self.description = (unicode(markdown_cleanup(
             self.description).strip())
@@ -446,7 +416,7 @@ class Model(BaseModel):
             """
             if value is None:
                 return ""
-            objective_type = self.fields[tree.objective_field]['optype']
+            objective_type = self.fields[tree.objective_id]['optype']
             if objective_type == 'numeric':
                 return u" [Error: %s]" % value
             else:
@@ -506,12 +476,12 @@ class Model(BaseModel):
                         sorted(self.inverted_fields.items(),
                                key=lambda x: x[1])]
         parameters = [value for (key, value) in
-                      input_fields if key != self.tree.objective_field]
+                      input_fields if key != self.tree.objective_id]
         args = []
         for field in input_fields:
             slug = slugify(self.fields[field[0]]['name'])
             self.fields[field[0]].update(slug=slug)
-            if field[0] != self.tree.objective_field:
+            if field[0] != self.tree.objective_id:
                 args.append("\"" + self.fields[field[0]]['slug'] + "\"")
         output = \
 u"""#!/usr/bin/env python
@@ -551,7 +521,7 @@ class CSVInput(object):
         count = 0
         fields = self.fields
         for key in [key[0] for key in input_fields
-                    if key != self.tree.objective_field]:
+                    if key != self.tree.objective_id]:
             input_type = ('None' if not fields[key]['datatype'] in
                           PYTHON_CONV
                           else PYTHON_CONV[fields[key]['datatype']])
@@ -657,7 +627,7 @@ for values in csv:
     if not isinstance(values, bool):
         print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(values)))
 \n\n
-""" % fields[self.tree.objective_field]['slug']
+""" % fields[self.tree.objective_id]['slug']
         out.write(utf8(output))
         out.flush()
 
@@ -704,12 +674,12 @@ if count > 0:
         if not isinstance(value_as_string, unicode):
             value_as_string = unicode(value_as_string, "utf-8")
 
-        objective_field = self.tree.objective_field
-        if self.fields[objective_field]['optype'] == 'numeric':
+        objective_id = self.tree.objective_id
+        if self.fields[objective_id]['optype'] == 'numeric':
             if data_locale is None:
                 data_locale = self.locale
             find_locale(data_locale)
-            datatype = self.fields[objective_field]['datatype']
+            datatype = self.fields[objective_id]['datatype']
             cast_function = PYTHON_FUNC.get(datatype, None)
             if cast_function is not None:
                 return cast_function(value_as_string)

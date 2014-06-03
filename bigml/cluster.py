@@ -34,29 +34,25 @@ from bigml.cluster import Cluster
 api = BigML()
 
 cluster = Cluster('cluster/5026965515526876630001b2')
-cluster.predict({"petal length": 3, "petal width": 1, "sepal length": 1, "sepal width": 0.5})
+cluster.predict({"petal length": 3, "petal width": 1,
+                 "sepal length": 1, "sepal width": 0.5})
 
 """
 import logging
 LOGGER = logging.getLogger('BigML')
 
-import sys
-import locale
 import math
 import re
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_cluster_id, get_status)
-from bigml.util import (slugify, markdown_cleanup,
-                        prefix_as_comment, utf8,
-                        find_locale, cast, invert_dictionary)
-from bigml.util import DEFAULT_LOCALE
-from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
+from bigml.util import cast
 from bigml.centroid import Centroid
-from bigml.basemodel import retrieve_resource, print_importance
+from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
+from bigml.modelfields import ModelFields
 
 
 OPTIONAL_FIELDS = ['categorical', 'text']
@@ -92,34 +88,6 @@ def get_unique_terms(terms, term_forms, tag_cloud):
         elif term in extend_forms:
             terms_set.add(extend_forms[term])
     return list(terms_set)
-
-
-def uniquify_varnames(fields):
-    """Tests if the fields names are unique. If they aren't, a
-       transformation is applied to ensure unicity.
-
-    """
-    unique_names = set([fields[key]['name'] for key in fields])
-    if len(unique_names) < len(fields):
-        transform_repeated_names(fields)
-
-def transform_repeated_names(fields):
-    """If a field name is repeated, it will be transformed adding its
-       column number. If that combination is also a field name, the
-       field id will be added.
-
-    """
-    unique_names = []
-    field_ids = fields.keys()
-    for field_id in field_ids:
-        new_name = fields[field_id]['name']
-        if new_name in unique_names:
-            new_name = "{0}{1}".format(fields[field_id]['name'],
-                                       fields[field_id]['column_number'])
-            if new_name in unique_names:
-                new_name = "{0}_{1}".format(new_name, field_id)
-            fields[field_id]['name'] = new_name
-        unique_names.append(new_name)
 
 
 class Cluster(object):
@@ -170,10 +138,7 @@ class Cluster(object):
                         self.term_analysis[field_id] = {}
                         self.term_analysis[field_id].update(
                             field['term_analysis'])
-                uniquify_varnames(fields)
-                self.inverted_fields = invert_dictionary(fields)
-                self.fields = {}
-                self.fields.update(fields)
+                ModelFields.__init__(self, fields)
             else:
                 raise Exception("The cluster isn't finished yet")
         else:
@@ -220,41 +185,3 @@ class Cluster(object):
                            'distance': distance}
         nearest['distance'] = math.sqrt(nearest['distance'])
         return nearest
-
-    def filter_input_data(self, input_data, by_name=True):
-        """Filters the keys given in input_data checking against cluster fields
-
-        """
-
-        if isinstance(input_data, dict):
-            empty_fields = [(key, value) for (key, value) in input_data.items()
-                            if value is None]
-            for (key, value) in empty_fields:
-                del input_data[key]
-
-            for field_id, field in self.fields.items():
-                if (not field['optype'] in OPTIONAL_FIELDS and not field_id in
-                    input_data):
-                    raise Exception("Failed to predict a centroid. The input"
-                                    " lacks some numeric fields values. Only "
-                                    "categorical and text fields can be "
-                                    "missing.")             
-
-            if by_name:
-                # We no longer check that the input data keys match some of
-                # the dataset fields. We only remove the keys that are not
-                # used as predictors in the model
-                input_data = dict(
-                    [[self.inverted_fields[key], value]
-                        for key, value in input_data.items()
-                        if key in self.inverted_fields])
-            else:
-                input_data = dict(
-                    [[key, value]
-                        for key, value in input_data.items()
-                        if key in self.fields])
-            return input_data
-        else:
-            LOGGER.error("Failed to read input data in the expected"
-                         " {field:value} format.")
-            return {}

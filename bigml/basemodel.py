@@ -32,7 +32,7 @@ import json
 
 from bigml.api import FINISHED
 from bigml.api import (get_status, BigML, get_model_id,
-                       check_resource)
+                       check_resource, get_resource_type)
 from bigml.util import invert_dictionary, utf8
 from bigml.util import DEFAULT_LOCALE
 
@@ -42,22 +42,25 @@ from bigml.util import DEFAULT_LOCALE
 ONLY_MODEL = 'only_model=true;limit=-1;'
 
 
-def retrieve_model(api, model_id, query_string=''):
-    """ Retrieves model info either from a local repo or from the remote server
+def retrieve_resource(api, resource_id, query_string=''):
+    """ Retrieves resource info either from a local repo or
+        from the remote server
 
     """
     if api.storage is not None:
         try:
-            with open("%s%s%s" % (api.storage, os.sep,
-                                  model_id.replace("/", "_"))) as model_file:
-                model = json.loads(model_file.read())
-            return model
+            stored_resource = "%s%s%s" % (api.storage, os.sep,
+                                          resource_id.replace("/", "_"))
+            with open(stored_resource) as resource_file:
+                resource = json.loads(resource_file.read())
+            return resource
         except ValueError:
             raise ValueError("The file %s contains no JSON")
         except IOError:
             pass
-    model = check_resource(model_id, api.get_model, query_string)
-    return model
+    api_getter = api.getters[get_resource_type(resource_id)]
+    resource = check_resource(resource_id, api_getter, query_string)
+    return resource
 
 
 def extract_objective(objective_field):
@@ -115,8 +118,8 @@ class BaseModel(object):
                                                   resource_type='model',
                                                   method='get'))
             query_string = ONLY_MODEL
-            model = retrieve_model(api, self.resource_id,
-                                   query_string=query_string)
+            model = retrieve_resource(api, self.resource_id,
+                                      query_string=query_string)
             # Stored copies of the model structure might lack some necessary
             # keys
             if not check_model_structure(model):

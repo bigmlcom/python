@@ -36,7 +36,7 @@ from bigml.model import Model
 
 api = BigML()
 
-model = Model(api.get_model('model/5026965515526876630001b2'))
+model = Model('model/5026965515526876630001b2')
 model.predict({"petal length": 3, "petal width": 1})
 
 You can also see model in a IF-THEN rule format with:
@@ -62,7 +62,7 @@ from bigml.util import (slugify, markdown_cleanup,
 from bigml.util import DEFAULT_LOCALE
 from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.predicate import Predicate
-from bigml.basemodel import BaseModel, retrieve_model, print_importance
+from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
 
 
@@ -135,8 +135,8 @@ class Model(BaseModel):
                                                   resource_type='model',
                                                   method='get'))
             query_string = ONLY_MODEL
-            model = retrieve_model(api, self.resource_id,
-                                   query_string=query_string)
+            model = retrieve_resource(api, self.resource_id,
+                                      query_string=query_string)
         BaseModel.__init__(self, model, api=api)
         if ('object' in model and isinstance(model['object'], dict)):
             model = model['object']

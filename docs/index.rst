@@ -1198,25 +1198,44 @@ Local Models
 
 You can instantiate a local version of a remote model.
 
-::
+    from bigml.model import Model
+    local_model = Model('model/502fdbff15526876610002615')
 
-   from bigml.api import BigML
-   from bigml.model import Model
+This will retrieve the remote model information, using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a Model object
+that you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter::
 
-   api = BigML()
+    from bigml.model import Model
+    from bigml.api import BigML
 
-   # Use the model/id of one of your models
-   model = api.get_model('model/502fdbff1552687661000261')
+    local_model = Model('model/502fdbff15526876610002615',
+                        api=BigML(my_username,
+                                  my_api_key))
 
-   local_model = Model(model)
+or even use the remote model information retrieved previously to build the
+local model object::
 
-This will return a Model object that you can use to make local predictions,
-generate IF-THEN rules or a Python function that implements the model.
+    from bigml.model import Model
+    from bigml.api import BigML
+    api = BigML()
+    model = api.get_model('model/502fdbff15526876610002615',
+                          query_string='only_model=true;limit=-1')
+
+    local_model = Model(model)
+
+Any of these methods will return a Model object that you can use to make
+local predictions, generate IF-THEN rules, Tableau rules
+or a Python function that implements the model.
 
 Beware of using filtered fields models to instantiate a local model. The local
 model methods need the important fields in the ``model`` parameter to be
 available. If an important field is missing (because it has been excluded or
-filtered), an exception will arise.
+filtered), an exception will arise. To avoid that, the last example uses a
+particular ``query_string`` parameter that will ensure that the needed
+fields information structure is returned in the get call.
 
 Local Predictions
 -----------------
@@ -1237,6 +1256,66 @@ Local predictions have three clear advantages:
 
 - Extremely low latency to generate predictions for huge volumes of data.
 
+Local Clusters
+--------------
+
+You can also instantiate a local version of a remote cluster.
+
+::
+
+    from bigml.cluster import Cluster
+    local_cluster = Cluster('cluster/502fdbff15526876610002435')
+
+This will retrieve the remote cluster information, using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a Cluster object
+that you can use to make local centroid predictions. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter::
+
+    from bigml.cluster import Cluster
+    from bigml.api import BigML
+
+    local_cluster = Cluster('cluster/502fdbff15526876610002435',
+                            api=BigML(my_username,
+                                      my_api_key))
+
+or even use the remote cluster information retrieved previously to build the
+local cluster object::
+
+    from bigml.cluster import Cluster
+    from bigml.api import BigML
+    api = BigML()
+    cluster = api.get_cluster('cluster/502fdbff15526876610002435',
+                              query_string='limit=-1')
+
+    local_cluster = Cluster(cluster)
+
+Note that in this example we used a ``limit=-1`` query string for the cluster
+retrieval. This ensures that all fields are retrieved by the get method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+Local Centroids
+---------------
+
+Using the local cluster object, you can predict the centroid associated to
+an input data set::
+
+    local_cluster.centroid({'petal length': 1, 'petal width': 1,
+                            'sepal length': 1, 'sepal width': 1,
+                            'species': 'Iris-setosa'})
+    {'distance': 1.025809521648238, 'centroid_name': 'Cluster 0',
+     'centroid_id': '000000'}
+
+
+You must keep in mind, though, that to obtain a centroid prediction, input data
+must have values for all the numeric fields. No missing values for the numeric
+fields are allowed.
+
+As in the local model predictions, producing local centroids can be done
+independently of BigML servers, so no cost or connection latencies are
+involved.
 
 Multi Models
 ------------

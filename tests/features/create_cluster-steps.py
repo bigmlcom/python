@@ -30,7 +30,7 @@ from bigml.api import get_status
 @step(r'I create a cluster$')
 def i_create_a_cluster(step):
     dataset = world.dataset.get('resource')
-    resource = world.api.create_cluster(dataset)
+    resource = world.api.create_cluster(dataset, {'seed': 'BigML tests'})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']

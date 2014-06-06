@@ -3,6 +3,11 @@
 History
 -------
 
+1.5.0 (2014-06-05)
+~~~~~~~~~~~~~~~~~~
+
+- Adding local cluster to produce centroid predictions locally.
+
 1.4.4 (2014-05-23)
 ~~~~~~~~~~~~~~~~~~
 

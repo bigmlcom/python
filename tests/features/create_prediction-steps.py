@@ -52,7 +52,11 @@ def i_create_a_proportional_prediction(step, data=None):
 
 @step(r'the prediction for "(.*)" is "(.*)"')
 def the_prediction_is(step, objective, prediction):
-    assert str(world.prediction['prediction'][objective]) == prediction
+    if str(world.prediction['prediction'][objective]) == prediction:
+        assert True
+    else:
+        assert False, "Found: %s, expected %s" % (
+            str(world.prediction['prediction'][objective]), prediction)
 
 
 @step(r'the centroid is "([^\"]*)" with distance "(.*)"$')

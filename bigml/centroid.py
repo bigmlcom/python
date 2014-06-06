@@ -56,23 +56,22 @@ class Centroid(object):
         self.centroid_id = centroid_info.get('id', None)
         self.name = centroid_info.get('name', None)
 
-    def distance(self, input_data, term_sets, scales, stop_distance=None):
-        """Distance from the given input data to the centroid
+    def distance2(self, input_data, term_sets, scales, stop_distance2=None):
+        """Squared Distance from the given input data to the centroid
 
         """
-        distance = 0.0
+        distance2 = 0.0
         for field_id, value in self.center.items():
             if isinstance(value, list):
                 # text field
-                distance += cosine_distance2(term_sets[field_id], value,
-                                             scales[field_id])
+                distance2 += cosine_distance2(term_sets[field_id], value,
+                                              scales[field_id])
             elif isinstance(value, basestring):
                 if not field_id in input_data or input_data[field_id] != value:
-                    distance += 1 * scales[field_id] ** 2
+                    distance2 += 1 * scales[field_id] ** 2
             else:
-                int(value)
-                distance += ((input_data[field_id] - value) *
-                             scales[field_id]) ** 2
-            if stop_distance is not None and distance >= stop_distance:
+                distance2 += ((input_data[field_id] - value) *
+                              scales[field_id]) ** 2
+            if stop_distance2 is not None and distance2 >= stop_distance2:
                 return None
-        return distance
+        return distance2

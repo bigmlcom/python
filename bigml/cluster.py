@@ -192,7 +192,8 @@ class Cluster(ModelFields):
         nearest = {'centroid_id': None, 'centroid_name': None,
                    'distance': float('inf')}
         for centroid in self.centroids:
-            distance2 = centroid.distance2(input_data, unique_terms, self.scales,
+            distance2 = centroid.distance2(input_data, unique_terms,
+                                           self.scales,
                                            stop_distance2=nearest['distance'])
             if distance2 is not None:
                 nearest = {'centroid_id': centroid.centroid_id,

@@ -139,6 +139,12 @@ class Cluster(ModelFields):
                         self.term_analysis[field_id].update(
                             field['term_analysis'])
                 ModelFields.__init__(self, fields)
+                if not all([field_id in self.fields for
+                            field_id in self.scales]):
+                    raise Exception("Some fields are missing"
+                                    " to generate a local cluster."
+                                    " Please, provide a cluster with"
+                                    " the complete list of fields.")
             else:
                 raise Exception("The cluster isn't finished yet")
         else:
@@ -153,6 +159,13 @@ class Cluster(ModelFields):
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
 
+        # Checks that all numeric fields are present in input data
+        for field_id, field in self.fields.items():
+            if (not field['optype'] in ['categorical', 'text'] and
+                not field_id in input_data):
+                raise Exception("Failed to predict a centroid. Input"
+                                " data must contain values for all "
+                                "numeric fields to find a centroid.")
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 

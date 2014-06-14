@@ -3,7 +3,7 @@
 History
 -------
 
-1.5.0 (2014-06-13)
+1.5.1 (2014-06-13)
 ~~~~~~~~~~~~~~~~~~
 
 - Fixing bug: local clusters' centroid method crashes when text or categorical

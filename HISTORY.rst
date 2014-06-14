@@ -3,6 +3,12 @@
 History
 -------
 
+1.5.0 (2014-06-13)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: local clusters' centroid method crashes when text or categorical
+  fields are not present in input data.
+
 1.5.0 (2014-06-05)
 ~~~~~~~~~~~~~~~~~~
 

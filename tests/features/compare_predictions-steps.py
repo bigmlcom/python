@@ -35,6 +35,9 @@ def i_create_a_local_centroid(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
+    for key, value in data.items():
+        if value == "":
+            del data[key]
     world.local_centroid = world.local_cluster.centroid(data)
 
 

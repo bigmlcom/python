@@ -760,6 +760,13 @@ dataset extracting the 80% of instances from an existing one, you could use::
 
     dataset = api.create_dataset(origin_dataset, {"sample_rate": 0.8})
 
+To create a Training & Test dataset you can use set `seed`, `sample_rate`, and `out_of_bag` values when creating the datasets:
+
+    origin_dataset = api.create_dataset(source)
+    dataset_train = api.create_dataset(origin_dataset, {"name": "Dataset Name | Training", "sample_rate": 0.8, "seed": "my seed"})
+    dataset_test = api.create_dataset(origin_dataset, {"name": "Dataset Name | Test", "sample_rate": 0.8, "seed": "my seed", "out_of_bag": True})
+
+
 It is also possible to generate a dataset from a list of datasets
 (multidataset)::
 

@@ -760,12 +760,21 @@ dataset extracting the 80% of instances from an existing one, you could use::
 
     dataset = api.create_dataset(origin_dataset, {"sample_rate": 0.8})
 
-To create a Training & Test dataset you can use set `seed`, `sample_rate`, and `out_of_bag` values when creating the datasets:
+Similarly, if you want to split your source into training and test datasets,
+you can set the `sample_rate` as before to create the training dataset and
+use the `out_of_bag` option to assign the complementary subset of data to the
+test dataset. If you set the `seed` argument to a value of your choice, you
+will ensure a determinist sampling, so that each time you execute this call
+you will get the same datasets as a result::
 
     origin_dataset = api.create_dataset(source)
-    dataset_train = api.create_dataset(origin_dataset, {"name": "Dataset Name | Training", "sample_rate": 0.8, "seed": "my seed"})
-    dataset_test = api.create_dataset(origin_dataset, {"name": "Dataset Name | Test", "sample_rate": 0.8, "seed": "my seed", "out_of_bag": True})
-
+    train_dataset = api.create_dataset(
+        origin_dataset, {"name": "Dataset Name | Training",
+                         "sample_rate": 0.8, "seed": "my seed"})
+    test_dataset = api.create_dataset(
+        origin_dataset, {"name": "Dataset Name | Test",
+                         "sample_rate": 0.8, "seed": "my seed",
+                         "out_of_bag": True})
 
 It is also possible to generate a dataset from a list of datasets
 (multidataset)::

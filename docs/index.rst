@@ -773,7 +773,7 @@ you can set the `sample_rate` as before to create the training dataset and
 use the `out_of_bag` option to assign the complementary subset of data to the
 test dataset. If you set the `seed` argument to a value of your choice, you
 will ensure a determinist sampling, so that each time you execute this call
-you will get the same datasets as a result::
+you will get the same datasets as a result and they will be complementary::
 
     origin_dataset = api.create_dataset(source)
     train_dataset = api.create_dataset(

@@ -20,6 +20,18 @@ def i_create_a_dataset(step):
     world.datasets.append(resource['resource'])
 
 
+@step(r'I download the dataset file to "(.*)"$')
+def i_export_a_dataset(step, local_file):
+    world.api.download_dataset(world.dataset['resource'], filename=local_file)
+
+
+@step(r'file "(.*)" is like file "(.*)"$')
+def i_files_equal(step, local_file, data):
+    contents_local_file = open(local_file).read()
+    contents_data = open(data).read()
+    assert contents_local_file == contents_data
+
+
 @step(r'I create a dataset with "(.*)"')
 def i_create_a_dataset_with(step, data="{}"):
     resource = world.api.create_dataset(world.source['resource'], json.loads(data))

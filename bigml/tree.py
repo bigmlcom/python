@@ -125,7 +125,8 @@ def unbiased_sample_variance(distribution, distribution_mean=None):
     """
     addition = 0.0
     count = 0.0
-    if mean is None or not isinstance(distribution_mean, numbers.Number):
+    if (distribution_mean is None or not
+            isinstance(distribution_mean, numbers.Number)):
         distribution_mean = mean(distribution)
     for point, instances in distribution:
         addition += ((point - distribution_mean) ** 2) * instances

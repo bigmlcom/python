@@ -49,4 +49,4 @@ Feature: Create Batch Predictions
 
         Examples:
         | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-        | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |
+        | ../data/diabetes.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |

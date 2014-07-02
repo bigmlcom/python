@@ -752,6 +752,14 @@ bytes of a source, you can submit the following request::
 Upon success, the dataset creation job will be queued for execution, and
 you can follow its evolution using ``api.status(dataset)``.
 
+As for the rest of resources, the create method will return an incomplete
+object, that can be updated by issuing the corresponding
+``api.get_dataset`` call until it reaches a ``FINISHED`` status.
+Then you can export the dataset data to a CSV file using::
+
+    api.download_dataset('dataset/526fc344035d071ea3031d75',
+        filename='my_dir/my_dataset.csv')
+
 You can also extract samples from an existing dataset and generate a new one
 with them using the ``api.create_dataset`` method. The first argument should
 be the origin dataset and the rest of arguments that set the range or the
@@ -859,10 +867,15 @@ identifier and the input data to obtain the centroid.
 You can also give the centroid predicition a name::
 
     centroid = api.create_centroid(cluster,
-                                   {"sepal length": 5,
-                                    "sepal width": 2.5,
-                                    "petal length": 2,
-                                    "petal width": 4},
+                                   {"pregnancies": 0,
+                                    "plasma glucose": 118,
+                                    "blood pressure": 84,
+                                    "triceps skin thickness": 47,
+                                    "insulin": 230,
+                                    "bmi": 45.8,
+                                    "diabetes pedigree": 0.551,
+                                    "age": 31,
+                                    "diabetes": "true"},
                                     {"name": "my centroid"})
 
 Creating evaluations
@@ -1318,11 +1331,13 @@ Local Centroids
 Using the local cluster object, you can predict the centroid associated to
 an input data set::
 
-    local_cluster.centroid({'petal length': 1, 'petal width': 1,
-                            'sepal length': 1, 'sepal width': 1,
-                            'species': 'Iris-setosa'})
-    {'distance': 1.025809521648238, 'centroid_name': 'Cluster 0',
-     'centroid_id': '000000'}
+    local_cluster.centroid({"pregnancies": 0, "plasma glucose": 118,
+                            "blood pressure": 84, "triceps skin thickness": 47,
+                            "insulin": 230, "bmi": 45.8,
+                            "diabetes pedigree": 0.551, "age": 31,
+                            "diabetes": "true"})
+    {'distance': 0.454110207355, 'centroid_name': 'Cluster 4',
+     'centroid_id': '000004'}
 
 
 You must keep in mind, though, that to obtain a centroid prediction, input data

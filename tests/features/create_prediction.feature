@@ -61,4 +61,4 @@ Feature: Create Predictions
 
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | centroid  |
-        | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal length": 0.1, "sepal length": 0.5, "sepal width": 0.2, "species": "Iris-setosa"} | Cluster 2 |
+        | ../data/diabetes.csv | 10      | 10     | 10     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 4 |

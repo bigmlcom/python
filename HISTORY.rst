@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.0 (2014-07-03)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: check valid parameter in distribution merge function.
+- Adding downlod_dataset method to api to export datasets to CSV.
+
 1.5.1 (2014-06-13)
 ~~~~~~~~~~~~~~~~~~
 

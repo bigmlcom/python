@@ -867,7 +867,8 @@ class BigML(object):
             'code': code,
             'error': error}
 
-    def _download(self, url, filename=None):
+    def _download(self, url, filename=None, wait_time=3, retries=10,
+                  counter=0):
         """Retrieves a remote file.
 
         Uses HTTP GET to download a file object with a BigML `url`.
@@ -880,6 +881,29 @@ class BigML(object):
         code = response.status_code
 
         if code == HTTP_OK:
+            try:
+                download_status = json.loads(response.content)
+                if download_status and isinstance(download_status, dict):
+                    if download_status['status']['code'] != 5:
+                        if counter < retries:
+                            time.sleep(get_exponential_wait(wait_time,
+                                                            counter))
+                            counter += 1
+                            return self._download(url, filename=filename,
+                                                  wait_time=wait_time,
+                                                  retries=retries,
+                                                  counter=counter)
+                        else:
+                            LOGGER.error("The maximum number of retries for "
+                                         " the download has been exceeded. "
+                                         "You can retry your command again in"
+                                         " a while.")
+                    elif counter < retries:
+                        return self._download(url, filename=filename,
+                                              wait_time=wait_time,
+                                              retries=retries, counter=retries)
+            except:
+                pass
             if filename is None:
                 file_object = response.raw
             else:
@@ -1615,6 +1639,19 @@ class BigML(object):
             for field_id in errors:
                 errors_dict[field_id] = errors[field_id]['total']
         return errors_dict
+
+
+    def download_dataset(self, dataset, filename=None):
+        """Donwloads dataset contents to a csv file or file object
+
+        """
+        check_resource_type(dataset, DATASET_PATH,
+                            message="A dataset id is needed.")
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            return self._download("%s%s%s" % (self.url, dataset_id,
+                                              DOWNLOAD_DIR), filename=filename)
+        
 
     ##########################################################################
     #

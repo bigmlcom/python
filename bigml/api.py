@@ -867,7 +867,7 @@ class BigML(object):
             'code': code,
             'error': error}
 
-    def _download(self, url, filename=None, wait_time=3, retries=10,
+    def _download(self, url, filename=None, wait_time=10, retries=10,
                   counter=0):
         """Retrieves a remote file.
 
@@ -897,7 +897,7 @@ class BigML(object):
                             return self._download(url, filename=filename,
                                                   wait_time=wait_time,
                                                   retries=retries,
-                                                  counter=retries)
+                                                  counter=retries + 1)
                 elif counter == retries:
                     LOGGER.error("The maximum number of retries "
                                  " for the download has been "
@@ -1652,7 +1652,7 @@ class BigML(object):
         return errors_dict
 
 
-    def download_dataset(self, dataset, filename=None):
+    def download_dataset(self, dataset, filename=None, retries=10):
         """Donwloads dataset contents to a csv file or file object
 
         """
@@ -1661,7 +1661,9 @@ class BigML(object):
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             return self._download("%s%s%s" % (self.url, dataset_id,
-                                              DOWNLOAD_DIR), filename=filename)
+                                              DOWNLOAD_DIR),
+                                  filename=filename,
+                                  retries=retries)
         
 
     ##########################################################################

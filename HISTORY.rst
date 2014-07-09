@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.0 (2014-07-09)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: download_dataset method did not return content when no filename
+  was provided.
+
 1.6.0 (2014-07-03)
 ~~~~~~~~~~~~~~~~~~
 

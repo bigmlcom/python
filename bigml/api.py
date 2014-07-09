@@ -882,10 +882,10 @@ class BigML(object):
 
         if code == HTTP_OK:
             try:
-                download_status = json.loads(response.content)
-                if download_status and isinstance(download_status, dict):
-                    if download_status['status']['code'] != 5:
-                        if counter < retries:
+                if counter < retries:
+                    download_status = json.loads(response.content)
+                    if download_status and isinstance(download_status, dict):
+                        if download_status['status']['code'] != 5:
                             time.sleep(get_exponential_wait(wait_time,
                                                             counter))
                             counter += 1
@@ -894,16 +894,27 @@ class BigML(object):
                                                   retries=retries,
                                                   counter=counter)
                         else:
-                            LOGGER.error("The maximum number of retries for "
-                                         " the download has been exceeded. "
-                                         "You can retry your command again in"
-                                         " a while.")
-                    elif counter < retries:
-                        return self._download(url, filename=filename,
-                                              wait_time=wait_time,
-                                              retries=retries, counter=retries)
+                            return self._download(url, filename=filename,
+                                                  wait_time=wait_time,
+                                                  retries=retries,
+                                                  counter=retries)
+                elif counter == retries:
+                    LOGGER.error("The maximum number of retries "
+                                 " for the download has been "
+                                 " exceeded. You can retry your "
+                                 " command again in"
+                                 " a while.")
+                    return None
             except:
-                pass
+                # When download starts, response.content is no longer a JSON
+                # object and we must retry the download without testing for
+                # JSON content. This is achieved by using counter = retries + 1
+                # to single out this case.
+                if counter < retries:
+                    return self._download(url, filename=filename,
+                                          wait_time=wait_time,
+                                          retries=retries,
+                                          counter=retries + 1)
             if filename is None:
                 file_object = response.raw
             else:

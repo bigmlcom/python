@@ -142,6 +142,8 @@ def regression_error(distribution_variance, population, r_z=1.96):
     """
     if population > 0:
         chi_distribution = stats.chi2(population)
+        print "*** chi dist:", chi_distribution
+        print "erf:", math.erf(r_z / math.sqrt(2))
         ppf = chi_distribution.ppf(1 - math.erf(r_z / math.sqrt(2)))
         if ppf != 0:
             error = distribution_variance * (population - 1) / ppf

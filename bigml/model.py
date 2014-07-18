@@ -250,7 +250,8 @@ class Model(BaseModel):
             if add_confidence:
                 output.update({'confidence': confidence})
             if add_rules:
-                output.update({'rules': path})
+                rules = [] if missing_strategy == PROPORTIONAL else path
+                output.update({'rules': rules})
             if add_distribution:
                 output.update({'distribution': distribution})
             if add_instances:

@@ -1266,6 +1266,13 @@ filtered), an exception will arise. To avoid that, the last example uses a
 particular ``query_string`` parameter that will ensure that the needed
 fields information structure is returned in the get call.
 
+You can also build a local model from a model previously retrieved and stored
+in a JSON file::
+
+    form bigml.model import Model
+    local_model = Model('./my_model.json')
+
+
 Local Predictions
 -----------------
 
@@ -1284,6 +1291,29 @@ Local predictions have three clear advantages:
 - No cost (i.e., you do not spend BigML credits).
 
 - Extremely low latency to generate predictions for huge volumes of data.
+
+The default output for local predictions is the prediction itself, but you can
+also add the associated confidence, the distribution, and the number
+of instances in the final node by using some additional arguments. To obtain
+a dictionary with the prediction, confidence and rules::
+
+    local_model.predict({"petal length": 3, "petal width": 1},
+                        add_confidence=True,
+                        add_rules=True)
+that will return::
+
+    {'rules': [u'petal length > 2.35',
+               u'petal width <= 1.75',
+               u'petal length <= 4.95',
+               u'petal width <= 1.65'],
+     'confidence': 0.91033,
+     'prediction': 'Iris-versicolor'}
+
+Note that the ``add_rules`` argument will only add the list of rules leading
+to the prediction if the ``last prediction`` missing strategy is used.
+Porportional missing strategy builds predictions by computing a weighted
+average of many different predictions, so the path to the prediction
+is not unique usually.
 
 Local Clusters
 --------------

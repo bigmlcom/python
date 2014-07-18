@@ -53,6 +53,7 @@ LOGGER = logging.getLogger('BigML')
 
 import sys
 import locale
+import json
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_model_id, get_status)
@@ -124,16 +125,42 @@ class Model(BaseModel):
     """
 
     def __init__(self, model, api=None):
+        """The Model constructor can be given as first argument:
+            - a model structure
+            - a model id
+            - a path to a JSON file containing a model structure
+
+        """
+        # the string can be a path to a JSON file
+        if isinstance(model, basestring):
+            try:
+                with open(model) as model_file:
+                    model = json.load(model_file)
+                    self.resource_id = get_model_id(model)
+                    if self.resource_id is None:
+                        raise ValueError("The JSON file does not seem"
+                                         " to contain a valid BigML model"
+                                         " representation.")
+            except IOError:
+                # if it is not a path, it can be a model id
+                self.resource_id = get_model_id(model)
+                if self.resource_id is None:
+                    if model.find('model/') > -1:
+                        raise Exception(
+                            api.error_message(model,
+                                              resource_type='model',
+                                              method='get'))
+                    else:
+                        raise IOError("Failed to open the expected JSON file"
+                                      " at %s" % model)
+            except ValueError:
+                raise ValueError("Failed to interpret %s."
+                                 " JSON file expected.")
 
         if not (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
-            self.resource_id = get_model_id(model)
-            if self.resource_id is None:
-                raise Exception(api.error_message(model,
-                                                  resource_type='model',
-                                                  method='get'))
             query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
                                       query_string=query_string)
@@ -182,7 +209,11 @@ class Model(BaseModel):
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
-                missing_strategy=LAST_PREDICTION):
+                missing_strategy=LAST_PREDICTION,
+                add_confidence=False,
+                add_rules=False,
+                add_distribution=False,
+                add_instances=False):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -211,9 +242,21 @@ class Model(BaseModel):
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
+        output  = prediction
         if with_confidence:
-            return [prediction, confidence, distribution, instances]
-        return prediction
+            output = [prediction, confidence, distribution, instances]
+        if (add_confidence or add_rules or add_distribution or add_instances):
+            output = {'prediction': prediction}
+            if add_confidence:
+                output.update({'confidence': confidence})
+            if add_rules:
+                output.update({'rules': path})
+            if add_distribution:
+                output.update({'distribution': distribution})
+            if add_instances:
+                output.update({'instances': instances})
+
+        return output
 
     def docstring(self):
         """Returns the docstring describing the model.

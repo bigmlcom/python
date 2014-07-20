@@ -5,7 +5,27 @@ import shutil
 from lettuce import before, after, world
 
 from bigml.api import BigML
-from bigml.api import HTTP_OK
+from bigml.api import HTTP_OK, HTTP_NO_CONTENT
+
+MAX_RETRIES = 10
+
+
+def delete(object_list, delete_method):
+    """Deletes the objects in object_list using the api delete method
+
+    """
+
+    for obj_id in object_list:
+        counter = 0
+        result = delete_method(obj_id)
+        while result['code'] != HTTP_NO_CONTENT and counter < MAX_RETRIES:
+            print "Delete failed for %s. Retrying" % obj_id
+            time.sleep(3)
+            counter += 1
+            result = delete_method(obj_id)
+        if counter == MAX_RETRIES:
+            print ("Retries to delete the created resources are exhausted."
+                   " Failed to delete.")
 
 @before.each_feature
 def setup_resources(feature):
@@ -75,45 +95,34 @@ def cleanup_resources(feature):
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
-    # first delete clusters to be able to delete datasets generated from them
-    for id in world.clusters:
-        world.api.delete_cluster(id)
+    delete(world.clusters, world.api.delete_cluster)
     world.clusters = []
 
-    for id in world.sources:
-        world.api.delete_source(id)
+    delete(world.sources, world.api.delete_source)
     world.sources = []
 
-    for id in world.datasets:
-        world.api.delete_dataset(id)
+    delete(world.datasets, world.api.delete_dataset)
     world.datasets = []
 
-    for id in world.models:
-        world.api.delete_model(id)
+    delete(world.models, world.api.delete_model)
     world.models = []
 
-    for id in world.predictions:
-        world.api.delete_prediction(id)
+    delete(world.predictions, world.api.delete_prediction)
     world.predictions = []
 
-    for id in world.evaluations:
-        world.api.delete_evaluation(id)
+    delete(world.evaluations, world.api.delete_evaluation)
     world.evaluations = []
 
-    for id in world.ensembles:
-        world.api.delete_ensemble(id)
+    delete(world.ensembles, world.api.delete_ensemble)
     world.ensembles = []
 
-    for id in world.batch_predictions:
-        world.api.delete_batch_prediction(id)
+    delete(world.batch_predictions, world.api.delete_batch_prediction)
     world.batch_predictions = []
 
-    for id in world.centroids:
-        world.api.delete_centroid(id)
+    delete(world.centroids, world.api.delete_centroid)
     world.centroids = []
 
-    for id in world.batch_centroids:
-        world.api.delete_batch_centroid(id)
+    delete(world.batch_centroids, world.api.delete_batch_centroid)
     world.batch_centroids = []
 
     sources = world.api.list_sources()

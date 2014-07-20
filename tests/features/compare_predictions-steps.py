@@ -12,12 +12,26 @@ def i_retrieve_a_list_of_remote_models(step, tag):
                             world.api.list_models(query_string="tags__in=%s" % tag)['objects']]
 
 
-@step(r'I create a local model')
+
+@step(r'I create a local model from a "(.*)" file$')
+def i_create_a_local_model_from_file(step, model_file):
+    world.local_model = Model(model_file)
+
+
+@step(r'I create a local model$')
 def i_create_a_local_model(step):
     world.local_model = Model(world.model)
 
 
-@step(r'I create a local prediction for "(.*)"')
+@step(r'I create a local prediction for "(.*)" with confidence$')
+def i_create_a_local_prediction_with_confidence(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict(data, add_confidence=True)
+
+
+@step(r'I create a local prediction for "(.*)"$')
 def i_create_a_local_prediction(step, data=None):
     if data is None:
         data = "{}"
@@ -74,6 +88,8 @@ def i_create_a_prediction_from_a_multi_model(step, data=None):
 def the_local_prediction_is(step, prediction):
     if isinstance(world.local_prediction, list):
         local_prediction = world.local_prediction[0]
+    elif isinstance(world.local_prediction, dict):
+        local_prediction = world.local_prediction['prediction']
     else:
         local_prediction = world.local_prediction
     try:
@@ -92,7 +108,10 @@ def the_local_prediction_is(step, prediction):
 
 @step(r'the confidence for the local prediction is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
-    local_confidence = world.local_prediction[1]
+    if isinstance(world.local_prediction, list):
+        local_confidence = world.local_prediction[1]
+    else:
+        local_confidence = world.local_prediction['confidence']
     local_confidence = round(float(local_confidence), 4)
     confidence = round(float(confidence), 4)
     assert local_confidence == confidence

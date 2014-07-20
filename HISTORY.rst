@@ -3,7 +3,7 @@
 History
 -------
 
-1.7.0 (2014-07-19)
+1.6.2 (2014-07-19)
 ~~~~~~~~~~~~~~~~~~
 
 - Building local model from a JSON model file.

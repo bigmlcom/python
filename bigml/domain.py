@@ -19,7 +19,6 @@
 
 """
 import os
-import requests
 
 # Default domain and protocol
 DEFAULT_DOMAIN = 'bigml.io'
@@ -67,7 +66,7 @@ class Domain(object):
                  prediction_protocol=None):
         # Base domain for remote resources
         self.general_domain = BIGML_DOMAIN if domain is None else domain
-        
+
         # Usually, predictions are served from the same domain
         if prediction_domain is None:
             if domain is not None:

@@ -33,9 +33,9 @@ import json
 from bigml.api import FINISHED
 from bigml.api import (get_status, BigML, get_model_id,
                        check_resource, get_resource_type)
-from bigml.util import invert_dictionary, utf8
+from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
-from bigml.modelfields import ModelFields
+from bigml.modelfields import ModelFields, check_model_structure
 
 # Query string to ask for fields: only the ones in the model, with summary
 # (needed for the list of terms in text fields) and
@@ -80,20 +80,11 @@ def print_importance(instance, out=sys.stdout):
     count = 1
     field_importance, fields = instance.field_importance_data()
     for [field, importance] in field_importance:
-        out.write(utf8(u"    %s. %s: %.2f%%\n" % (count,
-                       fields[field]['name'],
-                       round(importance, 4) * 100)))
+        out.write(utf8(u"    %s. %s: %.2f%%\n" % (
+            count,
+            fields[field]['name'],
+            round(importance, 4) * 100)))
         count += 1
-
-
-def check_model_structure(model):
-    """Checks the model structure to see if it contains all the needed keys
-
-    """
-    return (isinstance(model, dict) and 'resource' in model and
-            model['resource'] is not None and
-            ('object' in model and 'model' in model['object'] or
-             'model' in model))
 
 
 class BaseModel(ModelFields):
@@ -127,12 +118,12 @@ class BaseModel(ModelFields):
                 model = api.get_model(self.resource_id,
                                       query_string=query_string)
 
-        if ('object' in model and isinstance(model['object'], dict)):
+        if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
 
-        if ('model' in model and isinstance(model['model'], dict)):
+        if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
-            if ('code' in status and status['code'] == FINISHED):
+            if 'code' in status and status['code'] == FINISHED:
                 if 'model_fields' in model['model']:
                     fields = model['model']['model_fields']
                     # pagination or exclusion might cause a field not to

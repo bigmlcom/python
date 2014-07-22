@@ -1,6 +1,7 @@
 # terrain.py
 import os
 import shutil
+import time
 
 from lettuce import before, after, world
 
@@ -44,7 +45,7 @@ def setup_resources(feature):
     assert datasets['code'] == HTTP_OK
     world.init_datasets_count = datasets['meta']['total_count']
 
-    models = world.api.list_models()
+    models = world.api.list_models("ensemble=false")
     assert models['code'] == HTTP_OK
     world.init_models_count = models['meta']['total_count']
 
@@ -95,6 +96,7 @@ def cleanup_resources(feature):
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
+
     delete(world.clusters, world.api.delete_cluster)
     world.clusters = []
 
@@ -133,7 +135,7 @@ def cleanup_resources(feature):
     assert datasets['code'] == HTTP_OK
     world.final_datasets_count = datasets['meta']['total_count']
 
-    models = world.api.list_models()
+    models = world.api.list_models("ensemble=false")
     assert models['code'] == HTTP_OK
     world.final_models_count = models['meta']['total_count']
 
@@ -166,16 +168,16 @@ def cleanup_resources(feature):
     world.final_batch_centroids_count = batch_centroids['meta']['total_count']
 
 
-    assert world.final_sources_count == world.init_sources_count
-    assert world.final_datasets_count == world.init_datasets_count
-    assert world.final_models_count == world.init_models_count
-    assert world.final_predictions_count == world.init_predictions_count
-    assert world.final_evaluations_count == world.init_evaluations_count
-    assert world.final_ensembles_count == world.init_ensembles_count
-    assert world.final_batch_predictions_count == world.init_batch_predictions_count
-    assert world.final_clusters_count == world.init_clusters_count
-    assert world.final_centroids_count == world.init_centroids_count
-    assert world.final_batch_centroids_count == world.init_batch_centroids_count
+    assert world.final_sources_count == world.init_sources_count, "init: %s, final: %s" % (world.init_sources_count, world.final_sources_count)
+    assert world.final_datasets_count == world.init_datasets_count, "init: %s, final: %s" % (world.init_datasets_count, world.final_datasets_count)
+    assert world.final_models_count == world.init_models_count, "init: %s, final: %s" % (world.init_models_count, world.final_models_count)
+    assert world.final_predictions_count == world.init_predictions_count, "init: %s, final: %s" % (world.init_predictions_count, world.final_predictions_count)
+    assert world.final_evaluations_count == world.init_evaluations_count, "init: %s, final: %s" % (world.init_evaluations_count, world.final_evaluations_count)
+    assert world.final_ensembles_count == world.init_ensembles_count, "init: %s, final: %s" % (world.init_ensembles_count, world.final_ensembles_count)
+    assert world.final_batch_predictions_count == world.init_batch_predictions_count, "init: %s, final: %s" % (world.init_batch_predictions_count, world.final_batch_predictions_count)
+    assert world.final_clusters_count == world.init_clusters_count, "init: %s, final: %s" % (world.init_clusters_count, world.final_clusters_count)
+    assert world.final_centroids_count == world.init_centroids_count, "init: %s, final: %s" % (world.init_centroids_count, world.final_centroids_count)
+    assert world.final_batch_centroids_count == world.init_batch_centroids_count, "init: %s, final: %s" % (world.init_batch_centroids_count, world.final_batch_centroids_count)
 
 @after.each_scenario
 def cleanup_resources(scenario):

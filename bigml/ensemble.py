@@ -204,7 +204,7 @@ class Ensemble(object):
                     categories.append(point)
                     ensemble_distribution.append([point, instances])
 
-        return sorted(ensemble_distribution,  key=lambda x: x[0])
+        return sorted(ensemble_distribution, key=lambda x: x[0])
 
     def summarize(self, out=sys.stdout):
         """Prints ensemble summary. Only field importance at present.

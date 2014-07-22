@@ -1269,7 +1269,7 @@ fields information structure is returned in the get call.
 You can also build a local model from a model previously retrieved and stored
 in a JSON file::
 
-    form bigml.model import Model
+    from bigml.model import Model
     local_model = Model('./my_model.json')
 
 
@@ -1311,7 +1311,7 @@ that will return::
 
 Note that the ``add_rules`` argument will only add the list of rules leading
 to the prediction if the ``last prediction`` missing strategy is used.
-Porportional missing strategy builds predictions by computing a weighted
+Proportional missing strategy builds predictions by computing a weighted
 average of many different predictions, so the path to the prediction
 is not unique usually.
 

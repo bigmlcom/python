@@ -195,7 +195,9 @@ class MultiModel(object):
 
         votes_files = []
         for model in self.models:
-            votes_files.append(get_predictions_file_name(model.resource_id,
-                               predictions_file_path))
-        return read_votes(votes_files, self.models[0].to_prediction,
-                          data_locale=data_locale)
+            votes_files.append(
+                get_predictions_file_name(
+                    model.resource_id,
+                    predictions_file_path))
+        return read_votes(
+            votes_files, self.models[0].to_prediction, data_locale=data_locale)

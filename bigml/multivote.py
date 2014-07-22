@@ -214,7 +214,7 @@ class MultiVote(object):
 
         """
         return all([isinstance(prediction['prediction'], numbers.Number)
-                   for prediction in self.predictions])
+                    for prediction in self.predictions])
 
     def next_order(self):
         """Return the next order to be assigned to a prediction
@@ -249,7 +249,7 @@ class MultiVote(object):
         if not keys is None:
             for key in keys:
                 if not all([key in prediction for prediction
-                           in self.predictions]):
+                            in self.predictions]):
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
                                     " model anew.")
@@ -261,7 +261,7 @@ class MultiVote(object):
                                                          self.__class__.avg)
             return function(self, with_confidence=with_confidence)
         else:
-            if (method == THRESHOLD):
+            if method == THRESHOLD:
                 if options is None:
                     options = {}
                 predictions = self.single_out_category(options)
@@ -349,8 +349,7 @@ class MultiVote(object):
                     weight = prediction[weight_label]
             category = prediction['prediction']
             if category in mode:
-                mode[category] = {"count": mode[category]["count"] +
-                                  weight,
+                mode[category] = {"count": mode[category]["count"] + weight,
                                   "order": mode[category]["order"]}
             else:
                 mode[category] = {"count": weight,
@@ -382,7 +381,7 @@ class MultiVote(object):
         if (weight_label is not None and
                 (not isinstance(weight_label, basestring) or
                  any([not 'confidence' or not weight_label in prediction
-                 for prediction in predictions]))):
+                      for prediction in predictions]))):
             raise ValueError("Not enough data to use the selected "
                              "prediction method. Lacks %s information." %
                              weight_label)
@@ -437,20 +436,20 @@ class MultiVote(object):
                             " E.g. {\"threshold\": 6, \"category\":"
                             " \"Iris-virginica\"}.")
         length = len(self.predictions)
-        if (options["threshold"] > length):
+        if options["threshold"] > length:
             raise Exception("You cannot set a threshold value larger than "
                             "%s. The ensemble has not enough models to use"
                             " this threshold value." % length)
-        if (options["threshold"] < 1):
+        if options["threshold"] < 1:
             raise Exception("The threshold must be a positive value")
         category_predictions = []
         rest_of_predictions = []
         for prediction in self.predictions:
-            if (prediction['prediction'] == options["category"]):
+            if prediction['prediction'] == options["category"]:
                 category_predictions.append(prediction)
             else:
                 rest_of_predictions.append(prediction)
-        if (len(category_predictions) >= options["threshold"]):
+        if len(category_predictions) >= options["threshold"]:
             return MultiVote(category_predictions)
         return MultiVote(rest_of_predictions)
 

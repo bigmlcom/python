@@ -25,7 +25,7 @@ is used for local predictions.
 import logging
 LOGGER = logging.getLogger('BigML')
 
-from bigml.util import invert_dictionary, utf8
+from bigml.util import invert_dictionary
 
 
 def extract_objective(objective_field):
@@ -115,13 +115,13 @@ class ModelFields(object):
                 # used as predictors in the model
                 input_data = dict(
                     [[self.inverted_fields[key], value]
-                        for key, value in input_data.items()
-                        if key in self.inverted_fields])
+                     for key, value in input_data.items()
+                     if key in self.inverted_fields])
             else:
                 input_data = dict(
                     [[key, value]
-                        for key, value in input_data.items()
-                        if key in self.fields])
+                     for key, value in input_data.items()
+                     if key in self.fields])
             return input_data
         else:
             LOGGER.error("Failed to read input data in the expected"

@@ -152,7 +152,7 @@ class Fields(object):
         # If present, remove the objective field from the included fields
         objective_id = self.field_id(self.objective_field)
         if objective_id in self.filtered_fields:
-            del(self.filtered_fields[self.filtered_fields.index(objective_id)])
+            del self.filtered_fields[self.filtered_fields.index(objective_id)]
 
         self.objective_field_present = objective_field_present
         if headers is None:
@@ -286,7 +286,7 @@ class Fields(object):
 
         """
         return {key: field for key, field in self.fields.iteritems()
-                if ((not 'preferred' in field) or field['preferred'])}
+                if (not 'preferred' in field) or field['preferred']}
 
     def validate_input_data(self, input_data, out=sys.stdout):
         """Validates whether types for input data match types in the
@@ -300,9 +300,8 @@ class Fields(object):
                               (name, type(input_data[name]),
                                self.fields[self.fields_by_name[name]]
                                ['optype']))
-                    if (type(input_data[name]) in
-                        python_map_type(self.fields[self.fields_by_name[name]]
-                                        ['optype'])):
+                    if (type(input_data[name]) in python_map_type(self.fields[
+                            self.fields_by_name[name]]['optype'])):
                         out.write('OK\n')
                     else:
                         out.write('WRONG\n')

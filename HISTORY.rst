@@ -7,7 +7,7 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Building local model from a JSON model file.
-- Predictions output can contain confidence, distribution, instances and or
+- Predictions output can contain confidence, distribution, instances and/or
   rules.
 
 1.6.1 (2014-07-09)

@@ -56,7 +56,7 @@ try:
 except ImportError:
     import json
 
-from bigml.util import (invert_dictionary, localize, is_url, check_dir,
+from bigml.util import (localize, is_url, check_dir,
                         clear_console_line, reset_console_line, console_log,
                         maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE
@@ -625,14 +625,14 @@ class BigML(object):
                     error = json.loads(response.content, 'utf-8')
                     LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
-                    LOGGER.error("Unexpected error (%s)" % code)
+                    LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
 
             except ValueError:
                 LOGGER.error("Malformed response")
                 code = HTTP_INTERNAL_SERVER_ERROR
             except requests.ConnectionError, exc:
-                LOGGER.error("Connection error: %s" % str(exc))
+                LOGGER.error("Connection error: %s", str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
             except requests.Timeout:
                 LOGGER.error("Request timed out")
@@ -687,13 +687,13 @@ class BigML(object):
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(self.error_message(error, method='get'))
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
             LOGGER.error("Malformed response")
         except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s" % str(exc))
+            LOGGER.error("Connection error: %s", str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -749,13 +749,13 @@ class BigML(object):
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
             LOGGER.error("Malformed response")
         except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s" % str(exc))
+            LOGGER.error("Connection error: %s", str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -809,13 +809,13 @@ class BigML(object):
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(self.error_message(error, method='update'))
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
             LOGGER.error("Malformed response")
         except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s" % str(exc))
+            LOGGER.error("Connection error: %s", str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -851,13 +851,13 @@ class BigML(object):
                 error = json.loads(response.content, 'utf-8')
                 LOGGER.error(self.error_message(error, method='delete'))
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
             LOGGER.error("Malformed response")
         except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s" % str(exc))
+            LOGGER.error("Connection error: %s", str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -920,7 +920,7 @@ class BigML(object):
             else:
                 file_size = stream_copy(response, filename)
                 if file_size == 0:
-                    LOGGER.error("Error copying file to %s" % filename)
+                    LOGGER.error("Error copying file to %s", filename)
                 else:
                     file_object = filename
         elif code in [HTTP_BAD_REQUEST,
@@ -928,9 +928,9 @@ class BigML(object):
                       HTTP_NOT_FOUND,
                       HTTP_TOO_MANY_REQUESTS]:
             error = response.content
-            LOGGER.error("Error downloading: %s" % error)
+            LOGGER.error("Error downloading: %s", error)
         else:
-            LOGGER.error("Unexpected error (%s)" % code)
+            LOGGER.error("Unexpected error (%s)", code)
             code = HTTP_INTERNAL_SERVER_ERROR
 
         return file_object
@@ -949,8 +949,8 @@ class BigML(object):
 
         for dataset in origin_datasets:
             check_resource_type(dataset, DATASET_PATH,
-                                message="A dataset id is needed to create a"
-                                        " model.")
+                                message=("A dataset id is needed to create a"
+                                         " model."))
             dataset = check_resource(dataset, self.get_dataset,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True)
@@ -984,7 +984,7 @@ class BigML(object):
                                            self.getters[resource_type]))
             return True
         else:
-            LOGGER.error("The resource couldn't be created: %s" %
+            LOGGER.error("The resource couldn't be created: %s",
                          resource['error'])
 
     def error_message(self, resource, resource_type='resource', method=None):
@@ -1068,8 +1068,8 @@ class BigML(object):
         if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
         elif (isinstance(resource, basestring) and (
-              SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-              MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
+                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
+                MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
             resource_id = resource
             resource = self._get("%s%s" % (self.url, resource_id))
         else:
@@ -1104,10 +1104,9 @@ class BigML(object):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
-                objective_field_name = (resource['object']['fields']
-                                                [resource['object']
-                                                 ['objective_fields'][0]]
-                                                ['name'])
+                objective_field_name = (
+                    resource['object']['fields'][
+                        resource['object']['objective_fields'][0]]['name'])
                 input_data = {}
                 for key, value in resource['object']['input_data'].items():
                     try:
@@ -1117,8 +1116,8 @@ class BigML(object):
                     input_data[name] = value
 
                 prediction = (
-                    resource['object']['prediction']
-                            [resource['object']['objective_fields'][0]])
+                    resource['object']['prediction'][
+                        resource['object']['objective_fields'][0]])
                 out.write("%s for %s is %s\n" % (objective_field_name,
                                                  input_data,
                                                  prediction))
@@ -1266,13 +1265,13 @@ class BigML(object):
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json.loads(response.content, 'utf-8')
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
             LOGGER.error("Malformed response")
         except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s" % str(exc))
+            LOGGER.error("Connection error: %s", str(exc))
         except requests.Timeout:
             LOGGER.error("Request timed out")
         except requests.RequestException:
@@ -1409,11 +1408,11 @@ class BigML(object):
                 error = json.loads(content, 'utf-8')
                 LOGGER.error(self.error_message(error, method='create'))
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except urllib2.URLError, exception:
-            LOGGER.error("Error establishing connection: %s" % str(exception))
+            LOGGER.error("Error establishing connection: %s", str(exception))
             error = exception.args
         return {
             'code': code,
@@ -1664,7 +1663,7 @@ class BigML(object):
                                               DOWNLOAD_DIR),
                                   filename=filename,
                                   retries=retries)
-        
+
 
     ##########################################################################
     #

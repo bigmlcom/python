@@ -110,10 +110,12 @@ def print_distribution(distribution, out=sys.stdout):
     total = reduce(lambda x, y: x + y,
                    [group[1] for group in distribution])
     for group in distribution:
-        out.write(utf8(u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
-                       round(group[1] * 1.0 / total, 4) * 100,
-                       group[1],
-                       "" if group[1] == 1 else "s")))
+        out.write(utf8(
+            u"    %s: %.2f%% (%d instance%s)\n" % (
+                group[0],
+                round(group[1] * 1.0 / total, 4) * 100,
+                group[1],
+                "" if group[1] == 1 else "s")))
 
 
 class Model(BaseModel):
@@ -165,12 +167,12 @@ class Model(BaseModel):
             model = retrieve_resource(api, self.resource_id,
                                       query_string=query_string)
         BaseModel.__init__(self, model, api=api)
-        if ('object' in model and isinstance(model['object'], dict)):
+        if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
 
-        if ('model' in model and isinstance(model['model'], dict)):
+        if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
-            if ('code' in status and status['code'] == FINISHED):
+            if 'code' in status and status['code'] == FINISHED:
                 distribution = model['model']['distribution']['training']
                 self.ids_map = {}
                 self.tree = Tree(
@@ -242,10 +244,10 @@ class Model(BaseModel):
         if print_path:
             out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
             out.flush()
-        output  = prediction
+        output = prediction
         if with_confidence:
             output = [prediction, confidence, distribution, instances]
-        if (add_confidence or add_rules or add_distribution or add_instances):
+        if add_confidence or add_rules or add_distribution or add_instances:
             output = {'prediction': prediction}
             if add_confidence:
                 output.update({'confidence': confidence})
@@ -266,11 +268,12 @@ class Model(BaseModel):
         docstring = (u"Predictor for %s from %s\n" % (
             self.fields[self.tree.objective_id]['name'],
             self.resource_id))
-        self.description = (unicode(markdown_cleanup(
-            self.description).strip())
-            or u'Predictive model by BigML - Machine Learning Made Easy')
-        docstring += u"\n" + INDENT * 2 + (u"%s" %
-                     prefix_as_comment(INDENT * 2, self.description))
+        self.description = (
+            unicode(
+                markdown_cleanup(self.description).strip()) or
+            u'Predictive model by BigML - Machine Learning Made Easy')
+        docstring += u"\n" + INDENT * 2 + (
+            u"%s" % prefix_as_comment(INDENT * 2, self.description))
         return docstring
 
     def get_ids_path(self, filter_id):
@@ -410,7 +413,7 @@ class Model(BaseModel):
         tree = self.tree
         distribution = tree.distribution
 
-        return sorted(distribution,  key=lambda x: x[0])
+        return sorted(distribution, key=lambda x: x[0])
 
     def get_prediction_distribution(self, groups=None):
         """Returns model predicted distribution
@@ -423,7 +426,7 @@ class Model(BaseModel):
         # remove groups that are not predicted
         predictions = filter(lambda x: x[1] > 0, predictions)
 
-        return sorted(predictions,  key=lambda x: x[0])
+        return sorted(predictions, key=lambda x: x[0])
 
     def summarize(self, out=sys.stdout):
         """Prints summary grouping distribution as class header and details
@@ -556,8 +559,9 @@ class CSVInput(object):
             self.reader = csv.reader(input, delimiter=',', quotechar='\"')
 """ % ",".join(parameters)
 
-        output += (u"\n%sself.INPUT_FIELDS = [%s]\n" %
-                  ((INDENT * 3), (",\n " + INDENT * 8).join(args)))
+        output += (
+            u"\n%sself.INPUT_FIELDS = [%s]\n" %
+            ((INDENT * 3), (",\n " + INDENT * 8).join(args)))
 
         input_types = []
         prefixes = []

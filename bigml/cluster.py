@@ -112,12 +112,12 @@ class Cluster(ModelFields):
             query_string = ONLY_MODEL
             cluster = retrieve_resource(api, self.resource_id,
                                         query_string=query_string)
-        if ('object' in cluster and isinstance(cluster['object'], dict)):
+        if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
 
-        if ('clusters' in cluster and isinstance(cluster['clusters'], dict)):
+        if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
-            if ('code' in status and status['code'] == FINISHED):
+            if 'code' in status and status['code'] == FINISHED:
                 clusters = cluster['clusters']['clusters']
                 self.centroids = [Centroid(centroid) for centroid in clusters]
                 self.scales = {}
@@ -162,7 +162,7 @@ class Cluster(ModelFields):
         # Checks that all numeric fields are present in input data
         for field_id, field in self.fields.items():
             if (not field['optype'] in ['categorical', 'text'] and
-                not field_id in input_data):
+                    not field_id in input_data):
                 raise Exception("Failed to predict a centroid. Input"
                                 " data must contain values for all "
                                 "numeric fields to find a centroid.")

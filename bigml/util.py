@@ -31,39 +31,40 @@ import random
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
-LOCALE_SYNONYMS = {'en': [['en_US', 'en-US', 'en_US.UTF8', 'en_US.UTF-8',
-                          'English_United States.1252', 'en-us', 'en_us',
-                          'en_US.utf8'],
-                          ['en_GB', 'en-GB', 'en_GB.UTF8', 'en_GB.UTF-8',
-                          'English_United Kingdom.1252', 'en-gb', 'en_gb',
-                          'en_GB.utf8']],
-                   'es': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
-                          'Spanish_Spain.1252', 'es-es', 'es_es',
-                          'es_ES.utf8'],
-                   'sp': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
-                          'Spanish_Spain.1252', 'es-es', 'es_es',
-                          'es_ES.utf8'],
-                   'fr': [['fr_FR', 'fr-FR', 'fr_BE', 'fr_CH', 'fr-BE',
-                           'fr-CH', 'fr_FR.UTF8', 'fr_CH.UTF8',
-                           'fr_BE.UTF8', 'fr_FR.UTF-8', 'fr_CH.UTF-8',
-                           'fr_BE.UTF-8', 'French_France.1252', 'fr-fr',
-                           'fr_fr', 'fr-be', 'fr_be', 'fr-ch', 'fr_ch',
-                           'fr_FR.utf8', 'fr_BE.utf8', 'fr_CH.utf8'],
-                          ['fr_CA', 'fr-CA', 'fr_CA.UTF8', 'fr_CA.UTF-8',
-                           'French_Canada.1252', 'fr-ca', 'fr_ca',
-                           'fr_CA.utf8']],
-                   'de': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
-                          'German_Germany.1252', 'de-de', 'de_de',
-                          'de_DE.utf8'],
-                   'ge': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
-                          'German_Germany.1252', 'de-de', 'de_de',
-                          'de_DE.utf8'],
-                   'it': ['it_IT', 'it-IT', 'it_IT.UTF8', 'it_IT.UTF-8',
-                          'Italian_Italy.1252', 'it-it', 'it_it',
-                          'it_IT.utf8'],
-                   'ca': ['ca_ES', 'ca-ES', 'ca_ES.UTF8', 'ca_ES.UTF-8',
-                          'Catalan_Spain.1252', 'ca-es', 'ca_es',
-                          'ca_ES.utf8']}
+LOCALE_SYNONYMS = {
+    'en': [['en_US', 'en-US', 'en_US.UTF8', 'en_US.UTF-8',
+            'English_United States.1252', 'en-us', 'en_us',
+            'en_US.utf8'],
+           ['en_GB', 'en-GB', 'en_GB.UTF8', 'en_GB.UTF-8',
+            'English_United Kingdom.1252', 'en-gb', 'en_gb',
+            'en_GB.utf8']],
+    'es': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
+           'Spanish_Spain.1252', 'es-es', 'es_es',
+           'es_ES.utf8'],
+    'sp': ['es_ES', 'es-ES', 'es_ES.UTF8', 'es_ES.UTF-8',
+           'Spanish_Spain.1252', 'es-es', 'es_es',
+           'es_ES.utf8'],
+    'fr': [['fr_FR', 'fr-FR', 'fr_BE', 'fr_CH', 'fr-BE',
+            'fr-CH', 'fr_FR.UTF8', 'fr_CH.UTF8',
+            'fr_BE.UTF8', 'fr_FR.UTF-8', 'fr_CH.UTF-8',
+            'fr_BE.UTF-8', 'French_France.1252', 'fr-fr',
+            'fr_fr', 'fr-be', 'fr_be', 'fr-ch', 'fr_ch',
+            'fr_FR.utf8', 'fr_BE.utf8', 'fr_CH.utf8'],
+           ['fr_CA', 'fr-CA', 'fr_CA.UTF8', 'fr_CA.UTF-8',
+            'French_Canada.1252', 'fr-ca', 'fr_ca',
+            'fr_CA.utf8']],
+    'de': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
+           'German_Germany.1252', 'de-de', 'de_de',
+           'de_DE.utf8'],
+    'ge': ['de_DE', 'de-DE', 'de_DE.UTF8', 'de_DE.UTF-8',
+           'German_Germany.1252', 'de-de', 'de_de',
+           'de_DE.utf8'],
+    'it': ['it_IT', 'it-IT', 'it_IT.UTF8', 'it_IT.UTF-8',
+           'Italian_Italy.1252', 'it-it', 'it_it',
+           'it_IT.utf8'],
+    'ca': ['ca_ES', 'ca-ES', 'ca_ES.UTF8', 'ca_ES.UTF-8',
+           'Catalan_Spain.1252', 'ca-es', 'ca_es',
+           'ca_ES.utf8']}
 
 BOLD_REGEX = re.compile(r'''(\*\*)(?=\S)([^\r]*?\S[*_]*)\1''')
 ITALIC_REGEX = re.compile(r'''(_)(?=\S)([^\r]*?\S)\1''')
@@ -105,7 +106,7 @@ def invert_dictionary(dictionary, field='name'):
 
     """
     return dict([[value[field], key]
-                for key, value in dictionary.items()])
+                 for key, value in dictionary.items()])
 
 
 def slugify(name, reserved_keywords=None, prefix=''):
@@ -166,7 +167,7 @@ def markdown_cleanup(text):
         links_found = re.findall(LINKS_REGEX, text)
         text = LINKS_REGEX.sub(r'''\2[*]''', text)
         text = '%s\n%s' % (text, '\n'.join(['[*]%s: %s' % (link[1], link[3])
-                           for link in links_found]))
+                                            for link in links_found]))
         return text
 
     new_line_regex = re.compile('(\n{2,})', re.DOTALL)
@@ -188,10 +189,10 @@ def sort_fields(fields):
 
     """
     fathers = [(key, val) for key, val in
-               sorted(fields.items(), key=lambda k:k[1]['column_number'])
+               sorted(fields.items(), key=lambda k: k[1]['column_number'])
                if not 'auto_generated' in val]
     children = [(key, val) for key, val in
-                sorted(fields.items(), key=lambda k:k[1]['column_number'])
+                sorted(fields.items(), key=lambda k: k[1]['column_number'])
                 if 'auto_generated' in val]
     children.reverse()
     fathers_keys = [father[0] for father in fathers]
@@ -234,7 +235,7 @@ def locale_synonyms(main_locale, locale_alias):
         return False
     alternatives = LOCALE_SYNONYMS[language_code]
     if isinstance(alternatives[0], basestring):
-        return (main_locale in alternatives and locale_alias in alternatives)
+        return main_locale in alternatives and locale_alias in alternatives
     else:
         result = False
         for subgroup in alternatives:
@@ -380,10 +381,11 @@ def cast(input_data, fields):
 
     """
     for (key, value) in input_data.items():
-        if ((fields[key]['optype'] == 'numeric' and
-             isinstance(value, basestring)) or
-            (fields[key]['optype'] != 'numeric' and
-             not isinstance(value, basestring))):
+        if (
+                (fields[key]['optype'] == 'numeric' and
+                 isinstance(value, basestring)) or
+                (fields[key]['optype'] != 'numeric' and
+                 not isinstance(value, basestring))):
             try:
                 if fields[key]['optype'] == 'numeric':
                     value = strip_affixes(value, fields[key])
@@ -427,14 +429,14 @@ def maybe_save(resource_id, path,
         try:
             resource_json = json.dumps(resource)
         except ValueError:
-            print("The resource has an invalid JSON format")
+            print "The resource has an invalid JSON format"
         try:
             resource_file_name = "%s%s%s" % (path, os.sep,
                                              resource_id.replace('/', '_'))
             with open(resource_file_name, "w", 0) as resource_file:
                 resource_file.write(resource_json)
         except IOError:
-            print("Failed writing resource to %s" % resource_file_name)
+            print "Failed writing resource to %s" % resource_file_name
     return resource
 
 

@@ -27,7 +27,6 @@ import numbers
 import math
 
 try:
-    import numpy
     from scipy import stats
 except ImportError:
     pass
@@ -223,7 +222,7 @@ class Tree(object):
         self.confidence = tree.get('confidence', None)
         if 'distribution' in tree:
             self.distribution = tree['distribution']
-        elif ('objective_summary' in tree):
+        elif 'objective_summary' in tree:
             summary = tree['objective_summary']
             if 'bins' in summary:
                 self.distribution = summary['bins']
@@ -273,7 +272,7 @@ class Tree(object):
             return True
         else:
             return not any([is_classification(child)
-                           for child in self.children])
+                            for child in self.children])
 
     def get_leaves(self):
         """Returns a list that includes all the leaves of the tree.
@@ -384,17 +383,17 @@ class Tree(object):
         if children:
             for child in children:
                 rules += (u"%s IF %s %s\n" %
-                         (INDENT * depth,
-                          child.predicate.to_rule(self.fields, 'slug'),
-                          "AND" if child.children else "THEN"))
+                          (INDENT * depth,
+                           child.predicate.to_rule(self.fields, 'slug'),
+                           "AND" if child.children else "THEN"))
                 rules += child.generate_rules(depth + 1, ids_path=ids_path,
                                               subtree=subtree)
         else:
             rules += (u"%s %s = %s\n" %
-                     (INDENT * depth,
-                      (self.fields[self.objective_id]['slug']
-                       if self.objective_id else "Prediction"),
-                      self.output))
+                      (INDENT * depth,
+                       (self.fields[self.objective_id]['slug']
+                        if self.objective_id else "Prediction"),
+                       self.output))
         return rules
 
     def rules(self, out, ids_path=None, subtree=True):
@@ -438,20 +437,20 @@ class Tree(object):
             field = split(children)
             if not self.fields[field]['slug'] in cmv:
                 body += (u"%sif (%s is None):\n" %
-                        (INDENT * depth,
-                         map_data(self.fields[field]['slug'], True)))
+                         (INDENT * depth,
+                          map_data(self.fields[field]['slug'], True)))
                 if self.fields[self.objective_id]['optype'] == 'numeric':
                     value = self.output
                 else:
                     value = repr(self.output)
                 body += (u"%sreturn %s\n" %
-                        (INDENT * (depth + 1),
-                         value))
+                         (INDENT * (depth + 1),
+                          value))
                 cmv.append(self.fields[field]['slug'])
 
             for child in children:
                 optype = self.fields[child.predicate.field]['optype']
-                if (optype == 'numeric' or optype == 'text'):
+                if optype == 'numeric' or optype == 'text':
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
@@ -460,7 +459,7 @@ class Tree(object):
                         u"%sif (term_matches(%s, \"%s\", %s\"%s\") %s %s):\n" %
                         (INDENT * depth,
                          map_data(self.fields[child.predicate.field]['slug'],
-                         False),
+                                  False),
                          self.fields[child.predicate.field]['slug'],
                          ('u' if isinstance(child.predicate.term, unicode)
                           else ''),
@@ -474,7 +473,7 @@ class Tree(object):
                         u"%sif (%s %s %s):\n" %
                         (INDENT * depth,
                          map_data(self.fields[child.predicate.field]['slug'],
-                         False),
+                                  False),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
                 next_level = child.python_body(depth + 1, cmv=cmv[:],
@@ -515,8 +514,9 @@ class Tree(object):
         predictor_definition = (u"def predict_%s" %
                                 self.fields[self.objective_id]['slug'])
         depth = len(predictor_definition) + 1
-        predictor = u"%s(%s):\n" % (predictor_definition,
-                                   (",\n" + " " * depth).join(args))
+        predictor = u"%s(%s):\n" % (
+            predictor_definition,
+            (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
         body, term_analysis_predicates = self.python_body(input_map=input_map,
@@ -684,7 +684,7 @@ class Tree(object):
                 optype = self.fields[child.predicate.field]['optype']
                 if optype == 'text':
                     return u""
-                if (optype == 'numeric'):
+                if optype == 'numeric':
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)

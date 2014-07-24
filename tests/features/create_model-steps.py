@@ -77,6 +77,8 @@ def make_the_model_public(step):
     resource = world.api.update_model(world.model['resource'],
                                       {'private': False, 'white_box': True})
     world.status = resource['code']
+    if world.status != HTTP_ACCEPTED:
+        print "unexpected status: %s" % world.status
     assert world.status == HTTP_ACCEPTED
     world.location = resource['location']
     world.model = resource['object']

@@ -1299,17 +1299,17 @@ a dictionary with the prediction, confidence and rules::
 
     local_model.predict({"petal length": 3, "petal width": 1},
                         add_confidence=True,
-                        add_rules=True)
+                        add_path=True)
 that will return::
 
-    {'rules': [u'petal length > 2.35',
+    {'path': [u'petal length > 2.35',
                u'petal width <= 1.75',
                u'petal length <= 4.95',
                u'petal width <= 1.65'],
      'confidence': 0.91033,
      'prediction': 'Iris-versicolor'}
 
-Note that the ``add_rules`` argument will only add the list of rules leading
+Note that the ``add_path`` argument will only add the list of rules leading
 to the prediction if the ``last prediction`` missing strategy is used.
 Proportional missing strategy builds predictions by computing a weighted
 average of many different predictions, so the path to the prediction

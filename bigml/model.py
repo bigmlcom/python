@@ -213,9 +213,9 @@ class Model(BaseModel):
                 print_path=False, out=sys.stdout, with_confidence=False,
                 missing_strategy=LAST_PREDICTION,
                 add_confidence=False,
-                add_rules=False,
+                add_path=False,
                 add_distribution=False,
-                add_instances=False):
+                add_count=False):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -247,17 +247,17 @@ class Model(BaseModel):
         output = prediction
         if with_confidence:
             output = [prediction, confidence, distribution, instances]
-        if add_confidence or add_rules or add_distribution or add_instances:
+        if add_confidence or add_path or add_distribution or add_count:
             output = {'prediction': prediction}
             if add_confidence:
                 output.update({'confidence': confidence})
-            if add_rules:
+            if add_path:
                 rules = [] if missing_strategy == PROPORTIONAL else path
-                output.update({'rules': rules})
+                output.update({'path': rules})
             if add_distribution:
                 output.update({'distribution': distribution})
-            if add_instances:
-                output.update({'instances': instances})
+            if add_count:
+                output.update({'count': instances})
 
         return output
 

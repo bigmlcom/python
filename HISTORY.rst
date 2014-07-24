@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.3 (2014-07-24)
+~~~~~~~~~~~~~~~~~~
+
+- Changing some variable names in the predict method (add_count, add_path) and
+  the prediction structure to follow other bindigns naming.
+
 1.6.2 (2014-07-19)
 ~~~~~~~~~~~~~~~~~~
 

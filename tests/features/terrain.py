@@ -90,6 +90,7 @@ def setup_resources(feature):
 
     world.dataset_ids = []
     world.fields_properties_dict = {}
+
 @after.each_feature
 def cleanup_resources(feature):
 

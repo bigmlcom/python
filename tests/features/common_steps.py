@@ -43,7 +43,7 @@ def i_want_api_dev_mode(step):
     assert datasets['code'] == HTTP_OK
     world.init_datasets_count = datasets['meta']['total_count']
 
-    models = world.api.list_models()
+    models = world.api.list_models("ensemble=false")
     assert models['code'] == HTTP_OK
     world.init_models_count = models['meta']['total_count']
 

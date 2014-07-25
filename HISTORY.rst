@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.4 (2014-07-25)
+~~~~~~~~~~~~~~~~~~
+
+- Changing the create methods to check if origin resources are finished
+  by downloading no fields information.
+
 1.6.3 (2014-07-24)
 ~~~~~~~~~~~~~~~~~~
 

@@ -162,7 +162,7 @@ STATUSES = {
 }
 
 # Minimum query string to get model fields
-TINY_MODEL = "full=false"
+TINY_RESOURCE = "full=false"
 
 
 def get_resource(regex, resource):
@@ -952,6 +952,7 @@ class BigML(object):
                                 message=("A dataset id is needed to create a"
                                          " model."))
             dataset = check_resource(dataset, self.get_dataset,
+                                     query_string=TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True)
             dataset_ids.append(get_dataset_id(dataset))
@@ -1168,6 +1169,7 @@ class BigML(object):
             """
             if resource_id:
                 check_resource(resource_id, get_method,
+                               query_string=TINY_RESOURCE,
                                wait_time=wait_time, retries=retries,
                                raise_on_error=True)
                 args.update({
@@ -1185,6 +1187,7 @@ class BigML(object):
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             dataset = check_resource(dataset_id, self.get_dataset,
+                                     query_string=TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True)
             resource_type = get_resource_type(model)
@@ -1534,6 +1537,7 @@ class BigML(object):
                 source_id = get_source_id(origin_resource)
                 if source_id:
                     check_resource(source_id, self.get_source,
+                                   query_string=TINY_RESOURCE,
                                    wait_time=wait_time,
                                    retries=retries,
                                    raise_on_error=True)
@@ -1548,6 +1552,7 @@ class BigML(object):
             elif resource_type == CLUSTER_PATH:
                 cluster_id = get_cluster_id(origin_resource)
                 cluster = check_resource(cluster_id, self.get_cluster,
+                                         query_string=TINY_RESOURCE,
                                          wait_time=wait_time,
                                          retries=retries,
                                          raise_on_error=True)
@@ -1763,12 +1768,13 @@ class BigML(object):
             ensemble_id = get_ensemble_id(model)
             if ensemble_id is not None:
                 check_resource(ensemble_id, self.get_ensemble,
+                               query_string=TINY_RESOURCE,
                                wait_time=wait_time, retries=retries,
                                raise_on_error=True)
         elif resource_type == MODEL_PATH:
             model_id = get_model_id(model)
             check_resource(model_id, self.get_model,
-                           query_string=TINY_MODEL,
+                           query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True)
         else:
@@ -2142,7 +2148,7 @@ class BigML(object):
         if resource_type == CLUSTER_PATH:
             cluster_id = get_cluster_id(cluster)
             check_resource(cluster_id, self.get_cluster,
-                           query_string=TINY_MODEL,
+                           query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True)
         else:

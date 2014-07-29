@@ -338,8 +338,17 @@ class Fields(object):
                              "to extract the fields containing missing values."
                              "Only datasets and models have such information. "
                              "You could retry the get remote call "
-                             "'limit=-1' in the get remote call.")
+                             " with 'limit=-1' as query string.")
 
         return dict([(field_id, summary.get('missing_count', 0))
                      for field_id, summary in summaries
                      if summary.get('missing_count', 0) > 0])
+
+    def stats(self, field_name):
+        """Returns the summary information for the field
+
+        """
+        field_id = self.field_id(field_name)
+        summary = self.fields[field_id].get('summary', {})
+        return summary
+            

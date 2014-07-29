@@ -604,6 +604,7 @@ class BigML(object):
         code = HTTP_ACCEPTED
         if verify is None:
             verify = self.verify
+
         while code == HTTP_ACCEPTED:
             try:
                 response = requests.post(url + self.auth,
@@ -1019,6 +1020,9 @@ class BigML(object):
                     u' id. The most probable causes are:\n\n%s'
                     u'- A typo in the %s\'s id.\n'
                     u'- The %s id cannot be accessed with your credentials.\n'
+                    u'- The resource was created in a mode (development or'
+                    u' production) that is not the one set in the'
+                    u' BigML connection object by the corresponding flag.\n'
                     u'\nDouble-check your %s and'
                     u' credentials info and retry.' % (
                         resource_type, alternate_message, resource_type,
@@ -1436,7 +1440,7 @@ class BigML(object):
             raise Exception('A local path or a valid URL must be provided.')
 
         if is_url(path):
-            return self._create_remote_source(url=path, args=args)
+            return self._create_remote_source(path, args=args)
         else:
             return self._stream_source(file_name=path, args=args, async=async,
                                        progress_bar=progress_bar, out=out)
@@ -2029,6 +2033,19 @@ class BigML(object):
         if batch_prediction_id:
             return self._download("%s%s%s" % (self.url, batch_prediction_id,
                                               DOWNLOAD_DIR), filename=filename)
+
+    def source_from_batch_prediction(self, batch_prediction, args=None):
+        """Creates a source from a batch prediction using the download url
+
+        """
+        check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
+                            message="A batch prediction id is needed.")
+        batch_prediction_id = get_batch_prediction_id(batch_prediction)
+        if batch_prediction_id:
+            download_url = "%s%s%s%s" % (self.url, batch_prediction_id,
+                                         DOWNLOAD_DIR, self.auth)
+            return self._create_remote_source(download_url, args=args)
+      
 
     def list_batch_predictions(self, query_string=''):
         """Lists all your batch predictions.

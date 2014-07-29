@@ -965,6 +965,16 @@ object that can be read as a stream::
     if chunk:
         print chunk
 
+The output of a batch prediction can also be transformed to a source object
+using the ``source_from_batch_prediction`` method in the api::
+
+    api.source_from_batch_prediction(
+        'batchprediction/526fc344035d071ea3031d70',
+        args={'name': 'my_batch_prediction_source'})
+
+This code will create a new source object, that can be used again as starting
+point to generate datasets.
+
 
 Creating batch centroids
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1574,6 +1584,9 @@ different fields properties::
 
     # Column number of field name 'petal length'
     fields.field_column_number('petal length')
+
+    # Statistics of values in field name 'petal length')
+    fields.stats('petal length')
 
 You can also easily ``pair`` a list of values with fields ids what is very
 useful to make predictions.

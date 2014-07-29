@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.5 (2014-07-26)
+~~~~~~~~~~~~~~~~~~
+
+- Adding stats method to Fields to show fields statistics.
+- Adding api method to create a source from a batch prediction.
+
 1.6.4 (2014-07-25)
 ~~~~~~~~~~~~~~~~~~
 

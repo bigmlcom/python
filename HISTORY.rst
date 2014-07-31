@@ -3,6 +3,12 @@
 History
 -------
 
+1.6.6 (2014-07-31)
+~~~~~~~~~~~~~~~~~~
+
+- Improving the locale handling to avoid problems when logging to console under
+  Windows.
+
 1.6.5 (2014-07-26)
 ~~~~~~~~~~~~~~~~~~
 

@@ -277,7 +277,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
     except UnicodeEncodeError:
         data_locale = data_locale.encode("utf8")
     try:
-        new_locale = locale.setlocale(locale.LC_ALL, data_locale)
+        new_locale = locale.setlocale(locale.LC_NUMERIC, data_locale)
     except locale.Error:
         pass
     if new_locale is None:
@@ -285,7 +285,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
             if isinstance(locale_alias, list):
                 for subalias in locale_alias:
                     try:
-                        new_locale = locale.setlocale(locale.LC_ALL, subalias)
+                        new_locale = locale.setlocale(locale.LC_NUMERIC, subalias)
                         break
                     except locale.Error:
                         pass
@@ -293,23 +293,23 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
                     break
             else:
                 try:
-                    new_locale = locale.setlocale(locale.LC_ALL, locale_alias)
+                    new_locale = locale.setlocale(locale.LC_NUMERIC, locale_alias)
                     break
                 except locale.Error:
                     pass
     if new_locale is None:
         try:
-            new_locale = locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
+            new_locale = locale.setlocale(locale.LC_NUMERIC, DEFAULT_LOCALE)
         except locale.Error:
             pass
     if new_locale is None:
         try:
-            new_locale = locale.setlocale(locale.LC_ALL,
+            new_locale = locale.setlocale(locale.LC_NUMERIC,
                                           WINDOWS_DEFAULT_LOCALE)
         except locale.Error:
             pass
     if new_locale is None:
-        new_locale = locale.setlocale(locale.LC_ALL, '')
+        new_locale = locale.setlocale(locale.LC_NUMERIC, '')
 
     if verbose and not locale_synonyms(data_locale, new_locale):
         print ("WARNING: Unable to find %s locale, using %s instead. This "
@@ -351,6 +351,8 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     """
     clear_console_line(out=out, length=length)
     reset_console_line(out=out, length=length)
+    if out==sys.stdout and sys.platform == "win32" and sys.stdout.isatty():
+        message = message.decode('utf8').encode('850')
     out.write(message)
     reset_console_line(out=out, length=length)
 

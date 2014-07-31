@@ -66,7 +66,8 @@ from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
 
-
+# we use the atof conversion for integers to include integers written as
+# 10.0
 PYTHON_CONV = {
     "double": "locale.atof",
     "float": "locale.atof",

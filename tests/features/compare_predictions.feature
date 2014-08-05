@@ -66,6 +66,9 @@ Feature: Compare Predictions
         | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |
         | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.2629     |
         | ../data/grades.csv | 10      | 10     | 10     | {}                   | 000005    | 68.62224       | 27.5358    |
+        | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}      | 000005    | 46.69889      | 37.27594297134128   |
+        | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20, "Tutorial": 90, "TakeHome": 100}     | 000005    | 28.06      | 24.86634   |
+
 
     Scenario: Successfully comparing centroids with or without text options:
         Given I create a data source uploading a "<data>" file

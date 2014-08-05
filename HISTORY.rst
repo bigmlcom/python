@@ -3,6 +3,14 @@
 History
 -------
 
+1.6.7 (2014-08-05)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in corner case of model predictions using proportional missing
+  strategy.
+- Adding the unique path to the first missing split to the predictions using
+  proportional missing strategy.
+
 1.6.6 (2014-07-31)
 ~~~~~~~~~~~~~~~~~~
 

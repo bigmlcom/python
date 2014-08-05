@@ -1319,11 +1319,9 @@ that will return::
      'confidence': 0.91033,
      'prediction': 'Iris-versicolor'}
 
-Note that the ``add_path`` argument will only add the list of rules leading
-to the prediction if the ``last prediction`` missing strategy is used.
-Proportional missing strategy builds predictions by computing a weighted
-average of many different predictions, so the path to the prediction
-is not unique usually.
+Note that the ``add_path`` argument for the ``proportional`` missing strategy
+shows the path leading to a final unique node, that gives the prediction, or
+to the first split where a missing value is found.
 
 Local Clusters
 --------------

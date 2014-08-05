@@ -308,10 +308,18 @@ class Tree(object):
         if path is None:
             path = []
         if missing_strategy == PROPORTIONAL:
-            final_distribution = self.predict_proportional(input_data,
-                                                           path=path)
+            (final_distribution,
+             last_node) = self.predict_proportional(input_data, path=path)
 
             if self.regression:
+                # singular case:
+                # when the prediction is the one given in a 1-instance node
+                if len(final_distribution.items()) == 1:
+                    prediction, instances = final_distribution.items()[0]
+                    if instances == 1:
+                        return (last_node.output, path, last_node.confidence,
+                                last_node.distribution, instances)      
+                # when there's more instantces, sort elements by their mean
                 # sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
@@ -342,13 +350,14 @@ class Tree(object):
             return (self.output, path, self.confidence,
                     self.distribution, get_instances(self.distribution))
 
-    def predict_proportional(self, input_data, path=None):
+    def predict_proportional(self, input_data, path=None, missing_found=False):
         """Makes a prediction based on a number of field values averaging
            the predictions of the leaves that fall in a subtree.
 
            Each time a splitting field has no value assigned, we consider
            both branches of the split to be true, merging their
-           predictions.
+           predictions. The function returns the merged distribution and the
+           last node reached by a unique path.
 
         """
 
@@ -357,21 +366,26 @@ class Tree(object):
 
         final_distribution = {}
         if not self.children:
-            return merge_distributions({}, dict((x[0], x[1])
-                                                for x in self.distribution))
+            return (merge_distributions({}, dict((x[0], x[1])
+                                                 for x in self.distribution)),
+                    self)
         if split(self.children) in input_data:
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
                     new_rule = child.predicate.to_rule(self.fields)
-                    if not new_rule in path:
+                    if not new_rule in path and not missing_found:
                         path.append(new_rule)
-                    return child.predict_proportional(input_data, path)
+                    return child.predict_proportional(input_data, path,
+                                                      missing_found)
         else:
+            # missing value found, the unique path stops
+            missing_found = True
             for child in self.children:
                 final_distribution = merge_distributions(
                     final_distribution,
-                    child.predict_proportional(input_data, path))
-            return final_distribution
+                    child.predict_proportional(input_data, path,
+                                               missing_found)[0])
+            return final_distribution, self
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):
         """Translates a tree model into a set of IF-THEN rules.

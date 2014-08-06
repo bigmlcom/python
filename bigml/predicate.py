@@ -37,6 +37,7 @@ OPERATOR = {
     ">=": operator.ge,
     ">": operator.gt
 }
+
 TM_TOKENS = 'tokens_only'
 TM_FULL_TERM = 'full_terms_only'
 TM_ALL = 'all'
@@ -106,6 +107,10 @@ class Predicate(object):
     """
     def __init__(self, operation, field, value, term=None):
         self.operator = operation
+        self.missing = False
+        if self.operator.endswith("*"):
+            self.operator = self.operator[0: -1]
+            self.missing = True
         self.field = field
         self.value = value
         self.term = term
@@ -129,6 +134,7 @@ class Predicate(object):
         """
         name = fields[self.field][label]
         full_term = self.is_full_term(fields)
+        relation_missing = " or missing" if self.missing else ""
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
@@ -142,16 +148,23 @@ class Predicate(object):
                         relation_suffix = (RELATIONS[self.operator] %
                                            (self.value,
                                             plural('time', self.value)))
-            return u"%s %s %s %s" % (name, relation_literal,
-                                     self.term, relation_suffix)
-        return u"%s %s %s" % (name,
-                              self.operator,
-                              self.value)
+            return u"%s %s %s %s%s" % (name, relation_literal,
+                                       self.term, relation_suffix,
+                                       relation_missing)
+        return u"%s %s %s%s" % (name,
+                                self.operator,
+                                self.value,
+                                relation_missing)
 
     def apply(self, input_data, fields):
         """ Applies the operators defined in the predicate as strings to
             the provided input data
+
         """
+        # for missing operators
+        if input_data.get(self.field) is None:
+            return self.missing
+
         if self.term is not None:
             all_forms = fields[self.field]['summary'].get('term_forms', {})
             term_forms = all_forms.get(self.term, [])
@@ -161,6 +174,7 @@ class Predicate(object):
             return apply(OPERATOR[self.operator],
                          [term_matches(input_data[self.field], terms, options),
                           self.value])
+
         return apply(OPERATOR[self.operator],
                      [input_data[self.field],
                       self.value])

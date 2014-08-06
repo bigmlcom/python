@@ -3,6 +3,12 @@
 History
 -------
 
+1.7.0 (2014-08-07)
+~~~~~~~~~~~~~~~~~~
+
+- Adding to local model predictions the ability to use the new
+  missing-combined operators.
+
 1.6.7 (2014-08-05)
 ~~~~~~~~~~~~~~~~~~
 

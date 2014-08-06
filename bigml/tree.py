@@ -178,6 +178,13 @@ def filter_nodes(nodes_list, ids=None, subtree=True):
     return nodes
 
 
+def missing_branch(children):
+    """Checks if the missing values are assigned to a special branch
+
+    """
+    return any([child.predicate.missing for child in children])
+
+
 class Tree(object):
     """A tree-like predictive model.
 
@@ -318,9 +325,8 @@ class Tree(object):
                     prediction, instances = final_distribution.items()[0]
                     if instances == 1:
                         return (last_node.output, path, last_node.confidence,
-                                last_node.distribution, instances)      
-                # when there's more instantces, sort elements by their mean
-                # sort elements by their mean
+                                last_node.distribution, instances)               
+                # when there's more instances, sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: x[0])]
@@ -342,7 +348,7 @@ class Tree(object):
                         distribution, get_instances(distribution))
 
         else:
-            if self.children and split(self.children) in input_data:
+            if self.children:
                 for child in self.children:
                     if child.predicate.apply(input_data, self.fields):
                         path.append(child.predicate.to_rule(self.fields))
@@ -369,7 +375,7 @@ class Tree(object):
             return (merge_distributions({}, dict((x[0], x[1])
                                                  for x in self.distribution)),
                     self)
-        if split(self.children) in input_data:
+        if split(self.children) in input_data or missing_branch(self.children):
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
                     new_rule = child.predicate.to_rule(self.fields)
@@ -449,7 +455,11 @@ class Tree(object):
                                 subtree=subtree)
         if children:
             field = split(children)
-            if not self.fields[field]['slug'] in cmv:
+            has_missing_branch = missing_branch(children)
+            # the missing is singled out as a special case only when there's
+            # no missing branch in the children list
+            if (not has_missing_branch and
+                not self.fields[field]['slug'] in cmv):
                 body += (u"%sif (%s is None):\n" %
                          (INDENT * depth,
                           map_data(self.fields[field]['slug'], True)))
@@ -463,6 +473,15 @@ class Tree(object):
                 cmv.append(self.fields[field]['slug'])
 
             for child in children:
+                pre_condition = u""
+                if has_missing_branch:
+                    negation = u"" if child.predicate.missing else u" not"
+                    connection = u"or" if child.predicate.missing else u"and"
+                    pre_condition = (u"%s is%s None %s " % (
+                                     self.fields[field]['slug'], negation,
+                                     connection))
+                    if not child.predicate.missing:
+                        cmv.append(self.fields[field]['slug'])
                 optype = self.fields[child.predicate.field]['optype']
                 if optype == 'numeric' or optype == 'text':
                     value = child.predicate.value
@@ -470,8 +489,9 @@ class Tree(object):
                     value = repr(child.predicate.value)
                 if optype == 'text':
                     body += (
-                        u"%sif (term_matches(%s, \"%s\", %s\"%s\") %s %s):\n" %
-                        (INDENT * depth,
+                        u"%sif (%sterm_matches(%s, \"%s\", %s\"%s\") %s %s):"
+                        u"\n" %
+                        (INDENT * depth, pre_condition,
                          map_data(self.fields[child.predicate.field]['slug'],
                                   False),
                          self.fields[child.predicate.field]['slug'],
@@ -484,8 +504,8 @@ class Tree(object):
                                                  child.predicate.term))
                 else:
                     body += (
-                        u"%sif (%s %s %s):\n" %
-                        (INDENT * depth,
+                        u"%sif (%s%s %s %s):\n" %
+                        (INDENT * depth, pre_condition,
                          map_data(self.fields[child.predicate.field]['slug'],
                                   False),
                          PYTHON_OPERATOR[child.predicate.operator],
@@ -681,7 +701,11 @@ class Tree(object):
                                 subtree=subtree)
         if children:
             field = split(children)
-            if not self.fields[field]['name'] in cmv:
+            has_missing_branch = missing_branch(children)
+            # the missing is singled out as a special case only when there's
+            # no missing branch in the children list
+            if (not has_missing_branch and
+                    not self.fields[field]['name'] in cmv):
                 conditions.append("ISNULL([%s])" % self.fields[field]['name'])
                 body += (u"%s %s THEN " %
                          (alternate, " AND ".join(conditions)))
@@ -695,6 +719,17 @@ class Tree(object):
                 del conditions[-1]
 
             for child in children:
+                pre_condition = u""
+                post_condition = u""
+                if has_missing_branch:
+                    negation = u"" if child.predicate.missing else u"NOT "
+                    connection = u"OR" if child.predicate.missing else u"AND"
+                    pre_condition = (u"(%sISNULL([%s]) %s " % (
+                                     negation, self.fields[field]['name'],
+                                     connection))
+                    if not child.predicate.missing:
+                        cmv.append(self.fields[field]['name'])
+                    post_condition = u")"
                 optype = self.fields[child.predicate.field]['optype']
                 if optype == 'text':
                     return u""
@@ -702,10 +737,12 @@ class Tree(object):
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
-                conditions.append("[%s]%s%s" % (
+                conditions.append("%s[%s]%s%s%s" % (
+                    pre_condition,
                     self.fields[child.predicate.field]['name'],
                     PYTHON_OPERATOR[child.predicate.operator],
-                    value))
+                    value,
+                    post_condition))
                 body = child.tableau_body(body, conditions[:], cmv=cmv[:],
                                           ids_path=ids_path, subtree=subtree)
                 del conditions[-1]

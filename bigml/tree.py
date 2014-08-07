@@ -443,7 +443,7 @@ class Tree(object):
             """
             if input_map:
                 if missing:
-                    return "not '%s' in data or data['%s']" % (field, field)
+                    return "data.get('%s')" % field
                 else:
                     return "data['%s']" % field
             return field
@@ -473,16 +473,19 @@ class Tree(object):
                 cmv.append(self.fields[field]['slug'])
 
             for child in children:
+                field = child.predicate.field
                 pre_condition = u""
                 if has_missing_branch:
                     negation = u"" if child.predicate.missing else u" not"
                     connection = u"or" if child.predicate.missing else u"and"
                     pre_condition = (u"%s is%s None %s " % (
-                                     self.fields[field]['slug'], negation,
+                                     map_data(self.fields[field]['slug'],
+                                              True),
+                                     negation,
                                      connection))
                     if not child.predicate.missing:
                         cmv.append(self.fields[field]['slug'])
-                optype = self.fields[child.predicate.field]['optype']
+                optype = self.fields[field]['optype']
                 if optype == 'numeric' or optype == 'text':
                     value = child.predicate.value
                 else:
@@ -492,21 +495,21 @@ class Tree(object):
                         u"%sif (%sterm_matches(%s, \"%s\", %s\"%s\") %s %s):"
                         u"\n" %
                         (INDENT * depth, pre_condition,
-                         map_data(self.fields[child.predicate.field]['slug'],
+                         map_data(self.fields[field]['slug'],
                                   False),
-                         self.fields[child.predicate.field]['slug'],
+                         self.fields[field]['slug'],
                          ('u' if isinstance(child.predicate.term, unicode)
                           else ''),
                          child.predicate.term.replace("\"", "\\\""),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
-                    term_analysis_fields.append((child.predicate.field,
+                    term_analysis_fields.append((field,
                                                  child.predicate.term))
                 else:
                     body += (
                         u"%sif (%s%s %s %s):\n" %
                         (INDENT * depth, pre_condition,
-                         map_data(self.fields[child.predicate.field]['slug'],
+                         map_data(self.fields[field]['slug'],
                                   False),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))

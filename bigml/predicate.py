@@ -134,15 +134,15 @@ class Predicate(object):
         """
         name = fields[self.field][label]
         full_term = self.is_full_term(fields)
-        relation_missing = " or missing" if self.missing else ""
+        relation_missing = u" or missing" if self.missing else u""
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
                     (self.operator == '<=' and self.value == 0)):
-                relation_literal = ('is not equal to' if full_term
-                                    else 'does not contain')
+                relation_literal = (u'is not equal to' if full_term
+                                    else u'does not contain')
             else:
-                relation_literal = 'is equal to' if full_term else 'contains'
+                relation_literal = u'is equal to' if full_term else u'contains'
                 if not full_term:
                     if self.operator != '>' or self.value != 0:
                         relation_suffix = (RELATIONS[self.operator] %
@@ -152,9 +152,9 @@ class Predicate(object):
                                        self.term, relation_suffix,
                                        relation_missing)
         if self.value is None:
-            return "%s %s" % (name,
-                              "is None" if self.operator == '=' 
-                              else "is not None")
+            return u"%s %s" % (name,
+                              u"is None" if self.operator == '=' 
+                              else u"is not None")
         return u"%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,

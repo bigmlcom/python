@@ -53,6 +53,12 @@ MISSING_OPERATOR = {
     "!=": "is not"
 }
 
+T_MISSING_OPERATOR = {
+    "=": "ISNULL(",
+    "!=": "NOT ISNULL("
+}
+
+
 MAX_ARGS_LENGTH = 10
 
 INDENT = u'    '
@@ -721,17 +727,19 @@ class Tree(object):
 
         if cmv is None:
             cmv = []
-        if conditions is None:
-            conditions = []
-            alternate = u"IF"
-        else:
+        if body:
             alternate = u"ELSEIF"
+        else:
+            if conditions is None:
+                conditions = []
+            alternate = u"IF"
 
         children = filter_nodes(self.children, ids=ids_path,
                                 subtree=subtree)
         if children:
             field = split(children)
-            has_missing_branch = missing_branch(children)
+            has_missing_branch = (missing_branch(children) or
+                                  none_value(children))
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
             if (not has_missing_branch and
@@ -751,7 +759,7 @@ class Tree(object):
             for child in children:
                 pre_condition = u""
                 post_condition = u""
-                if has_missing_branch:
+                if has_missing_branch and child.predicate.value is not None:
                     negation = u"" if child.predicate.missing else u"NOT "
                     connection = u"OR" if child.predicate.missing else u"AND"
                     pre_condition = (u"(%sISNULL([%s]) %s " % (
@@ -761,16 +769,26 @@ class Tree(object):
                         cmv.append(self.fields[field]['name'])
                     post_condition = u")"
                 optype = self.fields[child.predicate.field]['optype']
-                if optype == 'text':
+                if child.predicate.value is None:
+                    value = ""
+                elif optype == 'text':
                     return u""
-                if optype == 'numeric':
+                elif optype == 'numeric':
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
+
+                operator = ("" if child.predicate.value is None else
+                            PYTHON_OPERATOR[child.predicate.operator])
+                if child.predicate.value is None:
+                    pre_condition = (
+                        T_MISSING_OPERATOR[child.predicate.operator])
+                    post_condition = ")"
+
                 conditions.append("%s[%s]%s%s%s" % (
                     pre_condition,
                     self.fields[child.predicate.field]['name'],
-                    PYTHON_OPERATOR[child.predicate.operator],
+                    operator,
                     value,
                     post_condition))
                 body = child.tableau_body(body, conditions[:], cmv=cmv[:],

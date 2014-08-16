@@ -48,6 +48,10 @@ PYTHON_OPERATOR = {
     ">": ">"
 }
 
+MISSING_OPERATOR = {
+    "=": "is",
+    "!=": "is not"
+}
 
 MAX_ARGS_LENGTH = 10
 
@@ -183,6 +187,22 @@ def missing_branch(children):
 
     """
     return any([child.predicate.missing for child in children])
+
+
+def none_value(children):
+    """Checks if the predicate has a None value
+
+    """
+    return any([child.predicate.value is None for child in children])
+
+
+def one_branch(children, input_data):
+    """Check if there's only one branch to be followed
+
+    """
+    missing = split(children) in input_data
+    return (missing or missing_branch(children)
+            or none_value(children))
 
 
 class Tree(object):
@@ -375,7 +395,7 @@ class Tree(object):
             return (merge_distributions({}, dict((x[0], x[1])
                                                  for x in self.distribution)),
                     self)
-        if split(self.children) in input_data or missing_branch(self.children):
+        if one_branch(self.children, input_data):
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
                     new_rule = child.predicate.to_rule(self.fields)
@@ -455,7 +475,8 @@ class Tree(object):
                                 subtree=subtree)
         if children:
             field = split(children)
-            has_missing_branch = missing_branch(children)
+            has_missing_branch = (missing_branch(children) or
+                                  none_value(children))
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
             if (not has_missing_branch and
@@ -475,7 +496,7 @@ class Tree(object):
             for child in children:
                 field = child.predicate.field
                 pre_condition = u""
-                if has_missing_branch:
+                if has_missing_branch and child.predicate.value is not None:
                     negation = u"" if child.predicate.missing else u" not"
                     connection = u"or" if child.predicate.missing else u"and"
                     pre_condition = (u"%s is%s None %s " % (
@@ -486,7 +507,8 @@ class Tree(object):
                     if not child.predicate.missing:
                         cmv.append(self.fields[field]['slug'])
                 optype = self.fields[field]['optype']
-                if optype == 'numeric' or optype == 'text':
+                if (optype == 'numeric' or optype == 'text' or
+                    child.predicate.value is None):
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
@@ -506,12 +528,17 @@ class Tree(object):
                     term_analysis_fields.append((field,
                                                  child.predicate.term))
                 else:
+                    operator = (MISSING_OPERATOR[child.predicate.operator] if
+                                child.predicate.value is None else
+                                PYTHON_OPERATOR[child.predicate.operator])
+                    if child.predicate.value is None:
+                        cmv.append(self.fields[field]['slug'])
                     body += (
                         u"%sif (%s%s %s %s):\n" %
                         (INDENT * depth, pre_condition,
                          map_data(self.fields[field]['slug'],
                                   False),
-                         PYTHON_OPERATOR[child.predicate.operator],
+                         operator,
                          value))
                 next_level = child.python_body(depth + 1, cmv=cmv[:],
                                                input_map=input_map,

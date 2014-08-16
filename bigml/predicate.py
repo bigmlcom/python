@@ -151,6 +151,10 @@ class Predicate(object):
             return u"%s %s %s %s%s" % (name, relation_literal,
                                        self.term, relation_suffix,
                                        relation_missing)
+        if self.value is None:
+            return "%s %s" % (name,
+                              "is None" if self.operator == '=' 
+                              else "is not None")
         return u"%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,
@@ -163,7 +167,10 @@ class Predicate(object):
         """
         # for missing operators
         if input_data.get(self.field) is None:
-            return self.missing
+            return self.missing or (
+                self.operator == '=' and self.value is None)
+        elif self.operator == '!=' and self.value is None:
+            return True
 
         if self.term is not None:
             all_forms = fields[self.field]['summary'].get('term_forms', {})

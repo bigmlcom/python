@@ -28,6 +28,8 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.ensemble import Ensemble
 
+NO_MISSING_SPLITS = {'missing_splits': False}
+
 @step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
 def i_create_an_ensemble(step, number_of_models, tlp):
     dataset = world.dataset.get('resource')
@@ -38,7 +40,7 @@ def i_create_an_ensemble(step, number_of_models, tlp):
                 'tlp': tlp, 'sample_rate': 0.70, 'seed': 'BigML'}
     except:
         args = {}
-
+    args.update(NO_MISSING_SPLITS)
     resource = world.api.create_ensemble(dataset, args=args)
     world.status = resource['code']
     assert world.status == HTTP_CREATED

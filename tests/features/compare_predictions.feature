@@ -96,3 +96,24 @@ Feature: Compare Predictions
         | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only"}}}} |{"Type": "ham", "Message": "Ok"}       | Cluster 0    | 0.478833312167     |
         | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}} |{"Type": "", "Message": ""}             | Cluster 0   | 0.707106781187   |
         | ../data/diabetes.csv | 20      | 20     | 30     | {"fields": {}} |{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}       | Cluster 4    | 0.454110207355     |
+
+
+    Scenario: Successfully comparing predictions with proportional missing strategy for missing_splits models:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a model with missing splits
+        And I wait until the model is ready less than <time_3> secs
+        And I create a local model
+        When I create a proportional missing strategy prediction for "<data_input>"
+        Then the prediction for "<objective>" is "<prediction>"
+        And the confidence for the prediction is "<confidence>"
+        And I create a proportional missing strategy local prediction for "<data_input>"
+        Then the local prediction is "<prediction>"
+        And the confidence for the local prediction is "<confidence>"
+
+        Examples:
+        | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |
+        | ../data/iris_missing2.csv   | 10      | 10     | 10     | {"petal width": 1}             | 000004    | Iris-setosa    | 0.8064     |
+        | ../data/iris_missing2.csv   | 10      | 10     | 10     | {"petal width": 1, "petal length": 4}             | 000004    | Iris-versicolor    | 0.7847     |

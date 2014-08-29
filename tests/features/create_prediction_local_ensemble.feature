@@ -15,7 +15,7 @@ Feature: Create Predictions locally from Ensembles
 
         Examples:
         | data             | time_1  | time_2 | time_3 | time_4 | number_of_models | tlp   |  data_input    |prediction  |
-        | ../data/iris.csv | 10      | 10     | 50     | 20     | 5                | 1     | {"petal width": 0.5} | Iris-setosa |
+        | ../data/iris.csv | 10      | 10     | 50     | 20     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor |
 
     Scenario: Successfully obtaining field importance from an Ensemble:
         Given I create a data source uploading a "<data>" file

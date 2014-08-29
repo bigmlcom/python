@@ -27,10 +27,12 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
+NO_MISSING_SPLITS = {'missing_splits': False}
+
 @step(r'I create a model$')
 def i_create_a_model(step):
     dataset = world.dataset.get('resource')
-    resource = world.api.create_model(dataset)
+    resource = world.api.create_model(dataset, args=NO_MISSING_SPLITS)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -39,7 +41,8 @@ def i_create_a_model(step):
 
 @step(r'I create a model from a dataset list$')
 def i_create_a_model_from_dataset_list(step):
-    resource = world.api.create_model(world.dataset_ids)
+    resource = world.api.create_model(world.dataset_ids,
+                                      args=NO_MISSING_SPLITS)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -65,12 +68,20 @@ def the_model_is_finished_in_less_than(step, secs):
 
 @step(r'I create a model with "(.*)"')
 def i_create_a_model_with(step, data="{}"):
-    resource = world.api.create_model(world.dataset.get('resource'), json.loads(data))
+    args = json.loads(data)
+    if not 'missing_splits' in args:
+        args.update(NO_MISSING_SPLITS)
+    resource = world.api.create_model(world.dataset.get('resource'),
+                                      args=args)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
     world.model = resource['object']
     world.models.append(resource['resource'])
+
+@step(r'I create a model with missing splits')
+def i_create_a_model_with_missing_splits(step):
+    i_create_a_model_with(step, data='{"missing_splits": true}')
 
 @step(r'I make the model public')
 def make_the_model_public(step):

@@ -3,14 +3,7 @@
 History
 -------
 
-1.7.1 (2014-08-17)
-~~~~~~~~~~~~~~~~~~
-
-- Fixing bug: missing operators for local model predicates include the ones
-  that have a null value. Changing the prediction algorithm and code-generating
-  methods.
-
-1.7.0 (2014-08-07)
+1.7.0 (2014-08-29)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding to local model predictions the ability to use the new

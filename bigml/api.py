@@ -82,6 +82,7 @@ CLUSTER_PATH = 'cluster'
 CENTROID_PATH = 'centroid'
 BATCH_CENTROID_PATH = 'batchcentroid'
 ANOMALY_PATH = 'anomaly'
+ANOMALY_SCORE_PATH = 'anomalyscore'
 
 
 # Resource Ids patterns
@@ -103,6 +104,7 @@ CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
 BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
                                              ID_PATTERN))
 ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
+ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
 
 
 RESOURCE_RE = {
@@ -116,7 +118,8 @@ RESOURCE_RE = {
     'cluster': CLUSTER_RE,
     'centroid': CENTROID_RE,
     'batchcentroid': BATCH_CENTROID_RE,
-    'anomaly': ANOMALY_RE}
+    'anomaly': ANOMALY_RE,
+    'anomalyscore': ANOMALY_SCORE_RE}
 DOWNLOAD_DIR = '/download'
 
 # Headers
@@ -278,6 +281,13 @@ def get_anomaly_id(anomaly):
     return get_resource(ANOMALY_RE, anomaly)
 
 
+def get_anomaly_score_id(anomaly_score):
+    """Returns an anomalyscore/id.
+
+    """
+    return get_resource(ANOMALY_SCORE_RE, anomaly_score)
+
+
 def get_resource_id(resource):
     """Returns the resource id if it falls in one of the registered types
 
@@ -295,7 +305,8 @@ def get_resource_id(resource):
             or CLUSTER_RE.match(resource)
             or CENTROID_RE.match(resource)
             or BATCH_CENTROID_RE.match(resource)
-            or ANOMALY_RE.match(resource)):
+            or ANOMALY_RE.match(resource)
+            or ANOMALY_SCORE_RE.match(resource)):
         return resource
     else:
         return
@@ -354,7 +365,8 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
                 PREDICTION_RE.match(resource_id) or
                 BATCH_PREDICTION_RE.match(resource_id) or
                 CENTROID_RE.match(resource_id) or
-                BATCH_CENTROID_RE.match(resource_id)):
+                BATCH_CENTROID_RE.match(resource_id) or
+                ANOMALY_SCORE_RE.match(resource_id)):
             return {'query_string': query_string}
         return {}
 
@@ -547,7 +559,9 @@ class BigML(object):
             'batchprediction': self.get_batch_prediction,
             'cluster': self.get_cluster,
             'centroid': self.get_centroid,
-            'batchcentroid': self.get_batch_centroid}
+            'batchcentroid': self.get_batch_centroid,
+            'anomaly': self.get_anomaly,
+            'anomalyscore': self.get_anomaly_score}
 
     def _set_api_urls(self, dev_mode=False, domain=None):
         """Sets the urls that point to the REST api methods for each resource
@@ -586,6 +600,7 @@ class BigML(object):
         self.centroid_url = self.url + CENTROID_PATH
         self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
         self.anomaly_url = self.url + ANOMALY_PATH
+        self.anomaly_score_url = self.url + ANOMALY_SCORE_PATH
 
 
     def _create(self, url, body, verify=None):
@@ -2320,7 +2335,7 @@ class BigML(object):
     ##########################################################################
     #
     # Anomaly detector
-    # https://bigml.com/developers/models
+    # https://bigml.com/developers/anomalies
     #
     ##########################################################################
     def create_anomaly(self, datasets, args=None, wait_time=3, retries=10):
@@ -2391,3 +2406,78 @@ class BigML(object):
         anomaly_id = get_anomaly_id(anomaly)
         if anomaly_id:
             return self._delete("%s%s" % (self.url, anomaly_id))
+
+
+    ##########################################################################
+    #
+    # Anomaly scores
+    # https://bigml.com/developers/anomalyscores
+    #
+    ##########################################################################
+    def create_anomaly_score(self, anomaly, input_data=None,
+                            args=None, wait_time=3, retries=10):
+        """Creates a new anomaly score.
+
+        """
+        anomaly_score_id = None
+        resource_type = get_resource_type(anomaly)
+        if resource_type == ANOMALY_PATH:
+            anomaly_id = get_anomaly_id(anomaly)
+            check_resource(anomaly_id, self.get_anomaly,
+                           query_string=TINY_RESOURCE,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True)
+        else:
+            raise Exception("An anomaly detector id is needed to create an"
+                            " anomaly score. %s found." % resource_type)
+
+        if input_data is None:
+            input_data = {}
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        create_args.update({
+            "input_data": input_data})
+        create_args.update({
+            "anomaly": anomaly_id})
+
+        body = json.dumps(create_args)
+        return self._create(self.anomaly_score_url, body,
+                            verify=self.verify)
+
+    def get_anomaly_score(self, anomaly_score):
+        """Retrieves an anomaly score.
+
+        """
+        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
+                            message="An anomaly score id is needed.")
+        anomaly_score_id = get_anomaly_score_id(anomaly_score)
+        if anomaly_score_id:
+            return self._get("%s%s" % (self.url, anomaly_score_id))
+
+    def list_anomaly_scores(self, query_string=''):
+        """Lists all your anomaly_scores.
+
+        """
+        return self._list(self.anomaly_score_url, query_string)
+
+    def update_anomaly_score(self, anomaly_score, changes):
+        """Updates an anomaly_score.
+
+        """
+        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
+                            message="An anomaly_score id is needed.")
+        anomaly_score_id = get_anomaly_score_id(anomaly_score)
+        if anomaly_score_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, anomaly_score_id), body)
+
+    def delete_anomaly_score(self, anomaly_score):
+        """Deletes an anomaly_score.
+
+        """
+        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
+                            message="An anomaly_score id is needed.")
+        anomaly_score_id = get_anomaly_score_id(anomaly_score)
+        if anomaly_score_id:
+            return self._delete("%s%s" % (self.url, anomaly_score_id))

@@ -81,6 +81,7 @@ BATCH_PREDICTION_PATH = 'batchprediction'
 CLUSTER_PATH = 'cluster'
 CENTROID_PATH = 'centroid'
 BATCH_CENTROID_PATH = 'batchcentroid'
+ANOMALY_PATH = 'anomaly'
 
 
 # Resource Ids patterns
@@ -101,6 +102,7 @@ CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
 CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
 BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
                                              ID_PATTERN))
+ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
 
 
 RESOURCE_RE = {
@@ -113,7 +115,8 @@ RESOURCE_RE = {
     'batchprediction': BATCH_PREDICTION_RE,
     'cluster': CLUSTER_RE,
     'centroid': CENTROID_RE,
-    'batchcentroid': BATCH_CENTROID_RE}
+    'batchcentroid': BATCH_CENTROID_RE,
+    'anomaly': ANOMALY_RE}
 DOWNLOAD_DIR = '/download'
 
 # Headers
@@ -268,6 +271,13 @@ def get_batch_centroid_id(batch_centroid):
     return get_resource(BATCH_CENTROID_RE, batch_centroid)
 
 
+def get_anomaly_id(anomaly):
+    """Returns an anomaly/id.
+
+    """
+    return get_resource(ANOMALY_RE, anomaly)
+
+
 def get_resource_id(resource):
     """Returns the resource id if it falls in one of the registered types
 
@@ -284,7 +294,8 @@ def get_resource_id(resource):
             or BATCH_PREDICTION_RE.match(resource)
             or CLUSTER_RE.match(resource)
             or CENTROID_RE.match(resource)
-            or BATCH_CENTROID_RE.match(resource)):
+            or BATCH_CENTROID_RE.match(resource)
+            or ANOMALY_RE.match(resource)):
         return resource
     else:
         return
@@ -574,6 +585,7 @@ class BigML(object):
         self.cluster_url = self.url + CLUSTER_PATH
         self.centroid_url = self.url + CENTROID_PATH
         self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
+        self.anomaly_url = self.url + ANOMALY_PATH
 
 
     def _create(self, url, body, verify=None):
@@ -2304,3 +2316,78 @@ class BigML(object):
         batch_centroid_id = get_batch_centroid_id(batch_centroid)
         if batch_centroid_id:
             return self._delete("%s%s" % (self.url, batch_centroid_id))
+
+    ##########################################################################
+    #
+    # Anomaly detector
+    # https://bigml.com/developers/models
+    #
+    ##########################################################################
+    def create_anomaly(self, datasets, args=None, wait_time=3, retries=10):
+        """Creates an anomaly detector from a `dataset` or a list o `datasets`.
+
+        """
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.anomaly_url, body)
+
+    def get_anomaly(self, anomaly, query_string='',
+                    shared_username=None, shared_api_key=None):
+        """Retrieves an anomaly detector.
+
+           The anomaly parameter should be a string containing the
+           anomaly id or the dict returned by create_anomaly.
+           As the anomaly detector is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the model values and state info
+           available at the time it is called.
+
+           If this is a shared anomaly detector, the username and sharing api
+           key must also be provided.
+        """
+        check_resource_type(anomaly, ANOMALY_PATH,
+                            message="A anomaly id is needed.")
+        anomaly_id = get_anomaly_id(anomaly)
+        if anomaly_id:
+            return self._get("%s%s" % (self.url, anomaly_id),
+                             query_string=query_string,
+                             shared_username=shared_username,
+                             shared_api_key=shared_api_key)
+
+    def anomaly_is_ready(self, anomaly, **kwargs):
+        """Checks whether an anomaly detector's status is FINISHED.
+
+        """
+        check_resource_type(anomaly, ANOMALY_PATH,
+                            message="An anomaly id is needed.")
+        resource = self.get_anomaly(anomaly, **kwargs)
+        return resource_is_ready(resource)
+
+    def list_anomalies(self, query_string=''):
+        """Lists all your anomaly detectors.
+
+        """
+        return self._list(self.anomaly_url, query_string)
+
+    def update_anomaly(self, anomaly, changes):
+        """Updates an anomaly detector.
+
+        """
+        check_resource_type(anomaly, ANOMALY_PATH,
+                            message="An anomaly detector id is needed.")
+        anomaly_id = get_anomaly_id(anomaly)
+        if anomaly_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url, anomaly_id), body)
+
+    def delete_anomaly(self, anomaly):
+        """Deletes an anomaly detector.
+
+        """
+        check_resource_type(anomaly, ANOMALY_PATH,
+                            message="An anomaly detector id is needed.")
+        anomaly_id = get_anomaly_id(anomaly)
+        if anomaly_id:
+            return self._delete("%s%s" % (self.url, anomaly_id))

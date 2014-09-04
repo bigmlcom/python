@@ -74,3 +74,7 @@ def i_want_api_dev_mode(step):
     batch_centroids = world.api.list_batch_centroids()
     assert batch_centroids['code'] == HTTP_OK
     world.init_batch_centroids_count = batch_centroids['meta']['total_count']
+
+    anomalies = world.api.list_anomalies()
+    assert anomalies['code'] == HTTP_OK
+    world.init_anomalies_count = anomalies['meta']['total_count']

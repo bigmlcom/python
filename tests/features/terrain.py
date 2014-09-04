@@ -77,6 +77,10 @@ def setup_resources(feature):
     assert batch_centroids['code'] == HTTP_OK
     world.init_batch_centroids_count = batch_centroids['meta']['total_count']
 
+    anomalies = world.api.list_anomalies()
+    assert anomalies['code'] == HTTP_OK
+    world.init_anomalies_count = anomalies['meta']['total_count']
+
     world.sources = []
     world.datasets = []
     world.models = []
@@ -87,6 +91,7 @@ def setup_resources(feature):
     world.clusters = []
     world.centroids = []
     world.batch_centroids = []
+    world.anomalies = []
 
     world.dataset_ids = []
     world.fields_properties_dict = {}
@@ -128,6 +133,9 @@ def cleanup_resources(feature):
     delete(world.batch_centroids, world.api.delete_batch_centroid)
     world.batch_centroids = []
 
+    delete(world.anomalies, world.api.delete_anomaly)
+    world.anomalies = []
+
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
     world.final_sources_count = sources['meta']['total_count']
@@ -168,6 +176,9 @@ def cleanup_resources(feature):
     assert batch_centroids['code'] == HTTP_OK
     world.final_batch_centroids_count = batch_centroids['meta']['total_count']
 
+    anomalies = world.api.list_anomalies()
+    assert anomalies['code'] == HTTP_OK
+    world.final_anomalies_count = anomalies['meta']['total_count']
 
     assert world.final_sources_count == world.init_sources_count, "init: %s, final: %s" % (world.init_sources_count, world.final_sources_count)
     assert world.final_datasets_count == world.init_datasets_count, "init: %s, final: %s" % (world.init_datasets_count, world.final_datasets_count)
@@ -179,6 +190,7 @@ def cleanup_resources(feature):
     assert world.final_clusters_count == world.init_clusters_count, "init: %s, final: %s" % (world.init_clusters_count, world.final_clusters_count)
     assert world.final_centroids_count == world.init_centroids_count, "init: %s, final: %s" % (world.init_centroids_count, world.final_centroids_count)
     assert world.final_batch_centroids_count == world.init_batch_centroids_count, "init: %s, final: %s" % (world.init_batch_centroids_count, world.final_batch_centroids_count)
+    assert world.final_anomalies_count == world.init_anomalies_count, "init: %s, final: %s" % (world.init_anomalies_count, world.final_anomalies_count)
 
 @after.each_scenario
 def cleanup_resources(scenario):

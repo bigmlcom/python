@@ -62,3 +62,17 @@ Feature: Create Predictions
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | centroid  |
         | ../data/diabetes.csv | 10      | 10     | 10     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 4 |
+
+    Scenario: Successfully creating an anomaly score:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create an anomaly detector from a dataset
+        And I wait until the anomaly detector is ready less than <time_3> secs
+        When I create an anomaly score for "<data_input>"
+        Then the anomaly score is "<score>"
+
+        Examples:
+        | data                 | time_1  | time_2 | time_3 | data_input         | score  |
+        | ../data/tiny_kdd.csv | 10      | 10     | 100     | {"src_bytes": 350} | 0.92685 |

@@ -121,3 +121,24 @@ def the_prediction_is_finished_in_less_than(step, secs):
 @step(r'I create a local ensemble prediction for "(.*)"$')
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
+
+@step(r'I create an anomaly score for "(.*)"')
+def i_create_an_anomaly_score(step, data=None):
+    if data is None:
+        data = "{}"
+    anomaly = world.anomaly['resource']
+    data = json.loads(data)
+    resource = world.api.create_anomaly_score(anomaly, data)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.anomaly_score = resource['object']
+    world.anomaly_scores.append(resource['resource'])
+
+@step(r'the anomaly score is "(.*)"')
+def the_anomaly_score_is(step, score):
+    if str(world.anomaly_score['score']) == score:
+        assert True
+    else:
+        assert False, "Found: %s, expected %s" % (
+            str(world.anomaly_score['score']), score)

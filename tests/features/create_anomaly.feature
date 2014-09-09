@@ -19,5 +19,5 @@ Feature: Create an anomaly detector from a dataset or dataset list
         And I check the anomaly detector stems from the original dataset list
 
         Examples:
-        | data                | time_1  | time_2 | time_3 |  time_4 | 
-        | ../data/iris.csv | 40      | 40     | 40     |  100
+        | data                 | time_1  | time_2 | time_3 |  time_4 | 
+        | ../data/tiny_kdd.csv | 40      | 40     | 40     |  100

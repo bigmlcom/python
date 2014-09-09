@@ -839,7 +839,15 @@ readability: the full anomaly detector you'll get is going to contain
 much more details).
 
 The `trees` list contains the actual isolation forest, and it can be quite
-large usually. Each node in an isolation tree can have multiple predicates.
+large usually. That's why, this part of the resource should only be included
+in downloads when needed. If you are only interested in other properties, such
+as `top_anomalies`, you'll improve performance by excluding it, using the
+`excluded=trees` query string in the API call::
+
+    anomaly = api.get_anomaly('anomaly/540dfa9f9841fa5c8800076a', \\
+                              query_string='excluded=trees')
+
+Each node in an isolation tree can have multiple predicates.
 For the node to be a valid branch when evaluated with a data point, all of its
 predicates must be true.
 

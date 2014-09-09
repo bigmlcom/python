@@ -2,6 +2,10 @@
 
 History
 -------
+1.8.0 (2014-09-09)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the anomaly detector and anomaly score REST API calls.
 
 1.7.0 (2014-08-29)
 ~~~~~~~~~~~~~~~~~~

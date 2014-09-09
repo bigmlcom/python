@@ -594,6 +594,255 @@ and can be retrieved as a JSON::
 readability: the full predictive cluster you'll get is going to contain
 much more details).
 
+Anomaly detector
+----------------
+
+For anomaly detection problems, BigML anomaly detector uses iforest as an
+unsupervised kind of model that detects anomalous data in a dataset. The
+information it returns encloses a `top_anomalies` block
+that contains a list of the most anomalous
+points. For each, we capture a `score` from 0 to 1.  The closer to 1,
+the more anomalous. We also capture the `row` which gives values for
+each field in the order defined by `input_fields`.  Similarly we give
+a list of `importances` which match the `row` values.  These
+importances tell us which values contributed most to the anomaly
+score. Thus, the structure of an anomaly detector is similar to::
+
+    {   'category': 0,
+        'code': 200,
+        'columns': 14,
+        'constraints': False,
+        'created': '2014-09-08T18:51:11.893000',
+        'credits': 0.11653518676757812,
+        'credits_per_prediction': 0.0,
+        'dataset': 'dataset/540dfa9d9841fa5c88000765',
+        'dataset_field_types': {   'categorical': 21,
+                                   'datetime': 0,
+                                   'numeric': 21,
+                                   'preferred': 14,
+                                   'text': 0,
+                                   'total': 42},
+        'dataset_status': True,
+        'dataset_type': 0,
+        'description': '',
+        'excluded_fields': [],
+        'fields_meta': {   'count': 14,
+                           'limit': 1000,
+                           'offset': 0,
+                           'query_total': 14,
+                           'total': 14},
+        'forest_size': 128,
+        'input_fields': [   '000004',
+                            '000005',
+                            '000009',
+                            '000016',
+                            '000017',
+                            '000018',
+                            '000019',
+                            '00001e',
+                            '00001f',
+                            '000020',
+                            '000023',
+                            '000024',
+                            '000025',
+                            '000026'],
+        'locale': 'en_US',
+        'max_columns': 42,
+        'max_rows': 200,
+        'model': {   'fields': {   '000004': {   'column_number': 4,
+                                                 'datatype': 'int16',
+                                                 'name': 'src_bytes',
+                                                 'optype': 'numeric',
+                                                 'order': 0,
+                                                 'preferred': True,
+                                                 'summary': {   'bins': [   [   143,
+                                                                                2],
+                                                                            ...
+                                                                            [   370,
+                                                                                2]],
+                                                                'maximum': 370,
+                                                                'mean': 248.235,
+                                                                'median': 234.57157,
+                                                                'minimum': 141,
+                                                                'missing_count': 0,
+                                                                'population': 200,
+                                                                'splits': [   159.92462,
+                                                                              173.73312,
+                                                                              188,
+                                                                              ...
+                                                                              339.55228],
+                                                                'standard_deviation': 49.39869,
+                                                                'sum': 49647,
+                                                                'sum_squares': 12809729,
+                                                                'variance': 2440.23093}},
+                                   '000005': {   'column_number': 5,
+                                                 'datatype': 'int32',
+                                                 'name': 'dst_bytes',
+                                                 'optype': 'numeric',
+                                                 'order': 1,
+                                                 'preferred': True,
+                                                  ...
+                                                                'sum': 1030851,
+                                                                'sum_squares': 22764504759,
+                                                                'variance': 87694652.45224}},
+                                   '000009': {   'column_number': 9,
+                                                 'datatype': 'string',
+                                                 'name': 'hot',
+                                                 'optype': 'categorical',
+                                                 'order': 2,
+                                                 'preferred': True,
+                                                 'summary': {   'categories': [   [   '0',
+                                                                                      199],
+                                                                                  [   '1',
+                                                                                      1]],
+                                                                'missing_count': 0},
+                                                 'term_analysis': {   'enabled': True}},
+                                   '000016': {   'column_number': 22,
+                                                 'datatype': 'int8',
+                                                 'name': 'count',
+                                                 'optype': 'numeric',
+                                                 'order': 3,
+                                                 'preferred': True,
+                                                                ...
+                                                                'population': 200,
+                                                                'standard_deviation': 5.42421,
+                                                                'sum': 1351,
+                                                                'sum_squares': 14981,
+                                                                'variance': 29.42209}},
+                                   '000017': { ... }}},
+                     'kind': 'iforest',
+                     'mean_depth': 12.314174107142858,
+                     'top_anomalies': [   {   'importance': [   0.06768,
+                                                                0.01667,
+                                                                0.00081,
+                                                                0.02437,
+                                                                0.04773,
+                                                                0.22197,
+                                                                0.18208,
+                                                                0.01868,
+                                                                0.11855,
+                                                                0.01983,
+                                                                0.01898,
+                                                                0.05306,
+                                                                0.20398,
+                                                                0.00562],
+                                              'row': [   183.0,
+                                                         8654.0,
+                                                         '0',
+                                                         4.0,
+                                                         4.0,
+                                                         0.25,
+                                                         0.25,
+                                                         0.0,
+                                                         123.0,
+                                                         255.0,
+                                                         0.01,
+                                                         0.04,
+                                                         0.01,
+                                                         0.0],
+                                              'score': 0.68782},
+                                          {   'importance': [   0.05645,
+                                                                0.02285,
+                                                                0.0015,
+                                                                0.05196,
+                                                                0.04435,
+                                                                0.0005,
+                                                                0.00056,
+                                                                0.18979,
+                                                                0.12402,
+                                                                0.23671,
+                                                                0.20723,
+                                                                0.05651,
+                                                                0.00144,
+                                                                0.00612],
+                                              'row': [   212.0,
+                                                         1940.0,
+                                                         '0',
+                                                         1.0,
+                                                         2.0,
+                                                         0.0,
+                                                         0.0,
+                                                         1.0,
+                                                         1.0,
+                                                         69.0,
+                                                         1.0,
+                                                         0.04,
+                                                         0.0,
+                                                         0.0],
+                                              'score': 0.6239},
+                                              ...],
+                     'trees': [   {   'root': {   'children': [   {   'children': [   {   'children': [   {   'children': [   {   'children': 
+     [   {   'population': 1,
+                                                                                                                                  'predicates': [   {   'field': '00001f',
+                                                                                                                                                        'op': '>',
+                                                                                                                                                        'value': 35.54357}]},
+
+    ...
+                                                                                                                              {   'population': 1,
+                                                                                                                                  'predicates': [   {   'field': '00001f',
+                                                                                                                                                        'op': '<=',
+                                                                                                                                                        'value': 35.54357}]}],
+                                                                                                              'population': 2,
+                                                                                                              'predicates': [   {   'field': '000005',
+                                                                                                                                    'op': '<=',
+                                                                                                                                    'value': 1385.5166}]}],
+                                                                                          'population': 3,
+                                                                                          'predicates': [   {   'field': '000020',
+                                                                                                                'op': '<=',
+                                                                                                                'value': 65.14308},
+                                                                                                            {   'field': '000019',
+                                                                                                                'op': '=',
+                                                                                                                'value': 0}]}],
+                                                                      'population': 105,
+                                                                      'predicates': [   {   'field': '000017',
+                                                                                            'op': '<=',
+                                                                                            'value': 13.21754},
+                                                                                        {   'field': '000009',
+                                                                                            'op': 'in',
+                                                                                            'value': [   '0']}]}],
+                                                  'population': 126,
+                                                  'predicates': [   True,
+                                                                    {   'field': '000018',
+                                                                        'op': '=',
+                                                                        'value': 0}]},
+                                      'training_mean_depth': 11.071428571428571}]},
+        'name': "tiny_kdd's dataset anomaly detector",
+        'number_of_batchscores': 0,
+        'number_of_public_predictions': 0,
+        'number_of_scores': 0,
+        'out_of_bag': False,
+        'price': 0.0,
+        'private': True,
+        'project': None,
+        'range': [1, 200],
+        'replacement': False,
+        'resource': 'anomaly/540dfa9f9841fa5c8800076a',
+        'rows': 200,
+        'sample_rate': 1.0,
+        'sample_size': 126,
+        'seed': 'BigML',
+        'shared': False,
+        'size': 30549,
+        'source': 'source/540dfa979841fa5c7f000363',
+        'source_status': True,
+        'status': {   'code': 5,
+                      'elapsed': 32397,
+                      'message': 'The anomaly detector has been created',
+                      'progress': 1.0},
+        'subscription': False,
+        'tags': [],
+        'updated': '2014-09-08T23:54:28.647000',
+        'white_box': False}
+
+Note that we have abbreviated the output in the snippet above for
+readability: the full anomaly detector you'll get is going to contain
+much more details).
+
+The `trees` list contains the actual isolation forest, and it can be quite
+large usually. Each node in an isolation tree can have multiple predicates.
+For the node to be a valid branch when evaluated with a data point, all of its
+predicates must be true.
+
 Creating Resources
 ------------------
 
@@ -651,6 +900,8 @@ You can query the status of any resource with the ``status`` method::
     api.status(cluster)
     api.status(centroid)
     api.status(batch_centroid)
+    api.status(anomaly)
+    api.status(anomaly_score)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -842,6 +1093,24 @@ Let's create a cluster from a given dataset::
 
 that will create a cluster with 5 centroids.
 
+Creating anomaly detectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your problem is finding the anomalous data in your dataset, you can
+build an anomaly detector, that will use iforest to single out the
+anomalous records. Again, the only required
+argument to create an anomaly detector is the dataset id. You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Anomaly detectors section of the Developer's
+documentation <https://bigml.com/developers/anomalies>`_.
+
+Let's create an anomaly detector from a given dataset::
+
+    anomaly = api.create_anomaly(dataset, {"name": "my anomaly"})
+
+that will create an anomaly resource with a `top_anomalies` block of the
+most anomalous points.
+
 Creating predictions
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -877,6 +1146,17 @@ You can also give the centroid predicition a name::
                                     "age": 31,
                                     "diabetes": "true"},
                                     {"name": "my centroid"})
+
+Creating anomaly scores
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To obtain the anomaly score associated to new input data, you
+can now use the ``create_anomaly_score`` method. Give the method an anomaly
+detector identifier and the input data to obtain the score::
+
+    anomaly_score = api.create_anomaly_score(anomaly, {"src_bytes": 350},
+                                             args={"name": "my score"})
+
 
 Creating evaluations
 ~~~~~~~~~~~~~~~~~~~~
@@ -1013,6 +1293,8 @@ You can list resources with the appropriate api method::
     api.list_clusters()
     api.list_centroids()
     api.list_batch_centroids()
+    api.list_anomalies()
+    api.list_anomaly_scores()
 
 you will receive a dictionary with the following keys:
 
@@ -1138,6 +1420,8 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_cluster(cluster, {"name": "new name"})
     api.update_centroid(centroid, {"name": "new name"})
     api.update_batch_centroid(batch_centroid, {"name": "new name"})
+    api.update_anomaly(anomaly, {"name": "new name"})
+    api.update_anomaly_score(anomaly_score, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -1171,6 +1455,8 @@ each type of resource.
     api.delete_cluster(cluster)
     api.delete_centroid(centroid)
     api.delete_batch_centroid(batch_centroid)
+    api.delete_anomaly(anomaly)
+    api.delete_anomaly_score(anomaly_score)
 
 Each of the calls above will return a dictionary with the following
 keys:

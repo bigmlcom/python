@@ -1132,7 +1132,8 @@ class BigML(object):
                     or MODEL_RE.match(resource_id)
                     or EVALUATION_RE.match(resource_id)
                     or ENSEMBLE_RE.match(resource_id)
-                    or CLUSTER_RE.match(resource_id)):
+                    or CLUSTER_RE.match(resource_id)
+                    or ANOMALY_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):

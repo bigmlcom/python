@@ -15,6 +15,7 @@ Feature: Create Predictions
         Examples:
         | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
         | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
+        | ../data/iris_sp_chars.csv | 10      | 10     | 10     | {"pétal&width\u0000": 0.5} | 000004    | Iris-setosa |
     
     Scenario: Successfully creating a prediction from a source in a remote location:
         Given I create a data source using the url "<url>"
@@ -75,4 +76,6 @@ Feature: Create Predictions
 
         Examples:
         | data                 | time_1  | time_2 | time_3 | data_input         | score  |
-        | ../data/tiny_kdd.csv | 10      | 10     | 100     | {"src_bytes": 350} | 0.92685 |
+        | ../data/tiny_kdd.csv | 10      | 10     | 100     | {"src_bytes": 350} | 0.92618 |
+        | ../data/iris_sp_chars.csv | 10      | 10     | 100     | {"pétal&width\u0000": 300} | 0.90198 |
+

@@ -16,5 +16,6 @@ Feature: Create Predictions from Ensembles
         Examples:
         | data               | time_1  | time_2 | time_3 | time_4 | number_of_models | tlp   |  data_input    | objective | prediction  |
         | ../data/iris.csv   | 10      | 10     | 50     | 20     | 5                | 1     | {"petal width": 0.5} | 000004    | Iris-versicolor |
+        | ../data/iris_sp_chars.csv   | 10      | 10     | 50     | 20     | 5                | 1     | {"pétal&width\u0000": 0.5} | 000004    | Iris-versicolor |
         | ../data/grades.csv | 10      | 10     | 150     | 20     | 10               | 1     | {"Assignment": 81.22, "Tutorial": 91.95, "Midterm": 79.38, "TakeHome": 105.93} | 000005    | 88.205575 | 
         | ../data/grades.csv | 10      | 10     | 150     | 20     | 10               | 1     | {"Assignment": 97.33, "Tutorial": 106.74, "Midterm": 76.88, "TakeHome": 108.89} | 000005    | 84.29401 |

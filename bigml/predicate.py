@@ -35,7 +35,8 @@ OPERATOR = {
     "!=": operator.ne,
     "/=": operator.ne,
     ">=": operator.ge,
-    ">": operator.gt
+    ">": operator.gt,
+    "in": operator.contains
 }
 
 TM_TOKENS = 'tokens_only'
@@ -165,6 +166,7 @@ class Predicate(object):
             the provided input data
 
         """
+
         # for missing operators
         if input_data.get(self.field) is None:
             return self.missing or (
@@ -181,7 +183,10 @@ class Predicate(object):
             return apply(OPERATOR[self.operator],
                          [term_matches(input_data[self.field], terms, options),
                           self.value])
-
+        if self.operator == "in":
+            return apply(OPERATOR[self.operator],
+                         [self.value,
+                          input_data[self.field]])
         return apply(OPERATOR[self.operator],
                      [input_data[self.field],
                       self.value])

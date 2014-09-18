@@ -81,7 +81,6 @@ class Anomaly(ModelFields):
             self.sample_size = anomaly.get('sample_size')
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
             ModelFields.__init__(self, anomaly['model'].get('fields'))
-
             if ('top_anomalies' in anomaly['model'] and
                     isinstance(anomaly['model']['top_anomalies'], list)):
                 self.mean_depth = anomaly['model'].get('mean_depth')

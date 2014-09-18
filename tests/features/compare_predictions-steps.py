@@ -3,6 +3,7 @@ import os
 from lettuce import step, world
 from bigml.model import Model
 from bigml.cluster import Cluster
+from bigml.anomaly import Anomaly
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 
@@ -10,7 +11,6 @@ from bigml.multivote import MultiVote
 def i_retrieve_a_list_of_remote_models(step, tag):
     world.list_of_models = [world.api.get_model(model['resource']) for model in
                             world.api.list_models(query_string="tags__in=%s" % tag)['objects']]
-
 
 
 @step(r'I create a local model from a "(.*)" file$')
@@ -65,6 +65,27 @@ def the_local_centroid_is(step, centroid, distance):
         assert True
     else:
         assert False, "Found: %s, expected: %s" % (str(world.local_centroid['distance']), distance)
+
+
+@step(r'I create a local anomaly detector$')
+def i_create_a_local_anomaly(step):
+    world.local_anomaly = Anomaly(world.anomaly['resource'])
+
+
+@step(r'I create a local anomaly score for "(.*)"$')
+def i_create_a_local_anomaly_score(step, input_data):
+    input_data = json.loads(input_data)
+    world.local_anomaly_score = world.local_anomaly.anomaly_score(input_data,
+                                                                  by_name=False)
+
+@step(r'the local anomaly score is "(.*)"$')
+def the_local_anomaly_score_is(step, score):
+    if str(round(world.local_anomaly_score, 2)) == str(round(float(score), 2)):
+        assert True
+    else:
+        assert False, ("Found: %s, expected: %s" %
+                       (str(round(world.local_anomaly_score, 2)),
+                        round(float(score), 2)))
 
 
 @step(r'I create a proportional missing strategy local prediction for "(.*)"')

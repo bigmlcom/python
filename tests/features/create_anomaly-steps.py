@@ -33,8 +33,14 @@ def i_check_anomaly_dataset_and_datasets_ids(step):
                        (anomaly['dataset'],
                         world.dataset['resource']))
 
+
+@step(r'I create an anomaly detector$')
+def i_create_an_anomaly_(step):
+    i_create_an_anomaly_from_dataset(step)
+
+
 @step(r'I create an anomaly detector from a dataset$')
-def i_create_an_anomaly(step):
+def i_create_an_anomaly_from_dataset(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_anomaly(dataset, {'seed': 'BigML'})
     world.status = resource['code']
@@ -42,6 +48,7 @@ def i_create_an_anomaly(step):
     world.location = resource['location']
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
+
 
 @step(r'I create an anomaly detector from a dataset list$')
 def i_create_an_anomaly_from_dataset_list(step):

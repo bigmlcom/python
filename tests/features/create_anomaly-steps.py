@@ -52,7 +52,7 @@ def i_create_an_anomaly_from_dataset(step):
 
 @step(r'I create an anomaly detector from a dataset list$')
 def i_create_an_anomaly_from_dataset_list(step):
-    resource = world.api.create_anomaly(world.dataset_ids)
+    resource = world.api.create_anomaly(world.dataset_ids, {'seed': 'BigML'})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']

@@ -844,7 +844,7 @@ in downloads when needed. If you are only interested in other properties, such
 as `top_anomalies`, you'll improve performance by excluding it, using the
 `excluded=trees` query string in the API call::
 
-    anomaly = api.get_anomaly('anomaly/540dfa9f9841fa5c8800076a', \\
+    anomaly = api.get_anomaly('anomaly/540dfa9f9841fa5c8800076a', \
                               query_string='excluded=trees')
 
 Each node in an isolation tree can have multiple predicates.
@@ -1629,7 +1629,7 @@ You can also instantiate a local version of a remote cluster.
 
 This will retrieve the remote cluster information, using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
-details on how to set your credentials) and return a Cluster object
+details on how to set your credentials) and return a ``Cluster`` object
 that you can use to make local centroid predictions. If you want to use a
 specfic connection object for the remote retrieval, you can set it as second
 parameter::
@@ -1677,6 +1677,60 @@ must have values for all the numeric fields. No missing values for the numeric
 fields are allowed.
 
 As in the local model predictions, producing local centroids can be done
+independently of BigML servers, so no cost or connection latencies are
+involved.
+
+Local Anomaly Detector
+----------------------
+
+You can also instantiate a local version of a remote anomaly.
+
+::
+
+    from bigml.anomaly import Anomaly
+    local_anomaly = Anomaly('anomaly/502fcbff15526876610002435')
+
+This will retrieve the remote anomaly detector information, using an implicitly
+built ``BigML()`` connection object (see the ``Authentication`` section for
+more details on how to set your credentials) and return an ``Anomaly`` object
+that you can use to make local anomaly scores. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter::
+
+    from bigml.anomaly import Anomaly
+    from bigml.api import BigML
+
+    local_anomaly = Anomaly('anomaly/502fcbff15526876610002435',
+                            api=BigML(my_username,
+                                      my_api_key))
+
+or even use the remote anomaly information retrieved previously to build the
+local anomaly detector object::
+
+    from bigml.anomaly import Anomaly
+    from bigml.api import BigML
+    api = BigML()
+    anomaly = api.get_anomaly('anomaly/502fcbff15526876610002435',
+                              query_string='limit=-1')
+
+    local_anomaly = Anomaly(anomaly)
+
+Note that in this example we used a ``limit=-1`` query string for the anomaly
+retrieval. This ensures that all fields are retrieved by the get method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+Local Anomaly Scores
+--------------------
+
+Using the local anomaly detector object, you can predict the anomaly score
+associated to an input data set::
+
+    local_anomaly.anomaly_score({"src_bytes": 350})
+    0.9268527808726705
+
+
+As in the local model predictions, producing local anomaly scores can be done
 independently of BigML servers, so no cost or connection latencies are
 involved.
 

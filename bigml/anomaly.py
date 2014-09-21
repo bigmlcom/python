@@ -15,10 +15,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A local Predictive Cluster.
+"""A local Predictive Anomaly Detector.
 
-This module defines a Cluster to make predictions (centroids) locally or
-embedded into your application without needing to send requests to
+This module defines an Anomaly Detector to score anomlies in a dataset locally
+or embedded into your application without needing to send requests to
 BigML.io.
 
 This module cannot only save you a few credits, but also enormously
@@ -29,13 +29,12 @@ Example usage (assuming that you have previously set up the BIGML_USERNAME
 and BIGML_API_KEY environment variables and that you own the model/id below):
 
 from bigml.api import BigML
-from bigml.cluster import Cluster
+from bigml.anomaly import Anomaly
 
 api = BigML()
 
-cluster = Cluster('cluster/5026965515526876630001b2')
-cluster.predict({"petal length": 3, "petal width": 1,
-                 "sepal length": 1, "sepal width": 0.5})
+anomaly = Anomaly('anomaly/5126965515526876630001b2')
+anomaly.anomaly_score({"src_bytes": 350})
 
 """
 import logging
@@ -114,7 +113,8 @@ class Anomaly(ModelFields):
         """Returns the anomaly score given by the iforest
 
             To produce an anomaly score, we evaluate each tree in the iforest
-            for its depth result. We find the average of these depths
+            for its depth result (see the depth method in the AnomalyTree
+            object for details). We find the average of these depths
             to produce an `observed_mean_depth`. We calculate an
             `expected_mean_depth` using the `sample_size` and `mean_depth`
             parameters which come as part of the forest message.

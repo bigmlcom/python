@@ -15,11 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Tree structure for the BigML local Model
+"""Tree structure for the BigML local Anomaly Detector
 
-This module defines an auxiliary Tree structure that is used in the local Model
-to make predictions locally or embedded into your application without needing
-to send requests to BigML.io.
+This module defines an auxiliary Tree structure that is used in the local
+Anomaly Detector to score anomalies locally or embedded into your application
+without needing to send requests to BigML.io.
 
 """
 from bigml.predicates import Predicates

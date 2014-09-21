@@ -87,7 +87,7 @@ ANOMALY_SCORE_PATH = 'anomalyscore'
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
-SHARED_PATTERN = '[a-zA-Z0-9]{27}'
+SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
 DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))

@@ -49,7 +49,7 @@ Feature: Create Batch Predictions
 
         Examples:
         | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-        | ../data/diabetes.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |
+        | ../data/diabetes.csv | 50      | 50     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |
 
     Scenario: Successfully creating a source from a batch prediction:
         Given I create a data source uploading a "<data>" file

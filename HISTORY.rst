@@ -3,6 +3,11 @@
 History
 -------
 
+1.9.0 (2014-10-02)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the batch anomaly score REST API calls.
+
 1.8.0 (2014-09-09)
 ~~~~~~~~~~~~~~~~~~
 

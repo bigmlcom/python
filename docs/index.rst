@@ -910,6 +910,7 @@ You can query the status of any resource with the ``status`` method::
     api.status(batch_centroid)
     api.status(anomaly)
     api.status(anomaly_score)
+    api.status(batch_anomaly_score)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -1270,11 +1271,25 @@ Creating batch centroids
 As described in the previous section, it is also possible to make centroids'
 predictions in batch. First you create a dataset
 containing the input data you want your cluster to relate to a centroid.
-The ``create_batch_centroid`` call will need the id of the dataset and the
-cluster to assign a centroid to each input data::
+The ``create_batch_centroid`` call will need the id of the input
+data dataset and the
+cluster used to assign a centroid to each instance::
 
     batch_centroid = api.create_batch_centroid(cluster, dataset, {
         "name": "my batch centroid", "all_fields": True,
+        "header": True})
+
+Creating batch anomaly scores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Input data can also be assigned an anomaly score in batch. You train an
+anomaly detector with your training data and then build a dataset from your
+input data. The ``create_batch_anomaly_score`` call will need the id
+of the dataset and of the
+anomaly detector to assign an anomaly score to each input data instance::
+
+    batch_anomaly_score = api.create_batch_anomaly_score(anomaly, dataset, {
+        "name": "my batch anomaly score", "all_fields": True,
         "header": True})
 
 Reading Resources
@@ -1303,6 +1318,7 @@ You can list resources with the appropriate api method::
     api.list_batch_centroids()
     api.list_anomalies()
     api.list_anomaly_scores()
+    api.list_batch_anomaly_scores()
 
 you will receive a dictionary with the following keys:
 
@@ -1430,6 +1446,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_batch_centroid(batch_centroid, {"name": "new name"})
     api.update_anomaly(anomaly, {"name": "new name"})
     api.update_anomaly_score(anomaly_score, {"name": "new name"})
+    api.update_batch_anomaly_score(batch_anomaly_score, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -1465,6 +1482,7 @@ each type of resource.
     api.delete_batch_centroid(batch_centroid)
     api.delete_anomaly(anomaly)
     api.delete_anomaly_score(anomaly_score)
+    api.delete_batch_anomaly_score(batch_anomaly_score)
 
 Each of the calls above will return a dictionary with the following
 keys:

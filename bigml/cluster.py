@@ -161,7 +161,7 @@ class Cluster(ModelFields):
 
         # Checks that all numeric fields are present in input data
         for field_id, field in self.fields.items():
-            if (not field['optype'] in ['categorical', 'text'] and
+            if (not field['optype'] in OPTIONAL_FIELDS and
                     not field_id in input_data):
                 raise Exception("Failed to predict a centroid. Input"
                                 " data must contain values for all "

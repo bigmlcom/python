@@ -85,6 +85,10 @@ def setup_resources(feature):
     assert anomaly_scores['code'] == HTTP_OK
     world.init_anomaly_scores_count = anomaly_scores['meta']['total_count']
 
+    batch_anomaly_scores = world.api.list_batch_anomaly_scores()
+    assert batch_anomaly_scores['code'] == HTTP_OK
+    world.init_batch_anomaly_scores_count = batch_anomaly_scores['meta']['total_count']
+
     world.sources = []
     world.datasets = []
     world.models = []
@@ -97,6 +101,7 @@ def setup_resources(feature):
     world.batch_centroids = []
     world.anomalies = []
     world.anomaly_scores = []
+    world.batch_anomaly_scores = []
 
     world.dataset_ids = []
     world.fields_properties_dict = {}
@@ -106,7 +111,6 @@ def cleanup_resources(feature):
 
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
-
 
     delete(world.clusters, world.api.delete_cluster)
     world.clusters = []
@@ -143,6 +147,9 @@ def cleanup_resources(feature):
 
     delete(world.anomaly_scores, world.api.delete_anomaly_score)
     world.anomaly_scores = []
+
+    delete(world.batch_anomaly_scores, world.api.delete_batch_anomaly_score)
+    world.batch_anomaly_scores = []
 
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
@@ -192,6 +199,10 @@ def cleanup_resources(feature):
     assert anomaly_scores['code'] == HTTP_OK
     world.final_anomaly_scores_count = anomaly_scores['meta']['total_count']
 
+    batch_anomaly_scores = world.api.list_batch_anomaly_scores()
+    assert batch_anomaly_scores['code'] == HTTP_OK
+    world.final_batch_anomaly_scores_count = batch_anomaly_scores['meta']['total_count']
+
     assert world.final_sources_count == world.init_sources_count, "init: %s, final: %s" % (world.init_sources_count, world.final_sources_count)
     assert world.final_datasets_count == world.init_datasets_count, "init: %s, final: %s" % (world.init_datasets_count, world.final_datasets_count)
     assert world.final_models_count == world.init_models_count, "init: %s, final: %s" % (world.init_models_count, world.final_models_count)
@@ -204,6 +215,7 @@ def cleanup_resources(feature):
     assert world.final_batch_centroids_count == world.init_batch_centroids_count, "init: %s, final: %s" % (world.init_batch_centroids_count, world.final_batch_centroids_count)
     assert world.final_anomalies_count == world.init_anomalies_count, "init: %s, final: %s" % (world.init_anomalies_count, world.final_anomalies_count)
     assert world.final_anomaly_scores_count == world.init_anomaly_scores_count, "init: %s, final: %s" % (world.init_anomaly_scores_count, world.final_anomaly_scores_count)
+    assert world.final_batch_anomaly_scores_count == world.init_batch_anomaly_scores_count, "init: %s, final: %s" % (world.init_batch_anomaly_scores_count, world.final_batch_anomaly_scores_count)
 
 
 @after.each_scenario

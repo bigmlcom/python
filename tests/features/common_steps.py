@@ -82,3 +82,7 @@ def i_want_api_dev_mode(step):
     anomaly_scores = world.api.list_anomaly_scores()
     assert anomaly_scores['code'] == HTTP_OK
     world.init_anomaly_scores_count = anomaly_scores['meta']['total_count']
+
+    batch_anomaly_scores = world.api.list_batch_anomaly_scores()
+    assert batch_anomaly_scores['code'] == HTTP_OK
+    world.init_batch_anomaly_scores_count = batch_anomaly_scores['meta']['total_count']

@@ -83,6 +83,7 @@ CENTROID_PATH = 'centroid'
 BATCH_CENTROID_PATH = 'batchcentroid'
 ANOMALY_PATH = 'anomaly'
 ANOMALY_SCORE_PATH = 'anomalyscore'
+BATCH_ANOMALY_SCORE_PATH = 'batchanomalyscore'
 
 
 # Resource Ids patterns
@@ -105,6 +106,8 @@ BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
                                              ID_PATTERN))
 ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
 ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
+BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
+                                             ID_PATTERN))
 
 
 RESOURCE_RE = {
@@ -119,7 +122,8 @@ RESOURCE_RE = {
     'centroid': CENTROID_RE,
     'batchcentroid': BATCH_CENTROID_RE,
     'anomaly': ANOMALY_RE,
-    'anomalyscore': ANOMALY_SCORE_RE}
+    'anomalyscore': ANOMALY_SCORE_RE,
+    'batchanomalyscore': BATCH_ANOMALY_SCORE_RE}
 DOWNLOAD_DIR = '/download'
 
 # Headers
@@ -288,6 +292,13 @@ def get_anomaly_score_id(anomaly_score):
     return get_resource(ANOMALY_SCORE_RE, anomaly_score)
 
 
+def get_batch_anomaly_score_id(batch_anomaly_score):
+    """Returns a batchanomalyscore/id.
+
+    """
+    return get_resource(BATCH_ANOMALY_SCORE_RE, batch_anomaly_score)
+
+
 def get_resource_id(resource):
     """Returns the resource id if it falls in one of the registered types
 
@@ -306,7 +317,8 @@ def get_resource_id(resource):
             or CENTROID_RE.match(resource)
             or BATCH_CENTROID_RE.match(resource)
             or ANOMALY_RE.match(resource)
-            or ANOMALY_SCORE_RE.match(resource)):
+            or ANOMALY_SCORE_RE.match(resource)
+            or BATCH_ANOMALY_SCORE_RE.match(resource)):
         return resource
     else:
         return
@@ -366,7 +378,8 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
                 BATCH_PREDICTION_RE.match(resource_id) or
                 CENTROID_RE.match(resource_id) or
                 BATCH_CENTROID_RE.match(resource_id) or
-                ANOMALY_SCORE_RE.match(resource_id)):
+                ANOMALY_SCORE_RE.match(resource_id) or
+                BATCH_ANOMALY_SCORE_RE.match(resource_id)):
             return {'query_string': query_string}
         return {}
 
@@ -561,7 +574,8 @@ class BigML(object):
             'centroid': self.get_centroid,
             'batchcentroid': self.get_batch_centroid,
             'anomaly': self.get_anomaly,
-            'anomalyscore': self.get_anomaly_score}
+            'anomalyscore': self.get_anomaly_score,
+            'batchanomalyscore': self.get_batch_anomaly_score}
 
     def _set_api_urls(self, dev_mode=False, domain=None):
         """Sets the urls that point to the REST api methods for each resource
@@ -601,6 +615,7 @@ class BigML(object):
         self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
         self.anomaly_url = self.url + ANOMALY_PATH
         self.anomaly_score_url = self.url + ANOMALY_SCORE_PATH
+        self.batch_anomaly_score_url = self.url + BATCH_ANOMALY_SCORE_PATH
 
 
     def _create(self, url, body, verify=None):
@@ -2482,3 +2497,92 @@ class BigML(object):
         anomaly_score_id = get_anomaly_score_id(anomaly_score)
         if anomaly_score_id:
             return self._delete("%s%s" % (self.url, anomaly_score_id))
+
+
+    ##########################################################################
+    #
+    # Batch Anomaly Scores
+    # https://bigml.com/developers/batch_anomalyscores
+    #
+    ##########################################################################
+    def create_batch_anomaly_score(self, anomaly, dataset,
+                                   args=None, wait_time=3, retries=10):
+        """Creates a new batch anomaly score.
+
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        model_types = [ANOMALY_PATH]
+        origin_resources_checked = self.check_origins(
+            dataset, anomaly, create_args, model_types=model_types,
+            wait_time=wait_time, retries=retries)
+
+        if origin_resources_checked:
+            body = json.dumps(create_args)
+            return self._create(self.batch_anomaly_score_url, body)
+
+    def get_batch_anomaly_score(self, batch_anomaly_score):
+        """Retrieves a batch anomaly score.
+
+           The batch_anomaly_score parameter should be a string containing the
+           batch_anomaly_score id or the dict returned by
+           create_batch_anomaly_score.
+           As batch_anomaly_score is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           return a dict that encloses the batch_anomaly_score values and state
+           info available at the time it is called.
+        """
+        check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
+                            message="A batch anomaly score id is needed.")
+        batch_anomaly_score_id = get_batch_anomaly_score_id(
+            batch_anomaly_score)
+        if batch_anomaly_score_id:
+            return self._get("%s%s" % (self.url, batch_anomaly_score_id))
+
+    def download_batch_anomaly_score(self, batch_anomaly_score, filename=None):
+        """Retrieves the batch anomaly score file.
+
+           Downloads anomaly scores, that are stored in a remote CSV file. If
+           a path is given in filename, the contents of the file are downloaded
+           and saved locally. A file-like object is returned otherwise.
+        """
+        check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
+                            message="A batch anomaly score id is needed.")
+        batch_anomaly_score_id = get_batch_anomaly_score_id(
+            batch_anomaly_score)
+        if batch_anomaly_score_id:
+            return self._download("%s%s%s" % (self.url, batch_anomaly_score_id,
+                                              DOWNLOAD_DIR), filename=filename)
+
+    def list_batch_anomaly_scores(self, query_string=''):
+        """Lists all your batch anomaly scores.
+
+        """
+        return self._list(self.batch_anomaly_score_url, query_string)
+
+    def update_batch_anomaly_score(self, batch_anomaly_score, changes):
+        """Updates a batch anomaly scores.
+
+        """
+        check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
+                            message="A batch anomaly score id is needed.")
+        batch_anomaly_score_id = get_batch_anomaly_score_id(
+            batch_anomaly_score)
+        if batch_anomaly_score_id:
+            body = json.dumps(changes)
+            return self._update("%s%s" % (self.url,
+                                          batch_anomaly_score_id), body)
+
+    def delete_batch_anomaly_score(self, batch_anomaly_score):
+        """Deletes a batch anomaly score.
+
+        """
+        check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
+                            message="A batch anomaly score id is needed.")
+        batch_anomaly_score_id = get_batch_anomaly_score_id(
+            batch_anomaly_score)
+        if batch_anomaly_score_id:
+            return self._delete("%s%s" % (self.url, batch_anomaly_score_id))

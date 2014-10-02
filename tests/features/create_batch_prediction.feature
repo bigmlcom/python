@@ -66,3 +66,20 @@ Feature: Create Batch Predictions
         Examples:
         | data             | time_1  | time_2 | time_3 | time_4 |
         | ../data/iris.csv | 30      | 30     | 50     | 50     |
+
+    Scenario: Successfully creating a batch anomaly score from an anomaly detector:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create an anomaly detector
+        And I wait until the anomaly detector is ready less than <time_3> secs
+        When I create a batch anomaly score
+        And I check the batch anomaly score is ok
+        And I wait until the batch anomaly score is ready less than <time_4> secs
+        And I download the created anomaly score file to "<local_file>"
+        Then the batch anomaly score file is like "<predictions_file>"
+
+        Examples:
+        | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
+        | ../data/tiny_kdd.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_a.csv |

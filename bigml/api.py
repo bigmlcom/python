@@ -107,7 +107,7 @@ BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
 ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
 ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
 BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
-                                             ID_PATTERN))
+                                                  ID_PATTERN))
 
 
 RESOURCE_RE = {
@@ -124,6 +124,9 @@ RESOURCE_RE = {
     'anomaly': ANOMALY_RE,
     'anomalyscore': ANOMALY_SCORE_RE,
     'batchanomalyscore': BATCH_ANOMALY_SCORE_RE}
+
+PREDICTIONS_RE = []
+
 DOWNLOAD_DIR = '/download'
 
 # Headers
@@ -305,20 +308,9 @@ def get_resource_id(resource):
     """
     if isinstance(resource, dict) and 'resource' in resource:
         return resource['resource']
-    elif isinstance(resource, basestring) and (
-            SOURCE_RE.match(resource)
-            or DATASET_RE.match(resource)
-            or MODEL_RE.match(resource)
-            or PREDICTION_RE.match(resource)
-            or EVALUATION_RE.match(resource)
-            or ENSEMBLE_RE.match(resource)
-            or BATCH_PREDICTION_RE.match(resource)
-            or CLUSTER_RE.match(resource)
-            or CENTROID_RE.match(resource)
-            or BATCH_CENTROID_RE.match(resource)
-            or ANOMALY_RE.match(resource)
-            or ANOMALY_SCORE_RE.match(resource)
-            or BATCH_ANOMALY_SCORE_RE.match(resource)):
+    elif isinstance(resource, basestring) and any(
+            resource_re.match(resource) for _, resource_re
+            in RESOURCE_RE.items()):
         return resource
     else:
         return
@@ -373,13 +365,11 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
 
     """
     def get_kwargs(resource_id):
-        if not (EVALUATION_RE.match(resource_id) or
-                PREDICTION_RE.match(resource_id) or
-                BATCH_PREDICTION_RE.match(resource_id) or
-                CENTROID_RE.match(resource_id) or
-                BATCH_CENTROID_RE.match(resource_id) or
-                ANOMALY_SCORE_RE.match(resource_id) or
-                BATCH_ANOMALY_SCORE_RE.match(resource_id)):
+        no_qs = [EVALUATION_RE, PREDICTION_RE, BATCH_PREDICTION_RE,
+                 CENTROID_RE, BATCH_CENTROID_RE, ANOMALY_SCORE_RE,
+                 BATCH_ANOMALY_SCORE_RE]
+        if not (any(resource_re.match(resource_id) for
+                    resource_re in no_qs)):
             return {'query_string': query_string}
         return {}
 
@@ -2282,9 +2272,8 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        model_types = [CLUSTER_PATH]
         origin_resources_checked = self.check_origins(
-            dataset, cluster, create_args, model_types=model_types,
+            dataset, cluster, create_args, model_types=[CLUSTER_PATH],
             wait_time=wait_time, retries=retries)
 
         if origin_resources_checked:
@@ -2515,9 +2504,8 @@ class BigML(object):
         if args is not None:
             create_args.update(args)
 
-        model_types = [ANOMALY_PATH]
         origin_resources_checked = self.check_origins(
-            dataset, anomaly, create_args, model_types=model_types,
+            dataset, anomaly, create_args, model_types=[ANOMALY_PATH],
             wait_time=wait_time, retries=retries)
 
         if origin_resources_checked:

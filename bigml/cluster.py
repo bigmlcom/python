@@ -41,6 +41,7 @@ cluster.predict({"petal length": 3, "petal width": 1,
 import logging
 LOGGER = logging.getLogger('BigML')
 
+import sys
 import math
 import re
 
@@ -50,12 +51,17 @@ from bigml.util import cast
 from bigml.centroid import Centroid
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
+from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
 
 
 OPTIONAL_FIELDS = ['categorical', 'text']
+INDENT = " " * 4
+INTERCENTROID_MEASURES = [('Minimum', min),
+                          ('Mean', lambda(x): sum(x)/float(len(x))),
+                          ('Maximum', max)]
 
 
 def parse_terms(text, case_sensitive=True):
@@ -169,6 +175,25 @@ class Cluster(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
+        unique_terms = self.get_unique_terms(input_data)
+        nearest = {'centroid_id': None, 'centroid_name': None,
+                   'distance': float('inf')}
+        for centroid in self.centroids:
+            distance2 = centroid.distance2(input_data, unique_terms,
+                                           self.scales,
+                                           stop_distance2=nearest['distance'])
+            if distance2 is not None:
+                nearest = {'centroid_id': centroid.centroid_id,
+                           'centroid_name': centroid.name,
+                           'distance': distance2}
+        nearest['distance'] = math.sqrt(nearest['distance'])
+        return nearest
+
+    def get_unique_terms(self, input_data):
+        """Parses the input data to find the list of unique terms in the
+           tag cloud
+
+        """
         unique_terms = {}
         for field_id in self.term_forms:
             if field_id in input_data:
@@ -189,15 +214,73 @@ class Cluster(ModelFields):
                     terms, self.term_forms[field_id],
                     self.tag_clouds.get(field_id, []))
                 del input_data[field_id]
-        nearest = {'centroid_id': None, 'centroid_name': None,
-                   'distance': float('inf')}
+        return unique_terms
+
+    def centroids_distance(self, to_centroid):
+        """Statistic distance information from the given centroid
+           to the rest of centroids in the cluster
+
+        """
+        intercentroid_distance = []
+        unique_terms = self.get_unique_terms(to_centroid.center)
+        distances = []
         for centroid in self.centroids:
-            distance2 = centroid.distance2(input_data, unique_terms,
-                                           self.scales,
-                                           stop_distance2=nearest['distance'])
-            if distance2 is not None:
-                nearest = {'centroid_id': centroid.centroid_id,
-                           'centroid_name': centroid.name,
-                           'distance': distance2}
-        nearest['distance'] = math.sqrt(nearest['distance'])
-        return nearest
+            if centroid.centroid_id != to_centroid.centroid_id:
+                distances.append(
+                    math.sqrt(
+                        centroid.distance2(to_centroid.center, unique_terms,
+                                           self.scales)))
+        for measure, function in INTERCENTROID_MEASURES:
+            result = function(distances)
+            intercentroid_distance.append([measure, result])
+        return intercentroid_distance
+
+    def get_data_distribution(self):
+        """Returns training data distribution
+
+        """
+        distribution = [[centroid.name, centroid.count] for centroid in
+                        self.centroids]
+        return sorted(distribution, key=lambda x: x[0])
+
+    def summarize(self, out=sys.stdout):
+        """Prints a summary of the cluster info
+
+        """
+        out.write(u"Cluster of %s centroids\n\n" % len(self.centroids))
+
+        out.write(u"Data distribution:\n")
+        print_distribution(self.get_data_distribution(), out=out)
+        out.write(u"\n\n")
+
+        out.write(u"Centroids features:\n")
+        for centroid in self.centroids:
+            out.write(u"\n%s: " % centroid.name)
+            connector = ""
+            for field_id, value in centroid.center.items():
+                if isinstance(value, basestring):
+                    value = "\"%s\"" % value
+                out.write(u"%s%s: %s" % (connector,
+                                         self.fields[field_id]['name'],
+                                         value))
+                connector = ", "
+            
+        out.write(u"\n\n")
+
+        """
+        No field importance at the moment
+        if self.field_importance:
+            out.write(u"Field importance:\n")
+            print_importance(self, out=out)
+        """
+
+        out.write(u"Data distance statistics:\n\n")
+        for centroid in self.centroids:
+            centroid.print_statistics(out=out)
+
+        out.write(u"Intercentroids distance:\n\n")
+        for centroid in self.centroids:
+            out.write(u"To centroid: %s\n" % centroid.name)
+            for measure, result in self.centroids_distance(centroid):
+                out.write(u"%s%s: %s\n" % (INDENT, measure, result))
+            out.write(u"\n")

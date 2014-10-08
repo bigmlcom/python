@@ -23,6 +23,11 @@ in the cluster.
 """
 
 import math
+import sys
+
+
+STATISTIC_MEASURES = [
+    'Minimum', 'Mean', 'Median', 'Maximum', 'Standard deviation']
 
 
 def cosine_distance2(terms, centroid_terms, scale):
@@ -55,6 +60,7 @@ class Centroid(object):
         self.count = centroid_info.get('count', 0)
         self.centroid_id = centroid_info.get('id', None)
         self.name = centroid_info.get('name', None)
+        self.distance = centroid_info.get('distance', {})
 
     def distance2(self, input_data, term_sets, scales, stop_distance2=None):
         """Squared Distance from the given input data to the centroid
@@ -76,3 +82,15 @@ class Centroid(object):
             if stop_distance2 is not None and distance2 >= stop_distance2:
                 return None
         return distance2
+
+    def print_statistics(self, out=sys.stdout):
+        """Print the statistics for the training data clustered around the
+           centroid
+
+        """
+        out.write(u"%s:\n" % self.name)
+        literal = u"    %s: %s\n"
+        for measure_title in STATISTIC_MEASURES:
+            measure = measure_title.lower().replace(" ", "_")
+            out.write(literal % (measure_title, self.distance[measure]))
+        out.write("\n")

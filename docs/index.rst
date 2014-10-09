@@ -2202,6 +2202,14 @@ information as a list (suitable to draw histograms or any further processing).
 Local ensembles have a ``local_ensemble.summarize()`` method too, the output
 in this case shows only the data distribution and field importance sections.
 
+For local clusters, the ``local_cluster.summarize()`` method prints also the
+data distribution, the training data statistics per cluster and the basic
+intercentroid distance statistics. There's also a
+``local_cluster.statistics_CSV(file_name)`` method that store in a CSV format
+the values shown by the ``summarize()`` method. If no file name is provided,
+the function returns the rows that would have been stored in the file as
+a list.
+
 Running the Tests
 -----------------
 

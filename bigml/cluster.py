@@ -42,6 +42,7 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 import sys
+import csv
 import math
 import re
 
@@ -58,6 +59,8 @@ from bigml.modelfields import ModelFields
 
 
 OPTIONAL_FIELDS = ['categorical', 'text']
+CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
+                  'sum', 'sum_squares', 'variance']
 INDENT = " " * 4
 INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Mean', lambda(x): sum(x)/float(len(x))),
@@ -235,6 +238,20 @@ class Cluster(ModelFields):
             intercentroid_distance.append([measure, result])
         return intercentroid_distance
 
+    def centroid_features(self, centroid):
+        """Returns features defining the centroid in a [[field_name value],...]
+           format
+
+        """
+        features = []
+        for field_id, value in centroid.center.items():
+            """
+            if isinstance(value, basestring):
+                value = u"\"%s\"" % value
+            """
+            features.append([self.fields[field_id]['name'], value])
+        return features
+
     def get_data_distribution(self):
         """Returns training data distribution
 
@@ -242,6 +259,41 @@ class Cluster(ModelFields):
         distribution = [[centroid.name, centroid.count] for centroid in
                         self.centroids]
         return sorted(distribution, key=lambda x: x[0])
+
+    def statistics_CSV(self, file_name=None):
+        """Clusters statistic information in CSV format
+
+        """
+        rows = []
+        writer = None
+        headers = ["centroid_name", "centroid_features", "Instances"]
+        intercentroids = False
+        header_complete = False
+        for centroid in self.centroids:
+            row = [centroid.name, self.centroid_features(centroid),
+                   centroid.count]
+            for measure, result in self.centroids_distance(centroid):
+                if not intercentroids:
+                    headers.append("Intercentroids %s" % measure.lower())
+                row.append(result)
+            intercentroids = True
+            for measure, result in centroid.distance.items():
+                if measure in CSV_STATISTICS: 
+                    if not header_complete:
+                        headers.append("Data %s" %
+                                       measure.lower().replace("_", " "))
+                    row.append(result)
+            if not header_complete:
+                rows.append(headers)
+                header_complete = True
+            rows.append(row)
+
+        if file_name is None:
+            return rows
+        with open(file_name, "w") as file_handler:
+            writer = csv.writer(file_handler)
+            for row in rows:
+                writer.writerow(row)
 
     def summarize(self, out=sys.stdout):
         """Prints a summary of the cluster info
@@ -259,20 +311,12 @@ class Cluster(ModelFields):
             connector = ""
             for field_id, value in centroid.center.items():
                 if isinstance(value, basestring):
-                    value = "\"%s\"" % value
+                    value = u"\"%s\"" % value
                 out.write(u"%s%s: %s" % (connector,
                                          self.fields[field_id]['name'],
                                          value))
                 connector = ", "
-            
         out.write(u"\n\n")
-
-        """
-        No field importance at the moment
-        if self.field_importance:
-            out.write(u"Field importance:\n")
-            print_importance(self, out=out)
-        """
 
         out.write(u"Data distance statistics:\n\n")
         for centroid in self.centroids:

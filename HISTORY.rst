@@ -3,10 +3,10 @@
 History
 -------
 
-1.9.1 (2014-10-09)
+1.9.1 (2014-10-10)
 ~~~~~~~~~~~~~~~~~~
 
-- Adding the summarize method to local cluster object.
+- Adding the summarize and statistics_CSV methods to local cluster object.
 
 1.9.0 (2014-10-02)
 ~~~~~~~~~~~~~~~~~~

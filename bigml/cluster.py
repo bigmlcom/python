@@ -48,7 +48,7 @@ import re
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_cluster_id, get_status)
-from bigml.util import cast
+from bigml.util import cast, utf8
 from bigml.centroid import Centroid
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
@@ -245,11 +245,10 @@ class Cluster(ModelFields):
         """
         features = []
         for field_id, value in centroid.center.items():
-            """
             if isinstance(value, basestring):
-                value = u"\"%s\"" % value
-            """
-            features.append([self.fields[field_id]['name'], value])
+                value = value.encode('utf-8')
+            features.append([self.fields[field_id]['name'].encode('utf-8'),
+                             value])
         return features
 
     def get_data_distribution(self):
@@ -266,7 +265,7 @@ class Cluster(ModelFields):
         """
         rows = []
         writer = None
-        headers = ["centroid_name", "centroid_features", "Instances"]
+        headers = [u"centroid_name", u"centroid_features", u"Instances"]
         intercentroids = False
         header_complete = False
         for centroid in self.centroids:
@@ -274,13 +273,13 @@ class Cluster(ModelFields):
                    centroid.count]
             for measure, result in self.centroids_distance(centroid):
                 if not intercentroids:
-                    headers.append("Intercentroids %s" % measure.lower())
+                    headers.append(u"Intercentroids %s" % measure.lower())
                 row.append(result)
             intercentroids = True
             for measure, result in centroid.distance.items():
                 if measure in CSV_STATISTICS: 
                     if not header_complete:
-                        headers.append("Data %s" %
+                        headers.append(u"Data %s" %
                                        measure.lower().replace("_", " "))
                     row.append(result)
             if not header_complete:
@@ -293,7 +292,8 @@ class Cluster(ModelFields):
         with open(file_name, "w") as file_handler:
             writer = csv.writer(file_handler)
             for row in rows:
-                writer.writerow(row)
+                writer.writerow([item if not isinstance(item, basestring)
+                                 else item.encode("utf-8") for item in row])
 
     def summarize(self, out=sys.stdout):
         """Prints a summary of the cluster info
@@ -307,14 +307,14 @@ class Cluster(ModelFields):
 
         out.write(u"Centroids features:\n")
         for centroid in self.centroids:
-            out.write(u"\n%s: " % centroid.name)
+            out.write(utf8(u"\n%s: " % centroid.name))
             connector = ""
             for field_id, value in centroid.center.items():
                 if isinstance(value, basestring):
                     value = u"\"%s\"" % value
-                out.write(u"%s%s: %s" % (connector,
-                                         self.fields[field_id]['name'],
-                                         value))
+                out.write(utf8(u"%s%s: %s" % (connector,
+                                              self.fields[field_id]['name'],
+                                              value)))
                 connector = ", "
         out.write(u"\n\n")
 
@@ -324,7 +324,7 @@ class Cluster(ModelFields):
 
         out.write(u"Intercentroids distance:\n\n")
         for centroid in self.centroids:
-            out.write(u"To centroid: %s\n" % centroid.name)
+            out.write(utf8(u"To centroid: %s\n" % centroid.name))
             for measure, result in self.centroids_distance(centroid):
                 out.write(u"%s%s: %s\n" % (INDENT, measure, result))
             out.write(u"\n")

@@ -186,14 +186,14 @@ class Fields(object):
             try:
                 id = self.fields_by_name[key]
             except KeyError:
-                sys.exit("Error: field name '%s' does not exist" % key)
+                raise ValueError("Error: field name '%s' does not exist" % key)
             return id
         elif isinstance(key, int):
             try:
                 id = self.fields_by_column_number[key]
             except KeyError:
-                sys.exit("Error: field column number '%s' does not exist" %
-                         key)
+                raise ValueError("Error: field column number '%s' does not"
+                                 " exist" % key)
             return id
 
     def field_name(self, key):
@@ -204,14 +204,14 @@ class Fields(object):
             try:
                 name = self.fields[key]['name']
             except KeyError:
-                sys.exit("Error: field id '%s' does not exist" % key)
+                raise ValueError("Error: field id '%s' does not exist" % key)
             return name
         elif isinstance(key, int):
             try:
                 name = self.fields[self.fields_by_column_number[key]]['name']
             except KeyError:
-                sys.exit("Error: field column number '%s' does not exist" %
-                         key)
+                raise ValueError("Error: field column number '%s' does not"
+                                 " exist" % key)
             return name
 
     def field_column_number(self, key):

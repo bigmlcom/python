@@ -3,6 +3,11 @@
 History
 -------
 
+1.9.2 (2014-10-13)
+~~~~~~~~~~~~~~~~~~
+
+- Changing some Fields exceptions handling.
+
 1.9.1 (2014-10-10)
 ~~~~~~~~~~~~~~~~~~
 

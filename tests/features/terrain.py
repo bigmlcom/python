@@ -28,17 +28,32 @@ def delete(object_list, delete_method):
             print ("Retries to delete the created resources are exhausted."
                    " Failed to delete.")
 
+@before.all
+def print_connection_info():
+    world.USERNAME = os.environ.get('BIGML_USERNAME')
+    world.API_KEY = os.environ.get('BIGML_API_KEY')
+    if world.USERNAME is None or world.API_KEY is None:
+        assert False, ("Tests use the BIGML_USERNAME and BIGML_API_KEY"
+                       " environment variables to authenticate the"
+                       " connection, but they seem to be unset. Please,"
+                       "set them before testing.")
+    else:
+        assert True
+    world.api = BigML(world.USERNAME, world.API_KEY)
+    print world.api.connection_info()
+
 @before.each_feature
 def setup_resources(feature):
-    world.USERNAME = os.environ['BIGML_USERNAME']
-    world.API_KEY = os.environ['BIGML_API_KEY']
-    assert world.USERNAME is not None
-    assert world.API_KEY is not None
     world.api = BigML(world.USERNAME, world.API_KEY)
     world.api_dev_mode = BigML(world.USERNAME, world.API_KEY, dev_mode=True)
 
     sources = world.api.list_sources()
-    assert sources['code'] == HTTP_OK
+    if sources['code'] != HTTP_OK:
+        assert False, ("Unable to list your sources. Please check the"
+                       " BigML domain and credentials to be:\n\n%s" %
+                       world.api.connection_info())
+    else:
+        assert True
     world.init_sources_count = sources['meta']['total_count']
 
     datasets = world.api.list_datasets()

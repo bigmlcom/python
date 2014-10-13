@@ -7,6 +7,9 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Changing some Fields exceptions handling.
+- Refactoring api code to handle create, update and delete methods dynamically.
+- Adding connection info string for printing.
+- Improving tests information.
 
 1.9.1 (2014-10-10)
 ~~~~~~~~~~~~~~~~~~

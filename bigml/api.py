@@ -125,6 +125,12 @@ RESOURCE_RE = {
     'anomalyscore': ANOMALY_SCORE_RE,
     'batchanomalyscore': BATCH_ANOMALY_SCORE_RE}
 
+RENAMED_RESOURCES = {
+    'batchprediction': 'batch_prediction',
+    'batchcentroid': 'batch_centroid',
+    'anomalyscore': 'anomaly_score',
+    'batchanomalyscore': 'batch_anomaly_score'}
+
 PREDICTIONS_RE = []
 
 DOWNLOAD_DIR = '/download'
@@ -345,11 +351,12 @@ def get_status(resource):
     return status
 
 
-def check_resource(resource, get_method, query_string='', wait_time=1,
+def check_resource(resource, get_method=None, query_string='', wait_time=1,
                    retries=None, raise_on_error=False):
     """Waits until a resource is finished.
 
-       Given a resource and its corresponding get_method
+       Given a resource and its corresponding get_method (if absent, it is
+           derived from the source type)
            source, api.get_source
            dataset, api.get_dataset
            model, api.get_model
@@ -376,14 +383,18 @@ def check_resource(resource, get_method, query_string='', wait_time=1,
     kwargs = {}
     if isinstance(resource, basestring):
         resource_id = resource
-        kwargs = get_kwargs(resource_id)
-        resource = get_method(resource, **kwargs)
     else:
         resource_id = get_resource_id(resource)
-        if resource_id is None:
-            raise ValueError("Failed to extract a valid resource id to check.")
-        kwargs = get_kwargs(resource_id)
+    resource_id = get_resource_id(resource)
+    resource_type = get_resource_type(resource_id)
+    if resource_id is None:
+        raise ValueError("Failed to extract a valid resource id to check.")
+    kwargs = get_kwargs(resource_id)
 
+    if get_method is None:
+        get_method = self.getters[resource_type]
+    if isinstance(resource, basestring):
+        resource = get_method(resource, **kwargs)
     counter = 0
     while retries is None or counter < retries:
         counter += 1
@@ -552,20 +563,25 @@ class BigML(object):
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)
-        self.getters = {
-            'source': self.get_source,
-            'dataset': self.get_dataset,
-            'model': self.get_model,
-            'ensemble': self.get_ensemble,
-            'prediction': self.get_prediction,
-            'evaluation': self.get_evaluation,
-            'batchprediction': self.get_batch_prediction,
-            'cluster': self.get_cluster,
-            'centroid': self.get_centroid,
-            'batchcentroid': self.get_batch_centroid,
-            'anomaly': self.get_anomaly,
-            'anomalyscore': self.get_anomaly_score,
-            'batchanomalyscore': self.get_batch_anomaly_score}
+        self.getters = {}
+        for resource_type in RESOURCE_RE:
+            method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
+            self.getters[resource_type] = getattr(self, "get_%s" % method_name)
+        self.creaters = {}
+        for resource_type in RESOURCE_RE:
+            method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
+            self.creaters[resource_type] = getattr(self,
+                                                   "create_%s" % method_name)
+        self.updaters = {}
+        for resource_type in RESOURCE_RE:
+            method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
+            self.updaters[resource_type] = getattr(self,
+                                                   "update_%s" % method_name)
+        self.deleters = {}
+        for resource_type in RESOURCE_RE:
+            method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
+            self.deleters[resource_type] = getattr(self,
+                                                   "delete_%s" % method_name)
 
     def _set_api_urls(self, dev_mode=False, domain=None):
         """Sets the urls that point to the REST api methods for each resource
@@ -1082,6 +1098,20 @@ class BigML(object):
     # Utils
     #
     ##########################################################################
+
+    def connection_info(self):
+        """Printable string: domain where the connection is bound and the
+           credentials used.
+
+        """
+        info = u"Connecting to:\n"
+        info += u"    %s\n" % self.general_domain
+        if self.general_domain != self.prediction_domain:
+            info += u"    %s (predictions only)\n" % self.prediction_domain
+
+        info += u"\nAuthentication string:\n"
+        info += u"    %s\n" % self.auth[1:]
+        return info
 
     def get_fields(self, resource):
         """Retrieve fields used by a resource.

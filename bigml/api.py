@@ -352,7 +352,7 @@ def get_status(resource):
 
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
-                   retries=None, raise_on_error=False):
+                   retries=None, raise_on_error=False, api=None):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, it is
@@ -364,7 +364,8 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
            evaluation, api.get_evaluation
            ensemble, api.get_ensemble
            batch_prediction, api.get_batch_prediction
-       it calls the get_method on the resource with the given query_string
+       and so on.
+       It calls the get_method on the resource with the given query_string
        and waits with sleeping intervals of wait_time
        until the resource is in a final state (either FINISHED
        or FAULTY). The number of retries can be limited using the retries
@@ -391,8 +392,11 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         raise ValueError("Failed to extract a valid resource id to check.")
     kwargs = get_kwargs(resource_id)
 
-    if get_method is None:
-        get_method = self.getters[resource_type]
+    if get_method is None and isinstance(api, BigML):
+        get_method = api.getters[resource_type]
+    elif get_method is None:
+        raise ValueError("You must supply either the get_method or the api"
+                         " connection info to retrieve the resource")
     if isinstance(resource, basestring):
         resource = get_method(resource, **kwargs)
     counter = 0
@@ -1023,7 +1027,8 @@ class BigML(object):
 
         return create_args
 
-    def ok(self, resource):
+    def ok(self, resource, query_string='', wait_time=1,
+           retries=None, raise_on_error=False,):
         """Waits until the resource is finished or faulty, updates it and
            returns True on success
 
@@ -1210,13 +1215,14 @@ class BigML(object):
                 return
             return STATUSES[UPLOADING]
 
-    def check_resource(self, resource, get_method,
+    def check_resource(self, resource,
                        query_string='', wait_time=1):
-        """Deprecated method. Use check_resource function instead.
+        """Check resource method.
 
         """
-        return check_resource(resource, get_method,
-                              query_string=query_string, wait_time=wait_time)
+        return check_resource(resource,
+                              query_string=query_string, wait_time=wait_time,
+                              api=self)
 
     def check_origins(self, dataset, model, args, model_types=None,
                       wait_time=3, retries=10):

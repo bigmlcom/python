@@ -6,7 +6,7 @@ import time
 from lettuce import before, after, world
 
 from bigml.api import BigML
-from bigml.api import HTTP_OK, HTTP_NO_CONTENT
+from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
 
 MAX_RETRIES = 10
 

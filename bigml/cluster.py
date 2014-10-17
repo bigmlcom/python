@@ -304,9 +304,10 @@ class Cluster(ModelFields):
         out.write(u"Data distribution:\n")
         print_distribution(self.get_data_distribution(), out=out)
         out.write(u"\n\n")
+        centroids_list = sorted(self.centroids, key=lambda x: x.name)
 
         out.write(u"Centroids features:\n")
-        for centroid in self.centroids:
+        for centroid in centroids_list:
             out.write(utf8(u"\n%s: " % centroid.name))
             connector = ""
             for field_id, value in centroid.center.items():
@@ -319,11 +320,11 @@ class Cluster(ModelFields):
         out.write(u"\n\n")
 
         out.write(u"Data distance statistics:\n\n")
-        for centroid in self.centroids:
+        for centroid in centroids_list:
             centroid.print_statistics(out=out)
 
         out.write(u"Intercentroids distance:\n\n")
-        for centroid in self.centroids:
+        for centroid in centroids_list:
             out.write(utf8(u"To centroid: %s\n" % centroid.name))
             for measure, result in self.centroids_distance(centroid):
                 out.write(u"%s%s: %s\n" % (INDENT, measure, result))

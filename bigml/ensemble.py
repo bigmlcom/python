@@ -40,6 +40,7 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 """
 import sys
 import logging
+import gc
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
@@ -231,8 +232,10 @@ class Ensemble(object):
            models
 
         """
+        import pdb
         fields = {}
         for model_id in self.model_ids:
             local_model = Model(model_id, self.api)
+            gc.collect()
             fields.update(local_model.fields)
         return fields

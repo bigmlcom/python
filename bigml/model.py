@@ -95,15 +95,6 @@ INDENT = u'    '
 STORAGE = './storage'
 
 
-def extract_objective(objective_field):
-    """Extract the objective field id from the model structure
-
-    """
-    if isinstance(objective_field, list):
-        return objective_field[0]
-    return objective_field
-
-
 def print_distribution(distribution, out=sys.stdout):
     """Prints distribution data
 

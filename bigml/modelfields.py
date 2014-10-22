@@ -25,17 +25,8 @@ is used for local predictions.
 import logging
 LOGGER = logging.getLogger('BigML')
 
-from bigml.util import invert_dictionary
-
-
-def extract_objective(objective_field):
-    """Extract the objective field id from the model structure
-
-    """
-    if isinstance(objective_field, list):
-        return objective_field[0]
-    return objective_field
-
+from bigml.util import invert_dictionary, DEFAULT_LOCALE
+from bigml.fields import DEFAULT_MISSING_TOKENS
 
 
 def check_model_structure(model):
@@ -49,12 +40,13 @@ def check_model_structure(model):
 
 
 class ModelFields(object):
-    """ A lightweight wrapper of the field information in the model or cluster
-        objects
+    """ A lightweight wrapper of the field information in the model, cluster
+        or anomaly objects
 
     """
 
-    def __init__(self, fields, objective_id=None):
+    def __init__(self, fields, objective_id=None, data_locale=None,
+                 missing_tokens=None):
         if isinstance(fields, dict):
             try:
                 self.objective_id = objective_id
@@ -62,6 +54,12 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
+                self.data_locale = data_locale
+                self.missing_tokens = missing_tokens
+                if self.data_locale is None:
+                    self.data_locale = DEFAULT_LOCALE
+                if self.missing_tokens is None:
+                    self.missing_tokens = DEFAULT_MISSING_TOKENS
             except KeyError:
                 raise Exception("Wrong field structure.")
 
@@ -98,16 +96,25 @@ class ModelFields(object):
                 fields[field_id]['name'] = new_name
             unique_names.append(new_name)
 
+    def normalize(self, value):
+        """Transforms to unicode and cleans missing tokens
+
+        """
+        if isinstance(value, basestring) and not isinstance(value, unicode):
+            value = unicode(value, "utf-8")
+        return None if value in self.missing_tokens else value
+
     def filter_input_data(self, input_data, by_name=True):
         """Filters the keys given in input_data checking against model fields
 
         """
 
         if isinstance(input_data, dict):
-            empty_fields = [(key, value) for (key, value) in input_data.items()
-                            if value is None]
-            for (key, value) in empty_fields:
-                del input_data[key]
+            # remove all missing values
+            for key, value in input_data.items():
+                value = self.normalize(value)
+                if value is None:
+                    del input_data[key]
 
             if by_name:
                 # We no longer check that the input data keys match some of
@@ -116,12 +123,17 @@ class ModelFields(object):
                 input_data = dict(
                     [[self.inverted_fields[key], value]
                      for key, value in input_data.items()
-                     if key in self.inverted_fields])
+                     if key in self.inverted_fields and
+                     (self.objective_id is None or
+                      self.inverted_fields[key] != self.objective_id)])
             else:
                 input_data = dict(
                     [[key, value]
                      for key, value in input_data.items()
-                     if key in self.fields])
+                     if key in self.fields and
+                     (self.objective_id is None or
+                      key != self.objective_id)])
+
             return input_data
         else:
             LOGGER.error("Failed to read input data in the expected"

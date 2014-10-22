@@ -50,9 +50,13 @@ from bigml.api import get_resource_type
 
 SOURCE_TYPE = 'source'
 DATASET_TYPE = 'dataset'
+PREDICTION_TYPE = 'prediction'
 MODEL_TYPE = 'model'
+CLUSTER_TYPE = 'cluster'
+ANOMALY_TYPE = 'anomaly'
 
-RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE]
+RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE,
+                         PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -69,15 +73,20 @@ def get_fields_structure(resource):
         raise ValueError("Unknown resource structure")
 
     if resource_type in RESOURCES_WITH_FIELDS:
+        # locale and missing tokens
         if resource_type == SOURCE_TYPE:
             resource_locale = resource['object']['source_parser']['locale']
             missing_tokens = resource['object'][
                 'source_parser']['missing_tokens']
         else:
-            resource_locale = resource['object']['locale']
-            missing_tokens = resource['object']['missing_tokens']
-        if resource_type == MODEL_TYPE:
+            resource_locale = resource['object'].get('locale', DEFAULT_LOCALE)
+            missing_tokens = resource['object'].get('missing_tokens',
+                                                    DEFAULT_MISSING_TOKENS)
+        # fields structure
+        if resource_type in [MODEL_TYPE, ANOMALY_TYPE]:
             fields = resource['object']['model']['fields']
+        elif resource_type == CLUSTER_TYPE:
+            fields = resource['object']['clusters']['fields']
         else:
             fields = resource['object']['fields']
         return fields, resource_locale, missing_tokens

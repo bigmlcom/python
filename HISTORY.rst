@@ -3,6 +3,14 @@
 History
 -------
 
+1.9.3 (2014-10-23)
+~~~~~~~~~~~~~~~~~~
+
+- Improving Fields and including the new Cluster and
+  Anomalies fields structures as fields resources.
+- Improving ModelFields to filter missing values from input data.
+- Forcing garbage collection in local ensemble to lower memory usage.
+
 1.9.2 (2014-10-13)
 ~~~~~~~~~~~~~~~~~~
 

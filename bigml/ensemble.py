@@ -232,7 +232,7 @@ class Ensemble(object):
            models
 
         """
-        import pdb
+
         fields = {}
         for model_id in self.model_ids:
             local_model = Model(model_id, self.api)

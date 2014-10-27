@@ -3,6 +3,11 @@
 History
 -------
 
+1.9.4 (2014-10-27)
+~~~~~~~~~~~~~~~~~~
+
+- Changing MultiModel class to return in-memory list of predictions.
+
 1.9.3 (2014-10-23)
 ~~~~~~~~~~~~~~~~~~
 

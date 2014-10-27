@@ -124,8 +124,11 @@ class BaseModel(ModelFields):
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
-                if 'model_fields' in model['model']:
-                    fields = model['model']['model_fields']
+                if ('model_fields' in model['model'] or
+                    'fields' in model['model']):
+                    fields = model['model'].get('model_fields',
+                                                model['model'].get('fields',
+                                                                   []))
                     # pagination or exclusion might cause a field not to
                     # be in available fields dict
                     if not all(key in model['model']['fields']

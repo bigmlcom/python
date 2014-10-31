@@ -45,7 +45,7 @@ LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
 from bigml.model import Model, retrieve_resource, print_distribution
-from bigml.model import STORAGE, ONLY_MODEL
+from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
@@ -101,7 +101,8 @@ class Ensemble(object):
         return self.model_ids
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False, options=None):
+                with_confidence=False, options=None,
+                missing_strategy=LAST_PREDICTION):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -124,14 +125,15 @@ class Ensemble(object):
                                             query_string=ONLY_MODEL)
                           for model_id in models_split]
                 multi_model = MultiModel(models, api=self.api)
-                votes_split = multi_model.generate_votes(input_data,
-                                                         by_name=by_name)
+                votes_split = multi_model.generate_votes(
+                    input_data, by_name=by_name,
+                    missing_strategy=missing_strategy)
                 votes.extend(votes_split.predictions)
         else:
             # When only one group of models is found you use the
             # corresponding multimodel to predict
-            votes_split = self.multi_model.generate_votes(input_data,
-                                                          by_name=by_name)
+            votes_split = self.multi_model.generate_votes(
+                input_data, by_name=by_name, missing_strategy=missing_strategy)
             votes = MultiVote(votes_split.predictions)
         return votes.combine(method=method, with_confidence=with_confidence,
                              options=options)

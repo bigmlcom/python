@@ -156,7 +156,7 @@ class MultiModel(object):
                       to_file=True):
         """Makes predictions for a list of input data.
 
-           Then the to_file argument is set to True, the predictions
+           When the to_file argument is set to True, the predictions
            generated for each model are stored in an output
            file. The name of the file will use the following syntax:
                 model_[id of the model]__predictions.csv

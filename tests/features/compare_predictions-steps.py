@@ -105,6 +105,29 @@ def i_create_a_prediction_from_a_multi_model(step, data=None):
     world.local_prediction = world.local_model.predict(data)
 
 
+@step(r'I create a batch multimodel prediction for "(.*)"')
+def i_create_a_batch_prediction_from_a_multi_model(step, data=None):
+    if data is None:
+        data = "[{}]"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.batch_predict(data,
+                                                             to_file=False)
+
+@step(r'the predictions are "(.*)"')
+def the_batch_mm_predictions_are(step, predictions):
+    if predictions is None:
+        predictions = "[{}]"
+    predictions = json.loads(predictions)
+    for i in range(len(predictions)):
+        multivote = world.local_prediction[i]
+        for prediction in multivote.predictions:
+            if prediction['prediction'] != predictions[i]:
+                assert False, ("Prediction: %s, expected: %s" % 
+                               (predictions[i], prediction['prediction']))
+                break
+    if i == len(predictions):
+        assert True
+
 @step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction):
     if isinstance(world.local_prediction, list):

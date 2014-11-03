@@ -3,6 +3,11 @@
 History
 -------
 
+1.9.5 (2014-11-03)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: summarize method breaks for clusters with text fields.
+
 1.9.4 (2014-10-27)
 ~~~~~~~~~~~~~~~~~~
 

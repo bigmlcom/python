@@ -200,22 +200,26 @@ class Cluster(ModelFields):
         unique_terms = {}
         for field_id in self.term_forms:
             if field_id in input_data:
-                case_sensitive = self.term_analysis[field_id].get(
-                    'case_sensitive', True)
-                token_mode = self.term_analysis[field_id].get(
-                    'token_mode', 'all')
                 input_data_field = input_data.get(field_id, '')
-                if token_mode != TM_FULL_TERM:
-                    terms = parse_terms(input_data_field,
-                                        case_sensitive=case_sensitive)
+                if isinstance(input_data_field, basestring):
+                    case_sensitive = self.term_analysis[field_id].get(
+                        'case_sensitive', True)
+                    token_mode = self.term_analysis[field_id].get(
+                        'token_mode', 'all')
+                    if token_mode != TM_FULL_TERM:
+                        terms = parse_terms(input_data_field,
+                                            case_sensitive=case_sensitive)
+                    else:
+                        terms = []
+                    if token_mode != TM_TOKENS:
+                        terms.append(
+                            input_data_field if case_sensitive
+                            else input_data_field.lower())
+                    unique_terms[field_id] = get_unique_terms(
+                        terms, self.term_forms[field_id],
+                        self.tag_clouds.get(field_id, []))
                 else:
-                    terms = []
-                if token_mode != TM_TOKENS:
-                    terms.append(input_data_field if case_sensitive else
-                                 input_data_field.lower())
-                unique_terms[field_id] = get_unique_terms(
-                    terms, self.term_forms[field_id],
-                    self.tag_clouds.get(field_id, []))
+                    unique_terms[field_id] = input_data_field
                 del input_data[field_id]
         return unique_terms
 

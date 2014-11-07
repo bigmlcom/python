@@ -3,6 +3,13 @@
 History
 -------
 
+1.9.6 (2014-11-09)
+~~~~~~~~~~~~~~~~~~
+
+- Adding BIGML_PROTOCOL, BIGML_SSL_VERIFY and BIGML_PREDICTION_SSL_VERIFY
+  environment variables to change the default corresponding values in
+  customized private environments.
+
 1.9.5 (2014-11-03)
 ~~~~~~~~~~~~~~~~~~
 

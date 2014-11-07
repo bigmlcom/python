@@ -61,7 +61,7 @@ from bigml.util import (localize, is_url, check_dir,
                         maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE
 from bigml.domain import Domain
-from bigml.domain import DEFAULT_DOMAIN, DEFAULT_PROTOCOL
+from bigml.domain import DEFAULT_DOMAIN, BIGML_PROTOCOL
 
 register_openers()
 
@@ -604,11 +604,11 @@ class BigML(object):
         self.verify = domain.verify
         self.verify_prediction = domain.verify_prediction
         if dev_mode:
-            self.url = BIGML_DEV_URL % (DEFAULT_PROTOCOL, self.general_domain)
-            self.prediction_url = BIGML_DEV_URL % (DEFAULT_PROTOCOL,
+            self.url = BIGML_DEV_URL % (BIGML_PROTOCOL, self.general_domain)
+            self.prediction_url = BIGML_DEV_URL % (BIGML_PROTOCOL,
                                                    self.general_domain)
         else:
-            self.url = BIGML_URL % (DEFAULT_PROTOCOL, self.general_domain)
+            self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
             self.prediction_url = BIGML_URL % (
                 self.prediction_protocol, self.prediction_domain)
 

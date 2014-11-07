@@ -27,6 +27,13 @@ DEFAULT_PROTOCOL = 'https'
 # Base Domain
 BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', DEFAULT_DOMAIN)
 
+# Protocol for main server
+BIGML_PROTOCOL = os.environ.get('BIGML_PROTOCOL',
+                                DEFAULT_PROTOCOL)
+
+# SSL Verification
+BIGML_SSL_VERIFY = os.environ.get('BIGML_SSL_VERIFY')
+
 # Domain for prediction server
 BIGML_PREDICTION_DOMAIN = os.environ.get('BIGML_PREDICTION_DOMAIN',
                                          BIGML_DOMAIN)
@@ -34,6 +41,9 @@ BIGML_PREDICTION_DOMAIN = os.environ.get('BIGML_PREDICTION_DOMAIN',
 # Protocol for prediction server
 BIGML_PREDICTION_PROTOCOL = os.environ.get('BIGML_PREDICTION_PROTOCOL',
                                            DEFAULT_PROTOCOL)
+
+# SSL Verification for prediction server
+BIGML_PREDICTION_SSL_VERIFY = os.environ.get('BIGML_PREDICTION_SSL_VERIFY')
 
 
 class Domain(object):
@@ -71,7 +81,7 @@ class Domain(object):
         if prediction_domain is None:
             if domain is not None:
                 self.prediction_domain = domain
-                self.prediction_protocol = DEFAULT_PROTOCOL
+                self.prediction_protocol = BIGML_PROTOCOL
             else:
                 self.prediction_domain = BIGML_PREDICTION_DOMAIN
                 self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
@@ -84,8 +94,23 @@ class Domain(object):
             else:
                 self.prediction_protocol = prediction_protocol
 
-        # Check SSL when comming from `bigml.io` subdomains
-        self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
-        self.verify_prediction = (
-            (self.prediction_domain.lower().endswith(DEFAULT_DOMAIN) and
-             self.prediction_protocol == DEFAULT_PROTOCOL))
+        # Check SSL when comming from `bigml.io` subdomains or when forced
+        # by the external BIGML_SSL_VERIFY environment variable
+        self.verify = None
+        self.verify_prediction = None
+        if BIGML_SSL_VERIFY is not None:
+            try:
+                self.verify = bool(int(BIGML_SSL_VERIFY))
+            except ValueError:
+                pass
+        if self.verify is None:
+            self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
+        if BIGML_PREDICTION_SSL_VERIFY is not None:
+            try:
+                self.verify_prediction = bool(int(BIGML_PREDICTION_SSL_VERIFY))
+            except ValueError:
+                pass
+        if self.verify_prediction is None:
+            self.verify_prediction = (
+                (self.prediction_domain.lower().endswith(DEFAULT_DOMAIN) and
+                 self.prediction_protocol == DEFAULT_PROTOCOL))

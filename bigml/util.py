@@ -87,6 +87,8 @@ PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
 
 PROGRESS_BAR_WIDTH = 50
 
+HTTP_INTERNAL_SERVER_ERROR = 500
+
 
 def python_map_type(value):
     """Maps a BigML type to equivalent Python types.
@@ -413,6 +415,33 @@ def check_dir(path):
     return path
 
 
+def resource_structure(code, resource_id, location, resource, error):
+    """Returns the corresponding JSON structure for a resource
+
+    """
+    return {
+        'code': code,
+        'resource': resource_id,
+        'location': location,
+        'object': resource,
+        'error': error}
+
+
+def empty_resource():
+    """Creates an empty resource JSON structure
+
+    """
+    return resource_structure(
+        HTTP_INTERNAL_SERVER_ERROR,
+        None,
+        None,
+        None,
+        {
+            "status": {
+                "code": HTTP_INTERNAL_SERVER_ERROR,
+                "message": "The resource couldn't be created"}})
+
+
 def maybe_save(resource_id, path,
                code=None, location=None,
                resource=None, error=None):
@@ -421,12 +450,8 @@ def maybe_save(resource_id, path,
         The resource is saved in a local repo json file in the given path.
 
     """
-    resource = {
-        'code': code,
-        'resource': resource_id,
-        'location': location,
-        'object': resource,
-        'error': error}
+    resource = resource_structure(code, resource_id, location, resource, error)
+
     if path is not None and resource_id is not None:
         try:
             resource_json = json.dumps(resource)

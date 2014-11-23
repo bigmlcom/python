@@ -3,6 +3,13 @@
 History
 -------
 
+1.9.7 (2014-11-24)
+~~~~~~~~~~~~~~~~~~
+
+- Adding method in Anomaly object to build the filter to exclude anomalies
+  from the original dataset.
+- Basic code refactorization for initial resources structure.
+
 1.9.6 (2014-11-09)
 ~~~~~~~~~~~~~~~~~~
 

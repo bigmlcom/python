@@ -135,3 +135,34 @@ class Anomaly(ModelFields):
             depth_sum += tree.depth(input_data)[0]
         observed_mean_depth = float(depth_sum) / len(self.iforest)
         return math.pow(2, - observed_mean_depth / self.expected_mean_depth)
+
+    def anomalies_filter(self, include=True):
+        """Returns the LISP expression needed to filter the subset of
+           top anomalies. When include is set to True, the only the top
+           anomalies are selected by the filter. If set to False, only the
+           rest of the dataset is selected.
+
+        """
+        anomaly_filters = []
+        for anomaly in self.top_anomalies:
+            filter_rules = []
+            row = anomaly.get('row', [])
+            for index in range(len(row)):
+                field_id = self.input_fields[index]
+                value = row[index]
+                if value is None:
+                    filter_rules.append('(missing? "%s")' % field_id)
+                else:
+                    if (self.fields[field_id]["optype"]
+                            in ["categorical", "text"]):
+                        value = '"%s"' % value
+                    filter_rules.append('(= (f "%s") %s)' % (field_id, value))
+            anomaly_filters.append("(and %s)" % " ".join(filter_rules))
+
+        anomalies_filter = " ".join(anomaly_filters)
+        if include:
+            if len(anomaly_filters) == 1:
+                return anomalies_filter
+            return "(or %s)" % anomalies_filter
+        else:
+            return "(not (or %s))" % anomalies_filter

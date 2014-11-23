@@ -1738,6 +1738,13 @@ retrieval. This ensures that all fields are retrieved by the get method in the
 same call (unlike in the standard calls where the number of fields returned is
 limited).
 
+The anomaly detector object has also the method ``anomalies_filter``
+that will build the LISP filter you would need to filter the original
+dataset and create a new one excluding
+the top anomalies. Setting the ``include`` parameter to True you can do the
+inverse and create a dataset with only the most anomalous data points.
+
+
 Local Anomaly Scores
 --------------------
 

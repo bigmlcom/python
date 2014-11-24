@@ -138,7 +138,7 @@ class Anomaly(ModelFields):
 
     def anomalies_filter(self, include=True):
         """Returns the LISP expression needed to filter the subset of
-           top anomalies. When include is set to True, the only the top
+           top anomalies. When include is set to True, only the top
            anomalies are selected by the filter. If set to False, only the
            rest of the dataset is selected.
 

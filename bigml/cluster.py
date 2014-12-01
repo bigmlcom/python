@@ -109,6 +109,12 @@ class Cluster(ModelFields):
 
     def __init__(self, cluster, api=None):
 
+        self.resource_id = None
+        self.centroids = None
+        self.scales = {}
+        self.term_forms = {}
+        self.tag_clouds = {}
+        self.term_analysis = {}
         if not (isinstance(cluster, dict) and 'resource' in cluster and
                 cluster['resource'] is not None):
             if api is None:
@@ -121,6 +127,8 @@ class Cluster(ModelFields):
             query_string = ONLY_MODEL
             cluster = retrieve_resource(api, self.resource_id,
                                         query_string=query_string)
+        else:
+            self.resource_id = get_cluster_id(cluster)
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
 

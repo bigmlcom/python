@@ -3,6 +3,13 @@
 History
 -------
 
+1.9.8 (2014-12-01)
+~~~~~~~~~~~~~~~~~~
+
+- Adding impurity to Model leaves, and a new method to select impure leaves.
+- Fixing bug: the Model, Cluster and Anomaly objects had no resource_id
+  attribute when built from a local resource JSON structure.
+
 1.9.7 (2014-11-24)
 ~~~~~~~~~~~~~~~~~~
 

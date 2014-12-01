@@ -67,6 +67,9 @@ class Ensemble(object):
         else:
             self.api = api
         self.ensemble_id = None
+        self.distributions = None
+        self.models_splits = []
+        self.multi_model = None
         if isinstance(ensemble, list):
             try:
                 models = [get_model_id(model) for model in ensemble]

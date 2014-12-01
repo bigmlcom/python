@@ -55,6 +55,8 @@ import sys
 import locale
 import json
 
+from functools import partial
+
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_model_id, get_status)
 from bigml.util import (slugify, markdown_cleanup,
@@ -94,6 +96,8 @@ INDENT = u'    '
 
 STORAGE = './storage'
 
+DEFAULT_IMPURITY = 0.5
+
 
 def print_distribution(distribution, out=sys.stdout):
     """Prints distribution data
@@ -125,6 +129,9 @@ class Model(BaseModel):
             - a path to a JSON file containing a model structure
 
         """
+        self.resource_id = None
+        self.ids_map = {}
+        self.terms = {}
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -158,6 +165,8 @@ class Model(BaseModel):
             query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
                                       query_string=query_string)
+        else:
+            self.resource_id = get_model_id(model)
         BaseModel.__init__(self, model, api=api)
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
@@ -166,7 +175,6 @@ class Model(BaseModel):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
                 distribution = model['model']['distribution']['training']
-                self.ids_map = {}
                 self.tree = Tree(
                     model['model']['root'],
                     self.fields,
@@ -174,7 +182,6 @@ class Model(BaseModel):
                     root_distribution=distribution,
                     parent_id=None,
                     ids_map=self.ids_map)
-                self.terms = {}
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -195,11 +202,33 @@ class Model(BaseModel):
         """
         self.tree.list_fields(out)
 
-    def get_leaves(self):
+    def get_leaves(self, filter_function=None):
         """Returns a list that includes all the leaves of the model.
 
+           filter_function should be a function that returns a boolean
+           when applied to each leaf node.
         """
-        return self.tree.get_leaves()
+        leaves = self.tree.get_leaves()
+        if hasattr(filter_function, '__call__'):
+            leaves = [leaf for leaf in leaves if filter_function(leaf)]
+        return leaves
+
+    def impure_leaves(self, impurity_threshold=DEFAULT_IMPURITY):
+        """Returns a list of leaves that are impure
+
+        """
+        if self.tree.regression:
+            raise AttributeError("This method is available for "
+                                 " categorization models only.")
+        def is_impure(node, impurity_threshold=impurity_threshold):
+            """Returns True if the gini impurity of the node distribution
+               goes above the impurity threshold.
+
+            """
+            return node.get('impurity') > impurity_threshold
+
+        is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
+        return self.get_leaves(filter_function=is_impure)
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
@@ -354,7 +383,8 @@ class Model(BaseModel):
                                 'details': []}
         path = []
 
-        def add_to_groups(groups, output, path, count, confidence):
+        def add_to_groups(groups, output, path, count, confidence,
+                          impurity=None):
             """Adds instances to groups array
 
             """
@@ -362,7 +392,8 @@ class Model(BaseModel):
             if not output in groups:
                 groups[group] = {'total': [[], 0, 0],
                                  'details': []}
-            groups[group]['details'].append([path, count, confidence])
+            groups[group]['details'].append([path, count, confidence,
+                                             impurity])
             groups[group]['total'][2] += count
 
         def depth_first_search(tree, path):
@@ -380,7 +411,7 @@ class Model(BaseModel):
 
             if len(tree.children) == 0:
                 add_to_groups(groups, tree.output,
-                              path, tree.count, tree.confidence)
+                              path, tree.count, tree.confidence, tree.impurity)
                 return tree.count
             else:
                 children = tree.children[:]
@@ -391,7 +422,8 @@ class Model(BaseModel):
                     children_sum += depth_first_search(child, path[:])
                 if children_sum < tree.count:
                     add_to_groups(groups, tree.output, path,
-                                  tree.count - children_sum, tree.confidence)
+                                  tree.count - children_sum, tree.confidence,
+                                  tree.impurity)
                 return tree.count
 
         depth_first_search(tree, path)
@@ -449,17 +481,21 @@ class Model(BaseModel):
                                                       key=lambda x: x[1],
                                                       reverse=True)
 
-        def confidence_error(value):
+        def confidence_error(value, impurity=None):
             """Returns confidence for categoric objective fields
                and error for numeric objective fields
             """
             if value is None:
                 return ""
+            impurity_literal = ""
+            if impurity is not None and impurity > 0:
+                impurity_literal = "; impurity: %.2f%%" % (round(impurity, 4))
             objective_type = self.fields[tree.objective_id]['optype']
             if objective_type == 'numeric':
                 return u" [Error: %s]" % value
             else:
-                return u" [Confidence: %.2f%%]" % (round(value, 4) * 100)
+                return u" [Confidence: %.2f%%%s]" % ((round(value, 4) * 100),
+                                                     impurity_literal)
 
         distribution = self.get_data_distribution()
 
@@ -503,7 +539,8 @@ class Model(BaseModel):
                 out.write(utf8(u"    · %.2f%%: %s%s\n" %
                                (round(pred_per_sgroup, 4) * 100,
                                 path_chain,
-                                confidence_error(subgroup[2]))))
+                                confidence_error(subgroup[2],
+                                                 impurity=subgroup[3]))))
         out.flush()
 
     def hadoop_python_mapper(self, out=sys.stdout, ids_path=None,

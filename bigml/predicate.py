@@ -161,6 +161,30 @@ class Predicate(object):
                                 self.value,
                                 relation_missing)
 
+    def to_LISP_rule(self, fields):
+        """ Builds rule string in LISP from a predicate
+
+        """
+        if self.term is not None:
+            options = fields[self.field]['term_analysis']
+            case_insensitive = not options.get('case_sensitive', False)
+            case_insensitive = u'true' if case_insensitive else u'false'
+            language = options.get('language')
+            if language is not None:
+                language = u" %s" % language
+            return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
+                self.operator, self.field, self.term,
+                case_insensitive, language, self.value)
+        if self.value is None:
+            negation = u"" if self.operator == "=" else u"not "
+            return u"(%s missing? %s)" % (negation, self.field)
+        rule = u"(%s (f %s) %s)" % (self.operator,
+                                    self.field,
+                                    self.value)
+        if self.missing:
+            rule = u"(or (missing? %s) %s)" % (self.field, rule)
+        return rule
+
     def apply(self, input_data, fields):
         """ Applies the operators defined in the predicate as strings to
             the provided input data

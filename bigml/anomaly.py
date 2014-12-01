@@ -63,6 +63,13 @@ class Anomaly(ModelFields):
 
     def __init__(self, anomaly, api=None):
 
+        self.resource_id = None
+        self.sample_size = None
+        self.input_fields = None
+        self.mean_depth = None
+        self.expected_mean_depth = None
+        self.iforest = None
+        self.top_anomalies = None
         if not (isinstance(anomaly, dict) and 'resource' in anomaly and
                 anomaly['resource'] is not None):
             if api is None:
@@ -75,6 +82,8 @@ class Anomaly(ModelFields):
             query_string = ONLY_MODEL
             anomaly = retrieve_resource(api, self.resource_id,
                                         query_string=query_string)
+        else:
+            self.resource_id = get_anomaly_id(anomaly)
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']
             self.sample_size = anomaly.get('sample_size')
@@ -98,10 +107,11 @@ class Anomaly(ModelFields):
                             (float(self.sample_size - 1) / self.sample_size)))
                         self.expected_mean_depth = min(self.mean_depth,
                                                        default_depth)
-                    self.iforest = [
-                        AnomalyTree(anomaly_tree['root'], self.fields)
-                        for anomaly_tree
-                        in anomaly['model']['trees']]
+                    iforest = anomaly['model'].get('trees', [])
+                    if iforest:
+                        self.iforest = [
+                            AnomalyTree(anomaly_tree['root'], self.fields)
+                            for anomaly_tree in iforest]
                     self.top_anomalies = anomaly['model']['top_anomalies']
                 else:
                     raise Exception("The anomaly isn't finished yet")
@@ -131,6 +141,11 @@ class Anomaly(ModelFields):
         cast(input_data, self.fields)
 
         depth_sum = 0
+        if self.iforest is None:
+            raise Exception("We could not find the iforest information to "
+                            "compute the anomaly score. Please, rebuild your "
+                            "Anomaly object from a complete anomaly detector "
+                            "resource.")
         for tree in self.iforest:
             depth_sum += tree.depth(input_data)[0]
         observed_mean_depth = float(depth_sum) / len(self.iforest)

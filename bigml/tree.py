@@ -253,6 +253,7 @@ class Tree(object):
         self.regression = self.is_regression()
         self.count = tree['count']
         self.confidence = tree.get('confidence', None)
+        self.distribution = None
         if 'distribution' in tree:
             self.distribution = tree['distribution']
         elif 'objective_summary' in tree:
@@ -271,6 +272,21 @@ class Tree(object):
                 self.distribution = summary['counts']
             elif 'categories' in summary:
                 self.distribution = summary['categories']
+        self.impurity = None
+        if not self.regression and self.distribution is not None:
+            self.impurity = self.gini_impurity()
+
+    def gini_impurity(self):
+        """Returns the gini impurity score associated to the distribution
+           in the node goes
+
+        """
+        purity = 0.0
+        if self.distribution is None:
+            return None
+        for category, instances in self.distribution:
+           purity += math.pow(instances / float(self.count), 2)
+        return (1.0 - purity) / 2
 
     def list_fields(self, out):
         """Lists a description of the model's fields.
@@ -307,21 +323,28 @@ class Tree(object):
             return not any([is_classification(child)
                             for child in self.children])
 
-    def get_leaves(self):
+    def get_leaves(self, path=None):
         """Returns a list that includes all the leaves of the tree.
 
         """
         leaves = []
+        if path is None:
+            path = []
+        if not isinstance(self.predicate, bool):
+            path.append(self.predicate.to_LISP_rule(self.fields))
 
         if self.children:
             for child in self.children:
-                leaves += child.get_leaves()
+                leaves += child.get_leaves(path=path[:])
         else:
             leaves += [{
+                'id': self.id,
                 'confidence': self.confidence,
                 'count': self.count,
                 'distribution': self.distribution,
-                'output': self.output
+                'impurity': self.impurity,
+                'output': self.output,
+                'path': path
             }]
         return leaves
 

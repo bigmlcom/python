@@ -96,7 +96,7 @@ INDENT = u'    '
 
 STORAGE = './storage'
 
-DEFAULT_IMPURITY = 0.5
+DEFAULT_IMPURITY = 0.2
 
 
 def print_distribution(distribution, out=sys.stdout):

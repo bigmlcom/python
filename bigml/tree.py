@@ -278,7 +278,7 @@ class Tree(object):
 
     def gini_impurity(self):
         """Returns the gini impurity score associated to the distribution
-           in the node goes
+           in the node
 
         """
         purity = 0.0
@@ -323,7 +323,7 @@ class Tree(object):
             return not any([is_classification(child)
                             for child in self.children])
 
-    def get_leaves(self, path=None):
+    def get_leaves(self, path=None, filter_function=None):
         """Returns a list that includes all the leaves of the tree.
 
         """
@@ -335,17 +335,20 @@ class Tree(object):
 
         if self.children:
             for child in self.children:
-                leaves += child.get_leaves(path=path[:])
+                leaves += child.get_leaves(path=path[:],
+                                           filter_function=filter_function)
         else:
-            leaves += [{
-                'id': self.id,
-                'confidence': self.confidence,
-                'count': self.count,
-                'distribution': self.distribution,
-                'impurity': self.impurity,
-                'output': self.output,
-                'path': path
-            }]
+            leaf = {
+                    'id': self.id,
+                    'confidence': self.confidence,
+                    'count': self.count,
+                    'distribution': self.distribution,
+                    'impurity': self.impurity,
+                    'output': self.output,
+                    'path': path}
+            if (not hasattr(filter_function, '__call__')
+                    or filter_function(leaf)):
+                leaves += [leaf]
         return leaves
 
     def predict(self, input_data, path=None, missing_strategy=LAST_PREDICTION):

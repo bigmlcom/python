@@ -170,8 +170,7 @@ class Predicate(object):
             case_insensitive = not options.get('case_sensitive', False)
             case_insensitive = u'true' if case_insensitive else u'false'
             language = options.get('language')
-            if language is not None:
-                language = u" %s" % language
+            language = u"" if language is None else u" %s" % language
             return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
                 self.operator, self.field, self.term,
                 case_insensitive, language, self.value)

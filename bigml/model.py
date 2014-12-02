@@ -208,10 +208,7 @@ class Model(BaseModel):
            filter_function should be a function that returns a boolean
            when applied to each leaf node.
         """
-        leaves = self.tree.get_leaves()
-        if hasattr(filter_function, '__call__'):
-            leaves = [leaf for leaf in leaves if filter_function(leaf)]
-        return leaves
+        return self.tree.get_leaves(filter_function=filter_function)
 
     def impure_leaves(self, impurity_threshold=DEFAULT_IMPURITY):
         """Returns a list of leaves that are impure

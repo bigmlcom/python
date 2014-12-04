@@ -3,6 +3,12 @@
 History
 -------
 
+1.10.0 (2014-12-04)
+~~~~~~~~~~~~~~~~~~~
+
+- Refactoring the BigML class before adding the new project resource.
+- Changing the ok and check_resource methods to download lighter resources.
+
 1.9.8 (2014-12-01)
 ~~~~~~~~~~~~~~~~~~
 

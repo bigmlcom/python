@@ -41,8 +41,8 @@ from poster.streaminghttp import register_openers
 
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
-from bigml.basebigml import BaseBigML
-from bigml.basebigml import (
+from bigml.bigmlconnection import BigMLConnection
+from bigml.bigmlconnection import (
     HTTP_CREATED, HTTP_ACCEPTED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
     HTTP_TOO_MANY_REQUESTS,
@@ -61,7 +61,7 @@ def get_source_id(source):
     return get_resource(SOURCE_RE, source)
 
 
-class BigMLSource(BaseBigML):
+class BigMLSourceHandle(BigMLConnection):
 
     def __init__(self):
         self.source_url = self.url + SOURCE_PATH
@@ -87,7 +87,8 @@ class BigMLSource(BaseBigML):
         """Creates a new source using a local file.
 
         This function is now DEPRECATED as "requests" do not stream the file
-        content what limited the size of local files to a small number of GBs.
+        content and that limited the size of local files to a small number of
+        GBs.
 
         """
         create_args = {}

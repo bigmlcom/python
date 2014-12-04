@@ -21,7 +21,7 @@
 
 import re
 
-from bigml.basebigml import HTTP_OK, HTTP_ACCEPTED
+from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED
 
 
 # Basic resources

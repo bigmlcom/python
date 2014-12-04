@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Base class for the BigML connection
+"""Class for the BigML connection
 
 """
 import sys
@@ -121,7 +121,7 @@ def patch_requests():
     requests.api.request = debug_request
 
 
-class BaseBigML(object):
+class BigMLConnection(object):
     """Low level point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 

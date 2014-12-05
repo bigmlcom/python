@@ -57,8 +57,18 @@ register_openers()
 
 
 class SourceHandler(ResourceHandler):
+    """This class is used by the BigML class as
+       a mixin that provides the REST calls to sources. It should not
+       be instantiated independently.
 
+    """
     def __init__(self):
+        """Initializes the SourceHandler. This class is intended to be
+           used as a mixin on ResourceHandler, that inherits its
+           attributes and basic method from BigMLConnection, and must not be
+           instantiated independently.
+
+        """
         self.source_url = self.url + SOURCE_PATH
 
 

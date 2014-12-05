@@ -42,8 +42,18 @@ from bigml.resourcehandler import (DATASET_PATH, SOURCE_PATH,
 
 
 class DatasetHandler(ResourceHandler):
+    """This class is used by the BigML class as
+       a mixin that provides the REST calls to datasets. It should not
+       be instantiated independently.
 
+    """
     def __init__(self):
+        """Initializes the DatasetHandler. This class is intended to be
+           used as a mixin on ResourceHandler, that inherits its
+           attributes and basic method from BigMLConnection, and must not be
+           instantiated independently.
+
+        """
         self.dataset_url = self.url + DATASET_PATH
 
     def _set_create_from_datasets_args(self, datasets, args=None,
@@ -60,7 +70,7 @@ class DatasetHandler(ResourceHandler):
 
         for dataset in origin_datasets:
             check_resource_type(dataset, DATASET_PATH,
-                                message=("A dataset id is needed to create a"
+                                message=("A dataset id is needed to create"
                                          " the resource."))
             dataset = check_resource(dataset, self.get_dataset,
                                      query_string=TINY_RESOURCE,
@@ -75,13 +85,11 @@ class DatasetHandler(ResourceHandler):
         if len(dataset_ids) == 1:
             if key is None:
                 key = "dataset"
-            create_args.update({
-                key: dataset_ids[0]})
+            create_args.update({key: dataset_ids[0]})
         else:
             if key is None:
                 key = "datasets"
-            create_args.update({
-                key: dataset_ids})
+            create_args.update({key: dataset_ids})
 
         return create_args
 

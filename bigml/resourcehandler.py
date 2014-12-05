@@ -363,8 +363,19 @@ def http_ok(resource):
 
 
 class ResourceHandler(BigMLConnection):
+    """This class is used by the BigML class as
+       a mixin that provides the get method for all kind of
+       resources and auxiliar utilities to check their status. It should not
+       be instantiated independently.
+
+    """
 
     def __init__(self):
+        """Initializes the ResourceHandler. This class is intended to be
+           used purely as a mixin on BigMLConnection and must not be
+           instantiated independently.
+
+        """
         pass
 
     def get_resource(self, resource, **kwargs):

@@ -54,7 +54,7 @@ except ImportError:
 from bigml.util import (check_dir,
                         get_exponential_wait)
 from bigml.bigmlconnection import BigMLConnection
-from bigml.sourcehandle import SourceHandle
+from bigml.sourcehandler import SourceHandler
 
 
 # Base URL
@@ -502,7 +502,7 @@ def patch_requests():
 ##############################################################################
 
 
-class BigML(SourceHandle, BigMLConnection):
+class BigML(SourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 
@@ -543,7 +543,7 @@ class BigML(SourceHandle, BigMLConnection):
                                  dev_mode=dev_mode, debug=debug,
                                  set_locale=set_locale, storage=storage,
                                  domain=domain)
-        SourceHandle.__init__(self)
+        SourceHandler.__init__(self)
         # Base Resource URLs
         self.dataset_url = self.url + DATASET_PATH
         self.model_url = self.url + MODEL_PATH

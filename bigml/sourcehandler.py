@@ -61,7 +61,7 @@ def get_source_id(source):
     return get_resource(SOURCE_RE, source)
 
 
-class SourceHandle(BigMLConnection):
+class SourceHandler(BigMLConnection):
 
     def __init__(self):
         self.source_url = self.url + SOURCE_PATH

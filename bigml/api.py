@@ -54,7 +54,9 @@ except ImportError:
 from bigml.util import (check_dir,
                         get_exponential_wait)
 from bigml.bigmlconnection import BigMLConnection
+from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
+from bigml.datasethandler import DatasetHandler
 
 
 # Base URL
@@ -502,7 +504,7 @@ def patch_requests():
 ##############################################################################
 
 
-class BigML(SourceHandler, BigMLConnection):
+class BigML(DatasetHandler, SourceHandler, ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 
@@ -543,9 +545,10 @@ class BigML(SourceHandler, BigMLConnection):
                                  dev_mode=dev_mode, debug=debug,
                                  set_locale=set_locale, storage=storage,
                                  domain=domain)
+        ResourceHandler.__init__(self)
         SourceHandler.__init__(self)
+        DatasetHandler.__init__(self)
         # Base Resource URLs
-        self.dataset_url = self.url + DATASET_PATH
         self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.prediction_url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
@@ -579,48 +582,8 @@ class BigML(SourceHandler, BigMLConnection):
             self.deleters[resource_type] = getattr(self,
                                                    "delete_%s" % method_name)
 
-
-    def _set_create_from_datasets_args(self, datasets, args=None,
-                                       wait_time=3, retries=10, key=None):
-        """Builds args dictionary for the create call from a `dataset` or a
-           list of `datasets`.
-
-        """
-        dataset_ids = []
-        if not isinstance(datasets, list):
-            origin_datasets = [datasets]
-        else:
-            origin_datasets = datasets
-
-        for dataset in origin_datasets:
-            check_resource_type(dataset, DATASET_PATH,
-                                message=("A dataset id is needed to create a"
-                                         " model."))
-            dataset = check_resource(dataset, self.get_dataset,
-                                     query_string=TINY_RESOURCE,
-                                     wait_time=wait_time, retries=retries,
-                                     raise_on_error=True)
-            dataset_ids.append(get_dataset_id(dataset))
-
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-
-        if len(dataset_ids) == 1:
-            if key is None:
-                key = "dataset"
-            create_args.update({
-                key: dataset_ids[0]})
-        else:
-            if key is None:
-                key = "datasets"
-            create_args.update({
-                key: dataset_ids})
-
-        return create_args
-
     def ok(self, resource, query_string='', wait_time=1,
-           retries=None, raise_on_error=False,):
+           retries=None, raise_on_error=False):
         """Waits until the resource is finished or faulty, updates it and
            returns True on success
 
@@ -816,179 +779,6 @@ class BigML(SourceHandler, BigMLConnection):
                                 " %s found." % resource_type)
 
         return dataset_id and resource_id
-
-    ##########################################################################
-    #
-    # Datasets
-    # https://bigml.com/developers/datasets
-    #
-    ##########################################################################
-    def create_dataset(self, origin_resource, args=None,
-                       wait_time=3, retries=10):
-        """Creates a remote dataset.
-
-        Uses a remote resource to create a new dataset using the
-        arguments in `args`.
-        The allowed remote resources can be:
-            - source
-            - dataset
-            - list of datasets
-            - cluster
-        In the case of using cluster id as origin_resources, a centroid must
-        also be provided in the args argument. The first centroid is used
-        otherwise.
-        If `wait_time` is higher than 0 then the dataset creation
-        request is not sent until the `source` has been created successfuly.
-
-        """
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-
-        if isinstance(origin_resource, list):
-            # mutidatasets
-            create_args = self._set_create_from_datasets_args(
-                origin_resource, args=create_args, wait_time=wait_time,
-                retries=retries, key="origin_datasets")
-        else:
-            # dataset from source
-            resource_type = get_resource_type(origin_resource)
-            if resource_type == SOURCE_PATH:
-                source_id = get_source_id(origin_resource)
-                if source_id:
-                    check_resource(source_id, self.get_source,
-                                   query_string=TINY_RESOURCE,
-                                   wait_time=wait_time,
-                                   retries=retries,
-                                   raise_on_error=True)
-                    create_args.update({
-                        "source": source_id})
-            # dataset from dataset
-            elif resource_type == DATASET_PATH:
-                create_args = self._set_create_from_datasets_args(
-                    origin_resource, args=create_args, wait_time=wait_time,
-                    retries=retries, key="origin_dataset")
-            # dataset from cluster and centroid
-            elif resource_type == CLUSTER_PATH:
-                cluster_id = get_cluster_id(origin_resource)
-                cluster = check_resource(cluster_id, self.get_cluster,
-                                         query_string=TINY_RESOURCE,
-                                         wait_time=wait_time,
-                                         retries=retries,
-                                         raise_on_error=True)
-                if not 'centroid' in create_args:
-                    try:
-                        centroid = cluster['object'][
-                            'cluster_datasets_ids'].keys()[0]
-                        create_args.update({'centroid': centroid})
-                    except KeyError:
-                        raise KeyError("Failed to generate the dataset. A "
-                                       "centroid id is needed in the args "
-                                       "argument to generate a dataset from "
-                                       "a cluster.")
-                create_args.update({'cluster': cluster_id})
-            else:
-                raise Exception("A source, dataset, list of dataset ids"
-                                " or cluster id plus centroid id are needed"
-                                " to create a"
-                                " dataset. %s found." % resource_type)
-
-        body = json.dumps(create_args)
-        return self._create(self.dataset_url, body)
-
-    def get_dataset(self, dataset, query_string=''):
-        """Retrieves a dataset.
-
-           The dataset parameter should be a string containing the
-           dataset id or the dict returned by create_dataset.
-           As dataset is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
-           return a dict that encloses the dataset values and state info
-           available at the time it is called.
-        """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._get("%s%s" % (self.url, dataset_id),
-                             query_string=query_string)
-
-    def dataset_is_ready(self, dataset):
-        """Check whether a dataset' status is FINISHED.
-
-        """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        resource = self.get_dataset(dataset)
-        return resource_is_ready(resource)
-
-    def list_datasets(self, query_string=''):
-        """Lists all your datasets.
-
-        """
-        return self._list(self.dataset_url, query_string)
-
-    def update_dataset(self, dataset, changes):
-        """Updates a dataset.
-
-        """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, dataset_id), body)
-
-    def delete_dataset(self, dataset):
-        """Deletes a dataset.
-
-        """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._delete("%s%s" % (self.url, dataset_id))
-
-    def error_counts(self, dataset, raise_on_error=True):
-        """Returns the ids of the fields that contain errors and their number.
-
-           The dataset argument can be either a dataset resource structure
-           or a dataset id (that will be used to retrieve the associated
-           remote resource).
-
-        """
-        errors_dict = {}
-        if not isinstance(dataset, dict) or not 'object' in dataset:
-            check_resource_type(dataset, DATASET_PATH,
-                                message="A dataset id is needed.")
-            dataset_id = get_dataset_id(dataset)
-            dataset = check_resource(dataset_id, self.get_dataset,
-                                     raise_on_error=raise_on_error)
-            if not raise_on_error and dataset['error'] is not None:
-                dataset_id = None
-        else:
-            dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            errors = dataset.get('object', {}).get(
-                'status', {}).get('field_errors', {})
-            for field_id in errors:
-                errors_dict[field_id] = errors[field_id]['total']
-        return errors_dict
-
-
-    def download_dataset(self, dataset, filename=None, retries=10):
-        """Donwloads dataset contents to a csv file or file object
-
-        """
-        check_resource_type(dataset, DATASET_PATH,
-                            message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._download("%s%s%s" % (self.url, dataset_id,
-                                              DOWNLOAD_DIR),
-                                  filename=filename,
-                                  retries=retries)
-
 
     ##########################################################################
     #

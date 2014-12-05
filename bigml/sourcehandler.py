@@ -47,31 +47,21 @@ from bigml.bigmlconnection import (
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
     HTTP_TOO_MANY_REQUESTS,
     HTTP_INTERNAL_SERVER_ERROR)
-from bigml.bigmlresource import (check_resource_type, get_resource,
-                                 resource_is_ready)
-from bigml.bigmlresource import SOURCE_RE, SOURCE_PATH, UPLOADING
+from bigml.resourcehandler import (check_resource_type, get_resource,
+                                   resource_is_ready, check_resource,
+                                   get_source_id)
+from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING
+from bigml.resourcehandler import ResourceHandler
 
 register_openers()
 
 
-def get_source_id(source):
-    """Returns a source/id.
-
-    """
-    return get_resource(SOURCE_RE, source)
-
-
-class SourceHandler(BigMLConnection):
+class SourceHandler(ResourceHandler):
 
     def __init__(self):
         self.source_url = self.url + SOURCE_PATH
 
-    ##########################################################################
-    #
-    # Sources
-    # https://bigml.com/developers/sources
-    #
-    ##########################################################################
+
     def _create_remote_source(self, url, args=None):
         """Creates a new source using a URL
 
@@ -306,14 +296,12 @@ class SourceHandler(BigMLConnection):
 
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.
-
            The source parameter should be a string containing the
            source id or the dict returned by create_source.
            As source is an evolving object that is processed
            until it reaches the FINISHED or FAULTY state, thet function will
            return a dict that encloses the source values and state info
            available at the time it is called.
-
         """
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")

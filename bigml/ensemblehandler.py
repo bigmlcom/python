@@ -26,15 +26,11 @@ try:
 except ImportError:
     import json
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_ensemble_id)
-from bigml.resourcehandler import ENSEMBLE_PATH
+from bigml.resourcehandler import ENSEMBLE_PATH, LOGGER
 
 
 class EnsembleHandler(ResourceHandler):

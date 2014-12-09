@@ -26,10 +26,6 @@ try:
 except ImportError:
     import json
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.resourcehandler import ResourceHandler
@@ -38,7 +34,7 @@ from bigml.resourcehandler import (check_resource_type,
                                    check_resource, get_source_id,
                                    get_dataset_id, get_cluster_id)
 from bigml.resourcehandler import (DATASET_PATH, SOURCE_PATH,
-                                   TINY_RESOURCE, CLUSTER_PATH)
+                                   TINY_RESOURCE, CLUSTER_PATH, LOGGER)
 
 
 class DatasetHandler(ResourceHandler):

@@ -30,10 +30,6 @@ try:
 except ImportError:
     import json
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 
 import urllib2
 from poster.encode import multipart_encode, MultipartParam
@@ -50,7 +46,7 @@ from bigml.bigmlconnection import (
 from bigml.resourcehandler import (check_resource_type, get_resource,
                                    resource_is_ready, check_resource,
                                    get_source_id)
-from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING
+from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING, LOGGER
 from bigml.resourcehandler import ResourceHandler
 
 register_openers()

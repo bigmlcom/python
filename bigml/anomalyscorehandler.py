@@ -26,17 +26,13 @@ try:
 except ImportError:
     import json
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, get_resource_type,
                                    check_resource,
                                    get_anomaly_score_id, get_anomaly_id)
 from bigml.resourcehandler import (ANOMALY_SCORE_PATH, ANOMALY_PATH,
-                                   TINY_RESOURCE)
+                                   TINY_RESOURCE, LOGGER)
 
 
 class AnomalyScoreHandler(ResourceHandler):
@@ -54,12 +50,6 @@ class AnomalyScoreHandler(ResourceHandler):
         """
         self.anomaly_score_url = self.url + ANOMALY_SCORE_PATH
 
-    ##########################################################################
-    #
-    # Anomaly scores
-    # https://bigml.com/developers/anomalyscores
-    #
-    ##########################################################################
     def create_anomaly_score(self, anomaly, input_data=None,
                              args=None, wait_time=3, retries=10):
         """Creates a new anomaly score.

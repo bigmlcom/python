@@ -22,12 +22,8 @@
 import time
 import re
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 from bigml.util import get_exponential_wait
-from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED
+from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
 

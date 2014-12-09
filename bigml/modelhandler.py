@@ -26,15 +26,11 @@ try:
 except ImportError:
     import json
 
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_model_id)
-from bigml.resourcehandler import MODEL_PATH
+from bigml.resourcehandler import MODEL_PATH, LOGGER
 
 
 class ModelHandler(ResourceHandler):

@@ -58,6 +58,7 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
 from bigml.modelhandler import ModelHandler
+from bigml.predictionhandler import PredictionHandler
 
 
 # Base URL
@@ -505,7 +506,7 @@ def patch_requests():
 ##############################################################################
 
 
-class BigML(ModelHandler, DatasetHandler, SourceHandler,
+class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
             ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
@@ -551,8 +552,9 @@ class BigML(ModelHandler, DatasetHandler, SourceHandler,
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
         ModelHandler.__init__(self)
+        PredictionHandler.__init__(self)
         # Base Resource URLs
-        self.prediction_url = self.prediction_url + PREDICTION_PATH
+        
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
         self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
@@ -781,98 +783,6 @@ class BigML(ModelHandler, DatasetHandler, SourceHandler,
                                 " %s found." % resource_type)
 
         return dataset_id and resource_id
-
-
-    ##########################################################################
-    #
-    # Predictions
-    # https://bigml.com/developers/predictions
-    #
-    ##########################################################################
-    def create_prediction(self, model, input_data=None,
-                          args=None, wait_time=3, retries=10, by_name=True):
-        """Creates a new prediction.
-           The model parameter can be:
-            - a simple model
-            - an ensemble
-           The by_name argument is now deprecated. It will be removed.
-
-        """
-        ensemble_id = None
-        model_id = None
-
-        resource_type = get_resource_type(model)
-        if resource_type == ENSEMBLE_PATH:
-            ensemble_id = get_ensemble_id(model)
-            if ensemble_id is not None:
-                check_resource(ensemble_id, self.get_ensemble,
-                               query_string=TINY_RESOURCE,
-                               wait_time=wait_time, retries=retries,
-                               raise_on_error=True)
-        elif resource_type == MODEL_PATH:
-            model_id = get_model_id(model)
-            check_resource(model_id, self.get_model,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True)
-        else:
-            raise Exception("A model or ensemble id is needed to create a"
-                            " prediction. %s found." % resource_type)
-
-        if input_data is None:
-            input_data = {}
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-        create_args.update({
-            "input_data": input_data})
-        if ensemble_id is None:
-            create_args.update({
-                "model": model_id})
-        else:
-            create_args.update({
-                "ensemble": ensemble_id})
-
-        body = json.dumps(create_args)
-        return self._create(self.prediction_url, body,
-                            verify=self.verify_prediction)
-
-    def get_prediction(self, prediction):
-        """Retrieves a prediction.
-
-        """
-        check_resource_type(prediction, PREDICTION_PATH,
-                            message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            return self._get("%s%s" % (self.url, prediction_id))
-
-    def list_predictions(self, query_string=''):
-        """Lists all your predictions.
-
-        """
-        return self._list(self.prediction_url, query_string)
-
-    def update_prediction(self, prediction, changes):
-        """Updates a prediction.
-
-        """
-        check_resource_type(prediction, PREDICTION_PATH,
-                            message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, prediction_id), body)
-
-    def delete_prediction(self, prediction):
-        """Deletes a prediction.
-
-        """
-        check_resource_type(prediction, PREDICTION_PATH,
-                            message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            return self._delete("%s%s" % (self.url, prediction_id))
 
     ##########################################################################
     #

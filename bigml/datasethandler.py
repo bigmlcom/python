@@ -56,43 +56,6 @@ class DatasetHandler(ResourceHandler):
         """
         self.dataset_url = self.url + DATASET_PATH
 
-    def _set_create_from_datasets_args(self, datasets, args=None,
-                                       wait_time=3, retries=10, key=None):
-        """Builds args dictionary for the create call from a `dataset` or a
-           list of `datasets`.
-
-        """
-        dataset_ids = []
-        if not isinstance(datasets, list):
-            origin_datasets = [datasets]
-        else:
-            origin_datasets = datasets
-
-        for dataset in origin_datasets:
-            check_resource_type(dataset, DATASET_PATH,
-                                message=("A dataset id is needed to create"
-                                         " the resource."))
-            dataset = check_resource(dataset, self.get_dataset,
-                                     query_string=TINY_RESOURCE,
-                                     wait_time=wait_time, retries=retries,
-                                     raise_on_error=True)
-            dataset_ids.append(get_dataset_id(dataset))
-
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-
-        if len(dataset_ids) == 1:
-            if key is None:
-                key = "dataset"
-            create_args.update({key: dataset_ids[0]})
-        else:
-            if key is None:
-                key = "datasets"
-            create_args.update({key: dataset_ids})
-
-        return create_args
-
     def create_dataset(self, origin_resource, args=None,
                        wait_time=3, retries=10):
         """Creates a remote dataset.

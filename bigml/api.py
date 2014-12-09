@@ -57,6 +57,7 @@ from bigml.bigmlconnection import BigMLConnection
 from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
+from bigml.modelhandler import ModelHandler
 
 
 # Base URL
@@ -504,7 +505,8 @@ def patch_requests():
 ##############################################################################
 
 
-class BigML(DatasetHandler, SourceHandler, ResourceHandler, BigMLConnection):
+class BigML(ModelHandler, DatasetHandler, SourceHandler,
+            ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 
@@ -548,8 +550,8 @@ class BigML(DatasetHandler, SourceHandler, ResourceHandler, BigMLConnection):
         ResourceHandler.__init__(self)
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
+        ModelHandler.__init__(self)
         # Base Resource URLs
-        self.model_url = self.url + MODEL_PATH
         self.prediction_url = self.prediction_url + PREDICTION_PATH
         self.evaluation_url = self.url + EVALUATION_PATH
         self.ensemble_url = self.url + ENSEMBLE_PATH
@@ -780,80 +782,6 @@ class BigML(DatasetHandler, SourceHandler, ResourceHandler, BigMLConnection):
 
         return dataset_id and resource_id
 
-    ##########################################################################
-    #
-    # Models
-    # https://bigml.com/developers/models
-    #
-    ##########################################################################
-    def create_model(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates a model from a `dataset` or a list o `datasets`.
-
-        """
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
-
-        body = json.dumps(create_args)
-        return self._create(self.model_url, body)
-
-    def get_model(self, model, query_string='',
-                  shared_username=None, shared_api_key=None):
-        """Retrieves a model.
-
-           The model parameter should be a string containing the
-           model id or the dict returned by create_model.
-           As model is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
-           return a dict that encloses the model values and state info
-           available at the time it is called.
-
-           If this is a shared model, the username and sharing api key must
-           also be provided.
-        """
-        check_resource_type(model, MODEL_PATH,
-                            message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            return self._get("%s%s" % (self.url, model_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
-
-    def model_is_ready(self, model, **kwargs):
-        """Checks whether a model's status is FINISHED.
-
-        """
-        check_resource_type(model, MODEL_PATH,
-                            message="A model id is needed.")
-        resource = self.get_model(model, **kwargs)
-        return resource_is_ready(resource)
-
-    def list_models(self, query_string=''):
-        """Lists all your models.
-
-        """
-        return self._list(self.model_url, query_string)
-
-    def update_model(self, model, changes):
-        """Updates a model.
-
-        """
-        check_resource_type(model, MODEL_PATH,
-                            message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, model_id), body)
-
-    def delete_model(self, model):
-        """Deletes a model.
-
-        """
-        check_resource_type(model, MODEL_PATH,
-                            message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            return self._delete("%s%s" % (self.url, model_id))
 
     ##########################################################################
     #

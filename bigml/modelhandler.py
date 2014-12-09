@@ -53,7 +53,7 @@ class ModelHandler(ResourceHandler):
         self.model_url = self.url + MODEL_PATH
 
     def create_model(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates a model from a `dataset` or a list o `datasets`.
+        """Creates a model from a `dataset` or a list of `datasets`.
 
         """
         create_args = self._set_create_from_datasets_args(

@@ -58,8 +58,12 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
 from bigml.modelhandler import ModelHandler
+from bigml.ensemblehandler import EnsembleHandler
 from bigml.predictionhandler import PredictionHandler
-
+from bigml.clusterhandler import ClusterHandler
+from bigml.centroidhandler import CentroidHandler
+from bigml.anomalyhandler import AnomalyHandler
+from bigml.anomalyscorehandler import AnomalyScoreHandler
 
 # Base URL
 BIGML_URL = '%s://%s/andromeda/'
@@ -506,8 +510,10 @@ def patch_requests():
 ##############################################################################
 
 
-class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
-            ResourceHandler, BigMLConnection):
+class BigML(AnomalyScoreHandler,
+            AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
+            EnsembleHandler, ModelHandler, DatasetHandler,
+            SourceHandler, ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 
@@ -552,17 +558,17 @@ class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
         ModelHandler.__init__(self)
+        EnsembleHandler.__init__(self)
         PredictionHandler.__init__(self)
+        ClusterHandler.__init__(self)
+        CentroidHandler.__init__(self)
+        AnomalyHandler.__init__(self)
+        AnomalyScoreHandler.__init__(self)
         # Base Resource URLs
         
         self.evaluation_url = self.url + EVALUATION_PATH
-        self.ensemble_url = self.url + ENSEMBLE_PATH
         self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
-        self.cluster_url = self.url + CLUSTER_PATH
-        self.centroid_url = self.url + CENTROID_PATH
         self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
-        self.anomaly_url = self.url + ANOMALY_PATH
-        self.anomaly_score_url = self.url + ANOMALY_SCORE_PATH
         self.batch_anomaly_score_url = self.url + BATCH_ANOMALY_SCORE_PATH
 
 
@@ -595,11 +601,11 @@ class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
         if http_ok(resource):
             resource_type = get_resource_type(resource)
             resource.update(check_resource(resource,
-                                           self.getters[resource_type],
                                            query_string=query_string,
                                            wait_time=wait_time,
                                            retries=retries,
-                                           raise_on_error=raise_on_error))
+                                           raise_on_error=raise_on_error,
+                                           api=self))
             return True
         else:
             LOGGER.error("The resource couldn't be created: %s",
@@ -851,75 +857,7 @@ class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
         if evaluation_id:
             return self._delete("%s%s" % (self.url, evaluation_id))
 
-    ##########################################################################
-    #
-    # Ensembles
-    # https://bigml.com/developers/ensembles
-    #
-    ##########################################################################
-    def create_ensemble(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates an ensemble from a dataset or a list of datasets.
 
-        """
-
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
-
-        body = json.dumps(create_args)
-        return self._create(self.ensemble_url, body)
-
-    def get_ensemble(self, ensemble, query_string=''):
-        """Retrieves an ensemble.
-
-           The ensemble parameter should be a string containing the
-           ensemble id or the dict returned by create_ensemble.
-           As an ensemble is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
-           return a dict that encloses the ensemble values and state info
-           available at the time it is called.
-        """
-        check_resource_type(ensemble, ENSEMBLE_PATH,
-                            message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            return self._get("%s%s" % (self.url, ensemble_id),
-                             query_string=query_string)
-
-    def ensemble_is_ready(self, ensemble):
-        """Checks whether a ensemble's status is FINISHED.
-
-        """
-        check_resource_type(ensemble, ENSEMBLE_PATH,
-                            message="An ensemble id is needed.")
-        resource = self.get_ensemble(ensemble)
-        return resource_is_ready(resource)
-
-    def list_ensembles(self, query_string=''):
-        """Lists all your ensembles.
-
-        """
-        return self._list(self.ensemble_url, query_string)
-
-    def update_ensemble(self, ensemble, changes):
-        """Updates a ensemble.
-
-        """
-        check_resource_type(ensemble, ENSEMBLE_PATH,
-                            message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, ensemble_id), body)
-
-    def delete_ensemble(self, ensemble):
-        """Deletes a ensemble.
-
-        """
-        check_resource_type(ensemble, ENSEMBLE_PATH,
-                            message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            return self._delete("%s%s" % (self.url, ensemble_id))
 
     ##########################################################################
     #
@@ -1017,154 +955,8 @@ class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
         if batch_prediction_id:
             return self._delete("%s%s" % (self.url, batch_prediction_id))
 
-    ##########################################################################
-    #
-    # Clusters
-    # https://bigml.com/developers/clusters
-    #
-    ##########################################################################
-    def create_cluster(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates a cluster from a `dataset` or a list o `datasets`.
 
-        """
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
-
-        body = json.dumps(create_args)
-        return self._create(self.cluster_url, body)
-
-    def get_cluster(self, cluster, query_string='',
-                    shared_username=None, shared_api_key=None):
-        """Retrieves a cluster.
-
-           The model parameter should be a string containing the
-           cluster id or the dict returned by create_cluster.
-           As cluster is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
-           return a dict that encloses the cluster values and state info
-           available at the time it is called.
-
-           If this is a shared cluster, the username and sharing api key must
-           also be provided.
-        """
-        check_resource_type(cluster, CLUSTER_PATH,
-                            message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            return self._get("%s%s" % (self.url, cluster_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
-
-    def cluster_is_ready(self, cluster, **kwargs):
-        """Checks whether a cluster's status is FINISHED.
-
-        """
-        check_resource_type(cluster, CLUSTER_PATH,
-                            message="A cluster id is needed.")
-        resource = self.get_cluster(cluster, **kwargs)
-        return resource_is_ready(resource)
-
-    def list_clusters(self, query_string=''):
-        """Lists all your clusters.
-
-        """
-        return self._list(self.cluster_url, query_string)
-
-    def update_cluster(self, cluster, changes):
-        """Updates a cluster.
-
-        """
-        check_resource_type(cluster, CLUSTER_PATH,
-                            message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, cluster_id), body)
-
-    def delete_cluster(self, cluster):
-        """Deletes a cluster.
-
-        """
-        check_resource_type(cluster, CLUSTER_PATH,
-                            message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            return self._delete("%s%s" % (self.url, cluster_id))
-
-    ##########################################################################
-    #
-    # Centroids
-    # https://bigml.com/developers/centroids
-    #
-    ##########################################################################
-    def create_centroid(self, cluster, input_data=None,
-                        args=None, wait_time=3, retries=10):
-        """Creates a new centroid.
-
-        """
-        cluster_id = None
-        resource_type = get_resource_type(cluster)
-        if resource_type == CLUSTER_PATH:
-            cluster_id = get_cluster_id(cluster)
-            check_resource(cluster_id, self.get_cluster,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True)
-        else:
-            raise Exception("A cluster id is needed to create a"
-                            " centroid. %s found." % resource_type)
-
-        if input_data is None:
-            input_data = {}
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-        create_args.update({
-            "input_data": input_data})
-        create_args.update({
-            "cluster": cluster_id})
-
-        body = json.dumps(create_args)
-        return self._create(self.centroid_url, body,
-                            verify=self.verify)
-
-    def get_centroid(self, centroid):
-        """Retrieves a centroid.
-
-        """
-        check_resource_type(centroid, CENTROID_PATH,
-                            message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            return self._get("%s%s" % (self.url, centroid_id))
-
-    def list_centroids(self, query_string=''):
-        """Lists all your centroids.
-
-        """
-        return self._list(self.centroid_url, query_string)
-
-    def update_centroid(self, centroid, changes):
-        """Updates a centroid.
-
-        """
-        check_resource_type(centroid, CENTROID_PATH,
-                            message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, centroid_id), body)
-
-    def delete_centroid(self, centroid):
-        """Deletes a centroid.
-
-        """
-        check_resource_type(centroid, CENTROID_PATH,
-                            message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            return self._delete("%s%s" % (self.url, centroid_id))
+ 
 
     ##########################################################################
     #
@@ -1247,155 +1039,8 @@ class BigML(PredictionHandler, ModelHandler, DatasetHandler, SourceHandler,
         if batch_centroid_id:
             return self._delete("%s%s" % (self.url, batch_centroid_id))
 
-    ##########################################################################
-    #
-    # Anomaly detector
-    # https://bigml.com/developers/anomalies
-    #
-    ##########################################################################
-    def create_anomaly(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates an anomaly detector from a `dataset` or a list o `datasets`.
-
-        """
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
-
-        body = json.dumps(create_args)
-        return self._create(self.anomaly_url, body)
-
-    def get_anomaly(self, anomaly, query_string='',
-                    shared_username=None, shared_api_key=None):
-        """Retrieves an anomaly detector.
-
-           The anomaly parameter should be a string containing the
-           anomaly id or the dict returned by create_anomaly.
-           As the anomaly detector is an evolving object that is processed
-           until it reaches the FINISHED or FAULTY state, the function will
-           return a dict that encloses the model values and state info
-           available at the time it is called.
-
-           If this is a shared anomaly detector, the username and sharing api
-           key must also be provided.
-        """
-        check_resource_type(anomaly, ANOMALY_PATH,
-                            message="A anomaly id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            return self._get("%s%s" % (self.url, anomaly_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
-
-    def anomaly_is_ready(self, anomaly, **kwargs):
-        """Checks whether an anomaly detector's status is FINISHED.
-
-        """
-        check_resource_type(anomaly, ANOMALY_PATH,
-                            message="An anomaly id is needed.")
-        resource = self.get_anomaly(anomaly, **kwargs)
-        return resource_is_ready(resource)
-
-    def list_anomalies(self, query_string=''):
-        """Lists all your anomaly detectors.
-
-        """
-        return self._list(self.anomaly_url, query_string)
-
-    def update_anomaly(self, anomaly, changes):
-        """Updates an anomaly detector.
-
-        """
-        check_resource_type(anomaly, ANOMALY_PATH,
-                            message="An anomaly detector id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, anomaly_id), body)
-
-    def delete_anomaly(self, anomaly):
-        """Deletes an anomaly detector.
-
-        """
-        check_resource_type(anomaly, ANOMALY_PATH,
-                            message="An anomaly detector id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            return self._delete("%s%s" % (self.url, anomaly_id))
 
 
-    ##########################################################################
-    #
-    # Anomaly scores
-    # https://bigml.com/developers/anomalyscores
-    #
-    ##########################################################################
-    def create_anomaly_score(self, anomaly, input_data=None,
-                            args=None, wait_time=3, retries=10):
-        """Creates a new anomaly score.
-
-        """
-        anomaly_id = None
-        resource_type = get_resource_type(anomaly)
-        if resource_type == ANOMALY_PATH:
-            anomaly_id = get_anomaly_id(anomaly)
-            check_resource(anomaly_id, self.get_anomaly,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True)
-        else:
-            raise Exception("An anomaly detector id is needed to create an"
-                            " anomaly score. %s found." % resource_type)
-
-        if input_data is None:
-            input_data = {}
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-        create_args.update({
-            "input_data": input_data})
-        create_args.update({
-            "anomaly": anomaly_id})
-
-        body = json.dumps(create_args)
-        return self._create(self.anomaly_score_url, body,
-                            verify=self.verify)
-
-    def get_anomaly_score(self, anomaly_score):
-        """Retrieves an anomaly score.
-
-        """
-        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
-                            message="An anomaly score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            return self._get("%s%s" % (self.url, anomaly_score_id))
-
-    def list_anomaly_scores(self, query_string=''):
-        """Lists all your anomaly_scores.
-
-        """
-        return self._list(self.anomaly_score_url, query_string)
-
-    def update_anomaly_score(self, anomaly_score, changes):
-        """Updates an anomaly_score.
-
-        """
-        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
-                            message="An anomaly_score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, anomaly_score_id), body)
-
-    def delete_anomaly_score(self, anomaly_score):
-        """Deletes an anomaly_score.
-
-        """
-        check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
-                            message="An anomaly_score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            return self._delete("%s%s" % (self.url, anomaly_score_id))
 
 
     ##########################################################################

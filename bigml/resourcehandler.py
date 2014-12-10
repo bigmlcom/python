@@ -449,3 +449,56 @@ class ResourceHandler(BigMLConnection):
             create_args.update({key: dataset_ids})
 
         return create_args
+
+    def check_origins(self, dataset, model, args, model_types=None,
+                      wait_time=3, retries=10):
+        """Returns True if the dataset and model needed to build
+           the batch prediction or evaluation are finished. The args given
+           by the user are modified to include the related ids in the
+           create call.
+
+           If model_types is a list, then we check any of the model types in
+           the list.
+
+        """
+
+        def args_update(resource_id):
+            """Updates args when the resource is ready
+
+            """
+            if resource_id:
+                check_resource(resource_id,
+                               query_string=TINY_RESOURCE,
+                               wait_time=wait_time, retries=retries,
+                               raise_on_error=True, api=self)
+                args.update({
+                    resource_type: resource_id,
+                    "dataset": dataset_id})
+
+        if model_types is None:
+            model_types = []
+
+        resource_type = get_resource_type(dataset)
+        if not DATASET_PATH == resource_type:
+            raise Exception("A dataset id is needed as second argument"
+                            " to create the resource. %s found." %
+                            resource_type)
+        dataset_id = get_dataset_id(dataset)
+        if dataset_id:
+            dataset = check_resource(dataset_id,
+                                     query_string=TINY_RESOURCE,
+                                     wait_time=wait_time, retries=retries,
+                                     raise_on_error=True, api=self)
+            resource_type = get_resource_type(model)
+            if resource_type in model_types:
+                resource_id = get_resource_id(model)
+                args_update(resource_id)
+            elif resource_type == MODEL_PATH:
+                resource_id = get_model_id(model)
+                args_update(resource_id)
+            else:
+                raise Exception("A model or ensemble id is needed as first"
+                                " argument to create the resource."
+                                " %s found." % resource_type)
+
+        return dataset_id and resource_id

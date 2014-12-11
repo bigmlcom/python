@@ -60,6 +60,7 @@ from bigml.evaluationhandler import EvaluationHandler
 from bigml.batchpredictionhandler import BatchPredictionHandler
 from bigml.batchcentroidhandler import BatchCentroidHandler
 from bigml.batchanomalyscorehandler import BatchAnomalyScoreHandler
+from bigml.projecthandler import ProjectHandler
 
 # Repeating constants and functions for backwards compatibility
 
@@ -76,7 +77,8 @@ from bigml.resourcehandler import (
     FAULTY, UNKNOWN, RUNNABLE, RESOURCE_RE, RENAMED_RESOURCES, SOURCE_RE,
     DATASET_RE, MODEL_RE, ENSEMBLE_RE, CLUSTER_RE, CENTROID_RE, ANOMALY_RE,
     PREDICTION_RE, EVALUATION_RE, BATCH_PREDICTION_RE, BATCH_CENTROID_RE,
-    BATCH_ANOMALY_SCORE_RE, ANOMALY_SCORE_RE, BATCH_PREDICTION_PATH)
+    BATCH_ANOMALY_SCORE_RE, ANOMALY_SCORE_RE, BATCH_PREDICTION_PATH,
+    PROJECT_PATH, PROJECT_RE)
 
 from bigml.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -84,7 +86,7 @@ from bigml.resourcehandler import (
     get_cluster_id, get_centroid_id, get_anomaly_id, get_anomaly_score_id,
     get_prediction_id, get_batch_prediction_id, get_batch_centroid_id,
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
-    get_status, check_resource, http_ok)
+    get_status, check_resource, http_ok, get_project_id)
 
 # Map status codes to labels
 STATUSES = {
@@ -128,7 +130,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(BatchAnomalyScoreHandler, BatchCentroidHandler,
+class BigML(ProjectHandler, BatchAnomalyScoreHandler, BatchCentroidHandler,
             BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
             AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
             EnsembleHandler, ModelHandler, DatasetHandler,
@@ -187,6 +189,7 @@ class BigML(BatchAnomalyScoreHandler, BatchCentroidHandler,
         BatchPredictionHandler.__init__(self)
         BatchCentroidHandler.__init__(self)
         BatchAnomalyScoreHandler.__init__(self)
+        ProjectHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:

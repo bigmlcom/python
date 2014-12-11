@@ -41,6 +41,7 @@ BATCH_CENTROID_PATH = 'batchcentroid'
 ANOMALY_PATH = 'anomaly'
 ANOMALY_SCORE_PATH = 'anomalyscore'
 BATCH_ANOMALY_SCORE_PATH = 'batchanomalyscore'
+PROJECT_PATH = 'project'
 
 
 # Resource Ids patterns
@@ -65,6 +66,7 @@ ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
 ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
 BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
                                                   ID_PATTERN))
+PROJECT_RE = re.compile(r'^%s/%s$' % (PROJECT_PATH, ID_PATTERN))
 
 
 RESOURCE_RE = {
@@ -80,7 +82,8 @@ RESOURCE_RE = {
     'batchcentroid': BATCH_CENTROID_RE,
     'anomaly': ANOMALY_RE,
     'anomalyscore': ANOMALY_SCORE_RE,
-    'batchanomalyscore': BATCH_ANOMALY_SCORE_RE}
+    'batchanomalyscore': BATCH_ANOMALY_SCORE_RE,
+    'project': PROJECT_RE}
 
 RENAMED_RESOURCES = {
     'batchprediction': 'batch_prediction',
@@ -90,7 +93,7 @@ RENAMED_RESOURCES = {
 
 NO_QS = [EVALUATION_RE, PREDICTION_RE, BATCH_PREDICTION_RE,
          CENTROID_RE, BATCH_CENTROID_RE, ANOMALY_SCORE_RE,
-         BATCH_ANOMALY_SCORE_RE]
+         BATCH_ANOMALY_SCORE_RE, PROJECT_RE]
 
 
 # Resource status codes
@@ -166,7 +169,7 @@ def get_status(resource):
         if resource['object'] is None:
             raise ValueError("The resource has no status info\n%s" % resource)
         resource = resource['object']
-    if not resource.get('private', True):
+    if not resource.get('private', True) or resource.get('status') is None:
         status = {'code': FINISHED}
     else:
         status = resource['status']
@@ -262,6 +265,13 @@ def get_batch_anomaly_score_id(batch_anomaly_score):
 
     """
     return get_resource(BATCH_ANOMALY_SCORE_RE, batch_anomaly_score)
+
+
+def get_project_id(project):
+    """Returns a project/id.
+
+    """
+    return get_resource(PROJECT_RE, project)
 
 
 def get_resource_id(resource):

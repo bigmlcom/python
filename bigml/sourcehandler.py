@@ -243,7 +243,8 @@ class SourceHandler(ResourceHandler):
             body, headers = multipart_encode(args, cb=callback)
         else:
             body, headers = multipart_encode(args)
-
+        # TODO: SSL check using requests for sys.version_info < 2.7.9 and
+        #       adapting urlopen code to check SSL in 2.7.9
         request = urllib2.Request(self.source_url + self.auth, body, headers)
 
         try:

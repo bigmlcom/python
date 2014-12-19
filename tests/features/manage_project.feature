@@ -8,7 +8,9 @@ Feature: REST calls for projects
         And I check that the project's name is "<name>"
         And I update the project name with "<name2>"
         Then I check that the project's name is "<name2>"
+        And I delete the project
+        And I wait until the project is deleted less than <time_3> secs
 
         Examples:
-        | name       | time_1  | time_2 | name2             |
-        | my_project | 10      | 10     | my_new_project    |
+        | name       | time_1  | time_2 | name2             |time_3
+        | my_project | 10      | 10     | my_new_project    | 20

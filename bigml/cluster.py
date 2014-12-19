@@ -250,17 +250,17 @@ class Cluster(ModelFields):
             intercentroid_distance.append([measure, result])
         return intercentroid_distance
 
-    def centroid_features(self, centroid):
-        """Returns features defining the centroid in a [[field_name value],...]
-           format
+    def centroid_features(self, centroid, field_ids):
+        """Returns features defining the centroid according to the list
+           of common field ids that define the centroids.
 
         """
         features = []
-        for field_id, value in centroid.center.items():
+        for field_id in field_ids:
+            value = centroid.center[field_id]
             if isinstance(value, basestring):
                 value = value.encode('utf-8')
-            features.append([self.fields[field_id]['name'].encode('utf-8'),
-                             value])
+            features.append(value)
         return features
 
     def get_data_distribution(self):
@@ -277,17 +277,23 @@ class Cluster(ModelFields):
         """
         rows = []
         writer = None
-        headers = [u"centroid_name", u"centroid_features", u"Instances"]
+        field_ids = self.centroids[0].center.keys()
+        headers = [u"centroid_name"]
+        headers.extend([u"%s" % self.fields[field_id]["name"]
+                        for field_id in field_ids])
+        headers.extend([u"centroid_features", u"Instances"])
         intercentroids = False
         header_complete = False
         for centroid in self.centroids:
-            row = [centroid.name, self.centroid_features(centroid),
-                   centroid.count]
-            for measure, result in self.centroids_distance(centroid):
-                if not intercentroids:
-                    headers.append(u"Intercentroids %s" % measure.lower())
-                row.append(result)
-            intercentroids = True
+            row = [centroid.name]
+            row.extend(self.centroid_features(centroid, field_ids))
+            row.append(centroid.count)
+            if len(self.centroids) > 1:
+                for measure, result in self.centroids_distance(centroid):
+                    if not intercentroids:
+                        headers.append(u"Intercentroids %s" % measure.lower())
+                    row.append(result)
+                intercentroids = True
             for measure, result in centroid.distance.items():
                 if measure in CSV_STATISTICS: 
                     if not header_complete:
@@ -335,9 +341,10 @@ class Cluster(ModelFields):
         for centroid in centroids_list:
             centroid.print_statistics(out=out)
 
-        out.write(u"Intercentroids distance:\n\n")
-        for centroid in centroids_list:
-            out.write(utf8(u"To centroid: %s\n" % centroid.name))
-            for measure, result in self.centroids_distance(centroid):
-                out.write(u"%s%s: %s\n" % (INDENT, measure, result))
-            out.write(u"\n")
+        if len(self.centroids) > 1:
+            out.write(u"Intercentroids distance:\n\n")
+            for centroid in centroids_list:
+                out.write(utf8(u"To centroid: %s\n" % centroid.name))
+                for measure, result in self.centroids_distance(centroid):
+                    out.write(u"%s%s: %s\n" % (INDENT, measure, result))
+                out.write(u"\n")

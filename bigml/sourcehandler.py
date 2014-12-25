@@ -22,6 +22,7 @@
 import sys
 import os
 import requests
+import ssl
 
 from threading import Thread
 
@@ -107,7 +108,7 @@ class SourceHandler(ResourceHandler):
         try:
             files = {os.path.basename(file_name): open(file_name, "rb")}
         except IOError:
-            sys.exit("ERROR: cannot read training set")
+            raise IOError("ERROR: cannot read training set")
 
         try:
             response = requests.post(self.source_url + self.auth,
@@ -205,7 +206,8 @@ class SourceHandler(ResourceHandler):
                                                   fileobj=file_name))
 
         except IOError, exception:
-            sys.exit("Error: cannot read training set. %s" % str(exception))
+            raise IOError("Error: cannot read training set. %s" %
+                          str(exception))
 
         if async:
             source = {
@@ -243,12 +245,18 @@ class SourceHandler(ResourceHandler):
             body, headers = multipart_encode(args, cb=callback)
         else:
             body, headers = multipart_encode(args)
-        # TODO: SSL check using requests for sys.version_info < 2.7.9 and
-        #       adapting urlopen code to check SSL in 2.7.9
+
         request = urllib2.Request(self.source_url + self.auth, body, headers)
 
         try:
-            response = urllib2.urlopen(request)
+            # try using the new SSL checking in python 2.7.9
+            try:
+                context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                verify_mode = (ssl.CERT_REQUIRED if self.verify else
+                               ssl.CERT_NONE)
+                response = urllib2.urlopen(request, context=context)
+            except AttributeError:
+                response = urllib2.urlopen(request)
             clear_console_line(out=out)
             reset_console_line(out=out)
             code = response.getcode()

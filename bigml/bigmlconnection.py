@@ -169,13 +169,15 @@ class BigMLConnection(object):
             try:
                 username = os.environ['BIGML_USERNAME']
             except KeyError:
-                sys.exit("Cannot find BIGML_USERNAME in your environment")
+                raise AttributeError("Cannot find BIGML_USERNAME in"
+                                     " your environment")
 
         if api_key is None:
             try:
                 api_key = os.environ['BIGML_API_KEY']
             except KeyError:
-                sys.exit("Cannot find BIGML_API_KEY in your environment")
+                raise AttributeError("Cannot find BIGML_API_KEY in"
+                                     " your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode

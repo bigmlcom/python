@@ -256,7 +256,8 @@ class SourceHandler(ResourceHandler):
                                         ssl.CERT_NONE)
                 print "*** verify", self.verify
                 print "*** context.verify_mode", context.verify_mode
-                response = urllib2.urlopen(request, context=context)
+                response = urllib2.urlopen(request, None, None, None, None,
+                                           None, context)
             except AttributeError, exc:
                 print "*** attribute error", str(exc)
                 response = urllib2.urlopen(request)

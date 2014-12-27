@@ -254,8 +254,11 @@ class SourceHandler(ResourceHandler):
                 context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 context.verify_mode  = (ssl.CERT_REQUIRED if self.verify else
                                         ssl.CERT_NONE)
+                print "*** verify", self.verify
+                print "*** context.verify_mode", context.verify_mode
                 response = urllib2.urlopen(request, context=context)
-            except AttributeError:
+            except AttributeError, exc:
+                print "*** attribute error", str(exc)
                 response = urllib2.urlopen(request)
             clear_console_line(out=out)
             reset_console_line(out=out)

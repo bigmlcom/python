@@ -252,8 +252,8 @@ class SourceHandler(ResourceHandler):
             # try using the new SSL checking in python 2.7.9
             try:
                 context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                verify_mode = (ssl.CERT_REQUIRED if self.verify else
-                               ssl.CERT_NONE)
+                context.verify_mode  = (ssl.CERT_REQUIRED if self.verify else
+                                        ssl.CERT_NONE)
                 response = urllib2.urlopen(request, context=context)
             except AttributeError:
                 response = urllib2.urlopen(request)

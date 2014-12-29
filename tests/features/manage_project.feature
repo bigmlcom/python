@@ -13,4 +13,4 @@ Feature: REST calls for projects
 
         Examples:
         | name       | time_1  | time_2 | name2             |time_3
-        | my_project | 10      | 10     | my_new_project    | 20
+        | my_project | 10      | 10     | my_new_project    | 50

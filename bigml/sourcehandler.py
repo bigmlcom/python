@@ -249,7 +249,7 @@ class SourceHandler(ResourceHandler):
             body, headers = multipart_encode(args)
 
         request = urllib2.Request(self.source_url + self.auth, body, headers)
-        import traceback
+
         try:
             # try using the new SSL checking in python 2.7.9
             try:

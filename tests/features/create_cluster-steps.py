@@ -32,7 +32,8 @@ def i_create_a_cluster(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_cluster(
         dataset, {'seed': 'BigML',
-                  'cluster_seed': 'BigML'})
+                  'cluster_seed': 'BigML',
+                  'k': 8})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']

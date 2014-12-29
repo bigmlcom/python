@@ -34,8 +34,10 @@ except ImportError:
 
 import urllib2
 from poster.encode import multipart_encode, MultipartParam
-from poster.streaminghttp import register_openers
+from poster.streaminghttp import StreamingHTTPHandler
 
+
+from bigml.sslposter import StreamingHTTPSHandler, register_openers
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
 from bigml.bigmlconnection import BigMLConnection
@@ -50,8 +52,8 @@ from bigml.resourcehandler import (check_resource_type, get_resource,
 from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING, LOGGER
 from bigml.resourcehandler import ResourceHandler
 
-register_openers()
 
+register_openers()
 
 class SourceHandler(ResourceHandler):
     """This class is used by the BigML class as
@@ -247,19 +249,21 @@ class SourceHandler(ResourceHandler):
             body, headers = multipart_encode(args)
 
         request = urllib2.Request(self.source_url + self.auth, body, headers)
-
+        import traceback
         try:
             # try using the new SSL checking in python 2.7.9
             try:
-                context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                context.verify_mode  = (ssl.CERT_REQUIRED if self.verify else
-                                        ssl.CERT_NONE)
-                print "*** verify", self.verify
-                print "*** context.verify_mode", context.verify_mode
-                response = urllib2.urlopen(request, None, None, None, None,
-                                           None, context)
-            except AttributeError, exc:
-                print "*** attribute error", str(exc)
+                if not self.verify:
+                    context = ssl.create_default_context(
+                        ssl.Purpose.CLIENT_AUTH)
+                    context.verify_mode = ssl.CERT_NONE
+                    https_handler = StreamingHTTPSHandler(context=context)
+                    opener = urllib2.build_opener(https_handler)
+                    urllib2.install_opener(opener)
+                    response = urllib2.urlopen(request)
+                else:
+                    response = urllib2.urlopen(request)
+            except AttributeError:
                 response = urllib2.urlopen(request)
             clear_console_line(out=out)
             reset_console_line(out=out)

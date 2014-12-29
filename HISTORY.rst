@@ -3,12 +3,13 @@
 History
 -------
 
-1.10.0 (2014-12-19)
+1.10.0 (2014-12-29)
 ~~~~~~~~~~~~~~~~~~~
 
 - Refactoring the BigML class before adding the new project resource.
 - Changing the ok and check_resource methods to download lighter resources.
 - Fixing bug: cluster summarize for 1-centroid clusters.
+- Fixing bug: adapting to new SSL verification in Python 2.7.9.
 
 1.9.8 (2014-12-01)
 ~~~~~~~~~~~~~~~~~~

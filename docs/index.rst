@@ -931,6 +931,54 @@ The ``wait_time`` value is used as seed to a wait
 interval that grows exponentially with the number of retries up to the given
 ``retries`` limit.
 
+Projects
+~~~~~~~~
+
+A special kind of resource is ``project``. Projects are repositories
+for resources, intended to fulfill organizational purposes. Each project can
+contain any other kind of resource, but the project that a certain resource
+belongs to is determined by the one used in the ``source``
+they are generated from. Thus, when a source is created
+and assigned a certain ``project_id``, the rest of resources generated from
+this source will remain in this project.
+
+The REST calls to manage the ``project`` resemble the ones used to manage the
+rest of resources. When you create a ``project``::
+
+    from bigml.api import BigML
+    api = BigML()
+
+    project = api.create_project({'name': 'my first project'})
+
+the resulting resource is similar to the rest of resources, although shorter::
+
+    {'code': 201,
+     'resource': u'project/54a1bd0958a27e3c4c0002f0',
+     'location': 'http://bigml.io/andromeda/project/54a1bd0958a27e3c4c0002f0',
+     'object': {u'category': 0,
+                u'updated': u'2014-12-29T20:43:53.060045',
+                u'resource': u'project/54a1bd0958a27e3c4c0002f0',
+                u'name': u'my first project',
+                u'created': u'2014-12-29T20:43:53.060013',
+                u'tags': [],
+                u'private': True,
+                u'dev': None,
+                u'description': u''},
+     'error': None}
+
+and you can use its project id to get, update or delete it::
+
+    project = api.get_project('project/54a1bd0958a27e3c4c0002f0')
+    api.update_project(project['resource'],
+                       {'description': 'This is my first project'})
+
+    api.delete_project(project['resource'])
+
+**Important**: Deleting a non-empty project will also delete **all resources**
+assigned to it, so please be extra-careful when using
+the ``api.delete_project`` call.
+
+
 Creating sources
 ~~~~~~~~~~~~~~~~
 

@@ -34,10 +34,14 @@ except ImportError:
 
 import urllib2
 from poster.encode import multipart_encode, MultipartParam
-from poster.streaminghttp import StreamingHTTPHandler
 
+PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
 
-from bigml.sslposter import StreamingHTTPSHandler, register_openers
+if PYTHON_2_7_9:
+    from bigml.sslposter import StreamingHTTPSHandler, register_openers
+else:
+    from poster.streaminghttp import StreamingHTTPSHandler, register_openers
+
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
 from bigml.bigmlconnection import BigMLConnection
@@ -253,7 +257,7 @@ class SourceHandler(ResourceHandler):
         try:
             # try using the new SSL checking in python 2.7.9
             try:
-                if not self.verify:
+                if not self.verify and PYTHON_2_7_9:
                     context = ssl.create_default_context(
                         ssl.Purpose.CLIENT_AUTH)
                     context.verify_mode = ssl.CERT_NONE

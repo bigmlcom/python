@@ -3,6 +3,11 @@
 History
 -------
 
+1.10.1 (2014-12-29)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: source upload failed in old Python versions.
+
 1.10.0 (2014-12-29)
 ~~~~~~~~~~~~~~~~~~~
 

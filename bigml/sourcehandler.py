@@ -59,12 +59,15 @@ from bigml.resourcehandler import ResourceHandler
 
 register_openers()
 
+
 class SourceHandler(ResourceHandler):
+
     """This class is used by the BigML class as
        a mixin that provides the REST calls to sources. It should not
        be instantiated independently.
 
     """
+
     def __init__(self):
         """Initializes the SourceHandler. This class is intended to be
            used as a mixin on ResourceHandler, that inherits its
@@ -74,7 +77,6 @@ class SourceHandler(ResourceHandler):
         """
         self.source_url = self.url + SOURCE_PATH
 
-
     def _create_remote_source(self, url, args=None):
         """Creates a new source using a URL
 
@@ -83,6 +85,26 @@ class SourceHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
         create_args.update({"remote": url})
+        body = json.dumps(create_args)
+        return self._create(self.source_url, body)
+
+    def _create_inline_source(self, src_obj, args=None):
+        """Create source from inline data
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        # some basic validation
+        if (not isinstance(src_obj, list) or
+            (not all([isinstance(row, dict) for row in src_obj]) and
+             not all([isinstance(row, list) for row in src_obj]))):
+            raise TypeError(
+                'ERROR: inline source must be a list of dicts or a '
+                'list of lists')
+
+        create_args.update({"data": json.dumps(src_obj)})
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
@@ -317,6 +339,8 @@ class SourceHandler(ResourceHandler):
 
         if is_url(path):
             return self._create_remote_source(path, args=args)
+        elif isinstance(path, list):
+            return self._create_inline_source(path, args=args)
         else:
             return self._stream_source(file_name=path, args=args, async=async,
                                        progress_bar=progress_bar, out=out)

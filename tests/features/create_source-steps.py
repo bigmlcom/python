@@ -18,6 +18,7 @@
 import os
 import time
 import json
+import csv
 from datetime import datetime, timedelta
 from urllib import urlencode
 from lettuce import step, world
@@ -48,6 +49,21 @@ def i_create_using_url(step, url):
     # save reference
     world.sources.append(resource['resource'])
 
+@step(r'I create a data source from inline data slurped from "(.*)"')
+def i_create_using_dict_data(step, data):
+    # slurp CSV file to local variable
+    with open(data,'rb') as fid:
+        reader = csv.DictReader(fid)
+        dict_data = [row for row in reader]
+    # create source
+    resource = world.api.create_source(dict_data)
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
+    
 @step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
 def i_upload_a_file_async(step, file):
     resource = world.api.create_source(file, async=True)

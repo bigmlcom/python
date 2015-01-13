@@ -1008,6 +1008,13 @@ or maybe reading the content from stdin::
     source = api.create_source(content,
         {'name': 'my stdin source', 'source_parser': {'missing_tokens': ['?']}})
 
+or using data stored in a local python variable. The following example
+shows the two accepted formats::
+
+    local = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
+    local2 = [{'a': 1, 'b': 2, 'c': 3}, {'a': 4, 'b': 5, 'c': 6}]
+    source = api.create_source(local, {'name': 'inline source'})
+        
 As already mentioned, source creation is asynchronous. In both these examples,
 the ``api.create_source`` call returns once the file is uploaded.
 Then ``source`` will contain a resource whose status code will be either

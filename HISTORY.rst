@@ -3,6 +3,11 @@
 History
 -------
 
+1.10.4 (2014-01-17)
+~~~~~~~~~~~~~~~~~~~
+
+- Improvements in docs presentation and content.
+
 1.10.3 (2014-01-16)
 ~~~~~~~~~~~~~~~~~~~
 

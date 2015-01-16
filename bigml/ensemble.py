@@ -79,7 +79,7 @@ class Ensemble(object):
             self.distributions = None
         else:
             self.ensemble_id = get_ensemble_id(ensemble)
-            ensemble = check_resource(ensemble, self.api.get_ensemble)
+            ensemble = retrieve_resource(self.api, self.ensemble_id)
             models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions', None)
         self.model_ids = models

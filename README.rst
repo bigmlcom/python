@@ -86,11 +86,15 @@ seldom used.
 Importing the module
 --------------------
 
-To import the module::
+To import the module:
+
+.. code-block:: python
 
     import bigml.api
 
-Alternatively you can just import the BigML class::
+Alternatively you can just import the BigML class:
+
+.. code-block:: python
 
     from bigml.api import BigML
 
@@ -104,23 +108,31 @@ transmitted over HTTPS.
 This module will look for your username and API key in the environment
 variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively. You can
 add the following lines to your ``.bashrc`` or ``.bash_profile`` to set
-those variables automatically when you log in::
+those variables automatically when you log in:
+
+.. code-block:: bash
 
     export BIGML_USERNAME=myusername
     export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
 
-With that environment set up, connecting to BigML is a breeze::
+With that environment set up, connecting to BigML is a breeze:
+
+.. code-block:: python
 
     from bigml.api import BigML
     api = BigML()
 
 Otherwise, you can initialize directly when instantiating the BigML
-class as follows::
+class as follows:
+
+.. code-block:: python
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
 Also, you can initialize the library to work in the Sandbox environment by
-passing the parameter ``dev_mode``::
+passing the parameter ``dev_mode``:
+
+.. code-block:: python
 
     api = BigML(dev_mode=True)
 
@@ -153,7 +165,9 @@ for).
     5.7,2.5,5.0,2.0,Iris-virginica
     5.8,2.8,5.1,2.4,Iris-virginica
 
-You can easily generate a prediction following these steps::
+You can easily generate a prediction following these steps:
+
+.. code-block:: python
 
     from bigml.api import BigML
 
@@ -165,6 +179,8 @@ You can easily generate a prediction following these steps::
     prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
 
 You can then print the prediction using the ``pprint`` method::
+
+.. code-block:: python
 
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica

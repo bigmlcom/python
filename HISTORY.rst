@@ -2,6 +2,14 @@
 
 History
 -------
+
+1.10.3 (2014-01-16)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: local ensembles were not retrieved from the stored JSON file.
+- Adding the ability to construct local ensembles from any existing JSON file
+  describing an ensemble structure.
+
 1.10.2 (2014-01-15)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012-2014 BigML
+# Copyright 2012-2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -41,6 +41,7 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 import sys
 import logging
 import gc
+import json
 LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
@@ -78,6 +79,7 @@ class Ensemble(object):
                                  'your model id values.')
             self.distributions = None
         else:
+            ensemble = self.get_ensemble_resource(ensemble)
             self.ensemble_id = get_ensemble_id(ensemble)
             ensemble = retrieve_resource(self.api, self.ensemble_id)
             models = ensemble['object']['models']
@@ -96,6 +98,38 @@ class Ensemble(object):
                                         query_string=ONLY_MODEL)
                       for model_id in self.models_splits[0]]
             self.multi_model = MultiModel(models, self.api)
+
+    def get_ensemble_resource(self, ensemble):
+        """Extracts the ensemble resource info. The ensemble argument can be
+           - a path to a local file
+           - an ensemble id
+        """
+        # the string can be a path to a JSON file
+        if isinstance(ensemble, basestring):
+            try:
+                with open(ensemble) as ensemble_file:
+                    ensemble = json.load(ensemble_file)
+                    self.ensemble_id = get_ensemble_id(ensemble)
+                    if self.ensemble_id is None:
+                        raise ValueError("The JSON file does not seem"
+                                         " to contain a valid BigML ensemble"
+                                         " representation.")
+            except IOError:
+                # if it is not a path, it can be an ensemble id
+                self.ensemble_id = get_ensemble_id(ensemble)
+                if self.ensemble_id is None:
+                    if ensemble.find('ensemble/') > -1:
+                        raise Exception(
+                            api.error_message(ensemble,
+                                              resource_type='ensemble',
+                                              method='get'))
+                    else:
+                        raise IOError("Failed to open the expected JSON file"
+                                      " at %s" % ensemble)
+            except ValueError:
+                raise ValueError("Failed to interpret %s."
+                                 " JSON file expected.")
+        return ensemble
 
     def list_models(self):
         """Lists all the model/ids that compound the ensemble.

@@ -1974,6 +1974,29 @@ combined to issue the final prediction::
                          'model/50c0de043b5635198300031b')]
     ensemble.predict({"petal length": 3, "petal width": 1})
 
+or even a JSON file that contains the ensemble resource::
+
+    import json
+    from bigml.ensemble import Ensemble
+    from bigml.api import BigML
+    api = api.BigML()
+    ensemble_info = api.get_ensemble('ensemble/50c0de043b5635198300033c')
+    with open("./my_ensemble", "w") as ensemble_file:
+        ensemble_file.write(json.dumps(ensemble_info))
+    local_ensemble = Ensemble("./my_ensemble")
+
+Note: the ensemble JSON structure is not self-contained, meaning that it
+contains references to the models that the ensemble is build of, but not the
+information of the models themselves.
+To use an ensemble locally with no connection to
+the internet, you must make sure that not only a local copy of the ensemble
+JSON file is available in your computer, but also the JSON files corresponding
+to the models in it. This is automatically achieved when you use the
+``Ensemble('ensemble/50c0de043b5635198300033c')`` constructor, that fetches
+all the related JSON files and stores them in an ``./storage`` directory. Next
+calls to ``Ensemble('ensemble/50c0de043b5635198300033c')`` will retrieve the
+files from this local storage, so that internet connection will only be needed
+the first time an ``Ensemble`` is built.
 
 Fields
 ------

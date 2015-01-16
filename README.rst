@@ -8,7 +8,8 @@ creates
 `beautiful predictive models <https://bigml.com/gallery/models>`_ that
 can be easily understood and interacted with.
 
-These BigML Python bindings allow you to interact with BigML.io, the API
+These BigML Python bindings allow you to interact with
+`BigML.io <https://bigml.io/>`_, the API
 for BigML. You can use it to easily create, retrieve, list, update, and
 delete BigML resources (i.e., sources, datasets, models and,
 predictions). For additional information, see

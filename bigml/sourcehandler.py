@@ -91,6 +91,8 @@ class SourceHandler(ResourceHandler):
     def _create_inline_source(self, src_obj, args=None):
         """Create source from inline data
 
+           The src_obj data should be a list of rows stored as dict or
+           list objects.
         """
         create_args = {}
         if args is not None:

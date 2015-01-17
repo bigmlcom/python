@@ -178,7 +178,7 @@ You can easily generate a prediction following these steps:
     model = api.create_model(dataset)
     prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
 
-You can then print the prediction using the ``pprint`` method::
+You can then print the prediction using the ``pprint`` method:
 
 .. code-block:: python
 

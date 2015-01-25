@@ -2283,6 +2283,10 @@ You can also use ``local_model.get_data_distribution()`` and
 ``local_model.get_prediction_distribution()`` to obtain the training and
 prediction basic distribution
 information as a list (suitable to draw histograms or any further processing).
+The tree nodes' information (prediction, confidence, impurity and distribution)
+can also be retrieved in a CSV format using the method
+``local_model.tree_CSV()``. The output can be sent to a file by providing a
+``file_name`` argument or used as a list.
 
 Local ensembles have a ``local_ensemble.summarize()`` method too, the output
 in this case shows only the data distribution and field importance sections.

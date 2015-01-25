@@ -54,6 +54,7 @@ LOGGER = logging.getLogger('BigML')
 import sys
 import locale
 import json
+import csv
 
 from functools import partial
 
@@ -772,3 +773,47 @@ if count > 0:
                 cumulative_confidence += count * confidence
                 total += count
         return float('nan') if total == 0.0 else cumulative_confidence
+
+    def get_nodes_info(self, headers, leaves_only=False):
+        """Generator that yields the nodes information in a row format
+
+        """
+        return self.tree.get_nodes_info(headers, leaves_only=leaves_only)
+
+    def tree_CSV(self, file_name=None, leaves_only=False):
+        """Outputs the node structure to a CSV file or array
+
+        """
+        headers_names = []
+        if self.tree.regression:
+            headers_names.append(
+                self.fields[self.tree.objective_id]['name'])
+            headers_names.append("error")
+            for index in range(0, 32):
+                headers_names.append("bin%s_value" % index)
+                headers_names.append("bin%s_instances" % index)
+        else:
+            headers_names.append(
+                self.fields[self.tree.objective_id]['name'])
+            headers_names.append("confidence")
+            headers_names.append("impurity")
+            for category, _ in self.tree.distribution:
+                headers_names.append(category)
+
+        nodes_generator = self.get_nodes_info(headers_names,
+                                              leaves_only=leaves_only)
+        if file_name is not None:
+            with open(file_name, "w") as file_handler:
+                writer = csv.writer(file_handler)
+                writer.writerow([header.encode("utf-8")
+                                 for header in headers_names])
+                for row in nodes_generator:
+                    writer.writerow([item if not isinstance(item, basestring)
+                                     else item.encode("utf-8")
+                                     for item in row])
+        else:
+            rows = []
+            rows.append(headers_names)
+            for row in nodes_generator:
+                rows.append(row)
+            return rows

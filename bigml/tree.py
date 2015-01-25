@@ -841,3 +841,38 @@ class Tree(object):
         out.write(utf8(body))
         out.flush()
         return True
+
+    def get_nodes_info(self, headers=None, leaves_only=False):
+        """Yields the information associated to each of the tree nodes
+
+        """
+        row = []
+        if not self.regression:
+            category_dict = dict(self.distribution)
+        for header in headers:
+            if header == self.fields[self.objective_id]['name']:
+                row.append(self.output)
+                continue
+            if header in ['confidence', 'error']:
+                row.append(self.confidence)
+                continue
+            if header == 'impurity':
+                row.append(self.impurity)
+                continue
+            if self.regression and header.startswith('bin'):
+                for bin_value, bin_instances in self.distribution:
+                    row.append(bin_value)
+                    row.append(bin_instances)
+                break
+            if not self.regression:
+                row.append(category_dict.get(header))
+        while len(row) < len(headers):
+            row.append(None)
+        if not leaves_only or not self.children:
+            yield row
+
+        if self.children:
+            for child in self.children:
+                for row in child.get_nodes_info(headers,
+                                                leaves_only=leaves_only):
+                    yield row

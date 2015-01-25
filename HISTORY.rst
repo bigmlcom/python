@@ -7,6 +7,8 @@ History
 ~~~~~~~~~~~~~~~~~~~
 
 - Improvements in docs presentation and content.
+- Adding tree_CSV method to local model to output the nodes information
+  in CSV format.
 
 1.10.3 (2014-01-16)
 ~~~~~~~~~~~~~~~~~~~

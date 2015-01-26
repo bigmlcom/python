@@ -217,7 +217,7 @@ class Tree(object):
     """
     def __init__(self, tree, fields, objective_field=None,
                  root_distribution=None, parent_id=None, ids_map=None,
-                 subtree=True):
+                 subtree=True, tree_info=None):
 
         self.fields = fields
         self.objective_id = objective_field
@@ -247,10 +247,13 @@ class Tree(object):
                                      objective_field=objective_field,
                                      parent_id=self.id,
                                      ids_map=ids_map,
-                                     subtree=subtree))
+                                     subtree=subtree,
+                                     tree_info=tree_info))
 
         self.children = children
         self.regression = self.is_regression()
+        tree_info['regression'] = (self.regression and
+                                   tree_info.get('regression', True))
         self.count = tree['count']
         self.confidence = tree.get('confidence', None)
         self.distribution = None
@@ -272,6 +275,9 @@ class Tree(object):
                 self.distribution = summary['counts']
             elif 'categories' in summary:
                 self.distribution = summary['categories']
+        if self.regression:
+            tree_info['max_bins'] = max(tree_info.get('max_bins', 0),
+                                        len(self.distribution))
         self.impurity = None
         if not self.regression and self.distribution is not None:
             self.impurity = self.gini_impurity()

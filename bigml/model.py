@@ -176,13 +176,20 @@ class Model(BaseModel):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
                 distribution = model['model']['distribution']['training']
+                # will store global information in the tree: regression and
+                # max_bins number
+                tree_info = {'max_bins': 0}
                 self.tree = Tree(
                     model['model']['root'],
                     self.fields,
                     objective_field=self.objective_id,
                     root_distribution=distribution,
                     parent_id=None,
-                    ids_map=self.ids_map)
+                    ids_map=self.ids_map,
+                    tree_info=tree_info)
+                self.tree.regression = tree_info['regression']
+                if self.tree.regression:
+                    self.max_bins = tree_info['max_bins']
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -789,7 +796,7 @@ if count > 0:
             headers_names.append(
                 self.fields[self.tree.objective_id]['name'])
             headers_names.append("error")
-            for index in range(0, 32):
+            for index in range(0, self.max_bins):
                 headers_names.append("bin%s_value" % index)
                 headers_names.append("bin%s_instances" % index)
         else:

@@ -189,7 +189,7 @@ class Model(BaseModel):
                     tree_info=tree_info)
                 self.tree.regression = tree_info['regression']
                 if self.tree.regression:
-                    self.max_bins = tree_info['max_bins']
+                    self._max_bins = tree_info['max_bins']
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -796,7 +796,7 @@ if count > 0:
             headers_names.append(
                 self.fields[self.tree.objective_id]['name'])
             headers_names.append("error")
-            for index in range(0, self.max_bins):
+            for index in range(0, self._max_bins):
                 headers_names.append("bin%s_value" % index)
                 headers_names.append("bin%s_instances" % index)
         else:

@@ -49,6 +49,22 @@ def i_create_a_cluster_from_dataset_list(step):
     world.cluster = resource['object']
     world.clusters.append(resource['resource'])
 
+
+@step(r'I create a cluster with options "(.*)"$')
+def i_create_a_cluster_with_options(step, options):
+    dataset = world.dataset.get('resource')
+    options = json.loads(options)
+    options.update({'seed': 'BigML',
+                    'cluster_seed': 'BigML',
+                    'k': 8})
+    resource = world.api.create_cluster(
+        dataset, options)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.cluster = resource['object']
+    world.clusters.append(resource['resource'])
+
 @step(r'I wait until the cluster status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_cluster_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()

@@ -3,6 +3,12 @@
 History
 -------
 
+1.10.5 (2014-01-29)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: centroids failed when predicted from local clusters with
+  summary fields.
+
 1.10.4 (2014-01-17)
 ~~~~~~~~~~~~~~~~~~~
 

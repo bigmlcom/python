@@ -100,6 +100,23 @@ Feature: Compare Predictions
         | ../data/iris_sp_chars.csv | 20      | 20     | 30     | {"fields": {}} |{"pétal.length":1, "pétal&width\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}       | Cluster 7    | 0.757736964835     |
 
 
+    Scenario: Successfully comparing centroids with summary fields:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a cluster with options "<options>"
+        And I wait until the cluster is ready less than <time_3> secs
+        And I create a local cluster
+        When I create a centroid for "<data_input>"
+        Then the centroid is "<centroid>" with distance "<distance>"
+        And I create a local centroid for "<data_input>"
+        Then the local centroid is "<centroid>" with distance "<distance>"
+
+        Examples:
+        | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance |
+        | ../data/iris.csv | 20      | 20     | 30     | {"summary_fields": ["sepal width"]} |{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}             | Cluster 6   | 0.713698082167   |
+
     Scenario: Successfully comparing predictions with proportional missing strategy for missing_splits models:
         Given I create a data source uploading a "<data>" file
         And I wait until the source is ready less than <time_1> secs

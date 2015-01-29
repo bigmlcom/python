@@ -143,6 +143,9 @@ class Cluster(ModelFields):
                 self.tag_clouds = {}
                 self.term_analysis = {}
                 fields = cluster['clusters']['fields']
+                summary_fields = cluster['summary_fields']
+                for field_id in summary_fields:
+                    del fields[field_id]
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
 

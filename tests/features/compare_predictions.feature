@@ -154,3 +154,37 @@ Feature: Compare Predictions
         Examples:
         | data                 | time_1  | time_2 | time_3 | data_input                            | score  |
         | ../data/tiny_kdd.csv | 20      | 20     | 30     |{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}            | 0.68782  |
+
+    Scenario: Successfully comparing predictions with median:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a model
+        And I wait until the model is ready less than <time_3> secs
+        And I create a local model
+        When I create a prediction for "<data_input>"
+        Then the prediction using median for "<objective>" is "<prediction>"
+        And I create a local prediction using median for "<data_input>"
+        Then the local prediction is "<prediction>"
+
+        Examples:
+        | data               | time_1  | time_2 | time_3 | data_input                        | objective | prediction  |
+        | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 42}                   | 000005    | 47.78       |
+
+    Scenario: Successfully comparing predictions with proportional missing strategy for missing_splits models using median:
+        Given I create a data source uploading a "<data>" file
+        And I wait until the source is ready less than <time_1> secs
+        And I create a dataset
+        And I wait until the dataset is ready less than <time_2> secs
+        And I create a model with missing splits
+        And I wait until the model is ready less than <time_3> secs
+        And I create a local model
+        When I create a proportional missing strategy prediction for "<data_input>"
+        Then the prediction using median for "<objective>" is "<prediction>"
+        And I create a proportional missing strategy local prediction using median for "<data_input>"
+        Then the local prediction is "<prediction>"
+
+        Examples:
+        | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     |
+        | ../data/grades.csv   | 10      | 10     | 10     | {"Midterm": 42}             | 000005   | 45.56   

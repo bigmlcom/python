@@ -69,6 +69,8 @@ LAST_PREDICTION = 0
 PROPORTIONAL = 1
 BINS_LIMIT = 32
 
+DISTRIBUTION_GROUPS = ['bins', 'counts', 'categories']
+
 
 def get_instances(distribution):
     """Returns the total number of instances in a distribution
@@ -211,6 +213,33 @@ def one_branch(children, input_data):
             or none_value(children))
 
 
+def extract_distribution(summary):
+    """Extracts the distribution info from the objective_summary structure
+       in any of its grouping units: bins, counts or categories
+
+    """
+    for group in DISTRIBUTION_GROUPS:
+        if group in summary:
+            return summary.get(group)
+
+
+def dist_median(distribution, count):
+    """Returns the median value for a distribution
+
+    """
+    counter = 0
+    previous_value = None
+    for value, instances in distribution:
+        counter += instances
+        if counter > count / 2.0:
+            if (not count % 2 and (counter - 1) == (count / 2) and
+                    previous_value is not None):
+                return (value + previous_value) / 2.0
+            return value
+        previous_value = value
+    return None
+
+
 class Tree(object):
     """A tree-like predictive model.
 
@@ -257,27 +286,23 @@ class Tree(object):
         self.count = tree['count']
         self.confidence = tree.get('confidence', None)
         self.distribution = None
+        summary = None
         if 'distribution' in tree:
             self.distribution = tree['distribution']
         elif 'objective_summary' in tree:
             summary = tree['objective_summary']
-            if 'bins' in summary:
-                self.distribution = summary['bins']
-            elif 'counts' in summary:
-                self.distribution = summary['counts']
-            elif 'categories' in summary:
-                self.distribution = summary['categories']
+            self.distribution = extract_distribution(summary)
         else:
             summary = root_distribution
-            if 'bins' in summary:
-                self.distribution = summary['bins']
-            elif 'counts' in summary:
-                self.distribution = summary['counts']
-            elif 'categories' in summary:
-                self.distribution = summary['categories']
+            self.distribution = extract_distribution(summary)
         if self.regression:
             tree_info['max_bins'] = max(tree_info.get('max_bins', 0),
                                         len(self.distribution))
+            self.median = None
+            if summary:
+                self.median = summary.get('median')
+            if not self.median:
+                self.median = dist_median(self.distribution, self.count)
         self.impurity = None
         if not self.regression and self.distribution is not None:
             self.impurity = self.gini_impurity()
@@ -357,7 +382,8 @@ class Tree(object):
                 leaves += [leaf]
         return leaves
 
-    def predict(self, input_data, path=None, missing_strategy=LAST_PREDICTION):
+    def predict(self, input_data, path=None, missing_strategy=LAST_PREDICTION,
+                median=False):
         """Makes a prediction based on a number of field values.
 
         The input fields must be keyed by Id. There are two possible
@@ -368,6 +394,8 @@ class Tree(object):
                 in the tree that stem from this split, we consider both. The
                 algorithm goes on until the final leaves are reached and
                 all their predictions are used to decide the final prediction.
+        The `median` flag is used in regression models only and causes the
+        prediction to be the median of the node distribution.
         """
 
         if path is None:
@@ -389,9 +417,12 @@ class Tree(object):
                                 sorted(final_distribution.items(),
                                        key=lambda x: x[0])]
                 distribution = merge_bins(distribution, BINS_LIMIT)
-                prediction = mean(distribution)
                 total_instances = sum([instances
                                        for _, instances in distribution])
+                if median:
+                    prediction = dist_median(distribution, total_instances)
+                else:
+                    prediction = mean(distribution)
                 confidence = regression_error(
                     unbiased_sample_variance(distribution, prediction),
                     total_instances)
@@ -410,11 +441,14 @@ class Tree(object):
                 for child in self.children:
                     if child.predicate.apply(input_data, self.fields):
                         path.append(child.predicate.to_rule(self.fields))
-                        return child.predict(input_data, path)
-            return (self.output, path, self.confidence,
+                        return child.predict(input_data, path, median=median)
+            output = (self.output if not self.regression
+                      or not median else self.median)
+            return (output, path, self.confidence,
                     self.distribution, get_instances(self.distribution))
 
-    def predict_proportional(self, input_data, path=None, missing_found=False):
+    def predict_proportional(self, input_data, path=None,
+                             missing_found=False, median=False):
         """Makes a prediction based on a number of field values averaging
            the predictions of the leaves that fall in a subtree.
 
@@ -440,7 +474,7 @@ class Tree(object):
                     if not new_rule in path and not missing_found:
                         path.append(new_rule)
                     return child.predict_proportional(input_data, path,
-                                                      missing_found)
+                                                      missing_found, median)
         else:
             # missing value found, the unique path stops
             missing_found = True
@@ -448,7 +482,7 @@ class Tree(object):
                 final_distribution = merge_distributions(
                     final_distribution,
                     child.predict_proportional(input_data, path,
-                                               missing_found)[0])
+                                               missing_found, median)[0])
             return final_distribution, self
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):

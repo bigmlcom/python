@@ -39,6 +39,22 @@ def i_create_a_local_prediction(step, data=None):
     world.local_prediction = world.local_model.predict(data)
 
 
+@step(r'I create a local prediction using median for "(.*)"$')
+def i_create_a_local_median_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict(data, median=True)
+
+
+@step(r'I create a proportional missing strategy local prediction using median for "(.*)"$')
+def i_create_a_local_proportional_median_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict(data, missing_strategy=1, median=True)
+
+
 @step(r'I create a local cluster')
 def i_create_a_local_cluster(step):
     world.local_cluster = Cluster(world.cluster)

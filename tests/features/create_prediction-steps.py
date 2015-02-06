@@ -59,6 +59,17 @@ def the_prediction_is(step, objective, prediction):
             str(world.prediction['prediction'][objective]), prediction)
 
 
+@step(r'the prediction using median for "(.*)" is "(.*)"')
+def the_median_prediction_is(step, objective, prediction):
+    median = str(world.prediction['prediction_path']
+                 ['objective_summary']['median'])
+    if median == prediction:
+        assert True
+    else:
+        assert False, "Found: %s, expected %s" % (
+            median, prediction)
+
+
 @step(r'the centroid is "([^\"]*)" with distance "(.*)"$')
 def the_centroid_is_with_distance(step, centroid, distance):
     if str(world.centroid['centroid_name']) == centroid:

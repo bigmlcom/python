@@ -3,6 +3,11 @@
 History
 -------
 
+1.10.6 (2015-02-06)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding the median as prediction for the local model object.
+
 1.10.5 (2014-01-29)
 ~~~~~~~~~~~~~~~~~~~
 

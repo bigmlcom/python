@@ -241,7 +241,8 @@ class Model(BaseModel):
                 add_confidence=False,
                 add_path=False,
                 add_distribution=False,
-                add_count=False):
+                add_count=False,
+                median=False):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -263,7 +264,8 @@ class Model(BaseModel):
         cast(input_data, self.fields)
 
         prediction_info = self.tree.predict(input_data,
-                                            missing_strategy=missing_strategy)
+                                            missing_strategy=missing_strategy,
+                                            median=median)
         prediction, path, confidence, distribution, instances = prediction_info
 
         # Prediction path

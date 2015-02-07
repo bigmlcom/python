@@ -68,6 +68,7 @@ from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
+from bigml.multivote import ws_confidence
 
 # we use the atof conversion for integers to include integers written as
 # 10.0
@@ -242,12 +243,47 @@ class Model(BaseModel):
                 add_path=False,
                 add_distribution=False,
                 add_count=False,
-                median=False):
+                median=False,
+                multiple=None):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.
 
+        input_data: Input data to be predicted
+        by_name: Boolean, True if input_data is keyed by names
+        print_path: Boolean, if True the rules that lead to the prediction
+                        are printed
+        out: output handler
+            with_confidence: Boolean, if True, all the information in the node
+                             (prediction, confidence, distribution and count)
+                             is returned in a list format
+        missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                              missing fields
+            add_confidence: Boolean, if True adds confidence to the dict output
+            add_path: Boolean, if True adds path to the dict output
+        add_distribution: Boolean, if True adds distribution info to the
+                              dict output
+        add_count: Boolean, if True adds the number of instances in the
+                       node to the dict output
+        median: Boolean, if True the prediction is computed using the
+                    median instead of the mean value of the distribution
+        multiple: For categorical fields, it will return the categories
+                      in the distribution of the predicted node as a
+                      list of dicts:
+                [{'prediction': 'Iris-setosa',
+                  'confidence': 0.9154
+                  'probability': 0.97
+                  'count': 97},
+                 {'prediction': 'Iris-virginica',
+                  'confidence': 0.0103
+                  'probability': 0.03,
+                  'count': 3}]
+            The value of this argument can either be an integer
+                    (maximum number of categories to be returned), or the
+                    literal 'all', that will cause the entire distribution
+                    in the node to be returned.
+                    
         """
         # Checks if this is a regression model, using PROPORTIONAL
         # missing_strategy
@@ -275,17 +311,29 @@ class Model(BaseModel):
         output = prediction
         if with_confidence:
             output = [prediction, confidence, distribution, instances]
-        if add_confidence or add_path or add_distribution or add_count:
-            output = {'prediction': prediction}
-            if add_confidence:
-                output.update({'confidence': confidence})
-            if add_path:
-                rules = path
-                output.update({'path': rules})
-            if add_distribution:
-                output.update({'distribution': distribution})
-            if add_count:
-                output.update({'count': instances})
+        if multiple is not None and not self.tree.regression:
+            output = []
+            total_instances = float(instances)
+            for index, [category, instances] in enumerate(distribution):
+                if ((isinstance(multiple, basestring) and multiple == 'all') or 
+                        (isinstance(multiple, int) and index < multiple)):                 
+                    prediction = {'prediction': category,
+                                  'confidence': ws_confidence(category, distribution),
+                                  'probability': instances / total_instances,
+                                  'count': instances}
+                    output.append(prediction)
+        else:
+            if add_confidence or add_path or add_distribution or add_count:
+                output = {'prediction': prediction}
+                if add_confidence:
+                    output.update({'confidence': confidence})
+                if add_path:
+                    rules = path
+                    output.update({'path': rules})
+                if add_distribution:
+                    output.update({'distribution': distribution})
+                if add_count:
+                    output.update({'count': instances})
 
         return output
 

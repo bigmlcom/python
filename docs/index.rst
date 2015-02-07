@@ -1690,6 +1690,36 @@ Note that the ``add_path`` argument for the ``proportional`` missing strategy
 shows the path leading to a final unique node, that gives the prediction, or
 to the first split where a missing value is found.
 
+In classification models, the prediction is always the most frequent category
+amongst the ones that form the distribution in the predicted node. However, you
+might want to get the complete list of the categories in the predicted node,
+together with their confidence. Using the ``multiple`` argument you will get
+the list of categories with their associated information.
+
+::
+
+    local_model.predict({"petal length": 3}, multiple='all')
+
+will result in
+
+::
+
+    [{'count': 50,
+      'confidence': 0.2628864565745068,
+      'prediction': u'Iris-setosa',
+      'probability': 0.3333333333333333},
+     {'count': 50,
+      'confidence': 0.2628864565745068,
+      'prediction': u'Iris-versicolor',
+      'probability': 0.3333333333333333},
+     {'count': 50,
+      'confidence': 0.2628864565745068,
+      'prediction': u'Iris-virginica',
+      'probability': 0.3333333333333333}]
+
+The argument can be set to ``all`` to obtain the complete
+list or to the maximum length that you want the list to have.
+
 Local Clusters
 --------------
 

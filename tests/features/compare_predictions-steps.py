@@ -23,6 +23,14 @@ def i_create_a_local_model(step):
     world.local_model = Model(world.model)
 
 
+@step(r'I create a multiple local prediction for "(.*)"')
+def i_create_a_multiple_local_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict(data, multiple='all')
+
+
 @step(r'I create a local prediction for "(.*)" with confidence$')
 def i_create_a_local_prediction_with_confidence(step, data=None):
     if data is None:
@@ -143,6 +151,17 @@ def the_batch_mm_predictions_are(step, predictions):
                 break
     if i == len(predictions):
         assert True
+
+
+@step(r'the multiple local prediction is "(.*)"')
+def the_multiple_local_prediction_is(step, prediction):
+    local_prediction = world.local_prediction
+    prediction = json.loads(prediction)
+    if local_prediction == prediction:
+        assert True
+    else:
+        assert False, "found: %s, expected %s" % (local_prediction, prediction)
+
 
 @step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction):

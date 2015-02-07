@@ -3,6 +3,11 @@
 History
 -------
 
+1.10.7 (2015-02-07)
+~~~~~~~~~~~~~~~~~~~
+
+- Extending the predict method in local models to get multiple predictions.
+
 1.10.6 (2015-02-06)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -181,8 +181,10 @@ def the_local_prediction_is(step, prediction):
         if local_model.tree.regression:
             local_prediction = round(float(local_prediction), 4)
             prediction = round(float(prediction), 4)
-
-    assert local_prediction == prediction
+    if local_prediction == prediction:
+        assert True
+    else:
+        assert False, "found: %s, expected %s" % (local_prediction, prediction)
 
 
 @step(r'the confidence for the local prediction is "(.*)"')

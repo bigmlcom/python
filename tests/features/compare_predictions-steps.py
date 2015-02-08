@@ -163,7 +163,7 @@ def the_multiple_local_prediction_is(step, prediction):
         assert False, "found: %s, expected %s" % (local_prediction, prediction)
 
 
-@step(r'the confidence for the local prediction is "(.*)"')
+@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
     if isinstance(world.local_prediction, list):
         local_confidence = world.local_prediction[1]

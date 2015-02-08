@@ -6,7 +6,7 @@ Feature: Create Predictions
         Given I create a local model from a "<model>" file
         When I create a local prediction for "<data_input>" with confidence
         Then the local prediction is "<prediction>"
-        And the confidence for the local prediction is "<confidence>"
+        And the local prediction's confidence is "<confidence>"
 
         Examples:
         | model                | data_input    | objective | prediction  | confidence

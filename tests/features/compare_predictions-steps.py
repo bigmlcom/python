@@ -163,6 +163,17 @@ def the_multiple_local_prediction_is(step, prediction):
         assert False, "found: %s, expected %s" % (local_prediction, prediction)
 
 
+@step(r'the confidence for the local prediction is "(.*)"')
+def the_local_prediction_confidence_is(step, confidence):
+    if isinstance(world.local_prediction, list):
+        local_confidence = world.local_prediction[1]
+    else:
+        local_confidence = world.local_prediction['confidence']
+    local_confidence = round(float(local_confidence), 4)
+    confidence = round(float(confidence), 4)
+    assert local_confidence == confidence
+
+
 @step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction):
     if isinstance(world.local_prediction, list):
@@ -185,17 +196,6 @@ def the_local_prediction_is(step, prediction):
         assert True
     else:
         assert False, "found: %s, expected %s" % (local_prediction, prediction)
-
-
-@step(r'the confidence for the local prediction is "(.*)"')
-def the_local_prediction_confidence_is(step, confidence):
-    if isinstance(world.local_prediction, list):
-        local_confidence = world.local_prediction[1]
-    else:
-        local_confidence = world.local_prediction['confidence']
-    local_confidence = round(float(local_confidence), 4)
-    confidence = round(float(confidence), 4)
-    assert local_confidence == confidence
 
 
 @step(r'I create a local multi model')

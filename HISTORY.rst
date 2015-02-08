@@ -7,6 +7,8 @@ History
 ~~~~~~~~~~~~~~~~~~~
 
 - Extending the predict method in local models to get multiple predictions.
+- Changing the local model object to add the units used in the distribution
+  and the add_median argument in the predict method.
 
 1.10.6 (2015-02-06)
 ~~~~~~~~~~~~~~~~~~~

@@ -243,7 +243,7 @@ class Model(BaseModel):
                 add_path=False,
                 add_distribution=False,
                 add_count=False,
-                median=False,
+                add_median=False,
                 multiple=None):
         """Makes a prediction based on a number of field values.
 
@@ -266,8 +266,8 @@ class Model(BaseModel):
                           dict output
         add_count: Boolean, if True adds the number of instances in the
                        node to the dict output
-        median: Boolean, if True the prediction is computed using the
-                    median instead of the mean value of the distribution
+        add_median: Boolean, if True adds the median of the values in
+                    the distribution
         multiple: For categorical fields, it will return the categories
                   in the distribution of the predicted node as a
                   list of dicts:
@@ -300,9 +300,9 @@ class Model(BaseModel):
         cast(input_data, self.fields)
 
         prediction_info = self.tree.predict(input_data,
-                                            missing_strategy=missing_strategy,
-                                            median=median)
-        prediction, path, confidence, distribution, instances = prediction_info
+                                            missing_strategy=missing_strategy)
+        (prediction, path, confidence,
+         distribution, instances, median) = prediction_info
 
         # Prediction path
         if print_path:
@@ -318,12 +318,14 @@ class Model(BaseModel):
                 if ((isinstance(multiple, basestring) and multiple == 'all') or 
                         (isinstance(multiple, int) and index < multiple)):                 
                     prediction = {'prediction': category,
-                                  'confidence': ws_confidence(category, distribution),
+                                  'confidence': ws_confidence(category,
+                                                              distribution),
                                   'probability': instances / total_instances,
                                   'count': instances}
                     output.append(prediction)
         else:
-            if add_confidence or add_path or add_distribution or add_count:
+            if (add_confidence or add_path or add_distribution or add_count or
+                    add_median):
                 output = {'prediction': prediction}
                 if add_confidence:
                     output.update({'confidence': confidence})
@@ -334,6 +336,8 @@ class Model(BaseModel):
                     output.update({'distribution': distribution})
                 if add_count:
                     output.update({'count': instances})
+                if self.tree.regression and add_median:
+                    output.update({'median': median})
 
         return output
 

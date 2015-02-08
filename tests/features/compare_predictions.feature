@@ -130,7 +130,7 @@ Feature: Compare Predictions
         And the confidence for the prediction is "<confidence>"
         And I create a proportional missing strategy local prediction for "<data_input>"
         Then the local prediction is "<prediction>"
-        And the local prediction's confidence is"<confidence>"
+        And the local prediction's confidence is "<confidence>"
 
         Examples:
         | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |

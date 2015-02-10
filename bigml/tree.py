@@ -411,11 +411,13 @@ class Tree(object):
                     if instances == 1:
                         return (last_node.output, path, last_node.confidence,
                                 last_node.distribution, instances,
-                                last_node.median)               
+                                last_node.median, last_node.distribution_unit)               
                 # when there's more instances, sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: x[0])]
+                distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
+                                     else 'counts')
                 distribution = merge_bins(distribution, BINS_LIMIT)
                 total_instances = sum([instances
                                        for _, instances in distribution])
@@ -425,14 +427,16 @@ class Tree(object):
                     total_instances)
                 return (prediction, path, confidence,
                         distribution, total_instances,
-                        dist_median(distribution, total_instances))
+                        dist_median(distribution, total_instances),
+                        distribution_unit)
             else:
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: (-x[1], x[0]))]
                 return (distribution[0][0], path,
                         ws_confidence(distribution[0][0], final_distribution),
-                        distribution, get_instances(distribution), None)
+                        distribution, get_instances(distribution), None,
+                        'categorical')
 
         else:
             if self.children:
@@ -443,7 +447,8 @@ class Tree(object):
 
             return (self.output, path, self.confidence,
                     self.distribution, get_instances(self.distribution),
-                    None if not self.regression else self.median)
+                    None if not self.regression else self.median,
+                    self.distribution_unit)
 
     def predict_proportional(self, input_data, path=None,
                              missing_found=False, median=False):

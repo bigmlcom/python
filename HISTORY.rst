@@ -3,6 +3,11 @@
 History
 -------
 
+1.10.8 (2015-02-10)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding distribution units to the predict method output of the local model.
+
 1.10.7 (2015-02-07)
 ~~~~~~~~~~~~~~~~~~~
 

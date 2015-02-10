@@ -302,7 +302,8 @@ class Model(BaseModel):
         prediction_info = self.tree.predict(input_data,
                                             missing_strategy=missing_strategy)
         (prediction, path, confidence,
-         distribution, instances, median) = prediction_info
+         distribution, instances, median,
+         distribution_unit) = prediction_info
 
         # Prediction path
         if print_path:
@@ -333,7 +334,8 @@ class Model(BaseModel):
                     rules = path
                     output.update({'path': rules})
                 if add_distribution:
-                    output.update({'distribution': distribution})
+                    output.update({'distribution': distribution,
+                                   'distribution_unit': distribution_unit})
                 if add_count:
                     output.update({'count': instances})
                 if self.tree.regression and add_median:

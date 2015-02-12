@@ -119,7 +119,7 @@ henceforth.
 You can also set up your connection to use a particular PredictServer
 only for predictions. In order to do so, you'll need to specify a ``Domain``
 object, where you can set up the general domain name as well as the
-particular prediction domain name.
+particular prediction domain name.::
 
     from bigml.domain import Domain
     from bigml.api import BigML
@@ -130,7 +130,7 @@ particular prediction domain name.
     api = BigML(domain=domain_info)
 
 Finally, you can combine all the options and change both the general domain
-server, and the prediction domain server.
+server, and the prediction domain server.::
 
     from bigml.domain import Domain
     from bigml.api import BigML

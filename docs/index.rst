@@ -851,6 +851,23 @@ Each node in an isolation tree can have multiple predicates.
 For the node to be a valid branch when evaluated with a data point, all of its
 predicates must be true.
 
+Samples
+-------
+
+To provide quick access to your row data you can create a ``sample``. Samples
+are in-memory objects that can be queried for subsets of data by limiting
+their size, the fields or the rows returned. The structure of a sample would
+be::
+
+Samples are not permanent objects. Once they are created, they will be
+available as long as GETs are requested within periods smaller than
+a pre-established TTL (Time to Live). The expiration timer of a sample is
+reset every time a new GET is received.
+
+If requested, a sample can also perform linear regression and compute
+Pearson's and Spearman's correlations for either one numeric field
+against all other numeric fields or between two specific numeric fields.
+
 Creating Resources
 ------------------
 
@@ -911,6 +928,8 @@ You can query the status of any resource with the ``status`` method::
     api.status(anomaly)
     api.status(anomaly_score)
     api.status(batch_anomaly_score)
+    api.status(project)
+    api.status(sample)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is

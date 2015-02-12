@@ -90,3 +90,7 @@ def i_want_api_dev_mode(step):
     projects = world.api.list_projects()
     assert projects['code'] == HTTP_OK
     world.init_projects_count = projects['meta']['total_count']
+
+    samples = world.api.list_samples()
+    assert samples['code'] == HTTP_OK
+    world.init_samples_count = samples['meta']['total_count']

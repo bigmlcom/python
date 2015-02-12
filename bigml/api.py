@@ -61,6 +61,7 @@ from bigml.batchpredictionhandler import BatchPredictionHandler
 from bigml.batchcentroidhandler import BatchCentroidHandler
 from bigml.batchanomalyscorehandler import BatchAnomalyScoreHandler
 from bigml.projecthandler import ProjectHandler
+from bigml.samplehandler import SampleHandler
 
 # Repeating constants and functions for backwards compatibility
 
@@ -80,7 +81,8 @@ from bigml.resourcehandler import (
     BATCH_ANOMALY_SCORE_RE, ANOMALY_SCORE_RE, PROJECT_RE, SOURCE_PATH,
     DATASET_PATH, MODEL_PATH, PREDICTION_PATH, EVALUATION_PATH, ENSEMBLE_PATH,
     BATCH_PREDICTION_PATH, CLUSTER_PATH, CENTROID_PATH, BATCH_CENTROID_PATH,
-    ANOMALY_PATH, ANOMALY_SCORE_PATH, BATCH_ANOMALY_SCORE_PATH, PROJECT_PATH)
+    ANOMALY_PATH, ANOMALY_SCORE_PATH, BATCH_ANOMALY_SCORE_PATH, PROJECT_PATH,
+    SAMPLE_PATH, SAMPLE_RE)
 
 
 from bigml.resourcehandler import (
@@ -89,7 +91,7 @@ from bigml.resourcehandler import (
     get_cluster_id, get_centroid_id, get_anomaly_id, get_anomaly_score_id,
     get_prediction_id, get_batch_prediction_id, get_batch_centroid_id,
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
-    get_status, check_resource, http_ok, get_project_id)
+    get_status, check_resource, http_ok, get_project_id, get_sample_id)
 
 # Map status codes to labels
 STATUSES = {
@@ -133,13 +135,14 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(ProjectHandler, BatchAnomalyScoreHandler, BatchCentroidHandler,
+class BigML(SampleHandler, ProjectHandler, BatchAnomalyScoreHandler,
+            BatchCentroidHandler,
             BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
             AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
             EnsembleHandler, ModelHandler, DatasetHandler,
             SourceHandler, ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
-    sources, datasets, models and predictions.
+    sources, datasets, models, predictions, evaluations, etc.
 
     Full API documentation on the API can be found from BigML at:
         https://bigml.com/developers
@@ -193,6 +196,7 @@ class BigML(ProjectHandler, BatchAnomalyScoreHandler, BatchCentroidHandler,
         BatchCentroidHandler.__init__(self)
         BatchAnomalyScoreHandler.__init__(self)
         ProjectHandler.__init__(self)
+        SampleHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:

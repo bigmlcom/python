@@ -107,6 +107,10 @@ def setup_resources(feature):
     projects = world.api.list_projects()
     assert projects['code'] == HTTP_OK
     world.init_projects_count = projects['meta']['total_count']
+    
+    samples = world.api.list_samples()
+    assert samples['code'] == HTTP_OK
+    world.init_samples_count = samples['meta']['total_count']
 
     world.sources = []
     world.datasets = []
@@ -122,6 +126,7 @@ def setup_resources(feature):
     world.anomaly_scores = []
     world.batch_anomaly_scores = []
     world.projects = []
+    world.samples = []
 
     world.dataset_ids = []
     world.fields_properties_dict = {}
@@ -173,6 +178,9 @@ def cleanup_resources(feature):
 
     delete(world.projects, world.api.delete_project)
     world.projects = []
+
+    delete(world.samples, world.api.delete_sample)
+    world.samples = []
 
     sources = world.api.list_sources()
     assert sources['code'] == HTTP_OK
@@ -229,6 +237,10 @@ def cleanup_resources(feature):
     projects = world.api.list_projects()
     assert projects['code'] == HTTP_OK
     world.final_projects_count = projects['meta']['total_count']
+    
+    samples = world.api.list_samples()
+    assert samples['code'] == HTTP_OK
+    world.final_samples_count = samples['meta']['total_count']
 
     assert world.final_sources_count == world.init_sources_count, "init: %s, final: %s" % (world.init_sources_count, world.final_sources_count)
     assert world.final_datasets_count == world.init_datasets_count, "init: %s, final: %s" % (world.init_datasets_count, world.final_datasets_count)
@@ -244,6 +256,7 @@ def cleanup_resources(feature):
     assert world.final_anomaly_scores_count == world.init_anomaly_scores_count, "init: %s, final: %s" % (world.init_anomaly_scores_count, world.final_anomaly_scores_count)
     assert world.final_batch_anomaly_scores_count == world.init_batch_anomaly_scores_count, "init: %s, final: %s" % (world.init_batch_anomaly_scores_count, world.final_batch_anomaly_scores_count)
     assert world.final_projects_count == world.init_projects_count, "init: %s, final: %s" % (world.init_projects_count, world.final_projects_count)
+    assert world.final_samples_count == world.init_samples_count, "init: %s, final: %s" % (world.init_samples_count, world.final_samples_count)
 
 
 @after.each_scenario

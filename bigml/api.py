@@ -142,7 +142,7 @@ class BigML(SampleHandler, ProjectHandler, BatchAnomalyScoreHandler,
             EnsembleHandler, ModelHandler, DatasetHandler,
             SourceHandler, ResourceHandler, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
-    sources, datasets, models, predictions, evaluations, etc.
+    BigML resources.
 
     Full API documentation on the API can be found from BigML at:
         https://bigml.com/developers

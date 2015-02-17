@@ -37,7 +37,7 @@ from bigml.resourcehandler import (SAMPLE_PATH, DATASET_PATH, LOGGER,
 
 class SampleHandler(ResourceHandler):
     """This class is used by the BigML class as
-       a mixin that provides the REST calls samples. It should not
+       a mixin that provides the samples' REST calls. It should not
        be instantiated independently.
 
     """

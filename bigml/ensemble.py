@@ -138,8 +138,9 @@ class Ensemble(object):
         return self.model_ids
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False, options=None,
-                missing_strategy=LAST_PREDICTION):
+                with_confidence=False, add_confidence=False,
+                add_distribution=False, add_count=False, add_median=False,
+                options=None, missing_strategy=LAST_PREDICTION):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -164,15 +165,21 @@ class Ensemble(object):
                 multi_model = MultiModel(models, api=self.api)
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
-                    missing_strategy=missing_strategy)
+                    missing_strategy=missing_strategy,
+                    add_median=add_median)
                 votes.extend(votes_split.predictions)
         else:
             # When only one group of models is found you use the
             # corresponding multimodel to predict
             votes_split = self.multi_model.generate_votes(
-                input_data, by_name=by_name, missing_strategy=missing_strategy)
+                input_data, by_name=by_name, missing_strategy=missing_strategy,
+                add_median=add_median)
             votes = MultiVote(votes_split.predictions)
         return votes.combine(method=method, with_confidence=with_confidence,
+                             add_confidence=add_confidence,
+                             add_distribution=add_distribution,
+                             add_count=add_count,
+                             add_median=add_median,
                              options=options)
 
     def field_importance_data(self):

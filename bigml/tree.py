@@ -34,7 +34,8 @@ except ImportError:
 from bigml.predicate import Predicate
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
-from bigml.multivote import ws_confidence
+from bigml.multivote import ws_confidence, merge_distributions, merge_bins
+from bigml.multivote import BINS_LIMIT
 
 
 # Map operator str to its corresponding python operator
@@ -67,7 +68,6 @@ TERM_OPTIONS = ["case_sensitive", "token_mode"]
 
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
-BINS_LIMIT = 32
 
 DISTRIBUTION_GROUPS = ['bins', 'counts', 'categories']
 
@@ -77,42 +77,6 @@ def get_instances(distribution):
 
     """
     return sum(x[1] for x in distribution) if distribution else 0
-
-
-def merge_distributions(distribution, new_distribution):
-    """Adds up a new distribution structure to a map formatted distribution
-
-    """
-    for value, instances in new_distribution.items():
-        if not value in distribution:
-            distribution[value] = 0
-        distribution[value] += instances
-    return distribution
-
-
-def merge_bins(distribution, limit):
-    """Merges the bins of a regression distribution to the given limit number
-
-    """
-    length = len(distribution)
-    if limit < 1 or length <= limit or length < 2:
-        return distribution
-    index_to_merge = 2
-    shortest = float('inf')
-    for index in range(1, length):
-        distance = distribution[index][0] - distribution[index - 1][0]
-        if distance < shortest:
-            shortest = distance
-            index_to_merge = index
-    new_distribution = distribution[: index_to_merge - 1]
-    left = distribution[index_to_merge - 1]
-    right = distribution[index_to_merge]
-    new_bin = [(left[0] * left[1] + right[0] * right[1]) /
-               (left[1] + right[1]), left[1] + right[1]]
-    new_distribution.append(new_bin)
-    if index_to_merge < (length - 1):
-        new_distribution.extend(distribution[(index_to_merge + 1):])
-    return merge_bins(new_distribution, limit)
 
 
 def mean(distribution):

@@ -23,6 +23,7 @@ LOGGER = logging.getLogger('BigML')
 import numbers
 import math
 
+
 PLURALITY = 'plurality'
 CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
@@ -51,6 +52,7 @@ WEIGHT_KEYS = {
     THRESHOLD: None}
 
 DEFAULT_METHOD = 0
+BINS_LIMIT = 32
 
 
 def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
@@ -90,15 +92,75 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
     return (ws_p + ws_factor / 2 - ws_z * ws_sqrt) / (1 + ws_factor)
 
 
+def merge_distributions(distribution, new_distribution):
+    """Adds up a new distribution structure to a map formatted distribution
+
+    """
+    for value, instances in new_distribution.items():
+        if not value in distribution:
+            distribution[value] = 0
+        distribution[value] += instances
+    return distribution
+
+
+def merge_bins(distribution, limit):
+    """Merges the bins of a regression distribution to the given limit number
+
+    """
+    length = len(distribution)
+    if limit < 1 or length <= limit or length < 2:
+        return distribution
+    index_to_merge = 2
+    shortest = float('inf')
+    for index in range(1, length):
+        distance = distribution[index][0] - distribution[index - 1][0]
+        if distance < shortest:
+            shortest = distance
+            index_to_merge = index
+    new_distribution = distribution[: index_to_merge - 1]
+    left = distribution[index_to_merge - 1]
+    right = distribution[index_to_merge]
+    new_bin = [(left[0] * left[1] + right[0] * right[1]) /
+               (left[1] + right[1]), left[1] + right[1]]
+    new_distribution.append(new_bin)
+    if index_to_merge < (length - 1):
+        new_distribution.extend(distribution[(index_to_merge + 1):])
+    return merge_bins(new_distribution, limit)
+
+
 class MultiVote(object):
     """A multiple vote prediction
 
     Uses a number of predictions to generate a combined prediction.
 
     """
+    @classmethod
+    def grouped_distribution(cls, instance):
+        """Returns a distribution formed by grouping the distributions of
+           each predicted node.
+           
+        """
+        joined_distribution = {}
+        distribution_unit = 'counts'
+        for prediction in instance.predictions:
+            joined_distribution = merge_distributions(
+                joined_distribution,
+                dict((x[0], x[1]) for x in prediction['distribution']))
+            # when there's more instances, sort elements by their mean
+            distribution = [list(element) for element in
+                            sorted(joined_distribution.items(),
+                                   key=lambda x: x[0])]
+            if distribution_unit == 'counts':
+                distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
+                                     else 'counts')            
+            distribution = merge_bins(distribution, BINS_LIMIT)
+        return {'distribution': distribution,
+                'distribution_unit': distribution_unit}
 
     @classmethod
-    def avg(cls, instance, with_confidence=False):
+    def avg(cls, instance, with_confidence=False,
+            add_confidence=False, add_distribution=False,
+            add_count=False, add_median=False):
         """Returns the average of a list of numeric values.
 
            If with_confidence is True, the combined confidence (as the
@@ -113,18 +175,41 @@ class MultiVote(object):
                             " model anew.")
         total = len(instance.predictions)
         result = 0.0
+        median_result = 0.0
         confidence = 0.0
+        instances = 0
         for prediction in instance.predictions:
             result += prediction['prediction']
-            if with_confidence:
+            if add_median:
+                median_result += prediction['median']
+            if with_confidence or add_confidence:
                 confidence += prediction['confidence']
+            if add_count:
+                instances += prediction['count']
         if with_confidence:
             return ((result / total, confidence / total) if total > 0 else
                     (float('nan'), 0))
+        if (add_confidence or add_distribution or add_count or
+                add_median):
+            output = {'prediction': result / total
+                      if total > 0 else float('nan')}
+            if add_confidence:
+                output.update({'confidence': confidence / total 
+                               if total > 0 else 0})
+            if add_distribution:
+                output.update(cls.grouped_distribution(instance))
+            if add_count:
+                output.update({'count': instances})
+            if add_median:
+                output.update({'median': median_result / total if total > 0
+                               else float('nan')})
+            return output
         return result / total if total > 0 else float('nan')
 
     @classmethod
-    def error_weighted(cls, instance, with_confidence=False):
+    def error_weighted(cls, instance, with_confidence=False,
+                       add_confidence=False, add_distribution=False,
+                       add_count=False, add_median=False):
         """Returns the prediction combining votes using error to compute weight
 
            If with_confidences is true, the combined confidence (as the
@@ -139,25 +224,44 @@ class MultiVote(object):
                             " model anew.")
         top_range = 10
         result = 0.0
+        median_result = 0.0
+        instances = 0
         normalization_factor = cls.normalize_error(instance, top_range)
         if normalization_factor == 0:
             if with_confidence:
                 return float('nan'), 0
             else:
                 return float('nan')
-        if with_confidence:
+        if with_confidence or add_confidence:
             combined_error = 0.0
         for prediction in instance.predictions:
             result += prediction['prediction'] * prediction['_error_weight']
-            if with_confidence:
+            if add_median:
+                median_result += (prediction['median'] *
+                                  prediction['_error_weight'])
+            if add_count:
+                instances += prediction['count']
+            if with_confidence or add_confidence:
                 combined_error += (prediction['confidence'] *
                                    prediction['_error_weight'])
             del prediction['_error_weight']
         if with_confidence:
             return (result / normalization_factor,
                     combined_error / normalization_factor)
-        else:
-            return result / normalization_factor
+        if (add_confidence or add_distribution or add_count or
+                add_median):
+            output = {'prediction': result / normalization_factor}
+            if add_confidence:
+                output.update({'confidence': 
+                               combined_error / normalization_factor})
+            if add_distribution:
+                output.update(cls.grouped_distribution(instance))
+            if add_count:
+                output.update({'count': instances})
+            if add_median:
+                output.update({'median': median_result / normalization_factor})
+            return output
+        return result / normalization_factor
 
     @classmethod
     def normalize_error(cls, instance, top_range):
@@ -229,7 +333,8 @@ class MultiVote(object):
         return 0
 
     def combine(self, method=DEFAULT_METHOD, with_confidence=False,
-                options=None):
+                add_confidence=False, add_distribution=False,
+                add_count=False, add_median=False, options=None):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
@@ -259,7 +364,11 @@ class MultiVote(object):
                     prediction['confidence'] = 0
             function = NUMERICAL_COMBINATION_METHODS.get(method,
                                                          self.__class__.avg)
-            return function(self, with_confidence=with_confidence)
+            return function(self, with_confidence=with_confidence,
+                            add_confidence=add_confidence,
+                            add_distribution=add_distribution,
+                            add_count=add_count,
+                            add_median=add_median)
         else:
             if method == THRESHOLD:
                 if options is None:
@@ -272,7 +381,10 @@ class MultiVote(object):
                 predictions = self
             return predictions.combine_categorical(
                 COMBINATION_WEIGHTS.get(method, None),
-                with_confidence=with_confidence)
+                with_confidence=with_confidence,
+                add_confidence=add_confidence,
+                add_distribution=add_distribution,
+                add_count=add_count)
 
     def probability_weight(self):
         """Reorganizes predictions depending on training data probability
@@ -322,7 +434,9 @@ class MultiVote(object):
             distribution = []
         return distribution, total
 
-    def combine_categorical(self, weight_label=None, with_confidence=False):
+    def combine_categorical(self, weight_label=None, with_confidence=False,
+                            add_confidence=False, add_distribution=False,
+                            add_count=False):
         """Returns the prediction combining votes by using the given weight:
 
             weight_label can be set as:
@@ -335,6 +449,7 @@ class MultiVote(object):
             prediction) will also be given.
         """
         mode = {}
+        instances = 0
         if weight_label is None:
             weight = 1
         for prediction in self.predictions:
@@ -348,28 +463,38 @@ class MultiVote(object):
                 else:
                     weight = prediction[weight_label]
             category = prediction['prediction']
+            if add_count:
+                instances += prediction['count']
             if category in mode:
                 mode[category] = {"count": mode[category]["count"] + weight,
                                   "order": mode[category]["order"]}
             else:
                 mode[category] = {"count": weight,
                                   "order": prediction['order']}
-
         prediction = sorted(mode.items(), key=lambda x: (x[1]['count'],
                                                          -x[1]['order']),
                             reverse=True)[0][0]
-
-        if with_confidence:
+        if with_confidence or add_confidence:
             if 'confidence' in self.predictions[0]:
-                return self.weighted_confidence(prediction,
-                                                weight_label)
+                prediction, combined_confidence = self.weighted_confidence(
+                    prediction, weight_label)
             # if prediction had no confidence, compute it from distribution
             else:
                 combined_distribution = self.combine_distribution()
                 distribution, count = combined_distribution
                 combined_confidence = ws_confidence(prediction, distribution,
                                                     ws_n=count)
-                return prediction, combined_confidence
+        if with_confidence:
+            return prediction, combined_confidence
+        if (add_confidence or add_distribution or add_count):
+            output = {'prediction': prediction}
+            if add_confidence:
+                output.update({'confidence': combined_confidence})
+            if add_distribution:
+                output.update(self.__class__.grouped_distribution(self))
+            if add_count:
+                output.update({'count': instances})
+            return output
         return prediction
 
     def weighted_confidence(self, combined_prediction, weight_label):

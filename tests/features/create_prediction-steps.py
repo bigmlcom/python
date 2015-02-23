@@ -129,9 +129,19 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
 def the_prediction_is_finished_in_less_than(step, secs):
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)
 
+@step(r'I create a local ensemble prediction for "(.*)" in JSON adding confidence$')
+def create_local_ensemble_prediction(step, input_data):
+    world.local_prediction = world.local_ensemble.predict(
+        json.loads(input_data), add_confidence=True)
+
 @step(r'I create a local ensemble prediction for "(.*)"$')
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
+    
+@step(r'I create a local ensemble prediction with confidence for "(.*)"$')
+def create_local_ensemble_prediction(step, input_data):
+    world.local_prediction = world.local_ensemble.predict(
+        json.loads(input_data), with_confidence=True)
 
 @step(r'I create an anomaly score for "(.*)"')
 def i_create_an_anomaly_score(step, data=None):

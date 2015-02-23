@@ -3,6 +3,11 @@
 History
 -------
 
+2.1.0 (2015-02-22)
+~~~~~~~~~~~~~~~~~~
+
+- Adding distribution and median to ensembles' predictions output.
+
 2.0.0 (2015-02-12)
 ~~~~~~~~~~~~~~~~~~
 

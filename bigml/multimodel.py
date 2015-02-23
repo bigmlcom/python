@@ -114,7 +114,11 @@ class MultiModel(object):
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, options=None,
-                missing_strategy=LAST_PREDICTION):
+                missing_strategy=LAST_PREDICTION,
+                add_confidence=False,
+                add_distribution=False,
+                add_count=False,
+                add_median=False):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -129,12 +133,18 @@ class MultiModel(object):
         """
 
         votes = self.generate_votes(input_data, by_name=by_name,
-                                    missing_strategy=missing_strategy)
+                                    missing_strategy=missing_strategy,
+                                    add_median=add_median)
         return votes.combine(method=method, with_confidence=with_confidence,
-                             options=options)
+                             options=options,
+                             add_confidence=add_confidence,
+                             add_distribution=add_distribution,
+                             add_count=add_count,
+                             add_median=add_median)
 
     def generate_votes(self, input_data, by_name=True,
-                       missing_strategy=LAST_PREDICTION):
+                       missing_strategy=LAST_PREDICTION,
+                       add_median=False):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
@@ -142,12 +152,12 @@ class MultiModel(object):
         for order in range(0, len(self.models)):
             model = self.models[order]
             prediction_info = model.predict(input_data, by_name=by_name,
-                                            with_confidence=True,
+                                            add_confidence=True,
+                                            add_distribution=True,
+                                            add_count=True,
+                                            add_median=add_median,
                                             missing_strategy=missing_strategy)
-            prediction, confidence, distribution, instances = prediction_info
-            prediction_row = [prediction, confidence, order,
-                              distribution, instances]
-            votes.append_row(prediction_row)
+            votes.append(prediction_info)
         return votes
 
     def batch_predict(self, input_data_list, output_file_path=None,

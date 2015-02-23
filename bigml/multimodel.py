@@ -157,7 +157,6 @@ class MultiModel(object):
                                             add_count=True,
                                             add_median=add_median,
                                             missing_strategy=missing_strategy)
-            print prediction_info
             votes.append(prediction_info)
         return votes
 

@@ -1739,6 +1739,7 @@ will result in
 The argument can be set to ``all`` to obtain the complete
 list or to the maximum length that you want the list to have.
 
+
 Local Clusters
 --------------
 
@@ -1981,8 +1982,8 @@ In regression, all the models predictions' confidences contribute
 to the weighted average confidence.
 
 
-Ensembles
----------
+Local Ensembles
+---------------
 
 Remote ensembles can also be used locally through the ``Ensemble``
 class. The simplest way to access an existing ensemble and using it to
@@ -2046,6 +2047,45 @@ all the related JSON files and stores them in an ``./storage`` directory. Next
 calls to ``Ensemble('ensemble/50c0de043b5635198300033c')`` will retrieve the
 files from this local storage, so that internet connection will only be needed
 the first time an ``Ensemble`` is built.
+
+Local Ensemble's Predictions
+----------------------------
+
+As in the local model's case, you can use the local ensemble to create
+new predictions for your test data, and set some arguments to configure
+the final output of the ``predict`` method. By default, it will
+issue just the ensemble's final prediction. You can add the confidence to it by
+setting
+the ``with_confidence`` argument to True.::
+
+    from bigml.ensemble import Ensemble
+    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
+    ensemble.predict({"petal length": 3, "petal width": 1}, \
+                     with_confidence=True)
+    (u'Iris-versicolor', 0.91519)
+
+And you can add more information to the predictions in a JSON format using:
+
+- ``add_confidence=True`` includes the confidence of the prediction
+- ``add_distribution=True`` includes the distribution of predictions. This is 
+                            built by merging the distributions of each of the
+                            nodes predicted by every model the ensemble is
+                            composed of
+- ``add_count=True`` includes the sum of instances of the nodes predicted by
+                     every model the ensemble is composed of
+- ``add_median=True`` for regression ensembles, it computes the prediction
+                      based on the median (instead of the usual mean)
+
+::
+    from bigml.ensemble import Ensemble
+    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
+    ensemble.predict({"petal length": 3, "petal width": 1}, \
+                     add_confidence=True, add_distribution=True)
+
+    {'distribution': [[u'Iris-versicolor', 84]],
+     'confidence': 0.91519,
+     'prediction': u'Iris-versicolor',
+     'distribution_unit': 'counts'}
 
 Fields
 ------

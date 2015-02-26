@@ -101,8 +101,11 @@ class MultiModel(object):
     def __init__(self, models, api=None):
         self.models = []
         if isinstance(models, list):
-            for model in models:
-                self.models.append(Model(model, api=api))
+            if all([isinstance(model, Model) for model in models]):
+                self.models = models
+            else:
+                for model in models:
+                    self.models.append(Model(model, api=api))
         else:
             self.models.append(Model(models, api=api))
 

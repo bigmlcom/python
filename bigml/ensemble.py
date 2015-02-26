@@ -67,25 +67,34 @@ class Ensemble(object):
             self.api = BigML(storage=STORAGE)
         else:
             self.api = api
+        self.resource_id = None
+        # to be deprecated
         self.ensemble_id = None
+        self.objective_id = None
         self.distributions = None
         self.models_splits = []
         self.multi_model = None
         if isinstance(ensemble, list):
-            try:
-                models = [get_model_id(model) for model in ensemble]
-            except ValueError:
-                raise ValueError('Failed to verify the list of models. Check '
-                                 'your model id values.')
+            if all([isinstance(model, Model) for model in ensemble]):
+                models = ensemble
+                self.model_ids = [local_model.resource_id for local_model in
+                                  models]
+            else:
+                try:
+                    models = [get_model_id(model) for model in ensemble]
+                    self.model_ids = models
+                except ValueError:
+                    raise ValueError('Failed to verify the list of models. Check '
+                                     'your model id values.')
             self.distributions = None
         else:
             ensemble = self.get_ensemble_resource(ensemble)
-            self.ensemble_id = get_ensemble_id(ensemble)
-            ensemble = retrieve_resource(self.api, self.ensemble_id)
+            self.resource_id = get_ensemble_id(ensemble)
+            self.ensemble_id = self.resource_id
+            ensemble = retrieve_resource(self.api, self.resource_id)
             models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions', None)
-        self.model_ids = models
-        self.fields = self.all_model_fields()
+            self.model_ids = models
 
         number_of_models = len(models)
         if max_models is None:
@@ -94,10 +103,12 @@ class Ensemble(object):
             self.models_splits = [models[index:(index + max_models)] for index
                                   in range(0, number_of_models, max_models)]
         if len(self.models_splits) == 1:
-            models = [retrieve_resource(self.api, model_id,
-                                        query_string=ONLY_MODEL)
-                      for model_id in self.models_splits[0]]
+            if not isinstance(models[0], Model):
+                models = [retrieve_resource(self.api, model_id,
+                                            query_string=ONLY_MODEL)
+                          for model_id in self.models_splits[0]]
             self.multi_model = MultiModel(models, self.api)
+        self.fields, self.objective_id = self.all_model_fields()
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be
@@ -109,15 +120,15 @@ class Ensemble(object):
             try:
                 with open(ensemble) as ensemble_file:
                     ensemble = json.load(ensemble_file)
-                    self.ensemble_id = get_ensemble_id(ensemble)
-                    if self.ensemble_id is None:
+                    self.resource_id = get_ensemble_id(ensemble)
+                    if self.resource_id is None:
                         raise ValueError("The JSON file does not seem"
                                          " to contain a valid BigML ensemble"
                                          " representation.")
             except IOError:
                 # if it is not a path, it can be an ensemble id
-                self.ensemble_id = get_ensemble_id(ensemble)
-                if self.ensemble_id is None:
+                self.resource_id = get_ensemble_id(ensemble)
+                if self.resource_id is None:
                     if ensemble.find('ensemble/') > -1:
                         raise Exception(
                             api.error_message(ensemble,
@@ -159,9 +170,10 @@ class Ensemble(object):
             # sequentially used to generate the votes for the prediction
             votes = MultiVote([])
             for models_split in self.models_splits:
-                models = [retrieve_resource(self.api, model_id,
-                                            query_string=ONLY_MODEL)
-                          for model_id in models_split]
+                if not isinstance(models_split[0], Model):
+                   models = [retrieve_resource(self.api, model_id,
+                                                query_string=ONLY_MODEL)
+                             for model_id in models_split]
                 multi_model = MultiModel(models, api=self.api)
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
@@ -280,8 +292,27 @@ class Ensemble(object):
         """
 
         fields = {}
-        for model_id in self.model_ids:
-            local_model = Model(model_id, self.api)
+        models = []
+        objective_id = None
+        no_objective_id = False
+        if isinstance(self.models_splits[0][0], Model):
+            for split in self.models_splits:
+                models.extend(split)
+        else:
+            models = self.model_ids
+        for model_id in models:
+            if isinstance(model_id, Model):
+                local_model = model_id
+            else:
+                local_model = Model(model_id, self.api)
             gc.collect()
             fields.update(local_model.fields)
-        return fields
+            if (objective_id is not None and
+                    objective_id != local_model.objective_id):
+                # the models' objective field have different ids, no global id
+                no_objective_id = True
+            else:
+                objective_id = local_model.objective_id
+        if no_objective_id:
+            objective_id = None
+        return fields, objective_id

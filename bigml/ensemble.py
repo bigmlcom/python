@@ -58,7 +58,16 @@ class Ensemble(object):
 
        Uses a number of BigML remote models to build an ensemble local version
        that can be used to generate predictions locally.
+       The expected arguments are:
 
+       ensemble: ensemble object or id, list of model objects or
+                 ids or list of local model objects (see Model)
+       api: connection object. If None, a new connection object is
+            instantiated.
+       max_models: integer that limits the number of models instantiated and
+                   held in memory at the same time while predicting. If None,
+                   no limit is set and all the ensemble models are
+                   instantiated and held in memory permanently.
     """
 
     def __init__(self, ensemble, api=None, max_models=None):

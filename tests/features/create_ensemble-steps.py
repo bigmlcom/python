@@ -27,6 +27,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.ensemble import Ensemble
+from bigml.model import Model
 
 NO_MISSING_SPLITS = {'missing_splits': False}
 
@@ -74,6 +75,11 @@ def create_local_ensemble(step):
 @step(r'I create a local Ensemble with the last (\d+) models$')
 def create_local_ensemble_with_list(step, number_of_models):
     world.local_ensemble = Ensemble(world.models[-int(number_of_models):], world.api)
+
+@step(r'I create a local Ensemble with the last (\d+) local models$')
+def create_local_ensemble_with_list_of_local_models(step, number_of_models):
+    local_models = [Model(model) for model in world.models[-int(number_of_models):]]
+    world.local_ensemble = Ensemble(local_models, world.api)
 
 @step(r'the field importance text is (.*?)$')
 def field_importance_print(step, field_importance):

@@ -3,6 +3,12 @@
 History
 -------
 
+2.2.0 (2015-02-26)
+~~~~~~~~~~~~~~~~~~
+
+- Adding lists of local models as we argument for the local ensemble
+  constructor.
+
 2.1.0 (2015-02-22)
 ~~~~~~~~~~~~~~~~~~
 

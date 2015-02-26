@@ -2020,7 +2020,7 @@ Similarly, local ensembles can also be created by giving a list of models to be
 combined to issue the final prediction::
 
     from bigml.ensemble import Ensemble
-    ensemble = Ensemble(['model/50c0de043b563519830001c2',
+    ensemble = Ensemble(['model/50c0de043b563519830001c2', \
                          'model/50c0de043b5635198300031b')]
     ensemble.predict({"petal length": 3, "petal width": 1})
 
@@ -2047,6 +2047,19 @@ all the related JSON files and stores them in an ``./storage`` directory. Next
 calls to ``Ensemble('ensemble/50c0de043b5635198300033c')`` will retrieve the
 files from this local storage, so that internet connection will only be needed
 the first time an ``Ensemble`` is built.
+
+On the contrary, if you have no memory limitations and want to increase
+prediction speed, you can create the ensemble from a list of local model
+objects. Then, local model objects will only be instantiated once, and
+this could increase performace significantly for big batches of predictions::
+
+    from bigml.model import Model
+    model_ids = ['model/50c0de043b563519830001c2', \ 
+                 'model/50c0de043b5635198300031b')]
+    local_models = [Model(model_id) for model_id in model_ids]
+    local_ensemble = Ensemble(local_models)
+
+
 
 Local Ensemble's Predictions
 ----------------------------

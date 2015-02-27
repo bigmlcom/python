@@ -3,6 +3,12 @@
 History
 -------
 
+2.2.1 (2015-02-28)
+~~~~~~~~~~~~~~~~~~
+
+- Adding cache_get argument to Ensemble constructor to allow getting
+  local model objects from cache.
+
 2.2.0 (2015-02-26)
 ~~~~~~~~~~~~~~~~~~
 

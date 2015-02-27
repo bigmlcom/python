@@ -53,6 +53,14 @@ from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 
 
+def use_cache(cache_get):
+    """Checks whether the user has provided a cache get function to retrieve
+       local models.
+       
+    """
+    return cache_get is not None and hasattr(cache_get, '__call__')
+
+
 class Ensemble(object):
     """A local predictive Ensemble.
 
@@ -70,7 +78,7 @@ class Ensemble(object):
                    instantiated and held in memory permanently.
     """
 
-    def __init__(self, ensemble, api=None, max_models=None):
+    def __init__(self, ensemble, api=None, max_models=None, cache_get=None):
 
         if api is None:
             self.api = BigML(storage=STORAGE)
@@ -83,6 +91,7 @@ class Ensemble(object):
         self.distributions = None
         self.models_splits = []
         self.multi_model = None
+        self.cache_get = None
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -114,10 +123,23 @@ class Ensemble(object):
                                   in range(0, number_of_models, max_models)]
         if len(self.models_splits) == 1:
             if not isinstance(models[0], Model):
-                models = [retrieve_resource(self.api, model_id,
-                                            query_string=ONLY_MODEL)
-                          for model_id in self.models_splits[0]]
+                if use_cache(cache_get):
+                    # retrieve the models from a cache get function
+                    try:
+                        models = [cache_get(model_id) for model_id
+                                  in self.models_splits[0]]
+                        self.cache_get = cache_get
+                    except Exception, exc:
+                        raise Exception('Error while calling the user-given'
+                                        ' function %s: %s' %
+                                        (cache_get.__name__, str(exc)))
+                else:
+                    models = [retrieve_resource(self.api, model_id,
+                                                query_string=ONLY_MODEL)
+                              for model_id in self.models_splits[0]]
             self.multi_model = MultiModel(models, self.api)
+        else:
+            self.cache_get = cache_get
         self.fields, self.objective_id = self.all_model_fields()
 
     def get_ensemble_resource(self, ensemble):
@@ -181,9 +203,21 @@ class Ensemble(object):
             votes = MultiVote([])
             for models_split in self.models_splits:
                 if not isinstance(models_split[0], Model):
-                   models = [retrieve_resource(self.api, model_id,
-                                                query_string=ONLY_MODEL)
-                             for model_id in models_split]
+                    if (self.cache_get is not None and
+                            has_attr(self.cache_get, '__call__')):
+                        # retrieve the models from a cache get function
+                        try:   
+                            models = [self.cache_get(model_id) for model_id
+                                      in self.models_split]
+                        except Exception, exc:
+                            raise Exception('Error while calling the '
+                                            'user-given'
+                                            ' function %s: %s' %
+                                            (cache_get.__name__, str(exc)))
+                    else:
+                        models = [retrieve_resource(self.api, model_id,
+                                                    query_string=ONLY_MODEL)
+                                  for model_id in models_split]
                 multi_model = MultiModel(models, api=self.api)
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
@@ -313,6 +347,8 @@ class Ensemble(object):
         for model_id in models:
             if isinstance(model_id, Model):
                 local_model = model_id
+            elif self.cache_get is not None:
+                local_model = self.cache_get(model_id)
             else:
                 local_model = Model(model_id, self.api)
             gc.collect()

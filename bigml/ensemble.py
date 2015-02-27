@@ -92,9 +92,10 @@ class Ensemble(object):
                 try:
                     models = [get_model_id(model) for model in ensemble]
                     self.model_ids = models
-                except ValueError:
-                    raise ValueError('Failed to verify the list of models. Check '
-                                     'your model id values.')
+                except ValueError, exc:
+                    raise ValueError('Failed to verify the list of models.'
+                                     ' Check your model id values: %s' %
+                                     str(exc))
             self.distributions = None
         else:
             ensemble = self.get_ensemble_resource(ensemble)

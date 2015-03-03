@@ -22,8 +22,14 @@ import sys
 import os
 import time
 import locale
+import StringIO
+try:
+    #added to allow GAE to work
+    from google.appengine.api import urlfetch
+    GAE_ENABLED = True
+except ImportError:
+    GAE_ENABLED = False
 import requests
-
 
 try:
     import simplejson as json
@@ -253,9 +259,19 @@ class BigMLConnection(object):
 
         while code == HTTP_ACCEPTED:
             try:
-                response = requests.post(url + self.auth,
-                                         headers=SEND_JSON,
-                                         data=body, verify=verify)
+                if GAE_ENABLED:
+                    req_options = {
+                        'url': url + self.auth,
+                        'method': urlfetch.POST,
+                        'headers': SEND_JSON,
+                        'payload': body,
+                        'validate_certificate': verify
+                    }
+                    response = urlfetch.fetch(**req_options)
+                else:
+                    response = requests.post(url + self.auth,
+                                             headers=SEND_JSON,
+                                             data=body, verify=verify)
                 code = response.status_code
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:
@@ -287,6 +303,9 @@ class BigMLConnection(object):
             except requests.RequestException:
                 LOGGER.error("Ambiguous exception occurred")
                 code = HTTP_INTERNAL_SERVER_ERROR
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -317,10 +336,18 @@ class BigMLConnection(object):
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
         try:
-            response = requests.get(url + auth + query_string,
-                                    headers=ACCEPT_JSON,
-                                    verify=self.verify)
-
+            if GAE_ENABLED:
+                req_options = {
+                    'url': url + self.auth + query_string,
+                    'method': urlfetch.GET,
+                    'headers': ACCEPT_JSON,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options);
+            else:
+                response = requests.get(url + auth + query_string,
+                                        headers=ACCEPT_JSON,
+                                        verify=self.verify)
             code = response.status_code
 
             if code == HTTP_OK:
@@ -345,6 +372,9 @@ class BigMLConnection(object):
             LOGGER.error("Request timed out")
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
+        except urlfetch.Error, exception:
+            LOGGER.error("Error establishing connection: %s",
+                         str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -380,9 +410,18 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be listed"}}
         try:
-
-            response = requests.get(url + self.auth + query_string,
-                                    headers=ACCEPT_JSON, verify=self.verify)
+            if GAE_ENABLED:
+                req_options = {
+                    'url': url + self.auth + query_string,
+                    'method': urlfetch.GET,
+                    'headers': ACCEPT_JSON,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options);
+            else:
+                response = requests.get(url + self.auth + query_string,
+                                        headers=ACCEPT_JSON,
+                                        verify=self.verify)
             code = response.status_code
 
             if code == HTTP_OK:
@@ -407,6 +446,9 @@ class BigMLConnection(object):
             LOGGER.error("Request timed out")
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
+        except urlfetch.Error, exception:
+            LOGGER.error("Error establishing connection: %s",
+                         str(exception))
 
         return {
             'code': code,
@@ -439,9 +481,19 @@ class BigMLConnection(object):
                 "message": "The resource couldn't be updated"}}
 
         try:
-            response = requests.put(url + self.auth,
-                                    headers=SEND_JSON,
-                                    data=body, verify=self.verify)
+            if GAE_ENABLED:
+                req_options = {
+                    'url': url + self.auth,
+                    'method': urlfetch.PUT,
+                    'headers': SEND_JSON,
+                    'payload': body,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options);
+            else:
+               response = requests.put(url + self.auth,
+                                        headers=SEND_JSON,
+                                        data=body, verify=self.verify)
 
             code = response.status_code
 
@@ -467,6 +519,9 @@ class BigMLConnection(object):
             LOGGER.error("Request timed out")
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
+        except urlfetch.Error, exception:
+            LOGGER.error("Error establishing connection: %s",
+                         str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -486,7 +541,15 @@ class BigMLConnection(object):
                 "message": "The resource couldn't be deleted"}}
 
         try:
-            response = requests.delete(url + self.auth, verify=self.verify)
+            if GAE_ENABLED:
+                req_options = {
+                    'url': url + self.auth,
+                    'method': urlfetch.DELETE,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options);
+            else:
+                response = requests.delete(url + self.auth, verify=self.verify)
             code = response.status_code
 
             if code == HTTP_NO_CONTENT:
@@ -509,6 +572,9 @@ class BigMLConnection(object):
             LOGGER.error("Request timed out")
         except requests.RequestException:
             LOGGER.error("Ambiguous exception occurred")
+        except urlfetch.Error, exception:
+            LOGGER.error("Error establishing connection: %s",
+                         str(exception))
 
         return {
             'code': code,
@@ -522,63 +588,90 @@ class BigMLConnection(object):
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         file_object = None
-
-        response = requests.get(url + self.auth,
-                                verify=self.verify, stream=True)
-        code = response.status_code
-
-        if code == HTTP_OK:
-            try:
-                if counter < retries:
-                    download_status = json.loads(response.content)
-                    if download_status and isinstance(download_status, dict):
-                        if download_status['status']['code'] != 5:
-                            time.sleep(get_exponential_wait(wait_time,
-                                                            counter))
-                            counter += 1
-                            return self._download(url, filename=filename,
-                                                  wait_time=wait_time,
-                                                  retries=retries,
-                                                  counter=counter)
-                        else:
-                            return self._download(url, filename=filename,
-                                                  wait_time=wait_time,
-                                                  retries=retries,
-                                                  counter=retries + 1)
-                elif counter == retries:
-                    LOGGER.error("The maximum number of retries "
-                                 " for the download has been "
-                                 " exceeded. You can retry your "
-                                 " command again in"
-                                 " a while.")
-                    return None
-            except ValueError:
-                # When download starts, response.content is no longer a JSON
-                # object and we must retry the download without testing for
-                # JSON content. This is achieved by using counter = retries + 1
-                # to single out this case.
-                if counter < retries:
-                    return self._download(url, filename=filename,
-                                          wait_time=wait_time,
-                                          retries=retries,
-                                          counter=retries + 1)
-            if filename is None:
-                file_object = response.raw
+        try:
+            if GAE_ENABLED:
+                req_options = {
+                    'url': url + self.auth,
+                    'method': urlfetch.GET,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options);
             else:
-                file_size = stream_copy(response, filename)
-                if file_size == 0:
-                    LOGGER.error("Error copying file to %s", filename)
+                response = requests.get(url + self.auth,
+                                        verify=self.verify, stream=True)
+            code = response.status_code
+
+            if code == HTTP_OK:
+                try:
+                    if counter < retries:
+                        download_status = json.loads(response.content)
+                        if download_status and isinstance(download_status,
+                                                          dict):
+                            if download_status['status']['code'] != 5:
+                                time.sleep(get_exponential_wait(wait_time,
+                                                                counter))
+                                counter += 1
+                                return self._download(url, filename=filename,
+                                                      wait_time=wait_time,
+                                                      retries=retries,
+                                                      counter=counter)
+                            else:
+                                return self._download(url, filename=filename,
+                                                      wait_time=wait_time,
+                                                      retries=retries,
+                                                      counter=retries + 1)
+                    elif counter == retries:
+                        LOGGER.error("The maximum number of retries "
+                                     " for the download has been "
+                                     " exceeded. You can retry your "
+                                     " command again in"
+                                     " a while.")
+                        return None
+                except ValueError:
+                    # When download starts, response.content is no longer a
+                    # JSON object and we must retry the download without
+                    # testing for JSON content. This is achieved by using
+                    # counter = retries + 1 to single out this case.
+                    if counter < retries:
+                        return self._download(url, filename=filename,
+                                              wait_time=wait_time,
+                                              retries=retries,
+                                              counter=retries + 1)
+                if filename is None:
+                    if GAE_ENABLED:
+                        file_object = StringIO.StringIO(response.content)
+                    else:
+                        file_object = response.raw
                 else:
-                    file_object = filename
-        elif code in [HTTP_BAD_REQUEST,
-                      HTTP_UNAUTHORIZED,
-                      HTTP_NOT_FOUND,
-                      HTTP_TOO_MANY_REQUESTS]:
-            error = response.content
-            LOGGER.error("Error downloading: %s", error)
-        else:
-            LOGGER.error("Unexpected error (%s)", code)
-            code = HTTP_INTERNAL_SERVER_ERROR
+                    if GAE_ENABLED:
+                        raise("No support for downloading to local files")
+                        #TODO: Using Google Cloud Storage
+                    else:
+                        file_size = stream_copy(response, filename)
+                    if file_size == 0:
+                        LOGGER.error("Error copying file to %s", filename)
+                    else:
+                        file_object = filename
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
+                error = response.content
+                LOGGER.error("Error downloading: %s", error)
+            else:
+                LOGGER.error("Unexpected error (%s)", code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+        except ValueError:
+            LOGGER.error("Malformed response")
+        except requests.ConnectionError, exc:
+            LOGGER.error("Connection error: %s", str(exc))
+        except requests.Timeout:
+            LOGGER.error("Request timed out")
+        except requests.RequestException:
+            LOGGER.error("Ambiguous exception occurred")
+        except urlfetch.Error, exception:
+            LOGGER.error("Error establishing connection: %s",
+                         str(exception))
 
         return file_object
 

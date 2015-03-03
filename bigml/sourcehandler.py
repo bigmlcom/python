@@ -21,6 +21,12 @@
 
 import sys
 import os
+try:
+    #added to allow GAE to work
+    from google.appengine.api import urlfetch
+    GAE_ENABLED = True
+except ImportError:
+    GAE_ENABLED = False
 import requests
 import ssl
 
@@ -49,7 +55,7 @@ from bigml.bigmlconnection import (
     HTTP_CREATED, HTTP_ACCEPTED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
     HTTP_TOO_MANY_REQUESTS,
-    HTTP_INTERNAL_SERVER_ERROR)
+    HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED)
 from bigml.resourcehandler import (check_resource_type, get_resource,
                                    resource_is_ready, check_resource,
                                    get_source_id)
@@ -276,51 +282,81 @@ class SourceHandler(ResourceHandler):
         else:
             body, headers = multipart_encode(args)
 
-        request = urllib2.Request(self.source_url + self.auth, body, headers)
-
-        try:
-            # try using the new SSL checking in python 2.7.9
+        if GAE_ENABLED:
             try:
-                if not self.verify and PYTHON_2_7_9:
-                    context = ssl.create_default_context(
-                        ssl.Purpose.CLIENT_AUTH)
-                    context.verify_mode = ssl.CERT_NONE
-                    https_handler = StreamingHTTPSHandler(context=context)
-                    opener = urllib2.build_opener(https_handler)
-                    urllib2.install_opener(opener)
+                response = urlfetch.fetch(url=self.source_url + self.auth,
+                                          payload="".join(body),
+                                          method=urlfetch.POST,
+                                          headers=headers)
+                code = response.status_code
+                content = response.content
+                if code in [HTTP_CREATED]:
+                    if 'location' in response.headers:
+                        location = response.headers['location']
+                    resource = json.loads(response.content, 'utf-8')
+                    resource_id = resource['resource']
+                    error = {}
+                elif code in [HTTP_BAD_REQUEST,
+                              HTTP_UNAUTHORIZED,
+                              HTTP_PAYMENT_REQUIRED,
+                              HTTP_FORBIDDEN,
+                              HTTP_NOT_FOUND,
+                              HTTP_TOO_MANY_REQUESTS]:
+                    error = json.loads(response.content, 'utf-8')
+                    LOGGER.error(self.error_message(error, method='create'))
+                elif code != HTTP_ACCEPTED:
+                    LOGGER.error("Unexpected error (%s)", code)
+                    code = HTTP_INTERNAL_SERVER_ERROR
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+        else:
+            try:
+                request = urllib2.Request(self.source_url + self.auth,
+                                          body, headers)
+                # try using the new SSL checking in python 2.7.9
+                try:
+                    if not self.verify and PYTHON_2_7_9:
+                        context = ssl.create_default_context(
+                            ssl.Purpose.CLIENT_AUTH)
+                        context.verify_mode = ssl.CERT_NONE
+                        https_handler = StreamingHTTPSHandler(context=context)
+                        opener = urllib2.build_opener(https_handler)
+                        urllib2.install_opener(opener)
+                        response = urllib2.urlopen(request)
+                    else:
+                        response = urllib2.urlopen(request)
+                except AttributeError:
                     response = urllib2.urlopen(request)
+                clear_console_line(out=out)
+                reset_console_line(out=out)
+                code = response.getcode()
+                if code == HTTP_CREATED:
+                    location = response.headers['location']
+                    content = response.read()
+                    resource = json.loads(content, 'utf-8')
+                    resource_id = resource['resource']
+                    error = {}
+            except ValueError:
+                LOGGER.error("Malformed response")
+            except urllib2.HTTPError, exception:
+                code = exception.code
+                if code in [HTTP_BAD_REQUEST,
+                            HTTP_UNAUTHORIZED,
+                            HTTP_PAYMENT_REQUIRED,
+                            HTTP_NOT_FOUND,
+                            HTTP_TOO_MANY_REQUESTS]:
+                    content = exception.read()
+                    error = json.loads(content, 'utf-8')
+                    LOGGER.error(self.error_message(error, method='create'))
                 else:
-                    response = urllib2.urlopen(request)
-            except AttributeError:
-                response = urllib2.urlopen(request)
-            clear_console_line(out=out)
-            reset_console_line(out=out)
-            code = response.getcode()
-            if code == HTTP_CREATED:
-                location = response.headers['location']
-                content = response.read()
-                resource = json.loads(content, 'utf-8')
-                resource_id = resource['resource']
-                error = {}
-        except ValueError:
-            LOGGER.error("Malformed response")
-        except urllib2.HTTPError, exception:
-            code = exception.code
-            if code in [HTTP_BAD_REQUEST,
-                        HTTP_UNAUTHORIZED,
-                        HTTP_PAYMENT_REQUIRED,
-                        HTTP_NOT_FOUND,
-                        HTTP_TOO_MANY_REQUESTS]:
-                content = exception.read()
-                error = json.loads(content, 'utf-8')
-                LOGGER.error(self.error_message(error, method='create'))
-            else:
-                LOGGER.error("Unexpected error (%s)", code)
-                code = HTTP_INTERNAL_SERVER_ERROR
+                    LOGGER.error("Unexpected error (%s)", code)
+                    code = HTTP_INTERNAL_SERVER_ERROR
 
-        except urllib2.URLError, exception:
-            LOGGER.error("Error establishing connection: %s", str(exception))
-            error = exception.args
+            except urllib2.URLError, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                error = exception.args
         return {
             'code': code,
             'resource': resource_id,

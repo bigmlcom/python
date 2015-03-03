@@ -3,8 +3,10 @@
 History
 -------
 
-2.2.1 (2015-02-28)
+3.0.0 (2015-03-04)
 ~~~~~~~~~~~~~~~~~~
+
+- Adding Google App Engine support for remote REST calls.
 
 - Adding cache_get argument to Ensemble constructor to allow getting
   local model objects from cache.

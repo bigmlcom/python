@@ -1031,7 +1031,7 @@ rest of resources. When you create a ``project``:
 
     project = api.create_project({'name': 'my first project'})
 
-the resulting resource is similar to the rest of resources, although shorter::
+the resulting resource is similar to the rest of resources, although shorter:
 
 .. code-block:: python
 
@@ -2680,7 +2680,7 @@ Install the tools required to build the documentation:
 
     $ pip install sphinx
 
-To build the HTML version of the documentation::
+To build the HTML version of the documentation:
 
 .. code-block:: bash
 

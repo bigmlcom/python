@@ -53,23 +53,31 @@ Installation
 ------------
 
 To install the latest stable release with
-`pip <http://www.pip-installer.org/>`_::
+`pip <http://www.pip-installer.org/>`_
+
+.. code-block:: bash
 
     $ pip install bigml
 
 You can also install the development version of the bindings directly
-from the Git repository::
+from the Git repository
+
+.. code-block:: bash
 
     $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
 
 Importing the module
 --------------------
 
-To import the module::
+To import the module:
+
+.. code-block:: python
 
     import bigml.api
 
-Alternatively you can just import the BigML class::
+Alternatively you can just import the BigML class:
+
+.. code-block:: python
 
     from bigml.api import BigML
 
@@ -83,33 +91,45 @@ transmitted over HTTPS.
 This module will look for your username and API key in the environment
 variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively. You can
 add the following lines to your ``.bashrc`` or ``.bash_profile`` to set
-those variables automatically when you log in::
+those variables automatically when you log in:
+
+.. code-block:: bash
 
     export BIGML_USERNAME=myusername
     export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
 
-With that environment set up, connecting to BigML is a breeze::
+With that environment set up, connecting to BigML is a breeze:
+
+.. code-block:: python
 
     from bigml.api import BigML
     api = BigML()
 
 Otherwise, you can initialize directly when instantiating the BigML
-class as follows::
+class as follows:
+
+.. code-block:: python
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
 Also, you can initialize the library to work in the Sandbox
-environment by passing the parameter ``dev_mode``::
+environment by passing the parameter ``dev_mode``:
+
+.. code-block:: python
 
     api = BigML(dev_mode=True)
 
 For Virtual Private Cloud setups, you can change the remote server domain
 to the VPC particular one by either setting the ``BIGML_DOMAIN`` environment
-variable to your VPC subdomain::
+variable to your VPC subdomain:
+
+.. code-block:: bash
 
     export BIGML_DOMAIN=my_VPC.bigml.io
 
-or setting it when instantiating your connection::
+or setting it when instantiating your connection:
+
+.. code-block:: python
 
     api = BigML(domain="my_VPC.bigml.io")
 
@@ -119,7 +139,9 @@ henceforth.
 You can also set up your connection to use a particular PredictServer
 only for predictions. In order to do so, you'll need to specify a ``Domain``
 object, where you can set up the general domain name as well as the
-particular prediction domain name.::
+particular prediction domain name.
+
+.. code-block:: python
 
     from bigml.domain import Domain
     from bigml.api import BigML
@@ -130,7 +152,9 @@ particular prediction domain name.::
     api = BigML(domain=domain_info)
 
 Finally, you can combine all the options and change both the general domain
-server, and the prediction domain server.::
+server, and the prediction domain server.
+
+.. code-block:: python
 
     from bigml.domain import Domain
     from bigml.api import BigML
@@ -169,7 +193,9 @@ for).
     5.7,2.5,5.0,2.0,Iris-virginica
     5.8,2.8,5.1,2.4,Iris-virginica
 
-You can easily generate a prediction following these steps::
+You can easily generate a prediction following these steps:
+
+.. code-block:: python
 
     from bigml.api import BigML
 
@@ -180,18 +206,24 @@ You can easily generate a prediction following these steps::
     model = api.create_model(dataset)
     prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
 
-You can then print the prediction using the ``pprint`` method::
+You can then print the prediction using the ``pprint`` method:
+
+.. code-block:: python
 
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
-and also generate an evaluation for the model by using::
+and also generate an evaluation for the model by using:
+
+.. code-block:: python
 
     test_source = api.create_source('./data/test_iris.csv')
     test_dataset = api.create_dataset(test_source)
     evaluation = api.create_evaluation(model, test_dataset)
 
-Setting the ``storage`` argument in the api instantiation::
+Setting the ``storage`` argument in the api instantiation:
+
+.. code-block:: python
 
     api = BigML(storage='./storage')
 
@@ -203,7 +235,9 @@ Fields
 
 BigML automatically generates idenfiers for each field. To see the
 fields and the ids and types that have been assigned to a source you can
-use ``get_fields``::
+use ``get_fields``:
+
+.. code-block:: python
 
     >>> source = api.get_source(source)
     >>> api.pprint(api.get_fields(source))
@@ -224,7 +258,9 @@ use ``get_fields``::
                        u'optype': u'categorical'}}
 
 When the number of fields becomes very large, it can be useful to exclude or
-filter them. This can be done using a query string expression, for instance::
+filter them. This can be done using a query string expression, for instance:
+
+.. code-block:: python
 
     >>> source = api.get_source(source, "limit=10&order_by=name")
 
@@ -235,7 +271,9 @@ Dataset
 
 If you want to get some basic statistics for each field you can retrieve
 the ``fields`` from the dataset as follows to get a dictionary keyed by
-field id::
+field id:
+
+.. code-block:: python
 
     >>> dataset = api.get_dataset(dataset)
     >>> api.pprint(api.get_fields(dataset))
@@ -268,7 +306,9 @@ field id::
 
 
 The field filtering options are also available using a query string expression,
-for instance::
+for instance:
+
+.. code-block:: python
 
     >>> dataset = api.get_dataset(dataset, "limit=20")
 
@@ -279,7 +319,9 @@ Model
 
 One of the greatest things about BigML is that the models that it
 generates for you are fully white-boxed. To get the explicit tree-like
-predictive model for the example above::
+predictive model for the example above:
+
+.. code-block:: python
 
     >>> model = api.get_model(model)
     >>> api.pprint(model['object']['model']['root'])
@@ -313,7 +355,9 @@ readability: the full predictive model you'll get is going to contain
 much more details).
 
 Again, filtering options are also available using a query string expression,
-for instance::
+for instance:
+
+.. code-block:: python
 
     >>> model = api.get_model(model, "limit=5")
 
@@ -326,7 +370,9 @@ The predictive performance of a model can be measured using many different
 measures. In BigML these measures can be obtained by creating evaluations. To
 create an evaluation you need the id of the model you are evaluating and the id
 of the dataset that contains the data to be tested with. The result is shown
-as::
+as:
+
+.. code-block:: python
 
     >>> evaluation = api.get_evaluation(evaluation)
     >>> api.pprint(evaluation['object']['result'])
@@ -422,7 +468,9 @@ For unsupervised learning problems, the cluster is used to classify in a
 limited number of groups your training data. The cluster structure is defined
 by the centers of each group of data, named centroids, and the data enclosed
 in the group. As for in the model's case, the cluster is a white-box resource
-and can be retrieved as a JSON::
+and can be retrieved as a JSON:
+
+.. code-block:: python
 
     >>> cluster = api.get_cluster(cluster)
     >>> api.pprint(cluster['object'])
@@ -606,7 +654,9 @@ the more anomalous. We also capture the `row` which gives values for
 each field in the order defined by `input_fields`.  Similarly we give
 a list of `importances` which match the `row` values.  These
 importances tell us which values contributed most to the anomaly
-score. Thus, the structure of an anomaly detector is similar to::
+score. Thus, the structure of an anomaly detector is similar to:
+
+.. code-block:: python
 
     {   'category': 0,
         'code': 200,
@@ -842,7 +892,9 @@ The `trees` list contains the actual isolation forest, and it can be quite
 large usually. That's why, this part of the resource should only be included
 in downloads when needed. If you are only interested in other properties, such
 as `top_anomalies`, you'll improve performance by excluding it, using the
-`excluded=trees` query string in the API call::
+`excluded=trees` query string in the API call:
+
+.. code-block:: python
 
     anomaly = api.get_anomaly('anomaly/540dfa9f9841fa5c8800076a', \
                               query_string='excluded=trees')
@@ -900,7 +952,9 @@ created until its status is ``bigml.api.FINISHED``. See the
 `documentation on status
 codes <https://bigml.com/developers/status_codes>`_ for the listing of
 potential states and their semantics. So depending on your application
-you might need to import the following constants::
+you might need to import the following constants:
+
+.. code-block:: python
 
     from bigml.api import WAITING
     from bigml.api import QUEUED
@@ -913,7 +967,9 @@ you might need to import the following constants::
     from bigml.api import UNKNOWN
     from bigml.api import RUNNABLE
 
-You can query the status of any resource with the ``status`` method::
+You can query the status of any resource with the ``status`` method:
+
+.. code-block:: python
 
     api.status(source)
     api.status(dataset)
@@ -936,13 +992,17 @@ the status of the resource that is passed as a parameter is
 ``FINISHED``. You can change how often the status will be checked with
 the ``wait_time`` argument. By default, it is set to 3 seconds.
 
-You can also use the ``check_resource`` function::
+You can also use the ``check_resource`` function:
+
+.. code-block:: python
 
     check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
 FAULTY state, or can also be used with ``wait_time`` and ``retries``
-arguments to control the pulling::
+arguments to control the pulling:
+
+.. code-block:: python
 
     check_resource(resource, api.get_source, wait_time=2, retries=20)
 
@@ -962,7 +1022,9 @@ and assigned a certain ``project_id``, the rest of resources generated from
 this source will remain in this project.
 
 The REST calls to manage the ``project`` resemble the ones used to manage the
-rest of resources. When you create a ``project``::
+rest of resources. When you create a ``project``:
+
+.. code-block:: python
 
     from bigml.api import BigML
     api = BigML()
@@ -970,6 +1032,8 @@ rest of resources. When you create a ``project``::
     project = api.create_project({'name': 'my first project'})
 
 the resulting resource is similar to the rest of resources, although shorter::
+
+.. code-block:: python
 
     {'code': 201,
      'resource': u'project/54a1bd0958a27e3c4c0002f0',
@@ -985,7 +1049,9 @@ the resulting resource is similar to the rest of resources, although shorter::
                 u'description': u''},
      'error': None}
 
-and you can use its project id to get, update or delete it::
+and you can use its project id to get, update or delete it:
+
+.. code-block:: python
 
     project = api.get_project('project/54a1bd0958a27e3c4c0002f0')
     api.update_project(project['resource'],
@@ -1008,7 +1074,9 @@ to specify any of the
 options for source creation described in the `BigML API
 documentation <https://bigml.com/developers/sources>`_.
 
-Here's a sample invocation::
+Here's a sample invocation:
+
+.. code-block:: python
 
     from bigml.api import BigML
     api = BigML()
@@ -1016,19 +1084,25 @@ Here's a sample invocation::
     source = api.create_source('./data/iris.csv',
         {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}})
 
-or you may want to create a source from a file in a remote location::
+or you may want to create a source from a file in a remote location:
+
+.. code-block:: python
 
     source = api.create_source('s3://bigml-public/csv/iris.csv',
         {'name': 'my remote source', 'source_parser': {'missing_tokens': ['?']}})
 
-or maybe reading the content from stdin::
+or maybe reading the content from stdin:
+
+.. code-block:: python
 
     content = StringIO.StringIO(sys.stdin.read())
     source = api.create_source(content,
         {'name': 'my stdin source', 'source_parser': {'missing_tokens': ['?']}})
 
 or using data stored in a local python variable. The following example
-shows the two accepted formats::
+shows the two accepted formats:
+
+.. code-block:: python
 
     local = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
     local2 = [{'a': 1, 'b': 2, 'c': 3}, {'a': 4, 'b': 5, 'c': 6}]
@@ -1040,13 +1114,17 @@ Then ``source`` will contain a resource whose status code will be either
 ``WAITING`` or ``QUEUED``.
 
 For local data files you can go one step further and use asynchronous
-uploading::
+uploading:
+
+.. code-block:: python
 
     source = api.create_source('./data/iris.csv',
         {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}},
         async=True)
 
-In this case, the call fills `source` immediately with a primary resource like::
+In this case, the call fills `source` immediately with a primary resource like:
+
+.. code-block:: python
 
     {'code': 202,
      'resource': None,
@@ -1065,7 +1143,9 @@ status will eventually be (as it is in the synchronous upload case)
 ``WAITING`` or ``QUEUED``.
 
 You can retrieve the updated status at any time using the corresponding get
-method. For example, to get the status of our source we would use::
+method. For example, to get the status of our source we would use:
+
+.. code-block:: python
 
     api.status(source)
 
@@ -1079,7 +1159,9 @@ the additional arguments accepted by BigML and documented in the
 documentation <https://bigml.com/developers/datasets>`_.
 
 For example, to create a dataset named "my dataset" with the first 1024
-bytes of a source, you can submit the following request::
+bytes of a source, you can submit the following request:
+
+.. code-block:: python
 
     dataset = api.create_dataset(source, {"name": "my dataset", "size": 1024})
 
@@ -1089,7 +1171,9 @@ you can follow its evolution using ``api.status(dataset)``.
 As for the rest of resources, the create method will return an incomplete
 object, that can be updated by issuing the corresponding
 ``api.get_dataset`` call until it reaches a ``FINISHED`` status.
-Then you can export the dataset data to a CSV file using::
+Then you can export the dataset data to a CSV file using:
+
+.. code-block:: python
 
     api.download_dataset('dataset/526fc344035d071ea3031d75',
         filename='my_dir/my_dataset.csv')
@@ -1098,7 +1182,9 @@ You can also extract samples from an existing dataset and generate a new one
 with them using the ``api.create_dataset`` method. The first argument should
 be the origin dataset and the rest of arguments that set the range or the
 sampling rate should be passed as a dictionary. For instance, to create a new
-dataset extracting the 80% of instances from an existing one, you could use::
+dataset extracting the 80% of instances from an existing one, you could use:
+
+.. code-block:: python
 
     dataset = api.create_dataset(origin_dataset, {"sample_rate": 0.8})
 
@@ -1107,7 +1193,9 @@ you can set the `sample_rate` as before to create the training dataset and
 use the `out_of_bag` option to assign the complementary subset of data to the
 test dataset. If you set the `seed` argument to a value of your choice, you
 will ensure a determinist sampling, so that each time you execute this call
-you will get the same datasets as a result and they will be complementary::
+you will get the same datasets as a result and they will be complementary:
+
+.. code-block:: python
 
     origin_dataset = api.create_dataset(source)
     train_dataset = api.create_dataset(
@@ -1119,7 +1207,9 @@ you will get the same datasets as a result and they will be complementary::
                          "out_of_bag": True})
 
 It is also possible to generate a dataset from a list of datasets
-(multidataset)::
+(multidataset):
+
+.. code-block:: python
 
     dataset1 = api.create_dataset(source1)
     dataset2 = api.create_dataset(source2)
@@ -1127,7 +1217,9 @@ It is also possible to generate a dataset from a list of datasets
 
 Clusters can also be used to generate datasets containing the instances
 grouped around each centroid. You will need the cluster id and the centroid id
-to reference the dataset to be created. For instance,::
+to reference the dataset to be created. For instance,
+
+.. code-block:: python
 
     cluster = api.create_cluster(dataset)
     cluster_dataset_1 = api.create_dataset(cluster,
@@ -1149,7 +1241,9 @@ documentation <https://bigml.com/developers/models>`_.
 
 For example, to create a model only including the first two fields and
 the first 10 instances in the dataset, you can use the following
-invocation::
+invocation:
+
+.. code-block:: python
 
     model = api.create_model(dataset, {
         "name": "my model", "input_fields": ["000000", "000001"], "range": [1, 10]})
@@ -1169,7 +1263,9 @@ include in the request all the additional arguments accepted by BigML
 and documented in the `Clusters section of the Developer's
 documentation <https://bigml.com/developers/clusters>`_.
 
-Let's create a cluster from a given dataset::
+Let's create a cluster from a given dataset:
+
+.. code-block:: python
 
     cluster = api.create_cluster(dataset, {"name": "my cluster",
                                            "k": 5})
@@ -1187,7 +1283,9 @@ include in the request all the additional arguments accepted by BigML
 and documented in the `Anomaly detectors section of the Developer's
 documentation <https://bigml.com/developers/anomalies>`_.
 
-Let's create an anomaly detector from a given dataset::
+Let's create an anomaly detector from a given dataset:
+
+.. code-block:: python
 
     anomaly = api.create_anomaly(dataset, {"name": "my anomaly"})
 
@@ -1199,14 +1297,18 @@ Creating predictions
 
 You can now use the model resource identifier together with some input
 parameters to ask for predictions, using the ``create_prediction``
-method. You can also give the prediction a name::
+method. You can also give the prediction a name:
+
+.. code-block:: python
 
     prediction = api.create_prediction(model,
                                        {"sepal length": 5,
                                         "sepal width": 2.5},
                                         {"name": "my prediction"})
 
-To see the prediction you can use ``pprint``::
+To see the prediction you can use ``pprint``:
+
+.. code-block:: python
 
     api.pprint(prediction)
 
@@ -1216,7 +1318,9 @@ Creating centroids
 To obtain the centroid associated to new input data, you
 can now use the ``create_centroid`` method. Give the method a cluster
 identifier and the input data to obtain the centroid.
-You can also give the centroid predicition a name::
+You can also give the centroid predicition a name:
+
+.. code-block:: python
 
     centroid = api.create_centroid(cluster,
                                    {"pregnancies": 0,
@@ -1235,7 +1339,9 @@ Creating anomaly scores
 
 To obtain the anomaly score associated to new input data, you
 can now use the ``create_anomaly_score`` method. Give the method an anomaly
-detector identifier and the input data to obtain the score::
+detector identifier and the input data to obtain the score:
+
+.. code-block:: python
 
     anomaly_score = api.create_anomaly_score(anomaly, {"src_bytes": 350},
                                              args={"name": "my score"})
@@ -1254,7 +1360,9 @@ documentation <https://bigml.com/developers/evaluations>`_.
 
 For instance, to evaluate a previously created model using at most 10000 rows
 from an existing dataset
-you can use the following call::
+you can use the following call:
+
+.. code-block:: python
 
     evaluation = api.create_evaluation(model, dataset, {
         "name": "my model", "max_rows": 10000})
@@ -1264,7 +1372,9 @@ will show its state.
 
 Evaluations can also check the ensembles' performance. To evaluate an ensemble
 you can do exactly what we just did for the model case, using the ensemble
-object instead of the model as first argument::
+object instead of the model as first argument:
+
+.. code-block:: python
 
     evaluation = api.create_evaluation(ensemble, dataset)
 
@@ -1273,12 +1383,16 @@ Creating ensembles
 
 To improve the performance of your predictions, you can create an ensemble
 of models and combine their individual predictions.
-The only required argument to create an ensemble is the dataset id::
+The only required argument to create an ensemble is the dataset id:
+
+.. code-block:: python
 
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
 
 but you can also specify the number of models to be built and the
-parallelism level for the task::
+parallelism level for the task:
+
+.. code-block:: python
 
     args = {'number_of_models': 20, 'tlp': 3}
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
@@ -1295,7 +1409,9 @@ We have shown how to create predictions individually, but when the amount
 of predictions to make increases, this procedure is far from optimal. In this
 case, the more efficient way of predicting remotely is to create a dataset
 containing the input data you want your model to predict from and to give its
-id and the one of the model to the ``create_batch_prediction`` api call::
+id and the one of the model to the ``create_batch_prediction`` api call:
+
+.. code-block:: python
 
     batch_prediction = api.create_batch_prediction(model, dataset, {
         "name": "my batch prediction", "all_fields": True,
@@ -1312,14 +1428,18 @@ objective field as a header row followed by the predictions.
 As for the rest of resources, the create method will return an incomplete
 object, that can be updated by issuing the corresponding
 ``api.get_batch_prediction`` call until it reaches a ``FINISHED`` status.
-Then you can download the created predictions file using::
+Then you can download the created predictions file using:
+
+.. code-block:: python
 
     api.download_batch_prediction('batchprediction/526fc344035d071ea3031d70',
         filename='my_dir/my_predictions.csv')
 
 that will copy the output predictions to the local file given in
 ``filename``. If no ``filename`` is provided, the method returns a file-like
-object that can be read as a stream::
+object that can be read as a stream:
+
+.. code-block:: python
 
     CHUNK_SIZE = 1024
     response = api.download_batch_prediction(
@@ -1329,7 +1449,9 @@ object that can be read as a stream::
         print chunk
 
 The output of a batch prediction can also be transformed to a source object
-using the ``source_from_batch_prediction`` method in the api::
+using the ``source_from_batch_prediction`` method in the api:
+
+.. code-block:: python
 
     api.source_from_batch_prediction(
         'batchprediction/526fc344035d071ea3031d70',
@@ -1347,7 +1469,9 @@ predictions in batch. First you create a dataset
 containing the input data you want your cluster to relate to a centroid.
 The ``create_batch_centroid`` call will need the id of the input
 data dataset and the
-cluster used to assign a centroid to each instance::
+cluster used to assign a centroid to each instance:
+
+.. code-block:: python
 
     batch_centroid = api.create_batch_centroid(cluster, dataset, {
         "name": "my batch centroid", "all_fields": True,
@@ -1360,7 +1484,9 @@ Input data can also be assigned an anomaly score in batch. You train an
 anomaly detector with your training data and then build a dataset from your
 input data. The ``create_batch_anomaly_score`` call will need the id
 of the dataset and of the
-anomaly detector to assign an anomaly score to each input data instance::
+anomaly detector to assign an anomaly score to each input data instance:
+
+.. code-block:: python
 
     batch_anomaly_score = api.create_batch_anomaly_score(anomaly, dataset, {
         "name": "my batch anomaly score", "all_fields": True,
@@ -1378,7 +1504,9 @@ otherwise.
 Listing Resources
 -----------------
 
-You can list resources with the appropriate api method::
+You can list resources with the appropriate api method:
+
+.. code-block:: python
 
     api.list_sources()
     api.list_datasets()
@@ -1506,7 +1634,7 @@ the one you get when you create a new one. However the status code will
 be ``bigml.api.HTTP_ACCEPTED`` if the resource can be updated without
 problems or one of the HTTP standard error codes otherwise.
 
-::
+.. code-block:: python
 
     api.update_source(source, {"name": "new name"})
     api.update_dataset(dataset, {"name": "new name"})
@@ -1527,7 +1655,9 @@ Updates can change resource general properties, such as the ``name`` or
 let's say that your source has a certain field whose contents are
 numeric integers. BigML will assign a numeric type to the field, but you
 might want it to be used as a categorical field. You could change
-its type to ``categorical`` by calling::
+its type to ``categorical`` by calling:
+
+.. code-block:: python
 
     api.update_source(source, {"fields": {"000001": {"optype": "categorical"}}})
 
@@ -1542,7 +1672,7 @@ Deleting Resources
 Resources can be deleted individually using the corresponding method for
 each type of resource.
 
-::
+.. code-block:: python
 
     api.delete_source(source)
     api.delete_dataset(dataset)
@@ -1577,18 +1707,24 @@ The previous examples use resources that were created by the same user
 that asks for their retrieval or modification. If a user wants to share one
 of her resources, she can make them public or share them. Declaring a resource
 public means that anyone can see the resource. This can be applied to datasets
-and models. To turn a dataset public, just update its ``private`` property::
+and models. To turn a dataset public, just update its ``private`` property:
+
+.. code-block:: python
 
     api.update_dataset('dataset/5143a51a37203f2cf7000972', {'private': false})
 
-and any user will be able to download it using its id prepended by ``public``::
+and any user will be able to download it using its id prepended by ``public``:
+
+.. code-block:: python
 
     api.get_dataset('public/dataset/5143a51a37203f2cf7000972')
 
 In the models' case, you can also choose if you want the model to be fully
 downloadable or just accesible to make predictions. This is controlled with the
 ``white_box`` property. If you want to publish your model completely, just
-use::
+use:
+
+.. code-block:: python
 
     api.update_model('model/5143a51a37203f2cf7000956', {'private': false,
                      'white_box': true})
@@ -1599,18 +1735,24 @@ gallery.
 
 Still, you may want to share your models with other users, but without making
 them public for everyone. This can be achieved by setting the ``shared``
-property::
+property:
+
+.. code-block:: python
 
     api.update_model('model/5143a51a37203f2cf7000956', {'shared': true})
 
 Shared models can be accessed using their share hash (propery ``shared_hash``
-in the original model)::
+in the original model):
+
+.. code-block:: python
 
     api.get_model('shared/model/d53iw39euTdjsgesj7382ufhwnD')
 
 or by using their original id with the creator user as username and a specific
 sharing api_key you will find as property ``sharing_api_key`` in the updated
-model::
+model:
+
+.. code-block:: python
 
     api.get_model('model/5143a51a37203f2cf7000956', shared_username='creator',
                   shared_api_key='c972018dc5f2789e65c74ba3170fda31d02e00c3')
@@ -1623,6 +1765,8 @@ Local Models
 
 You can instantiate a local version of a remote model.
 
+.. code-block:: python
+
     from bigml.model import Model
     local_model = Model('model/502fdbff15526876610002615')
 
@@ -1631,7 +1775,9 @@ This will retrieve the remote model information, using an implicitly built
 details on how to set your credentials) and return a Model object
 that you can use to make local predictions. If you want to use a
 specfic connection object for the remote retrieval, you can set it as second
-parameter::
+parameter:
+
+.. code-block:: python
 
     from bigml.model import Model
     from bigml.api import BigML
@@ -1641,7 +1787,9 @@ parameter::
                                   my_api_key))
 
 or even use the remote model information retrieved previously to build the
-local model object::
+local model object:
+
+.. code-block:: python
 
     from bigml.model import Model
     from bigml.api import BigML
@@ -1663,7 +1811,9 @@ particular ``query_string`` parameter that will ensure that the needed
 fields information structure is returned in the get call.
 
 You can also build a local model from a model previously retrieved and stored
-in a JSON file::
+in a JSON file:
+
+.. code-block:: python
 
     from bigml.model import Model
     local_model = Model('./my_model.json')
@@ -1674,7 +1824,7 @@ Local Predictions
 
 Once you have a local model you can use to generate predictions locally.
 
-::
+.. code-block:: python
 
     local_model.predict({"petal length": 3, "petal width": 1})
     petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
@@ -1691,12 +1841,16 @@ Local predictions have three clear advantages:
 The default output for local predictions is the prediction itself, but you can
 also add the associated confidence, the distribution, and the number
 of instances in the final node by using some additional arguments. To obtain
-a dictionary with the prediction, confidence and rules::
+a dictionary with the prediction, confidence and rules:
+
+.. code-block:: python
 
     local_model.predict({"petal length": 3, "petal width": 1},
                         add_confidence=True,
                         add_path=True)
-that will return::
+that will return:
+
+.. code-block:: python
 
     {'path': [u'petal length > 2.35',
                u'petal width <= 1.75',
@@ -1715,13 +1869,13 @@ might want to get the complete list of the categories in the predicted node,
 together with their confidence. Using the ``multiple`` argument you will get
 the list of categories with their associated information.
 
-::
+.. code-block:: python
 
     local_model.predict({"petal length": 3}, multiple='all')
 
 will result in
 
-::
+.. code-block:: python
 
     [{'count': 50,
       'confidence': 0.2628864565745068,
@@ -1745,7 +1899,7 @@ Local Clusters
 
 You can also instantiate a local version of a remote cluster.
 
-::
+.. code-block:: python
 
     from bigml.cluster import Cluster
     local_cluster = Cluster('cluster/502fdbff15526876610002435')
@@ -1755,7 +1909,9 @@ This will retrieve the remote cluster information, using an implicitly built
 details on how to set your credentials) and return a ``Cluster`` object
 that you can use to make local centroid predictions. If you want to use a
 specfic connection object for the remote retrieval, you can set it as second
-parameter::
+parameter:
+
+.. code-block:: python
 
     from bigml.cluster import Cluster
     from bigml.api import BigML
@@ -1765,7 +1921,9 @@ parameter::
                                       my_api_key))
 
 or even use the remote cluster information retrieved previously to build the
-local cluster object::
+local cluster object:
+
+.. code-block:: python
 
     from bigml.cluster import Cluster
     from bigml.api import BigML
@@ -1784,7 +1942,9 @@ Local Centroids
 ---------------
 
 Using the local cluster object, you can predict the centroid associated to
-an input data set::
+an input data set:
+
+.. code-block:: python
 
     local_cluster.centroid({"pregnancies": 0, "plasma glucose": 118,
                             "blood pressure": 84, "triceps skin thickness": 47,
@@ -1808,7 +1968,7 @@ Local Anomaly Detector
 
 You can also instantiate a local version of a remote anomaly.
 
-::
+.. code-block:: python
 
     from bigml.anomaly import Anomaly
     local_anomaly = Anomaly('anomaly/502fcbff15526876610002435')
@@ -1818,7 +1978,9 @@ built ``BigML()`` connection object (see the ``Authentication`` section for
 more details on how to set your credentials) and return an ``Anomaly`` object
 that you can use to make local anomaly scores. If you want to use a
 specfic connection object for the remote retrieval, you can set it as second
-parameter::
+parameter:
+
+.. code-block:: python
 
     from bigml.anomaly import Anomaly
     from bigml.api import BigML
@@ -1828,7 +1990,9 @@ parameter::
                                       my_api_key))
 
 or even use the remote anomaly information retrieved previously to build the
-local anomaly detector object::
+local anomaly detector object:
+
+.. code-block:: python
 
     from bigml.anomaly import Anomaly
     from bigml.api import BigML
@@ -1854,7 +2018,9 @@ Local Anomaly Scores
 --------------------
 
 Using the local anomaly detector object, you can predict the anomaly score
-associated to an input data set::
+associated to an input data set:
+
+.. code-block:: python
 
     local_anomaly.anomaly_score({"src_bytes": 350})
     0.9268527808726705
@@ -1871,7 +2037,7 @@ Multi Models use a numbers of BigML remote models to build a local version
 that can be used to generate predictions locally. Predictions are generated
 combining the outputs of each model.
 
-::
+.. code-block:: python
 
     from bigml.api import BigML
     from bigml.multimodel import MultiModel
@@ -1888,12 +2054,16 @@ This will create a multi model using all the models that have been previously
 tagged with ``my_tag`` and predict by combining each model's prediction.
 The combination method used by default is ``plurality`` for categorical
 predictions and mean value for numerical ones. You can also use ``confidence
-weighted``::
+weighted``:
+
+.. code-block:: python
 
     model.predict({"petal length": 3, "petal width": 1}, method=1)
 
 that will weight each vote using the confidence/error given by the model
-to each prediction, or even ``probability weighted``::
+to each prediction, or even ``probability weighted``:
+
+.. code-block:: python
 
     model.predict({"petal length": 3, "petal width": 1}, method=2)
 
@@ -1905,7 +2075,9 @@ threshold and category. The category is predicted if and only if
 the number of predictions for that category is at least the threshold value.
 Otherwise, the prediction is plurality for the rest of predicted values.
 
-An example of ``threshold`` combination method would be::
+An example of ``threshold`` combination method would be:
+
+.. code-block:: python
 
     model.predict({'petal length': 0.9, 'petal width': 3.0}, method=3,
                   options={'threshold': 3, 'category': 'Iris-virginica'})
@@ -1916,7 +2088,7 @@ When making predictions on a test set with a large number of models,
 separated file. It expects a list of input data values and the directory path
 to save the prediction files in.
 
-::
+.. code-block:: python
 
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
@@ -1931,14 +2103,16 @@ that using ``reuse=True`` as argument will force the function to skip the
 creation of the file if it already exists. This can be
 helpful when using repeatedly a bunch of models on the same test set.
 
-::
+.. code-block:: python
 
     model.batch_predict([{"petal length": 3, "petal width": 1},
                          {"petal length": 1, "petal width": 5.1}],
                         "data/predictions", reuse=True)
 
 Prediction files can be subsequently retrieved and converted into a votes list
-using ``batch_votes``::
+using ``batch_votes``:
+
+.. code-block:: python
 
     model.batch_votes("data/predictions")
 
@@ -1949,22 +2123,28 @@ of predictions (e.g. ``[{'prediction': u'Iris-versicolor', 'confidence': 0.34,
 These votes can be further combined to issue a final
 prediction for each input data element using the method ``combine``
 
-::
+.. code-block:: python
 
     for multivote in model.batch_votes("data/predictions"):
         prediction = multivote.combine()
 
 Again, the default method of combination is ``plurality`` for categorical
 predictions and mean value for numerical ones. You can also use ``confidence
-weighted``::
+weighted``:
+
+.. code-block:: python
 
     prediction = multivote.combine(1)
 
-or ``probability weighted``::
+or ``probability weighted``:
+
+.. code-block:: python
 
     prediction = multivote.combine(2)
 
-You can also get a confidence measure for the combined prediction::
+You can also get a confidence measure for the combined prediction:
+
+.. code-block:: python
 
     prediction = multivolte.combine(0, with_confidence=True)
 
@@ -1987,7 +2167,9 @@ Local Ensembles
 
 Remote ensembles can also be used locally through the ``Ensemble``
 class. The simplest way to access an existing ensemble and using it to
-predict locally is::
+predict locally is:
+
+.. code-block:: python
 
     from bigml.ensemble import Ensemble
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
@@ -1997,7 +2179,9 @@ This call will download all the ensemble related info and store it in a
 ``./storage`` directory ready to be used to predict. As in
 ``MultipleModel``, several prediction combination methods are available, and
 you can choose another storage directory or even avoid storing at all, for
-instance::
+instance:
+
+.. code-block:: python
 
     from bigml.api import BigML
     from bigml.ensemble import Ensemble
@@ -2017,14 +2201,18 @@ folder. Then this information is used to predict locally using the
 ``confidence weighted`` method.
 
 Similarly, local ensembles can also be created by giving a list of models to be
-combined to issue the final prediction::
+combined to issue the final prediction:
+
+.. code-block:: python
 
     from bigml.ensemble import Ensemble
     ensemble = Ensemble(['model/50c0de043b563519830001c2', \
                          'model/50c0de043b5635198300031b')]
     ensemble.predict({"petal length": 3, "petal width": 1})
 
-or even a JSON file that contains the ensemble resource::
+or even a JSON file that contains the ensemble resource:
+
+.. code-block:: python
 
     import json
     from bigml.ensemble import Ensemble
@@ -2051,7 +2239,9 @@ the first time an ``Ensemble`` is built.
 On the contrary, if you have no memory limitations and want to increase
 prediction speed, you can create the ensemble from a list of local model
 objects. Then, local model objects will only be instantiated once, and
-this could increase performace significantly for big batches of predictions::
+this could increase performance for large ensembles:
+
+.. code-block:: python
 
     from bigml.model import Model
     model_ids = ['model/50c0de043b563519830001c2', \ 
@@ -2059,6 +2249,24 @@ this could increase performace significantly for big batches of predictions::
     local_models = [Model(model_id) for model_id in model_ids]
     local_ensemble = Ensemble(local_models)
 
+The ``Ensemble`` object can also be instantiated using local models previously
+stored in disks or memory object caching systems. To retrieve these models
+provide a list of model ids as first argument and an extra argument
+named ``cache_get`` that should be a function receiving the model id
+to be retrieved and returning a local model object.
+
+.. code-block:: python
+
+    from bigml.model import Model
+    model_ids = ['model/50c0de043b563519830001c2', \ 
+                 'model/50c0de043b5635198300031b')]
+    def cache_get(model_id):
+        """ Retrieves a JSON model structure and builds a local model object
+        
+        """
+        model_file = model_id.replace("/", "_")
+        return Model(json.load(open(model_file)))
+    local_ensemble = Ensemble(model_ids, cache_get=cache_get)
 
 
 Local Ensemble's Predictions
@@ -2069,7 +2277,9 @@ new predictions for your test data, and set some arguments to configure
 the final output of the ``predict`` method. By default, it will
 issue just the ensemble's final prediction. You can add the confidence to it by
 setting
-the ``with_confidence`` argument to True.::
+the ``with_confidence`` argument to True.
+
+.. code-block:: python
 
     from bigml.ensemble import Ensemble
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
@@ -2089,7 +2299,8 @@ And you can add more information to the predictions in a JSON format using:
 - ``add_median=True`` for regression ensembles, it computes the prediction
                       based on the median (instead of the usual mean)
 
-::
+.. code-block:: python
+
     from bigml.ensemble import Ensemble
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
     ensemble.predict({"petal length": 3, "petal width": 1}, \
@@ -2107,7 +2318,8 @@ Once you have a resource, you can use the ``Fields`` class to generate a
 representation that will allow you to easily list fields, get fields ids, get a
 field id by name, column number, etc.
 
-::
+.. code-block:: python
+
     from bigml.api import BigML
     from bigml.fields import Fields
     api = BigML()
@@ -2115,7 +2327,9 @@ field id by name, column number, etc.
 
     fields = Fields(source)
 
-you can also instantiate the Fields object from the fields dict itself::
+you can also instantiate the Fields object from the fields dict itself:
+
+.. code-block:: python
 
     from bigml.api import BigML
     from bigml.fields import Fields
@@ -2125,7 +2339,9 @@ you can also instantiate the Fields object from the fields dict itself::
     fields = Fields(source['object']['fields'])
 
 The newly instantiated Fields object will give direct methods to retrieve
-different fields properties::
+different fields properties:
+
+.. code-block:: python
 
     # Internal id of the 'sepal length' field
     fields.field_id('sepal length')
@@ -2143,7 +2359,9 @@ You can also easily ``pair`` a list of values with fields ids what is very
 useful to make predictions.
 
 For example, the following snippet may be useful to create local predictions using
-a csv file as input::
+a csv file as input:
+
+.. code-block:: python
 
     test_reader = csv.reader(open(dir + test_set))
     local_model = Model(model)
@@ -2153,7 +2371,9 @@ a csv file as input::
 
 If missing values are present, the ``Fields`` object can return a dict
 with the ids of the fields that contain missing values and its count. The
-following example::
+following example:
+
+.. code-block:: python
 
     from bigml.fields import Fields
     from bigml.api import BigML
@@ -2163,7 +2383,9 @@ following example::
     fields = Fields(dataset)
     fields.missing_counts()
 
-would output::
+would output:
+
+.. code-block:: python
 
     {'000003': 1, '000000': 1, '000001': 1}
 
@@ -2171,7 +2393,9 @@ if the there was a missing value in each of the fields whose ids are
 ``000003``, ``000000``, ``000001``. 
 
 You can also obtain the counts of errors per field using the ``errors_count``
-method of the api::
+method of the api:
+
+.. code-block:: python
 
     from bigml.api import BigML
     api = BigML()
@@ -2179,7 +2403,9 @@ method of the api::
     api.error_counts(dataset)
 
 The generated output is like the one in ``missing_counts``, that is, the error
-counts per field::
+counts per field:
+
+.. code-block:: python
 
 {'000000': 1}
 
@@ -2190,7 +2416,7 @@ Rule Generation
 You can also use a local model to generate a IF-THEN rule set that can be very
 helpful to understand how the model works internally.
 
-::
+.. code-block:: python
 
      local_model.rules()
      IF petal_length > 2.45 AND
@@ -2229,7 +2455,7 @@ Python, Tableau and Hadoop-ready Generation
 If you prefer, you can also generate a Python function that implements the model
 and that can be useful to make the model actionable right away with ``local_model.python()``.
 
-::
+.. code-block:: python
 
     local_model.python()
     def predict_species(sepal_length=None,
@@ -2288,7 +2514,7 @@ Saving the mapper and reducer generated functions in their corresponding files
 to generate predictions by issuing
 the following Hadoop command in your system console:
 
-::
+.. code-block:: bash
 
     bin/hadoop jar contrib/streaming/hadoop-*streaming*.jar \
     -file /home/hduser/hadoop_mapper.py -mapper hadoop_mapper.py \
@@ -2304,7 +2530,7 @@ be placed at ``/home/hduser/hadoop/output_dir`` (inside the dfs directory).
 Tableau-ready rules are also available through ``local_model.tableau()`` for
 all the models except those that use text predictors.
 
-::
+.. code-block:: python
 
     local_model.tableau()
     IF ISNULL([petal width]) THEN 'Iris-virginica'
@@ -2405,12 +2631,16 @@ Running the Tests
 -----------------
 
 To run the tests you will need to install
-`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
+`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_:
+
+.. code-block:: bash
 
     $ pip install lettuce
 
 and set up your authentication via environment variables, as explained
-above. With that in place, you can run the test suite simply by::
+above. With that in place, you can run the test suite simply by:
+
+.. code-block:: bash
 
     $ cd tests
     $ lettuce
@@ -2422,11 +2652,15 @@ seldom used.
 
 Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
 automatically run the test suite in virtual environments for all
-supported Python versions.  To install Tox::
+supported Python versions.  To install Tox:
+
+.. code-block:: bash
 
     $ pip install tox
 
-Then run the tests from the top-level project directory::
+Then run the tests from the top-level project directory:
+
+.. code-block:: bash
 
     $ tox
 
@@ -2440,11 +2674,15 @@ in the next release of lettuce.
 Building the Documentation
 --------------------------
 
-Install the tools required to build the documentation::
+Install the tools required to build the documentation:
+
+.. code-block:: bash
 
     $ pip install sphinx
 
 To build the HTML version of the documentation::
+
+.. code-block:: bash
 
     $ cd docs/
     $ make html

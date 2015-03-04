@@ -56,12 +56,16 @@ Installation
 ------------
 
 To install the latest stable release with
-`pip <http://www.pip-installer.org/>`_::
+`pip <http://www.pip-installer.org/>`_
+
+.. code-block:: bash
 
     $ pip install bigml
 
 You can also install the development version of the bindings directly
-from the Git repository::
+from the Git repository
+
+.. code-block:: bash
 
     $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
 
@@ -69,12 +73,16 @@ Running the Tests
 -----------------
 
 To run the tests you will need to install
-`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_::
+`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_
+
+.. code-block:: bash
 
     $ pip install lettuce
 
 and set up your authentication via environment variables, as explained
-below. With that in place, you can run the test suite simply by::
+below. With that in place, you can run the test suite simply by
+
+.. code-block:: bash
 
     $ cd tests
     $ lettuce
@@ -194,7 +202,9 @@ the `full documentation for the Python
 bindings on Read the Docs <http://bigml.readthedocs.org>`_.
 Alternatively, the same documentation can be built from a local checkout
 of the source by installing `Sphinx <http://sphinx.pocoo.org>`_
-(``$ pip install sphinx``) and then running::
+(``$ pip install sphinx``) and then running
+
+.. code-block:: bash
 
     $ cd docs
     $ make html

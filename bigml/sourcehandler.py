@@ -27,8 +27,9 @@ try:
     GAE_ENABLED = True
 except ImportError:
     GAE_ENABLED = False
-import requests
-import ssl
+    import ssl
+
+import urllib2
 
 from threading import Thread
 
@@ -37,8 +38,6 @@ try:
 except ImportError:
     import json
 
-
-import urllib2
 from poster.encode import multipart_encode, MultipartParam
 
 PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
@@ -115,73 +114,6 @@ class SourceHandler(ResourceHandler):
         create_args.update({"data": json.dumps(src_obj)})
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
-
-    def _create_local_source(self, file_name, args=None):
-        """Creates a new source using a local file.
-
-        This function is now DEPRECATED as "requests" do not stream the file
-        content and that limited the size of local files to a small number of
-        GBs.
-
-        """
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-
-        if 'source_parser' in create_args:
-            create_args['source_parser'] = json.dumps(
-                create_args['source_parser'])
-
-        code = HTTP_INTERNAL_SERVER_ERROR
-        resource_id = None
-        location = None
-        resource = None
-        error = {
-            "status": {
-                "code": code,
-                "message": "The resource couldn't be created"}}
-
-        try:
-            files = {os.path.basename(file_name): open(file_name, "rb")}
-        except IOError:
-            raise IOError("ERROR: cannot read training set")
-
-        try:
-            response = requests.post(self.source_url + self.auth,
-                                     files=files,
-                                     data=create_args, verify=self.verify)
-
-            code = response.status_code
-            if code == HTTP_CREATED:
-                location = response.headers['location']
-                resource = json.loads(response.content, 'utf-8')
-                resource_id = resource['resource']
-                error = None
-            elif code in [HTTP_BAD_REQUEST,
-                          HTTP_UNAUTHORIZED,
-                          HTTP_PAYMENT_REQUIRED,
-                          HTTP_NOT_FOUND,
-                          HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
-            else:
-                LOGGER.error("Unexpected error (%s)", code)
-                code = HTTP_INTERNAL_SERVER_ERROR
-
-        except ValueError:
-            LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-
-        return {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
 
     def _upload_source(self, args, source, out=sys.stdout):
         """Uploads a source asynchronously.

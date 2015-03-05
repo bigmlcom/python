@@ -29,7 +29,7 @@ try:
     GAE_ENABLED = True
 except ImportError:
     GAE_ENABLED = False
-import requests
+    import requests
 
 try:
     import simplejson as json
@@ -164,7 +164,7 @@ class BigMLConnection(object):
         """
 
         logging_level = logging.ERROR
-        if debug:
+        if debug and not GAE_ENABLED:
             logging_level = logging.DEBUG
             patch_requests()
 
@@ -258,8 +258,8 @@ class BigMLConnection(object):
             verify = self.verify
 
         while code == HTTP_ACCEPTED:
-            try:
-                if GAE_ENABLED:
+            if GAE_ENABLED:
+                try:
                     req_options = {
                         'url': url + self.auth,
                         'method': urlfetch.POST,
@@ -268,10 +268,32 @@ class BigMLConnection(object):
                         'validate_certificate': verify
                     }
                     response = urlfetch.fetch(**req_options)
-                else:
+                except urlfetch.Error, exception:
+                    LOGGER.error("Error establishing connection: %s",
+                                 str(exception))
+                    return maybe_save(resource_id, self.storage, code,
+                                      location, resource, error)
+            else:
+                try:
                     response = requests.post(url + self.auth,
                                              headers=SEND_JSON,
                                              data=body, verify=verify)
+                except requests.ConnectionError, exc:
+                    LOGGER.error("Connection error: %s", str(exc))
+                    code = HTTP_INTERNAL_SERVER_ERROR
+                    return maybe_save(resource_id, self.storage, code,
+                                      location, resource, error)
+                except requests.Timeout:
+                    LOGGER.error("Request timed out")
+                    code = HTTP_INTERNAL_SERVER_ERROR
+                    return maybe_save(resource_id, self.storage, code,
+                                      location, resource, error)
+                except requests.RequestException:
+                    LOGGER.error("Ambiguous exception occurred")
+                    code = HTTP_INTERNAL_SERVER_ERROR
+                    return maybe_save(resource_id, self.storage, code,
+                                      location, resource, error)
+            try:
                 code = response.status_code
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:
@@ -290,22 +312,9 @@ class BigMLConnection(object):
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
-
             except ValueError:
                 LOGGER.error("Malformed response")
                 code = HTTP_INTERNAL_SERVER_ERROR
-            except requests.ConnectionError, exc:
-                LOGGER.error("Connection error: %s", str(exc))
-                code = HTTP_INTERNAL_SERVER_ERROR
-            except requests.Timeout:
-                LOGGER.error("Request timed out")
-                code = HTTP_INTERNAL_SERVER_ERROR
-            except requests.RequestException:
-                LOGGER.error("Ambiguous exception occurred")
-                code = HTTP_INTERNAL_SERVER_ERROR
-            except urlfetch.Error, exception:
-                LOGGER.error("Error establishing connection: %s",
-                             str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -335,21 +344,40 @@ class BigMLConnection(object):
         auth = (self.auth if shared_username is None
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
-        try:
-            if GAE_ENABLED:
+
+        if GAE_ENABLED:
+            try:
                 req_options = {
                     'url': url + self.auth + query_string,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.verify
                 }
-                response = urlfetch.fetch(**req_options);
-            else:
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        else:
+            try:
                 response = requests.get(url + auth + query_string,
                                         headers=ACCEPT_JSON,
                                         verify=self.verify)
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s", str(exc))
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        try:
             code = response.status_code
-
             if code == HTTP_OK:
                 resource = json.loads(response.content, 'utf-8')
                 resource_id = resource['resource']
@@ -366,15 +394,6 @@ class BigMLConnection(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-        except urlfetch.Error, exception:
-            LOGGER.error("Error establishing connection: %s",
-                         str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -409,19 +428,51 @@ class BigMLConnection(object):
             "status": {
                 "code": code,
                 "message": "The resource couldn't be listed"}}
-        try:
-            if GAE_ENABLED:
+
+        if GAE_ENABLED:
+            try:
                 req_options = {
                     'url': url + self.auth + query_string,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.verify
                 }
-                response = urlfetch.fetch(**req_options);
-            else:
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                return {
+                    'code': code,
+                    'meta': meta,
+                    'objects': resources,
+                    'error': error}
+        else:
+            try:
                 response = requests.get(url + self.auth + query_string,
                                         headers=ACCEPT_JSON,
                                         verify=self.verify)
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s", str(exc))
+                return {
+                    'code': code,
+                    'meta': meta,
+                    'objects': resources,
+                    'error': error}
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+                return {
+                    'code': code,
+                    'meta': meta,
+                    'objects': resources,
+                    'error': error}
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
+                return {
+                    'code': code,
+                    'meta': meta,
+                    'objects': resources,
+                    'error': error}
+        try:
             code = response.status_code
 
             if code == HTTP_OK:
@@ -437,18 +488,8 @@ class BigMLConnection(object):
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
-
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-        except urlfetch.Error, exception:
-            LOGGER.error("Error establishing connection: %s",
-                         str(exception))
 
         return {
             'code': code,
@@ -480,8 +521,8 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be updated"}}
 
-        try:
-            if GAE_ENABLED:
+        if GAE_ENABLED:
+            try:
                 req_options = {
                     'url': url + self.auth,
                     'method': urlfetch.PUT,
@@ -489,12 +530,30 @@ class BigMLConnection(object):
                     'payload': body,
                     'validate_certificate': self.verify
                 }
-                response = urlfetch.fetch(**req_options);
-            else:
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        else:
+            try:
                response = requests.put(url + self.auth,
-                                        headers=SEND_JSON,
-                                        data=body, verify=self.verify)
-
+                                       headers=SEND_JSON,
+                                       data=body, verify=self.verify)
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s", str(exc))
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        try:
             code = response.status_code
 
             if code == HTTP_ACCEPTED:
@@ -510,18 +569,8 @@ class BigMLConnection(object):
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
-
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-        except urlfetch.Error, exception:
-            LOGGER.error("Error establishing connection: %s",
-                         str(exception))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -540,16 +589,39 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be deleted"}}
 
-        try:
-            if GAE_ENABLED:
+        if GAE_ENABLED:
+            try:
                 req_options = {
                     'url': url + self.auth,
                     'method': urlfetch.DELETE,
                     'validate_certificate': self.verify
                 }
-                response = urlfetch.fetch(**req_options);
-            else:
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                return {
+                    'code': code,
+                    'error': error}
+        else:
+            try:
                 response = requests.delete(url + self.auth, verify=self.verify)
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s", str(exc))
+                return {
+                    'code': code,
+                    'error': error}
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+                return {
+                    'code': code,
+                    'error': error}
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
+                return {
+                    'code': code,
+                    'error': error}
+        try:
             code = response.status_code
 
             if code == HTTP_NO_CONTENT:
@@ -566,15 +638,6 @@ class BigMLConnection(object):
 
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-        except urlfetch.Error, exception:
-            LOGGER.error("Error establishing connection: %s",
-                         str(exception))
 
         return {
             'code': code,
@@ -588,19 +651,34 @@ class BigMLConnection(object):
         """
         code = HTTP_INTERNAL_SERVER_ERROR
         file_object = None
-        try:
-            if GAE_ENABLED:
+
+        if GAE_ENABLED:
+            try:
                 req_options = {
                     'url': url + self.auth,
                     'method': urlfetch.GET,
                     'validate_certificate': self.verify
                 }
-                response = urlfetch.fetch(**req_options);
-            else:
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("Error establishing connection: %s",
+                             str(exception))
+                return file_object
+        else:
+            try:
                 response = requests.get(url + self.auth,
                                         verify=self.verify, stream=True)
+            except requests.ConnectionError, exc:
+                LOGGER.error("Connection error: %s", str(exc))
+                return file_object
+            except requests.Timeout:
+                LOGGER.error("Request timed out")
+                return file_object
+            except requests.RequestException:
+                LOGGER.error("Ambiguous exception occurred")
+                return file_object
+        try:
             code = response.status_code
-
             if code == HTTP_OK:
                 try:
                     if counter < retries:
@@ -637,17 +715,18 @@ class BigMLConnection(object):
                                               wait_time=wait_time,
                                               retries=retries,
                                               counter=retries + 1)
+                if filename is not None and GAE_ENABLED:
+                    LOGGER.error("No support for downloading"
+                                 " to local files in Google App Engine.")
+                    filename = None
                 if filename is None:
                     if GAE_ENABLED:
                         file_object = StringIO.StringIO(response.content)
                     else:
+                        print "**** response.raw"
                         file_object = response.raw
                 else:
-                    if GAE_ENABLED:
-                        raise("No support for downloading to local files")
-                        #TODO: Using Google Cloud Storage
-                    else:
-                        file_size = stream_copy(response, filename)
+                    file_size = stream_copy(response, filename)
                     if file_size == 0:
                         LOGGER.error("Error copying file to %s", filename)
                     else:
@@ -663,15 +742,6 @@ class BigMLConnection(object):
                 code = HTTP_INTERNAL_SERVER_ERROR
         except ValueError:
             LOGGER.error("Malformed response")
-        except requests.ConnectionError, exc:
-            LOGGER.error("Connection error: %s", str(exc))
-        except requests.Timeout:
-            LOGGER.error("Request timed out")
-        except requests.RequestException:
-            LOGGER.error("Ambiguous exception occurred")
-        except urlfetch.Error, exception:
-            LOGGER.error("Error establishing connection: %s",
-                         str(exception))
 
         return file_object
 

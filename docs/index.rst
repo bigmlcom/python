@@ -35,7 +35,9 @@ The only mandatory third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
 `poster <http://pypi.python.org/pypi/poster/>`_, and `unidecode
 <http://http://pypi.python.org/pypi/Unidecode/>`_ libraries. These
-libraries are automatically installed during the setup.
+libraries are automatically installed during the setup. Support for Google
+App Engine has been added as of version 3.0.0, using the `urlfetch` package
+instead of `requests`.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON

@@ -244,6 +244,7 @@ class Model(BaseModel):
                 add_distribution=False,
                 add_count=False,
                 add_median=False,
+                add_next=False,
                 multiple=None):
         """Makes a prediction based on a number of field values.
 
@@ -268,6 +269,8 @@ class Model(BaseModel):
                        node to the dict output
         add_median: Boolean, if True adds the median of the values in
                     the distribution
+        add_next: Boolean, if True adds the field that determines next
+                  split in the tree
         multiple: For categorical fields, it will return the categories
                   in the distribution of the predicted node as a
                   list of dicts:
@@ -299,47 +302,56 @@ class Model(BaseModel):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        prediction_info = self.tree.predict(input_data,
-                                            missing_strategy=missing_strategy)
-        (prediction, path, confidence,
-         distribution, instances, median,
-         distribution_unit) = prediction_info
+        prediction = self.tree.predict(input_data,
+                                       missing_strategy=missing_strategy)
 
         # Prediction path
         if print_path:
-            out.write(utf8(u' AND '.join(path) + u' => %s \n' % prediction))
+            out.write(utf8(u' AND '.join(prediction.path) + u' => %s \n' %
+                          prediction.output))
             out.flush()
-        output = prediction
+        output = prediction.output
         if with_confidence:
-            output = [prediction, confidence, distribution, instances]
+            output = [prediction.output,
+                      prediction.confidence,
+                      prediction.distribution,
+                      prediction.count]
         if multiple is not None and not self.tree.regression:
             output = []
-            total_instances = float(instances)
-            for index, [category, instances] in enumerate(distribution):
+            total_instances = float(prediction.count)
+            distribution =  enumerate(prediction.distribution)
+            for index, [category, instances] in distribution:
                 if ((isinstance(multiple, basestring) and multiple == 'all') or 
                         (isinstance(multiple, int) and index < multiple)):                 
-                    prediction = {'prediction': category,
-                                  'confidence': ws_confidence(category,
-                                                              distribution),
-                                  'probability': instances / total_instances,
-                                  'count': instances}
-                    output.append(prediction)
+                    prediction_dict = {
+                        'prediction': category,
+                        'confidence': ws_confidence(category,
+                                                    prediction.distribution),
+                        'probability': instances / total_instances,
+                        'count': instances}
+                    output.append(prediction_dict)
         else:
             if (add_confidence or add_path or add_distribution or add_count or
-                    add_median):
-                output = {'prediction': prediction}
+                    add_median or add_next):
+                output = {'prediction': prediction.output}
                 if add_confidence:
-                    output.update({'confidence': confidence})
+                    output.update({'confidence': prediction.confidence})
                 if add_path:
-                    rules = path
-                    output.update({'path': rules})
+                    output.update({'path': prediction.path})
                 if add_distribution:
-                    output.update({'distribution': distribution,
-                                   'distribution_unit': distribution_unit})
+                    output.update(
+                        {'distribution': prediction.distribution,
+                         'distribution_unit': prediction.distribution_unit})
                 if add_count:
-                    output.update({'count': instances})
+                    output.update({'count': prediction.count})
                 if self.tree.regression and add_median:
-                    output.update({'median': median})
+                    output.update({'median': prediction.median})
+                if add_next:
+                    field = (None if len(prediction.children) == 0 else
+                             prediction.children[0].predicate.field)
+                    if field is not None and field in self.fields:
+                        field = self.fields[field]['name']
+                    output.update({'next': field})
 
         return output
 

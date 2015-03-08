@@ -32,6 +32,7 @@ except ImportError:
     pass
 
 from bigml.predicate import Predicate
+from bigml.prediction import Prediction
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
 from bigml.multivote import ws_confidence, merge_distributions, merge_bins
@@ -373,9 +374,13 @@ class Tree(object):
                 if len(final_distribution.items()) == 1:
                     prediction, instances = final_distribution.items()[0]
                     if instances == 1:
-                        return (last_node.output, path, last_node.confidence,
-                                last_node.distribution, instances,
-                                last_node.median, last_node.distribution_unit)               
+                        return Prediction(last_node.output, path,
+                            last_node.confidence,
+                            distribution=last_node.distribution,
+                            count=instances,
+                            median=last_node.median,
+                            distribution_unit=last_node.distribution_unit,
+                            children=last_node.children)
                 # when there's more instances, sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
@@ -389,18 +394,23 @@ class Tree(object):
                 confidence = regression_error(
                     unbiased_sample_variance(distribution, prediction),
                     total_instances)
-                return (prediction, path, confidence,
-                        distribution, total_instances,
-                        dist_median(distribution, total_instances),
-                        distribution_unit)
+                return Prediction(prediction, path, confidence,
+                    distribution=distribution,
+                    count=total_instances,
+                    median=dist_median(distribution, total_instances),
+                    distribution_unit=distribution_unit,
+                    children=last_node.children)
             else:
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: (-x[1], x[0]))]
-                return (distribution[0][0], path,
-                        ws_confidence(distribution[0][0], final_distribution),
-                        distribution, get_instances(distribution), None,
-                        'categorical')
+                return Prediction(distribution[0][0], path,
+                    ws_confidence(distribution[0][0], final_distribution),
+                    distribution=distribution,
+                    count=get_instances(distribution),
+                    median=None,
+                    distribution_unit='categorical',
+                    children=last_node.children)
 
         else:
             if self.children:
@@ -409,10 +419,12 @@ class Tree(object):
                         path.append(child.predicate.to_rule(self.fields))
                         return child.predict(input_data, path=path)
 
-            return (self.output, path, self.confidence,
-                    self.distribution, get_instances(self.distribution),
-                    None if not self.regression else self.median,
-                    self.distribution_unit)
+            return Prediction(self.output, path, self.confidence,
+                    distribution=self.distribution,
+                    count=get_instances(self.distribution),
+                    median=None if not self.regression else self.median,
+                    distribution_unit=self.distribution_unit,
+                    children=self.children)
 
     def predict_proportional(self, input_data, path=None,
                              missing_found=False, median=False):

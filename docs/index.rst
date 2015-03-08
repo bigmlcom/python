@@ -1863,7 +1863,10 @@ that will return:
 
 Note that the ``add_path`` argument for the ``proportional`` missing strategy
 shows the path leading to a final unique node, that gives the prediction, or
-to the first split where a missing value is found.
+to the first split where a missing value is found. Other options are
+``add_next`` which includes the field that determines the next split after
+the prediction node and ``add_distribution`` that adds the distribution
+that leads to the prediction.
 
 In classification models, the prediction is always the most frequent category
 amongst the ones that form the distribution in the predicted node. However, you

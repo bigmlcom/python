@@ -3,11 +3,16 @@
 History
 -------
 
+3.0.1 (2015-03-17)
+~~~~~~~~~~~~~~~~~~
+
+- Changing the Ensemble object init method to use the max_models argument
+  also when loading the ensemble fields to trigger garbage collection.
+
 3.0.0 (2015-03-04)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding Google App Engine support for remote REST calls.
-
 - Adding cache_get argument to Ensemble constructor to allow getting
   local model objects from cache.
 

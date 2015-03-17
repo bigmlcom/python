@@ -140,7 +140,8 @@ class Ensemble(object):
             self.multi_model = MultiModel(models, self.api)
         else:
             self.cache_get = cache_get
-        self.fields, self.objective_id = self.all_model_fields()
+        self.fields, self.objective_id = self.all_model_fields(
+            max_models=max_models)
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be
@@ -329,7 +330,7 @@ class Ensemble(object):
         self.print_importance(out=out)
         out.flush()
 
-    def all_model_fields(self):
+    def all_model_fields(self, max_models=None):
         """Retrieves the fields used as predictors in all the ensemble
            models
 
@@ -344,14 +345,16 @@ class Ensemble(object):
                 models.extend(split)
         else:
             models = self.model_ids
-        for model_id in models:
+        for index, model_id in enumerate(models):
             if isinstance(model_id, Model):
                 local_model = model_id
             elif self.cache_get is not None:
                 local_model = self.cache_get(model_id)
             else:
                 local_model = Model(model_id, self.api)
-            gc.collect()
+            if (max_models is not None and index > 0 and
+                    index % max_models == 0):
+                gc.collect()
             fields.update(local_model.fields)
             if (objective_id is not None and
                     objective_id != local_model.objective_id):
@@ -361,4 +364,5 @@ class Ensemble(object):
                 objective_id = local_model.objective_id
         if no_objective_id:
             objective_id = None
+        gc.collect()
         return fields, objective_id

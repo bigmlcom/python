@@ -54,9 +54,11 @@ PREDICTION_TYPE = 'prediction'
 MODEL_TYPE = 'model'
 CLUSTER_TYPE = 'cluster'
 ANOMALY_TYPE = 'anomaly'
+SAMPLE_TYPE = 'sample'
 
 RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE,
-                         PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE]
+                         PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE,
+                         SAMPLE_TYPE]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -87,6 +89,9 @@ def get_fields_structure(resource):
             fields = resource['object']['model']['fields']
         elif resource_type == CLUSTER_TYPE:
             fields = resource['object']['clusters']['fields']
+        elif resource_type == SAMPLE_TYPE:
+            fields = dict([(field['id'], field) for field in
+                          resource['object']['sample']['fields']])
         else:
             fields = resource['object']['fields']
         return fields, resource_locale, missing_tokens

@@ -3,6 +3,11 @@
 History
 -------
 
+3.0.2 (2015-03-26)
+~~~~~~~~~~~~~~~~~~
+
+- Adding samples as Fields generator resources
+
 3.0.1 (2015-03-17)
 ~~~~~~~~~~~~~~~~~~
 

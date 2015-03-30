@@ -41,10 +41,11 @@ except ImportError:
 from poster.encode import multipart_encode, MultipartParam
 
 PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
+PYTHON_2 = sys.version_info < (3, 0)
 
 if PYTHON_2_7_9:
     from bigml.sslposter import StreamingHTTPSHandler, register_openers
-else:
+elif PYTHON_2:
     from poster.streaminghttp import StreamingHTTPSHandler, register_openers
 
 from bigml.util import (localize, clear_console_line, reset_console_line,
@@ -61,8 +62,8 @@ from bigml.resourcehandler import (check_resource_type, get_resource,
 from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING, LOGGER
 from bigml.resourcehandler import ResourceHandler
 
-
-register_openers()
+if PYTHON_2:
+    register_openers()
 
 
 class SourceHandler(ResourceHandler):
@@ -296,6 +297,85 @@ class SourceHandler(ResourceHandler):
             'object': resource,
             'error': error}
 
+    def _create_local_source(self, file_name, args=None):
+        """Creates a new source using a local file.
+
+        This function is only used from Python 3. No async-prepared.
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        if 'source_parser' in create_args:
+            create_args['source_parser'] = json.dumps(
+                create_args['source_parser'])
+
+        code = HTTP_INTERNAL_SERVER_ERROR
+        resource_id = None
+        location = None
+        resource = None
+        error = {
+            "status": {
+                "code": code,
+                "message": "The resource couldn't be created"}}
+
+        try:
+            files = {os.path.basename(file_name): open(file_name, "rb")}
+        except IOError:
+            sys.exit("ERROR: cannot read training set")
+
+        if GAE_ENABLED:
+            try:
+                req_options = {
+                    'url': self.source_url + self.auth,
+                    'method': urlfetch.POST,
+                    'headers': SEND_JSON,
+                    'data': create_args,
+                    'files': files,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("HTTP request error: %s",
+                             str(exception))
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        else:
+            try:
+                response = requests.post(self.source_url + self.auth,
+                                         files=files,
+                                         data=create_args, verify=self.verify)
+            except (requests.ConnectionError,
+                    requests.Timeout,
+                    requests.RequestException), exc:
+                LOGGER.error("HTTP request error: %s", str(exc))
+                code = HTTP_INTERNAL_SERVER_ERROR
+                return maybe_save(resource_id, self.storage, code,
+                                  location, resource, error)
+        try:
+            code = response.status_code
+            if code == HTTP_CREATED:
+                location = response.headers['location']
+                resource = json.loads(response.content, 'utf-8')
+                resource_id = resource['resource']
+                error = None
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_PAYMENT_REQUIRED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
+                error = json.loads(response.content, 'utf-8')
+            else:
+                LOGGER.error("Unexpected error (%s)" % code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+
+        except ValueError:
+            LOGGER.error("Malformed response")
+
+        return maybe_save(resource_id, self.storage, code,
+                          location, resource, error)
+
     def create_source(self, path=None, args=None, async=False,
                       progress_bar=False, out=sys.stdout):
         """Creates a new source.
@@ -311,9 +391,11 @@ class SourceHandler(ResourceHandler):
             return self._create_remote_source(path, args=args)
         elif isinstance(path, list):
             return self._create_inline_source(path, args=args)
-        else:
+        elif PYTHON_2:
             return self._stream_source(file_name=path, args=args, async=async,
                                        progress_bar=progress_bar, out=out)
+        else:
+            return self._create_local_source(file_name=path, args=args)
 
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.

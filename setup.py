@@ -17,6 +17,7 @@
 import distutils.core
 import os
 import re
+import sys
 
 # Importing setuptools adds some features like "setup.py develop", but
 # it's optional so swallow the error if it's not there.
@@ -42,6 +43,11 @@ for file_name in ('README.rst', 'HISTORY.rst'):
     file_contents.append(open(path).read())
 long_description = '\n\n'.join(file_contents)
 
+PYTHON_2 = sys.version_info < (3, 0)
+
+requires = ['requests', 'unidecode']
+if PYTHON_2:
+    requires.append('poster')
 
 distutils.core.setup(
     name="bigml",
@@ -56,7 +62,7 @@ distutils.core.setup(
     setup_requires = [],
     packages = ['bigml'],
     include_package_data = True,
-    install_requires = ['requests', 'poster', 'unidecode'],
+    install_requires = requires,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -66,6 +72,7 @@ distutils.core.setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 )

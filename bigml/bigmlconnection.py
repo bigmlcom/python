@@ -23,6 +23,7 @@ import os
 import time
 import locale
 import StringIO
+
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -54,6 +55,7 @@ BIGML_URL = '%s://%s/andromeda/'
 BIGML_DEV_URL = '%s://%s/dev/andromeda/'
 
 DOWNLOAD_DIR = '/download'
+
 
 # Headers
 SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
@@ -105,6 +107,14 @@ def assign_dir(path):
         return check_dir(path)
     except ValueError:
         return None
+
+
+def json_load(content):
+    """Loads the bytes or string contents in the correct encoding to
+       create the JSON corresponding object.
+
+    """
+    return json.loads(content.decode('utf-8'), 'utf-8')
 
 
 ##############################################################################
@@ -290,7 +300,7 @@ class BigMLConnection(object):
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:
                         location = response.headers['location']
-                    resource = json.loads(response.content, 'utf-8')
+                    resource = json_load(response.content)
                     resource_id = resource['resource']
                     error = None
                 elif code in [HTTP_BAD_REQUEST,
@@ -299,13 +309,13 @@ class BigMLConnection(object):
                               HTTP_FORBIDDEN,
                               HTTP_NOT_FOUND,
                               HTTP_TOO_MANY_REQUESTS]:
-                    error = json.loads(response.content, 'utf-8')
+                    error = json_load(response.content)
                     LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
-            except ValueError:
-                LOGGER.error("Malformed response")
+            except ValueError, exc:
+                LOGGER.error("Malformed response: %s" % str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         return maybe_save(resource_id, self.storage, code,
@@ -365,14 +375,14 @@ class BigMLConnection(object):
         try:
             code = response.status_code
             if code == HTTP_OK:
-                resource = json.loads(response.content, 'utf-8')
+                resource = json_load(response.content)
                 resource_id = resource['resource']
                 error = None
             elif code in [HTTP_BAD_REQUEST,
                           HTTP_UNAUTHORIZED,
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
+                error = json_load(response.content)
                 LOGGER.error(self.error_message(error, method='get'))
             else:
                 LOGGER.error("Unexpected error (%s)", code)
@@ -450,7 +460,7 @@ class BigMLConnection(object):
             code = response.status_code
 
             if code == HTTP_OK:
-                resource = json.loads(response.content, 'utf-8')
+                resource = json_load(response.content)
                 meta = resource['meta']
                 resources = resource['objects']
                 error = None
@@ -458,12 +468,12 @@ class BigMLConnection(object):
                           HTTP_UNAUTHORIZED,
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
+                error = json_load(response.content)
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
-        except ValueError:
-            LOGGER.error("Malformed response")
+        except ValueError, exc:
+            LOGGER.error("Malformed response: %s" % str(exc))
 
         return {
             'code': code,
@@ -525,14 +535,14 @@ class BigMLConnection(object):
             code = response.status_code
 
             if code == HTTP_ACCEPTED:
-                resource = json.loads(response.content, 'utf-8')
+                resource = json_load(response.content)
                 resource_id = resource['resource']
                 error = None
             elif code in [HTTP_UNAUTHORIZED,
                           HTTP_PAYMENT_REQUIRED,
                           HTTP_METHOD_NOT_ALLOWED,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
+                error = json_load(response.content)
                 LOGGER.error(self.error_message(error, method='update'))
             else:
                 LOGGER.error("Unexpected error (%s)", code)
@@ -590,7 +600,7 @@ class BigMLConnection(object):
                           HTTP_UNAUTHORIZED,
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
+                error = json_load(response.content)
                 LOGGER.error(self.error_message(error, method='delete'))
             else:
                 LOGGER.error("Unexpected error (%s)", code)
@@ -638,7 +648,7 @@ class BigMLConnection(object):
             if code == HTTP_OK:
                 try:
                     if counter < retries:
-                        download_status = json.loads(response.content)
+                        download_status = json_load(response.content)
                         if download_status and isinstance(download_status,
                                                           dict):
                             if download_status['status']['code'] != 5:

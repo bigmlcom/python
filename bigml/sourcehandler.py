@@ -38,11 +38,11 @@ try:
 except ImportError:
     import json
 
-from poster.encode import multipart_encode, MultipartParam
-
 PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
 PYTHON_2 = sys.version_info < (3, 0)
 
+if PYTHON_2:
+    from poster.encode import multipart_encode, MultipartParam
 if PYTHON_2_7_9:
     from bigml.sslposter import StreamingHTTPSHandler, register_openers
 elif PYTHON_2:
@@ -226,7 +226,7 @@ class SourceHandler(ResourceHandler):
                 if code in [HTTP_CREATED]:
                     if 'location' in response.headers:
                         location = response.headers['location']
-                    resource = json.loads(response.content, 'utf-8')
+                    resource = json.loads(response.content.decode(), 'utf-8')
                     resource_id = resource['resource']
                     error = {}
                 elif code in [HTTP_BAD_REQUEST,
@@ -235,7 +235,7 @@ class SourceHandler(ResourceHandler):
                               HTTP_FORBIDDEN,
                               HTTP_NOT_FOUND,
                               HTTP_TOO_MANY_REQUESTS]:
-                    error = json.loads(response.content, 'utf-8')
+                    error = json.loads(response.content.decode(), 'utf-8')
                     LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
@@ -267,7 +267,7 @@ class SourceHandler(ResourceHandler):
                 if code == HTTP_CREATED:
                     location = response.headers['location']
                     content = response.read()
-                    resource = json.loads(content, 'utf-8')
+                    resource = json.loads(content.decode(), 'utf-8')
                     resource_id = resource['resource']
                     error = {}
             except ValueError:
@@ -280,7 +280,7 @@ class SourceHandler(ResourceHandler):
                             HTTP_NOT_FOUND,
                             HTTP_TOO_MANY_REQUESTS]:
                     content = exception.read()
-                    error = json.loads(content, 'utf-8')
+                    error = json.loads(content.decode(), 'utf-8')
                     LOGGER.error(self.error_message(error, method='create'))
                 else:
                     LOGGER.error("Unexpected error (%s)", code)
@@ -357,7 +357,7 @@ class SourceHandler(ResourceHandler):
             code = response.status_code
             if code == HTTP_CREATED:
                 location = response.headers['location']
-                resource = json.loads(response.content, 'utf-8')
+                resource = json.loads(response.content.decode(), 'utf-8')
                 resource_id = resource['resource']
                 error = None
             elif code in [HTTP_BAD_REQUEST,
@@ -365,7 +365,7 @@ class SourceHandler(ResourceHandler):
                           HTTP_PAYMENT_REQUIRED,
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content, 'utf-8')
+                error = json.loads(response.content.decode(), 'utf-8')
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR

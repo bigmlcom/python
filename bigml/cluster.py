@@ -284,7 +284,7 @@ class Cluster(ModelFields):
         headers = [u"centroid_name"]
         headers.extend([u"%s" % self.fields[field_id]["name"]
                         for field_id in field_ids])
-        headers.extend([u"centroid_features", u"Instances"])
+        headers.extend([u"Instances"])
         intercentroids = False
         header_complete = False
         for centroid in self.centroids:

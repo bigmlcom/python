@@ -28,7 +28,7 @@ import create_anomaly_steps as anomaly_create
 import create_prediction_steps as prediction_create
 
 
-class Test_prediction(object):
+class TestPrediction(object):
 
     def test_scenario1(self):
         """

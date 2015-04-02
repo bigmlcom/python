@@ -31,7 +31,7 @@ def i_create_a_prediction(step, data=None):
     data = json.loads(data)
     resource = world.api.create_prediction(model, data)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    assert world.status == HTTP_CREATED, "Wrong status: %s" % world.status
     world.location = resource['location']
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])

@@ -17,17 +17,16 @@
 
 import time
 from datetime import datetime, timedelta
-from lettuce import step, world
+from world import world
 from bigml.api import HTTP_NO_CONTENT, HTTP_OK, HTTP_NOT_FOUND
 
-@step(r'I delete the project')
+
 def i_delete_the_project(step):
     resource = world.api.delete_project(world.project['resource'])
     world.status = resource['code']
     assert world.status == HTTP_NO_CONTENT
 
 
-@step(r'I wait until the project is deleted less than (\d+)')
 def wait_until_project_deleted(step, secs):
     start = datetime.utcnow()
     project_id = world.project['resource']

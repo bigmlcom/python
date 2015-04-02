@@ -21,7 +21,7 @@ import json
 import csv
 from datetime import datetime, timedelta
 from urllib import urlencode
-from lettuce import step, world
+from world import world
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -29,7 +29,9 @@ from bigml.api import FAULTY
 from bigml.api import UPLOADING
 from bigml.api import get_status
 
-@step(r'I create a data source uploading a "(.*)" file$')
+import read_source_steps as read
+
+#@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
     resource = world.api.create_source(file)
     # update status
@@ -39,7 +41,7 @@ def i_upload_a_file(step, file):
     # save reference
     world.sources.append(resource['resource'])
 
-@step(r'I create a data source using the url "(.*)"')
+#@step(r'I create a data source using the url "(.*)"')
 def i_create_using_url(step, url):
     resource = world.api.create_source(url)
     # update status
@@ -49,7 +51,7 @@ def i_create_using_url(step, url):
     # save reference
     world.sources.append(resource['resource'])
 
-@step(r'I create a data source from inline data slurped from "(.*)"')
+#@step(r'I create a data source from inline data slurped from "(.*)"')
 def i_create_using_dict_data(step, data):
     # slurp CSV file to local variable
     with open(data,'rb') as fid:
@@ -64,12 +66,12 @@ def i_create_using_dict_data(step, data):
     # save reference
     world.sources.append(resource['resource'])
     
-@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
+#@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
 def i_upload_a_file_async(step, file):
     resource = world.api.create_source(file, async=True)
     world.resource = resource
 
-@step(r'I wait until the source has been created less than (\d+) secs')
+#@step(r'I wait until the source has been created less than (\d+) secs')
 def the_source_has_been_created_async(step, secs):
     start = datetime.utcnow()
     status = get_status(world.resource)
@@ -85,24 +87,24 @@ def the_source_has_been_created_async(step, secs):
     # save reference
     world.sources.append(world.resource['resource'])
 
-@step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')
+#@step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')
 def wait_until_source_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
-    step.given('I get the source "{id}"'.format(id=world.source['resource']))
+    read.i_get_the_source(step, world.source['resource'])
     status = get_status(world.source)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
         assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-        step.given('I get the source "{id}"'.format(id=world.source['resource']))
+        read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
     assert status['code'] == int(code1)
 
-@step(r'I wait until the source is ready less than (\d+)')
+#@step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs):
     wait_until_source_status_code_is(step, FINISHED, FAULTY, secs)
 
-@step(r'I update the source with params "(.*)"')
+#@step(r'I update the source with params "(.*)"')
 def i_update_source_with(step, data="{}"):
     resource = world.api.update_source(world.source.get('resource'), json.loads(data))
     world.status = resource['code']

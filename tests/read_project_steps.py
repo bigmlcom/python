@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2015 BigML
+# Copyright 2014 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,12 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from lettuce import step, world
+from world import world
 from bigml.api import HTTP_OK
 
-@step(r'I get the sample "(.*)"')
-def i_get_the_sample(step, resource):
-    resource = world.api.get_sample(resource)
+def i_get_the_project(step, resource):
+    resource = world.api.get_project(resource)
     world.status = resource['code']
     assert world.status == HTTP_OK
-    world.sample = resource['object']
+    world.project = resource['object']

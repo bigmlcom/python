@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from lettuce import step, world
+from world import world
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -27,9 +27,11 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
+import read_model_steps as read
+
 NO_MISSING_SPLITS = {'missing_splits': False}
 
-@step(r'I create a model$')
+#@step(r'I create a model$')
 def i_create_a_model(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_model(dataset, args=NO_MISSING_SPLITS)
@@ -39,7 +41,7 @@ def i_create_a_model(step):
     world.model = resource['object']
     world.models.append(resource['resource'])
 
-@step(r'I create a model from a dataset list$')
+#@step(r'I create a model from a dataset list$')
 def i_create_a_model_from_dataset_list(step):
     resource = world.api.create_model(world.dataset_ids,
                                       args=NO_MISSING_SPLITS)
@@ -49,24 +51,24 @@ def i_create_a_model_from_dataset_list(step):
     world.model = resource['object']
     world.models.append(resource['resource'])
 
-@step(r'I wait until the model status code is either (\d) or (-\d) less than (\d+)')
+#@step(r'I wait until the model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
-    step.given('I get the model "{id}"'.format(id=world.model['resource']))
+    read.i_get_the_model(step, world.model['resource'])
     status = get_status(world.model)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           step.given('I get the model "{id}"'.format(id=world.model['resource']))
+           read.i_get_the_model(step, world.model['resource'])
            status = get_status(world.model)
     assert status['code'] == int(code1)
 
-@step(r'I wait until the model is ready less than (\d+)')
+#@step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs):
     wait_until_model_status_code_is(step, FINISHED, FAULTY, secs)
 
-@step(r'I create a model with "(.*)"')
+#@step(r'I create a model with "(.*)"')
 def i_create_a_model_with(step, data="{}"):
     args = json.loads(data)
     if not 'missing_splits' in args:
@@ -79,11 +81,11 @@ def i_create_a_model_with(step, data="{}"):
     world.model = resource['object']
     world.models.append(resource['resource'])
 
-@step(r'I create a model with missing splits')
+#@step(r'I create a model with missing splits')
 def i_create_a_model_with_missing_splits(step):
     i_create_a_model_with(step, data='{"missing_splits": true}')
 
-@step(r'I make the model public')
+#@step(r'I make the model public')
 def make_the_model_public(step):
     resource = world.api.update_model(world.model['resource'],
                                       {'private': False, 'white_box': True})
@@ -94,12 +96,12 @@ def make_the_model_public(step):
     world.location = resource['location']
     world.model = resource['object']
 
-@step(r'I check the model status using the model\'s public url')
+#@step(r'I check the model status using the model\'s public url')
 def model_from_public_url(step):
     world.model = world.api.get_model("public/%s" % world.model['resource'])
     assert get_status(world.model)['code'] == FINISHED
 
-@step(r'I make the model shared')
+#@step(r'I make the model shared')
 def make_the_model_shared(step):
     resource = world.api.update_model(world.model['resource'],
                                       {'shared': True})
@@ -108,17 +110,17 @@ def make_the_model_shared(step):
     world.location = resource['location']
     world.model = resource['object']
 
-@step(r'I get the model sharing info')
+#@step(r'I get the model sharing info')
 def get_sharing_info(step):
     world.shared_hash = world.model['shared_hash']
     world.sharing_key = world.model['sharing_key']
 
-@step(r'I check the model status using the model\'s shared url')
+#@step(r'I check the model status using the model\'s shared url')
 def model_from_shared_url(step):
     world.model = world.api.get_model("shared/model/%s" % world.shared_hash)
     assert get_status(world.model)['code'] == FINISHED
 
-@step(r'I check the model status using the model\'s shared key')
+#@step(r'I check the model status using the model\'s shared key')
 def model_from_shared_key(step):
    
     username = os.environ.get("BIGML_USERNAME")
@@ -126,7 +128,7 @@ def model_from_shared_key(step):
         shared_username=username, shared_api_key=world.sharing_key)
     assert get_status(world.model)['code'] == FINISHED
 
-@step(r'"(.*)" field\'s name is changed to "(.*)"')
+#@step(r'"(.*)" field\'s name is changed to "(.*)"')
 def field_name_to_new_name(step, field_id, new_name):
     if world.local_model.tree.fields[field_id]['name'] != new_name:
         print world.local_model.tree.fields[field_id]['name'], new_name

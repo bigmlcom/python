@@ -15,17 +15,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from lettuce import step, world
+from world import world
 from bigml.api import HTTP_OK
 
-@step(r'I get the source "(.*)"')
+#@step(r'I get the source "(.*)"')
 def i_get_the_source(step, resource):
     resource = world.api.get_source(resource)
     world.status = resource['code']
     assert world.status == HTTP_OK
     world.source = resource['object']
 
-@step(r'the source has DEV (True|False)')
+#@step(r'the source has DEV (True|False)')
 def source_has_dev(step, boolean):
     if boolean == 'False':
         boolean = ''

@@ -16,7 +16,7 @@
 # under the License.
 
 
-""" Creating Mulltimodel batch predictions
+""" Creating Multimodel batch predictions
 
 """
 from world import world, setup_module, teardown_module

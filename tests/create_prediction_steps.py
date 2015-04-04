@@ -23,6 +23,8 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
+from read_prediction_steps import i_get_the_prediction
+
 
 def i_create_a_prediction(step, data=None):
     if data is None:
@@ -125,13 +127,13 @@ def i_create_an_ensemble_prediction(step, data=None):
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
-    step.given('I get the prediction "{id}"'.format(id=world.prediction['resource']))
+    i_get_the_prediction(step, world.prediction['resource'])
     status = get_status(world.prediction)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
         assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-        step.given('I get the prediction "{id}"'.format(id=world.prediction['resource']))
+        i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)
     assert status['code'] == int(code1)
 
@@ -140,7 +142,7 @@ def the_prediction_is_finished_in_less_than(step, secs):
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)
 
 
-def create_local_ensemble_prediction(step, input_data):
+def create_local_ensemble_prediction_add_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
         json.loads(input_data), add_confidence=True)
 
@@ -149,7 +151,7 @@ def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
     
 
-def create_local_ensemble_prediction(step, input_data):
+def create_local_ensemble_prediction_with_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
         json.loads(input_data), with_confidence=True)
 

@@ -189,6 +189,8 @@ def the_local_prediction_is(step, prediction):
         local_prediction = world.local_prediction
     try:
         local_model = world.local_model
+        if isinstance(local_model, MultiModel):
+            local_model = local_model.models[0]
         if local_model.tree.regression:
             local_prediction = round(float(local_prediction), 4)
             prediction = round(float(prediction), 4)

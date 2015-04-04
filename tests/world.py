@@ -49,6 +49,11 @@ IRREGULAR_PLURALS = {
     'batchcentroid': 'batch_centroids',
     'anomalyscore': 'anomaly_scores',
     'batchanomalyscore': 'batch_anomaly_scores'}
+TRANSLATED_RESOURCES = {
+    'batchprediction': 'batch_prediction',
+    'batchcentroid': 'batch_centroid',
+    'anomalyscore': 'anomaly_score',
+    'batchanomalyscore': 'batch_anomaly_score'}
 
 
 def plural(resource_type):
@@ -94,7 +99,7 @@ class World(object):
         print "Counting resources (%s)." % time_tag
         for resource_type in RESOURCE_TYPES:
             resource_type = plural(resource_type)
-            if not changed or len(getattr(self, resource_type)) > 0:
+            if (not changed or len(getattr(self, resource_type))) > 0:
                 resources = getattr(self.api,"list_%s" % resource_type)()
                 if resource_type == 'source' and resources['code'] != HTTP_OK:
                     assert False, (
@@ -118,7 +123,8 @@ class World(object):
         """
         for resource_type in RESOURCE_TYPES:
             setattr(self, plural(resource_type), [])
-            setattr(self, resource_type, None)
+            setattr(self, TRANSLATED_RESOURCES.get(resource_type,
+                                                   resource_type), None)
 
     def reset_api(self):
         """Reset the api connection values

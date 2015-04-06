@@ -24,6 +24,7 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
 import create_prediction_steps as prediction_create
+import compare_predictions_steps as compare_pred
 
 class TestPublicModelPrediction(object):
         
@@ -63,3 +64,45 @@ class TestPublicModelPrediction(object):
             prediction_create.i_create_a_prediction(self, example[4])
             prediction_create.the_prediction_is(self, example[5], example[6])
 
+    def test_scenario2(self):
+        """
+            Scenario: Successfully creating a prediction using a shared model:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the model is ready less than <time_3> secs
+                And I make the model shared
+                And I wait until the model is ready less than <time_3> secs
+                And I get the model sharing info
+                And I check the model status using the model's shared url
+                And I check the model status using the model's shared key
+                And I create a local model
+                When I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+
+                Examples:
+                | data                | time_1  | time_2 | time_3 | data_input    | prediction  |
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | Iris-setosa |
+        """
+        print self.test_scenario2.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', 'Iris-setosa']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model(self)
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.make_the_model_shared(self)
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.get_sharing_info(self)
+            model_create.model_from_shared_url(self)
+            model_create.model_from_shared_key(self)
+            compare_pred.i_create_a_local_model(self)
+            compare_pred.i_create_a_local_prediction(self, example[4])
+            compare_pred.the_local_prediction_is(self, example[5])

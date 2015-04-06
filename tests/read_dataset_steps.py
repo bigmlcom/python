@@ -26,7 +26,7 @@ def i_get_the_errors_values(step):
 
 
 #@step(r'the (missing values counts|error counts) dict is "(.*)"')
-def i_get_the_errors_values(step, text, properties_dict):
+def i_get_the_properties_values(step, text, properties_dict):
     if properties_dict is None:
         assert False
     assert world.step_result == json.loads(properties_dict)

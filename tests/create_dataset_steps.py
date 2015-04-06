@@ -28,7 +28,7 @@ def i_export_a_dataset(step, local_file):
 
 
 #@step(r'file "(.*)" is like file "(.*)"$')
-def i_files_equal(step, local_file, data):
+def files_equal(step, local_file, data):
     contents_local_file = open(local_file).read()
     contents_data = open(data).read()
     assert contents_local_file == contents_data
@@ -36,7 +36,8 @@ def i_files_equal(step, local_file, data):
 
 #@step(r'I create a dataset with "(.*)"')
 def i_create_a_dataset_with(step, data="{}"):
-    resource = world.api.create_dataset(world.source['resource'], json.loads(data))
+    resource = world.api.create_dataset(world.source['resource'],
+                                        json.loads(data))
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -72,7 +73,8 @@ def make_the_dataset_public(step):
 
 #@step(r'I get the dataset status using the dataset\'s public url')
 def build_local_dataset_from_public_url(step):
-    world.dataset = world.api.get_dataset("public/%s" % world.dataset['resource'])
+    world.dataset = world.api.get_dataset("public/%s" %
+                                          world.dataset['resource'])
 
 #@step(r'the dataset\'s status is FINISHED')
 def dataset_status_finished(step):
@@ -81,7 +83,8 @@ def dataset_status_finished(step):
 #@step(r'I create a dataset extracting a (.*) sample$')
 def i_create_a_split_dataset(step, rate):
     world.origin_dataset = world.dataset
-    resource = world.api.create_dataset(world.dataset['resource'], {'sample_rate': float(rate)})
+    resource = world.api.create_dataset(world.dataset['resource'],
+                                        {'sample_rate': float(rate)})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -90,11 +93,18 @@ def i_create_a_split_dataset(step, rate):
 
 #@step(r'I compare the datasets\' instances$')
 def i_compare_datasets_instances(step):
-    world.datasets_instances = (world.dataset['rows'], world.origin_dataset['rows'])
+    world.datasets_instances = (world.dataset['rows'],
+                                world.origin_dataset['rows'])
 
 #@step(r'the proportion of instances between datasets is (.*)$')
 def proportion_datasets_instances(step, rate):
-    assert int(world.datasets_instances[1] * float(rate)) == world.datasets_instances[0]
+    if (int(world.datasets_instances[1] * float(rate)) == world.datasets_instances[0]):
+        assert True
+    else:
+        assert False, (
+        "Instances in split: %s, expected %s" % (
+            world.datasets_instances[0],
+            int(world.datasets_instances[1] * float(rate))))
 
 #@step(r'I create a dataset from the cluster and the centroid$')
 def i_create_a_dataset_from_cluster_centroid(step):

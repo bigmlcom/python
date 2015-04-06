@@ -121,8 +121,7 @@ def model_from_shared_url(step):
     assert get_status(world.model)['code'] == FINISHED
 
 #@step(r'I check the model status using the model\'s shared key')
-def model_from_shared_key(step):
-   
+def model_from_shared_key(step):  
     username = os.environ.get("BIGML_USERNAME")
     world.model = world.api.get_model(world.model['resource'],
         shared_username=username, shared_api_key=world.sharing_key)

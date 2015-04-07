@@ -64,7 +64,9 @@ from bigml.resourcehandler import ResourceHandler
 
 if PYTHON_2:
     register_openers()
-
+else:
+    import requests
+    from bigml.util import maybe_save
 
 class SourceHandler(ResourceHandler):
 

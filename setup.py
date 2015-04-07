@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML, Inc
+# Copyright 2012, 2015 BigML, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,17 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import distutils.core
 import os
 import re
 import sys
 
-# Importing setuptools adds some features like "setup.py develop", but
-# it's optional so swallow the error if it's not there.
-try:
-    import setuptools
-except ImportError:
-    pass
+import setuptools
 
 # Get the path to this project
 project_path = os.path.dirname(__file__)
@@ -49,7 +43,7 @@ requires = ['requests', 'unidecode']
 if PYTHON_2:
     requires.append('poster')
 
-distutils.core.setup(
+setuptools.setup(
     name="bigml",
     description="An open source binding to BigML.io, the public BigML API",
     long_description=long_description,
@@ -72,7 +66,9 @@ distutils.core.setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        #'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+    test_suite='nose.collector',
+    use_2to3=True
 )

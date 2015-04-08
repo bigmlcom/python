@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012, 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -69,10 +69,9 @@ def the_evaluation_is_finished_in_less_than(step, secs):
 
 #@step(r'the measured "(.*)" is (\d+\.*\d*)')
 def the_measured_measure_is_value(step, measure, value):
-    assert (world.evaluation['result']['model'][measure] + 0.0 == float(value),
-        "The %s is: %s and %s is expected" % (
-            measure, world.evaluation['result']['model'][measure] + 0.0 ,
-            float(value)))
+    ev = world.evaluation['result']['model'][measure] + 0.0
+    assert  ev == float(value), "The %s is: %s and %s is expected" % (
+        measure, ev, float(value))
 
 #@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
 def the_measured_measure_is_greater_value(step, measure, value):

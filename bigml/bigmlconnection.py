@@ -38,7 +38,6 @@ except ImportError:
     import json
 
 import logging
-logging.captureWarnings(True)
 LOG_FORMAT = '%(asctime)-15s: %(message)s'
 LOGGER = logging.getLogger('BigML')
 
@@ -208,6 +207,9 @@ class BigMLConnection(object):
 
         self._set_api_urls(dev_mode=dev_mode, domain=domain)
 
+        # if verify is not set, we capture warnings to avoid `requests` library
+        # warnings: InsecurePlatformWarning
+        logging.captureWarnings(not self.verify)
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)

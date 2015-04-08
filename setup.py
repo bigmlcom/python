@@ -37,11 +37,13 @@ for file_name in ('README.rst', 'HISTORY.rst'):
     file_contents.append(open(path).read())
 long_description = '\n\n'.join(file_contents)
 
-PYTHON_2 = sys.version_info < (3, 0)
-
-requires = ['requests', 'unidecode']
-if PYTHON_2:
-    requires.append('poster')
+PYTHON_VERSION = sys.version_info[0:3]
+PYTHON_REQUESTS_CHANGE = (2, 7, 9)
+REQUESTS_VERSION = "requests==2.5.3" if \
+    PYTHON_VERSION < PYTHON_REQUESTS_CHANGE else "requests"
+INSTALL_REQUIRES = [REQUESTS_VERSION, "unidecode"]
+if PYTHON_VERSION[0] < 3:
+    REQUIRES.append('poster')
 
 setuptools.setup(
     name="bigml",
@@ -56,7 +58,7 @@ setuptools.setup(
     setup_requires = [],
     packages = ['bigml'],
     include_package_data = True,
-    install_requires = requires,
+    install_requires = INSTALL_REQUIRES,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

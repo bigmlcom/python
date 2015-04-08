@@ -3,6 +3,13 @@
 History
 -------
 
+
+3.0.3 (2015-04-08)
+~~~~~~~~~~~~~~~~~
+
+- Changing setup to ensure compatible Python and requests versions.
+- Hiding warnings when SSL verification is disabled.
+
 3.0.2 (2015-03-26)
 ~~~~~~~~~~~~~~~~~~
 

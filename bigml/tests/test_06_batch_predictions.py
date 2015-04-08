@@ -31,7 +31,7 @@ import create_prediction_steps as prediction_create
 
 
 class TestBatchPrediction(object):
-        
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a batch prediction:
@@ -48,12 +48,12 @@ class TestBatchPrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions.csv |
+                | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./data/batch_predictions.csv |
 
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', '50', '50', 'tests/tmp/batch_predictions.csv', 'tests/check_files/batch_predictions.csv']]
+            ['data/iris.csv', '30', '30', '50', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions.csv']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -83,13 +83,13 @@ class TestBatchPrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./check_files/batch_predictions_e.csv |
+                | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./data/batch_predictions_e.csv |
 
 
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', '5', '1', '80', '50', 'tests/tmp/batch_predictions.csv', 'tests/check_files/batch_predictions_e.csv']]
+            ['data/iris.csv', '30', '30', '5', '1', '80', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions_e.csv']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -120,13 +120,13 @@ class TestBatchPrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/diabetes.csv | 50      | 50     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_c.csv |
+                | ../data/diabetes.csv | 50      | 50     | 50     | 50     | ./tmp/batch_predictions.csv |./data/batch_predictions_c.csv |
 
 
         """
         print self.test_scenario3.__doc__
         examples = [
-            ['data/diabetes.csv', '50', '50', '50', '50', 'tests/tmp/batch_predictions.csv', 'tests/check_files/batch_predictions_c.csv']]
+            ['data/diabetes.csv', '50', '50', '50', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions_c.csv']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -192,12 +192,12 @@ class TestBatchPrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/tiny_kdd.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./check_files/batch_predictions_a.csv |
+                | ../data/tiny_kdd.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./data/batch_predictions_a.csv |
 
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/tiny_kdd.csv', '30', '30', '50', '50', 'tests/tmp/batch_predictions.csv', 'tests/check_files/batch_predictions_a.csv']]
+            ['data/tiny_kdd.csv', '30', '30', '50', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions_a.csv']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

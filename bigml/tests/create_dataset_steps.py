@@ -1,8 +1,7 @@
-import os
 import time
 import json
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_ACCEPTED
@@ -24,13 +23,14 @@ def i_create_a_dataset(step):
 
 #@step(r'I download the dataset file to "(.*)"$')
 def i_export_a_dataset(step, local_file):
-    world.api.download_dataset(world.dataset['resource'], filename=local_file)
+    world.api.download_dataset(world.dataset['resource'],
+                               filename=res_filename(local_file))
 
 
 #@step(r'file "(.*)" is like file "(.*)"$')
 def files_equal(step, local_file, data):
-    contents_local_file = open(local_file).read()
-    contents_data = open(data).read()
+    contents_local_file = open(res_filename(local_file)).read()
+    contents_data = open(res_filename(data)).read()
     assert contents_local_file == contents_data
 
 

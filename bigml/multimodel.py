@@ -40,14 +40,13 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 
-import csv
 import ast
 from bigml.model import Model
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
-
+from bigml.io import UnicodeWriter, UnicodeReader
 
 def read_votes(votes_files, to_prediction, data_locale=None):
     """Reads the votes found in the votes' files.
@@ -70,23 +69,24 @@ def read_votes(votes_files, to_prediction, data_locale=None):
     for order in range(0, len(votes_files)):
         votes_file = votes_files[order]
         index = 0
-        for row in csv.reader(open(votes_file, "U"), lineterminator="\n"):
-            prediction = to_prediction(row[0], data_locale=data_locale)
-            if index > (len(votes) - 1):
-                votes.append(MultiVote([]))
-            distribution = None
-            instances = None
-            if len(row) > 2:
-                distribution = ast.literal_eval(row[2])
-                instances = int(row[3])
-                try:
-                    confidence = float(row[1])
-                except ValueError:
-                    confidence = 0
-            prediction_row = [prediction, confidence, order,
-                              distribution, instances]
-            votes[index].append_row(prediction_row)
-            index += 1
+        with UnicodeReader(votes_file) as rdr:
+            for row in rdr:
+                prediction = to_prediction(row[0], data_locale=data_locale)
+                if index > (len(votes) - 1):
+                    votes.append(MultiVote([]))
+                distribution = None
+                instances = None
+                if len(row) > 2:
+                    distribution = ast.literal_eval(row[2])
+                    instances = int(row[3])
+                    try:
+                        confidence = float(row[1])
+                    except ValueError:
+                        confidence = 0
+                prediction_row = [prediction, confidence, order,
+                                  distribution, instances]
+                votes[index].append_row(prediction_row)
+                index += 1
     return votes
 
 
@@ -192,6 +192,7 @@ class MultiModel(object):
 
         for model in self.models:
             order += 1
+            out = None
             if to_file:
                 output_file = get_predictions_file_name(model.resource_id,
                                                         output_file_path)
@@ -203,12 +204,13 @@ class MultiModel(object):
                     except IOError:
                         pass
                 try:
-                    predictions_file = csv.writer(open(output_file, 'w', 0),
-                                                  lineterminator="\n")
+                    out = UnicodeWriter(output_file)
                 except IOError:
                     raise Exception("Cannot find %s directory." %
                                     output_file_path)
 
+            if out:
+                out.open_writer()
             for index, input_data in enumerate(input_data_list):
                 if add_headers:
                     input_data = dict(zip(headers, input_data))
@@ -219,7 +221,7 @@ class MultiModel(object):
                 if to_file:
                     if isinstance(prediction[0], basestring):
                         prediction[0] = prediction[0].encode("utf-8")
-                    predictions_file.writerow(prediction)
+                    out.writerow(prediction)
                 else:
                     prediction, confidence, distribution, instances = prediction
                     prediction_row = [prediction, confidence, order,
@@ -227,7 +229,8 @@ class MultiModel(object):
                     if len(votes) <= index:
                         votes.append(MultiVote([]))
                     votes[index].append_row(prediction_row)
-
+            if out:
+                out.close_writer()
         if not to_file:
             return votes
 

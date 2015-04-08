@@ -462,8 +462,8 @@ def maybe_save(resource_id, path,
         try:
             resource_file_name = "%s%s%s" % (path, os.sep,
                                              resource_id.replace('/', '_'))
-            with open(resource_file_name, "w", 0) as resource_file:
-                resource_file.write(resource_json)
+            with open(resource_file_name, "wb", 0) as resource_file:
+                resource_file.write(resource_json.encode('UTF-8'))
         except IOError:
             print "Failed writing resource to %s" % resource_file_name
     return resource

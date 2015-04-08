@@ -57,8 +57,8 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['nose'],
     install_requires = INSTALL_REQUIRES,
-    packages = ['bigml', 'tests'],
-    package_data={'tests':['../data/*', 'check_files/*']},
+    packages = ['bigml', 'bigml.tests'],
+    package_data={'bigml.tests':['data/*.csv', 'data/*.json']},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

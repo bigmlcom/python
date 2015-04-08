@@ -42,7 +42,6 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 import sys
-import csv
 import math
 import re
 
@@ -56,6 +55,7 @@ from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
+from bigml.io import UnicodeWriter
 
 
 OPTIONAL_FIELDS = ['categorical', 'text']
@@ -298,7 +298,7 @@ class Cluster(ModelFields):
                     row.append(result)
                 intercentroids = True
             for measure, result in centroid.distance.items():
-                if measure in CSV_STATISTICS: 
+                if measure in CSV_STATISTICS:
                     if not header_complete:
                         headers.append(u"Data %s" %
                                        measure.lower().replace("_", " "))
@@ -310,8 +310,7 @@ class Cluster(ModelFields):
 
         if file_name is None:
             return rows
-        with open(file_name, "w") as file_handler:
-            writer = csv.writer(file_handler)
+        with UnicodeWriter(file_name) as writer:
             for row in rows:
                 writer.writerow([item if not isinstance(item, basestring)
                                  else item.encode("utf-8") for item in row])

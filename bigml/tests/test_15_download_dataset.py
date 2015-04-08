@@ -24,7 +24,7 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 
 class TestDownloadDataset(object):
-        
+
     def test_scenario1(self):
         """
 
@@ -42,7 +42,7 @@ class TestDownloadDataset(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', 'tests/tmp/exported_iris.csv']]
+            ['data/iris.csv', '30', '30', 'tmp/exported_iris.csv']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

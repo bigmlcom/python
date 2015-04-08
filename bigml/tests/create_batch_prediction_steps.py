@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012, 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,13 +19,15 @@ import time
 import json
 import requests
 import csv
+import traceback
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.io import UnicodeReader
 
 from read_batch_prediction_steps import (i_get_the_batch_prediction,
     i_get_the_batch_centroid, i_get_the_batch_anomaly_score)
@@ -113,49 +115,44 @@ def the_batch_anomaly_score_is_finished_in_less_than(step, secs):
 #@step(r'I download the created predictions file to "(.*)"')
 def i_download_predictions_file(step, filename):
     file_object = world.api.download_batch_prediction(
-        world.batch_prediction, filename=filename)
+        world.batch_prediction, filename=res_filename(filename))
     assert file_object is not None
     world.output = file_object
-    
+
 #@step(r'I download the created centroid file to "(.*)"')
 def i_download_centroid_file(step, filename):
     file_object = world.api.download_batch_centroid(
-        world.batch_centroid, filename=filename)
+        world.batch_centroid, filename=res_filename(filename))
     assert file_object is not None
     world.output = file_object
 
 #@step(r'I download the created anomaly score file to "(.*)"')
 def i_download_anomaly_score_file(step, filename):
     file_object = world.api.download_batch_anomaly_score(
-        world.batch_anomaly_score, filename=filename)
+        world.batch_anomaly_score, filename=res_filename(filename))
     assert file_object is not None
     world.output = file_object
 
+def check_rows(prediction_rows, test_rows):
+    for row in prediction_rows:
+        check_row = next(test_rows)
+        assert len(check_row) == len (row)
+        for index in range(len(row)):
+            dot = row[index].find(".")
+            if dot > 0:
+                try:
+                    decs = min(len(row[index]), len(check_row[index])) - dot - 1
+                    row[index] = round(float(row[index]), decs)
+                    check_row[index] = round(float(check_row[index]), decs)
+                except ValueError:
+                    pass
+            assert check_row[index] == row[index], ("%s/%s" % (row, check_row))
+
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):
-    predictions_file = world.output
-    try:
-        predictions_file = csv.reader(open(predictions_file, "U"), lineterminator="\n")
-        check_file = csv.reader(open(check_file, "U"), lineterminator="\n")
-        for row in predictions_file:
-            check_row = check_file.next()
-            if len(check_row) != len(row):
-                assert False
-            for index in range(len(row)):
-                dot = row[index].find(".")
-                if dot > 0:
-                    try:
-                        decimal_places = min(len(row[index]), len(check_row[index])) - dot - 1
-                        row[index] = round(float(row[index]), decimal_places)
-                        check_row[index] = round(float(check_row[index]), decimal_places)    
-                    except ValueError:
-                        pass
-                if check_row[index] != row[index]:
-                    print row, check_row
-                    assert False
-        assert True
-    except Exception, exc:
-        assert False, str(exc)
+    with UnicodeReader(world.output) as prediction_rows:
+        with UnicodeReader(res_filename(check_file)) as test_rows:
+            check_rows(prediction_rows, test_rows)
 
 #@step(r'the batch centroid file is like "(.*)"')
 def i_check_batch_centroid(step, check_file):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012, 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -30,6 +30,7 @@ from bigml.multivote import MultiVote
 
 #@step(r'I create a MultiVote for the set of predictions in file (.*)$')
 def i_create_a_multivote(step, predictions_file):
+    predictions_file = res_filename(predictions_file)
     try:
         with open(predictions_file, 'r') as predictions_file:
             world.multivote = MultiVote(json.load(predictions_file))

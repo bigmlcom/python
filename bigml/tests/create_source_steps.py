@@ -15,13 +15,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import time
 import json
 import csv
+import sys
 from datetime import datetime, timedelta
-from urllib import urlencode
-from world import world
+from world import world, res_filename
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -33,7 +32,7 @@ import read_source_steps as read
 
 #@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
-    resource = world.api.create_source(file)
+    resource = world.api.create_source(res_filename(file))
     # update status
     world.status = resource['code']
     world.location = resource['location']
@@ -57,7 +56,7 @@ def i_create_using_dict_data(step, data):
     mode = 'rb'
     if sys.version > '3':
         mode = 'rt'
-    with open(data, mode) as fid:
+    with open(res_filename(data), mode) as fid:
         reader = csv.DictReader(fid)
         dict_data = [row for row in reader]
     # create source

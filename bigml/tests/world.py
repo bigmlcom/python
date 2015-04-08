@@ -22,6 +22,7 @@
 import os
 import shutil
 import time
+import pkg_resources
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
@@ -32,7 +33,7 @@ RESOURCE_TYPES = [
     'source',
     'dataset',
     'model',
-    'prediction', 
+    'prediction',
     'evaluation',
     'ensemble',
     'batchprediction',
@@ -160,6 +161,8 @@ class World(object):
 
 world = World()
 
+def res_filename(file):
+    return pkg_resources.resource_filename('bigml.tests', file)
 
 def setup_module():
     """Operations to be performed before each module

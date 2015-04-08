@@ -54,7 +54,6 @@ LOGGER = logging.getLogger('BigML')
 import sys
 import locale
 import json
-import csv
 
 from functools import partial
 
@@ -69,6 +68,7 @@ from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
 from bigml.multivote import ws_confidence
+from bigml.io import UnicodeWriter
 
 # we use the atof conversion for integers to include integers written as
 # 10.0
@@ -286,7 +286,7 @@ class Model(BaseModel):
                   (maximum number of categories to be returned), or the
                   literal 'all', that will cause the entire distribution
                   in the node to be returned.
-                    
+
         """
         # Checks if this is a regression model, using PROPORTIONAL
         # missing_strategy
@@ -321,8 +321,8 @@ class Model(BaseModel):
             total_instances = float(prediction.count)
             distribution =  enumerate(prediction.distribution)
             for index, [category, instances] in distribution:
-                if ((isinstance(multiple, basestring) and multiple == 'all') or 
-                        (isinstance(multiple, int) and index < multiple)):                 
+                if ((isinstance(multiple, basestring) and multiple == 'all') or
+                        (isinstance(multiple, int) and index < multiple)):
                     prediction_dict = {
                         'prediction': category,
                         'confidence': ws_confidence(category,
@@ -878,8 +878,7 @@ if count > 0:
         nodes_generator = self.get_nodes_info(headers_names,
                                               leaves_only=leaves_only)
         if file_name is not None:
-            with open(file_name, "w") as file_handler:
-                writer = csv.writer(file_handler)
+            with UnicodeWriter(file_name) as writer:
                 writer.writerow([header.encode("utf-8")
                                  for header in headers_names])
                 for row in nodes_generator:

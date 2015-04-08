@@ -1,6 +1,6 @@
 import json
 import os
-from world import world
+from world import world, res_filename
 from bigml.model import Model
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
@@ -15,7 +15,7 @@ def i_retrieve_a_list_of_remote_models(step, tag):
 
 #@step(r'I create a local model from a "(.*)" file$')
 def i_create_a_local_model_from_file(step, model_file):
-    world.local_model = Model(model_file)
+    world.local_model = Model(res_filename(model_file))
 
 
 #@step(r'I create a local model$')
@@ -146,7 +146,7 @@ def the_batch_mm_predictions_are(step, predictions):
         multivote = world.local_prediction[i]
         for prediction in multivote.predictions:
             if prediction['prediction'] != predictions[i]:
-                assert False, ("Prediction: %s, expected: %s" % 
+                assert False, ("Prediction: %s, expected: %s" %
                                (predictions[i], prediction['prediction']))
                 break
     if i == len(predictions):

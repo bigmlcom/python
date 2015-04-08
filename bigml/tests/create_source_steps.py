@@ -70,7 +70,7 @@ def i_create_using_dict_data(step, data):
 
 #@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
 def i_upload_a_file_async(step, file):
-    resource = world.api.create_source(file, async=True)
+    resource = world.api.create_source(res_filename(file), async=True)
     world.resource = resource
 
 #@step(r'I wait until the source has been created less than (\d+) secs')

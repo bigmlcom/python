@@ -43,7 +43,7 @@ REQUESTS_VERSION = "requests==2.5.3" if \
     PYTHON_VERSION < PYTHON_REQUESTS_CHANGE else "requests"
 INSTALL_REQUIRES = [REQUESTS_VERSION, "unidecode"]
 if PYTHON_VERSION[0] < 3:
-    REQUIRES.append('poster')
+    INSTALL_REQUIRES.append('poster')
 
 setuptools.setup(
     name="bigml",
@@ -55,10 +55,10 @@ setuptools.setup(
     url="https://bigml.com/developers",
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
-    setup_requires = [],
-    packages = ['bigml'],
-    include_package_data = True,
+    setup_requires = ['nose'],
     install_requires = INSTALL_REQUIRES,
+    packages = ['bigml', 'tests'],
+    package_data={'tests':['../data/*', 'check_files/*']},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

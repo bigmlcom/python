@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012, 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -54,7 +54,10 @@ def i_create_using_url(step, url):
 #@step(r'I create a data source from inline data slurped from "(.*)"')
 def i_create_using_dict_data(step, data):
     # slurp CSV file to local variable
-    with open(data,'rb') as fid:
+    mode = 'rb'
+    if sys.version > '3':
+        mode = 'rt'
+    with open(data, mode) as fid:
         reader = csv.DictReader(fid)
         dict_data = [row for row in reader]
     # create source
@@ -65,7 +68,7 @@ def i_create_using_dict_data(step, data):
     world.source = resource['object']
     # save reference
     world.sources.append(resource['resource'])
-    
+
 #@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
 def i_upload_a_file_async(step, file):
     resource = world.api.create_source(file, async=True)

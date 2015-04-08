@@ -18,3 +18,4 @@ build
 set_credentials.sh
 docs/_build/*
 *~
+/tests/storage/

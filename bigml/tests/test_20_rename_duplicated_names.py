@@ -26,7 +26,7 @@ import create_model_steps as model_create
 import compare_predictions_steps as compare_preds
 
 class TestDuplicatedFields(object):
-        
+
     def test_scenario1(self):
         """
             Scenario: Successfully changing duplicated field names:
@@ -40,14 +40,14 @@ class TestDuplicatedFields(object):
                 Then "<field_id>" field's name is changed to "<new_name>"
 
         Examples:
-                | data             | time_1  | time_2 | time_3 | options | field_id | new_name                            
+                | data             | time_1  | time_2 | time_3 | options | field_id | new_name
                 | ../data/iris.csv | 20      | 20     | 30     | {"fields": {"000001": {"name": "species"}}} | 000001 | species1
                 | ../data/iris.csv | 20      | 20     | 30     | {"fields": {"000001": {"name": "petal width"}}} | 000001 | petal width1
         """
         print self.test_scenario1.__doc__
         examples = [
             ['data/iris.csv', '20', '20', '30', '{"fields": {"000001": {"name": "species"}}}', '000001', 'species1'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000001": {"name": "petal width"}}}', '000001', 'petal width1']]
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000001": {"name": "petal width"}}}', '000003', 'petal width3']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

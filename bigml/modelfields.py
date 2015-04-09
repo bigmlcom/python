@@ -84,8 +84,8 @@ class ModelFields(object):
         else:
             unique_names = []
 
-        field_ids = [field_id for field_id in fields
-                     if not self.objective_id or field_id != self.objective_id]
+        field_ids = sorted([field_id for field_id in fields
+                            if field_id != self.objective_id])
         for field_id in field_ids:
             new_name = fields[field_id]['name']
             if new_name in unique_names:

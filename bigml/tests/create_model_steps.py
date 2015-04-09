@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012, 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,6 +18,7 @@
 import time
 import json
 import os
+import nose.tools
 from datetime import datetime, timedelta
 from world import world
 
@@ -121,7 +122,7 @@ def model_from_shared_url(step):
     assert get_status(world.model)['code'] == FINISHED
 
 #@step(r'I check the model status using the model\'s shared key')
-def model_from_shared_key(step):  
+def model_from_shared_key(step):
     username = os.environ.get("BIGML_USERNAME")
     world.model = world.api.get_model(world.model['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
@@ -129,6 +130,5 @@ def model_from_shared_key(step):
 
 #@step(r'"(.*)" field\'s name is changed to "(.*)"')
 def field_name_to_new_name(step, field_id, new_name):
-    if world.local_model.tree.fields[field_id]['name'] != new_name:
-        print world.local_model.tree.fields[field_id]['name'], new_name
-    assert world.local_model.tree.fields[field_id]['name'] == new_name
+    nose.tools.assert_equals(
+        world.local_model.tree.fields[field_id]['name'], new_name)

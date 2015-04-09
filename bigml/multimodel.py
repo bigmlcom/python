@@ -219,8 +219,6 @@ class MultiModel(object):
                                            with_confidence=True,
                                            missing_strategy=missing_strategy)
                 if to_file:
-                    if isinstance(prediction[0], basestring):
-                        prediction[0] = prediction[0].encode("utf-8")
                     out.writerow(prediction)
                 else:
                     prediction, confidence, distribution, instances = prediction

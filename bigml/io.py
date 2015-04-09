@@ -84,7 +84,8 @@ class UnicodeWriter:
 
     def writerow(self, row):
         if not PY3:
-            row = [s.encode(self.encoding) for s in row]
+            row = [(s if not isinstance(s,basestring) else
+                    s.encode(self.encoding)) for s in row]
         self.writer.writerow(row)
 
     def writerows(self, rows):

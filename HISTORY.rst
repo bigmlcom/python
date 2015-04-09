@@ -3,6 +3,12 @@
 History
 -------
 
+4.0.0 (2015-04-10)
+~~~~~~~~~~~~~~~~~~
+
+- Python 3 added to supported Python versions.
+- Test suite migrated to nose.
+
 
 3.0.3 (2015-04-08)
 ~~~~~~~~~~~~~~~~~
@@ -291,7 +297,7 @@ History
 
 - Adding proportional missing strategy to MultiModel and solving tie breaks
   in remote predictions.
-- Adding new output options to model's python, rules and tableau outputs: 
+- Adding new output options to model's python, rules and tableau outputs:
   ability to extract the branch of the model leading to a certain node with
   or without the hanging subtree.
 - Adding HTTP_TOO_MANY_REQUESTS error handling in REST API calls.

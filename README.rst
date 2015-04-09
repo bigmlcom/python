@@ -32,7 +32,7 @@ in our `Campfire chatroom <https://bigmlinc.campfirenow.com/f20a0>`_.
 Requirements
 ------------
 
-Python 2.6 and Python 2.7 are currently supported by these bindings.
+Python 2.7 and Python 3 are currently supported by these bindings.
 
 The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,

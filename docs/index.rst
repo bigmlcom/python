@@ -29,7 +29,7 @@ in our `Campfire chatroom <https://bigmlinc.campfirenow.com/f20a0>`_.
 Requirements
 ------------
 
-Python 2.6 and Python 2.7 are currently supported by these bindings.
+Python 2.7 and Python 3 are currently supported by these bindings.
 
 The only mandatory third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
@@ -443,7 +443,7 @@ as:
 where two levels of detail are easily identified. For classifications,
 the first level shows these keys:
 
--  **class_names**: A list with the names of all the categories for the objective field (i.e., all the classes)    
+-  **class_names**: A list with the names of all the categories for the objective field (i.e., all the classes)
 -  **mode**: A detailed result object. Measures of the performance of the classifier that predicts the mode class for all the instances in the dataset
 -  **model**: A detailed result object.
 -  **random**: A detailed result object.  Measures the performance of the classifier that predicts a random class for all the instances in the dataset.
@@ -823,7 +823,7 @@ score. Thus, the structure of an anomaly detector is similar to:
                                                          0.0],
                                               'score': 0.6239},
                                               ...],
-                     'trees': [   {   'root': {   'children': [   {   'children': [   {   'children': [   {   'children': [   {   'children': 
+                     'trees': [   {   'root': {   'children': [   {   'children': [   {   'children': [   {   'children': [   {   'children':
      [   {   'population': 1,
                                                                                                                                   'predicates': [   {   'field': '00001f',
                                                                                                                                                         'op': '>',
@@ -1109,7 +1109,7 @@ shows the two accepted formats:
     local = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
     local2 = [{'a': 1, 'b': 2, 'c': 3}, {'a': 4, 'b': 5, 'c': 6}]
     source = api.create_source(local, {'name': 'inline source'})
-        
+
 As already mentioned, source creation is asynchronous. In both these examples,
 the ``api.create_source`` call returns once the file is uploaded.
 Then ``source`` will contain a resource whose status code will be either
@@ -1399,7 +1399,7 @@ parallelism level for the task:
     args = {'number_of_models': 20, 'tlp': 3}
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
 
-``tlp`` (task-level parallelism) should be an integer between 1 and 5 (the 
+``tlp`` (task-level parallelism) should be an integer between 1 and 5 (the
 number of models to be built in parallel). A higher ``tlp`` results in faster
 ensemble creation, but it will consume more credits. The default value for
 ``number_of_models`` is 10 and for ``tlp`` is 1.
@@ -2249,7 +2249,7 @@ this could increase performance for large ensembles:
 .. code-block:: python
 
     from bigml.model import Model
-    model_ids = ['model/50c0de043b563519830001c2', \ 
+    model_ids = ['model/50c0de043b563519830001c2', \
                  'model/50c0de043b5635198300031b')]
     local_models = [Model(model_id) for model_id in model_ids]
     local_ensemble = Ensemble(local_models)
@@ -2263,11 +2263,11 @@ to be retrieved and returning a local model object.
 .. code-block:: python
 
     from bigml.model import Model
-    model_ids = ['model/50c0de043b563519830001c2', \ 
+    model_ids = ['model/50c0de043b563519830001c2', \
                  'model/50c0de043b5635198300031b')]
     def cache_get(model_id):
         """ Retrieves a JSON model structure and builds a local model object
-        
+
         """
         model_file = model_id.replace("/", "_")
         return Model(json.load(open(model_file)))
@@ -2295,7 +2295,7 @@ the ``with_confidence`` argument to True.
 And you can add more information to the predictions in a JSON format using:
 
 - ``add_confidence=True`` includes the confidence of the prediction
-- ``add_distribution=True`` includes the distribution of predictions. This is 
+- ``add_distribution=True`` includes the distribution of predictions. This is
                             built by merging the distributions of each of the
                             nodes predicted by every model the ensemble is
                             composed of
@@ -2340,7 +2340,7 @@ you can also instantiate the Fields object from the fields dict itself:
     from bigml.fields import Fields
     api = BigML()
     source = api.get_source("source/5143a51a37203f2cf7000974")
-    
+
     fields = Fields(source['object']['fields'])
 
 The newly instantiated Fields object will give direct methods to retrieve
@@ -2395,7 +2395,7 @@ would output:
     {'000003': 1, '000000': 1, '000001': 1}
 
 if the there was a missing value in each of the fields whose ids are
-``000003``, ``000000``, ``000001``. 
+``000003``, ``000000``, ``000001``.
 
 You can also obtain the counts of errors per field using the ``errors_count``
 method of the api:

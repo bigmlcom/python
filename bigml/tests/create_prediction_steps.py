@@ -17,6 +17,7 @@
 
 import json
 import time
+import nose.tools
 from datetime import datetime, timedelta
 from world import world
 from bigml.api import HTTP_CREATED
@@ -24,7 +25,6 @@ from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
 from read_prediction_steps import i_get_the_prediction
-
 
 def i_create_a_prediction(step, data=None):
     if data is None:
@@ -66,41 +66,25 @@ def i_create_a_proportional_prediction(step, data=None):
     world.predictions.append(resource['resource'])
 
 
-def the_prediction_is(step, objective, prediction):
-    if str(world.prediction['prediction'][objective]) == prediction:
-        assert True
+def check_prediction(got, expected):
+    if not isinstance(got, basestring):
+        nose.tools.assert_almost_equals(got, float(expected), 10)
     else:
-        assert False, "Found: %s, expected %s" % (
-            str(world.prediction['prediction'][objective]), prediction)
+        nose.tools.assert_equals(got, expected)
 
+def the_prediction_is(step, objective, prediction):
+    check_prediction(world.prediction['prediction'][objective], prediction)
 
 def the_median_prediction_is(step, objective, prediction):
-    median = str(world.prediction['prediction_path']
-                 ['objective_summary']['median'])
-    if median == prediction:
-        assert True
-    else:
-        assert False, "Found: %s, expected %s" % (
-            median, prediction)
-
+    check_prediction(world.prediction['prediction_path'][
+        'objective_summary']['median'], prediction)
 
 def the_centroid_is_with_distance(step, centroid, distance):
-    if str(world.centroid['centroid_name']) == centroid:
-        assert True
-    else:
-        assert False, "Found: %s, expected: %s" % (str(world.centroid['centroid_name']), centroid)
-    if str(world.centroid['distance']) == distance:
-        assert True
-    else:
-        assert False, "Found: %s, expected: %s" % (str(world.centroid['distance']), distance)
-
+    check_prediction(world.centroid['centroid_name'], centroid)
+    check_prediction(world.centroid['distance'], distance)
 
 def the_centroid_is(step, centroid):
-    if str(world.centroid['centroid_name']) == centroid:
-        assert True
-    else:
-        assert False, "Found: %s, expected: %s" % (str(world.centroid['centroid_name']), centroid)
-
+    check_prediction(world.centroid['centroid_name'], centroid)
 
 def the_centroid_is_ok(step):
     assert world.api.ok(world.centroid)
@@ -149,7 +133,7 @@ def create_local_ensemble_prediction_add_confidence(step, input_data):
 
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
-    
+
 
 def create_local_ensemble_prediction_with_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
@@ -170,8 +154,4 @@ def i_create_an_anomaly_score(step, data=None):
 
 
 def the_anomaly_score_is(step, score):
-    if str(world.anomaly_score['score']) == score:
-        assert True
-    else:
-        assert False, "Found: %s, expected %s" % (
-            str(world.anomaly_score['score']), score)
+    check_prediction(world.anomaly_score['score'], score)

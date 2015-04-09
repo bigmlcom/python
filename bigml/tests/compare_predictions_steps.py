@@ -7,6 +7,8 @@ from bigml.anomaly import Anomaly
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 
+from create_prediction_steps import check_prediction
+
 #@step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
     world.list_of_models = [world.api.get_model(model['resource']) for model in
@@ -81,15 +83,8 @@ def i_create_a_local_centroid(step, data=None):
 
 #@step(r'the local centroid is "(.*)" with distance "(.*)"')
 def the_local_centroid_is(step, centroid, distance):
-    if str(world.local_centroid['centroid_name']) == centroid:
-        assert True
-    else:
-        assert False, "Found: %s, expected: %s" % (str(world.local_centroid['centroid_name']), centroid)
-    if str(world.local_centroid['distance']) == distance:
-        assert True
-    else:
-        assert False, "Found: %s, expected: %s" % (str(world.local_centroid['distance']), distance)
-
+    check_prediction(world.local_centroid['centroid_name'], centroid)
+    check_prediction(world.local_centroid['distance'], distance)
 
 #@step(r'I create a local anomaly detector$')
 def i_create_a_local_anomaly(step):
@@ -226,7 +221,7 @@ def the_plurality_combined_prediction(step, predictions):
     predictions = eval(predictions)
     for i in range(len(world.votes)):
         combined_prediction = world.votes[i].combine()
-        assert combined_prediction == predictions[i]
+        check_prediction(combined_prediction, predictions[i])
 
 #@step(r'the confidence weighted predictions are "(.*)"')
 def the_confidence_weighted_prediction(step, predictions):

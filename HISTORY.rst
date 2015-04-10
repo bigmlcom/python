@@ -3,6 +3,11 @@
 History
 -------
 
+4.0.1 (2015-04-10)
+~~~~~~~~~~~~~~~~~~
+
+- Adding support for median-based predictions in MultiModels.
+
 4.0.0 (2015-04-10)
 ~~~~~~~~~~~~~~~~~~
 

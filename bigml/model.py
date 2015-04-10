@@ -315,7 +315,8 @@ class Model(BaseModel):
             output = [prediction.output,
                       prediction.confidence,
                       prediction.distribution,
-                      prediction.count]
+                      prediction.count,
+                      prediction.median]
         if multiple is not None and not self.tree.regression:
             output = []
             total_instances = float(prediction.count)

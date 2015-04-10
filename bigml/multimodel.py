@@ -166,7 +166,7 @@ class MultiModel(object):
     def batch_predict(self, input_data_list, output_file_path=None,
                       by_name=True, reuse=False,
                       missing_strategy=LAST_PREDICTION, headers=None,
-                      to_file=True):
+                      to_file=True, use_median=False):
         """Makes predictions for a list of input data.
 
            When the to_file argument is set to True, the predictions
@@ -218,12 +218,20 @@ class MultiModel(object):
                                            by_name=by_name,
                                            with_confidence=True,
                                            missing_strategy=missing_strategy)
+                if use_median and model.is_regression:
+                    # if median is to be used, we just place it as prediction
+                    # starting the list
+                    prediction[0] = prediction[-1]
+                prediction = prediction[:-1]
                 if to_file:
                     out.writerow(prediction)
                 else:
-                    prediction, confidence, distribution, instances = prediction
-                    prediction_row = [prediction, confidence, order,
-                                      distribution, instances]
+                    # prediction is a row that contains prediction, confidence,
+                    # distribution, instances
+                    prediction_row = prediction[0: 2]
+                    prediction_row.append(order)
+                    prediction_row.extend(prediction[2:])
+
                     if len(votes) <= index:
                         votes.append(MultiVote([]))
                     votes[index].append_row(prediction_row)

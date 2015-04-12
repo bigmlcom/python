@@ -3,6 +3,11 @@
 History
 -------
 
+4.0.2 (2015-04-12)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: multimodels median predictions failed .
+
 4.0.1 (2015-04-10)
 ~~~~~~~~~~~~~~~~~~
 

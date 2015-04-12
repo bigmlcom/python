@@ -57,6 +57,15 @@ def i_create_a_local_median_prediction(step, data=None):
     world.local_prediction = world.local_model.predict(data, median=True)
 
 
+#@step(r'I create a local multimodel batch prediction using median for "(.*)"$')
+def i_create_a_local_mm_median_batch_prediction(self, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.batch_predict(
+        [data], to_file=False, use_median=True)[0].predictions[0]['prediction']
+
+
 #@step(r'I create a proportional missing strategy local prediction using median for "(.*)"$')
 def i_create_a_local_proportional_median_prediction(step, data=None):
     if data is None:

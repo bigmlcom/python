@@ -218,7 +218,7 @@ class MultiModel(object):
                                            by_name=by_name,
                                            with_confidence=True,
                                            missing_strategy=missing_strategy)
-                if use_median and model.is_regression:
+                if use_median and model.tree.regression:
                     # if median is to be used, we just place it as prediction
                     # starting the list
                     prediction[0] = prediction[-1]

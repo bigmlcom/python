@@ -140,6 +140,11 @@ def create_local_ensemble_prediction_with_confidence(step, input_data):
         json.loads(input_data), with_confidence=True)
 
 
+def create_local_ensemble_prediction_using_median_with_confidence(step, input_data):
+    world.local_prediction = world.local_ensemble.predict(
+        json.loads(input_data), with_confidence=True, median=True)
+
+
 def i_create_an_anomaly_score(step, data=None):
     if data is None:
         data = "{}"

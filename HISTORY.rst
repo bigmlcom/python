@@ -3,10 +3,15 @@
 History
 -------
 
+4.1.0 (2015-04-14)
+~~~~~~~~~~~~~~~~~~
+
+- Adding median based predictions to ensembles.
+
 4.0.2 (2015-04-12)
 ~~~~~~~~~~~~~~~~~~
 
-- Fixing bug: multimodels median predictions failed .
+- Fixing bug: multimodels median predictions failed.
 
 4.0.1 (2015-04-10)
 ~~~~~~~~~~~~~~~~~~

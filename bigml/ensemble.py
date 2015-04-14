@@ -56,7 +56,7 @@ from bigml.basemodel import BaseModel, print_importance
 def use_cache(cache_get):
     """Checks whether the user has provided a cache get function to retrieve
        local models.
-       
+
     """
     return cache_get is not None and hasattr(cache_get, '__call__')
 
@@ -184,11 +184,15 @@ class Ensemble(object):
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
-                options=None, missing_strategy=LAST_PREDICTION):
+                options=None, missing_strategy=LAST_PREDICTION, median=False):
         """Makes a prediction based on the prediction made by every model.
 
-           The method parameter is a numeric key to the following combination
-           methods in classifications/regressions:
+        :param input_data: Test data to be used as input
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param method: numeric key code for the following combination
+                       methods in classifications/regressions:
               0 - majority vote (plurality)/ average: PLURALITY_CODE
               1 - confidence weighted majority vote / error weighted:
                   CONFIDENCE_CODE
@@ -196,7 +200,27 @@ class Ensemble(object):
                   PROBABILITY_CODE
               3 - threshold filtered vote / doesn't apply:
                   THRESHOLD_CODE
+        The following parameter causes the result to be returned as a list
+        :param with_confidence: Adds the confidence, distribution, counts
+                                and median information to the node prediction.
+                                The result is given in a list format output.
+        The following parameters cause the result to be returned as a dict
+        :param add_confidence: Adds confidence to the prediction
+        :param add_distribution: Adds the predicted node's distribution to the
+                                 prediction
+        :param add_count: Adds the predicted nodes' instances to the
+                          prediction
+        :param add_median: Adds the median of the predicted nodes' distribution
+                           to the prediction
+        :param options: Options to be used in threshold filtered votes.
+        :param missing_strategy: numeric key for the individual model's
+                                 prediction method. See the model predict
+                                 method.
+        :param median: Uses the median of each individual model's predicted
+                       node as individual prediction for the specified
+                       combination method.
         """
+
 
         if len(self.models_splits) > 1:
             # If there's more than one chunck of models, they must be
@@ -207,7 +231,7 @@ class Ensemble(object):
                     if (self.cache_get is not None and
                             has_attr(self.cache_get, '__call__')):
                         # retrieve the models from a cache get function
-                        try:   
+                        try:
                             models = [self.cache_get(model_id) for model_id
                                       in self.models_split]
                         except Exception, exc:
@@ -223,15 +247,21 @@ class Ensemble(object):
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
-                    add_median=add_median)
+                    add_median=(add_median or median))
+                if median:
+                    for prediction in votes_split.predictions:
+                        prediction['prediction'] = prediction['median']
                 votes.extend(votes_split.predictions)
         else:
             # When only one group of models is found you use the
             # corresponding multimodel to predict
             votes_split = self.multi_model.generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
-                add_median=add_median)
+                add_median=(add_median or median))
             votes = MultiVote(votes_split.predictions)
+            if median:
+                for prediction in votes.predictions:
+                    prediction['prediction'] = prediction['median']
         return votes.combine(method=method, with_confidence=with_confidence,
                              add_confidence=add_confidence,
                              add_distribution=add_distribution,

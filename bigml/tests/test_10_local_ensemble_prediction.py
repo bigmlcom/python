@@ -28,7 +28,7 @@ import create_prediction_steps as prediction_create
 import compare_predictions_steps as compare_pred
 
 class TestEnsemblePrediction(object):
-        
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a local prediction from an Ensemble:
@@ -138,7 +138,7 @@ class TestEnsemblePrediction(object):
             compare_pred.the_local_prediction_confidence_is(self, example[8])
 
     def test_scenario4(self):
-        """          
+        """
             Scenario: Successfully obtaining field importance from an Ensemble created from local models:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
@@ -174,3 +174,35 @@ class TestEnsemblePrediction(object):
             model_create.the_model_is_finished_in_less_than(self, example[8])
             ensemble_create.create_local_ensemble_with_list_of_local_models(self, example[9])
             ensemble_create.field_importance_print(self, example[10])
+
+    def test_scenario5(self):
+        """
+            Scenario: Successfully creating a local prediction from an Ensemble:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an ensemble of <number_of_models> models and <tlp> tlp
+                And I wait until the ensemble is ready less than <time_3> secs
+                And I create a local Ensemble
+                When I create a local ensemble prediction using median with confidence for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data                | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  |
+                | ../data/grades.csv | 10      | 10     | 50     | 2                | 1     | {}             | 67.8816 |
+        """
+        print self.test_scenario5.__doc__
+        examples = [
+            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 67.8816]]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            ensemble_create.i_create_an_ensemble(self, example[4], example[5])
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.create_local_ensemble(self)
+            prediction_create.create_local_ensemble_prediction_using_median_with_confidence(self, example[6])
+            compare_pred.the_local_prediction_is(self, example[7])

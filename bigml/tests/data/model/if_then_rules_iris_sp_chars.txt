@@ -1,0 +1,25 @@
+ IF petal_length > 2.45 AND
+     IF petal_width_ > 1.75 AND
+         IF petal_length > 4.85 THEN
+             species = Iris-virginica
+         IF petal_length <= 4.85 AND
+             IF sepal_width > 3.1 THEN
+                 species = Iris-versicolor
+             IF sepal_width <= 3.1 THEN
+                 species = Iris-virginica
+     IF petal_width_ <= 1.75 AND
+         IF petal_length > 4.95 AND
+             IF petal_width_ > 1.55 AND
+                 IF petal_length > 5.45 THEN
+                     species = Iris-virginica
+                 IF petal_length <= 5.45 THEN
+                     species = Iris-versicolor
+             IF petal_width_ <= 1.55 THEN
+                 species = Iris-virginica
+         IF petal_length <= 4.95 AND
+             IF petal_width_ > 1.65 THEN
+                 species = Iris-virginica
+             IF petal_width_ <= 1.65 THEN
+                 species = Iris-versicolor
+ IF petal_length <= 2.45 THEN
+     species = Iris-setosa

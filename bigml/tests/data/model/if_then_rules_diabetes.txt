@@ -1,0 +1,115 @@
+ IF plasma_glucose > 142 AND
+     IF plasma_glucose > 165 AND
+         IF age > 28 THEN
+             diabetes = true
+         IF age <= 28 AND
+             IF bmi > 35.9 THEN
+                 diabetes = true
+             IF bmi <= 35.9 THEN
+                 diabetes = false
+     IF plasma_glucose <= 165 AND
+         IF bmi > 41.45 THEN
+             diabetes = true
+         IF bmi <= 41.45 AND
+             IF bmi > 39.95 THEN
+                 diabetes = false
+             IF bmi <= 39.95 AND
+                 IF bmi > 31.4 AND
+                     IF blood_pressure > 75 THEN
+                         diabetes = true
+                     IF blood_pressure <= 75 AND
+                         IF diabetes_pedigree > 0.629 THEN
+                             diabetes = false
+                         IF diabetes_pedigree <= 0.629 AND
+                             IF bmi > 39.05 THEN
+                                 diabetes = false
+                             IF bmi <= 39.05 THEN
+                                 diabetes = true
+                 IF bmi <= 31.4 AND
+                     IF age > 41 AND
+                         IF blood_pressure > 73 AND
+                             IF blood_pressure > 85 THEN
+                                 diabetes = true
+                             IF blood_pressure <= 85 THEN
+                                 diabetes = false
+                         IF blood_pressure <= 73 THEN
+                             diabetes = true
+                     IF age <= 41 THEN
+                         diabetes = false
+ IF plasma_glucose <= 142 AND
+     IF bmi > 26.92 AND
+         IF age > 30 AND
+             IF plasma_glucose > 94 AND
+                 IF blood_pressure > 73 AND
+                     IF age > 53 THEN
+                         diabetes = false
+                     IF age <= 53 AND
+                         IF insulin > 120 THEN
+                             diabetes = true
+                         IF insulin <= 120 AND
+                             IF diabetes_pedigree > 0.5385 AND
+                                 IF bmi > 38.35 AND
+                                     IF blood_pressure > 89 THEN
+                                         diabetes = true
+                                     IF blood_pressure <= 89 THEN
+                                         diabetes = false
+                                 IF bmi <= 38.35 THEN
+                                     diabetes = true
+                             IF diabetes_pedigree <= 0.5385 AND
+                                 IF blood_pressure > 81 THEN
+                                     diabetes = false
+                                 IF blood_pressure <= 81 AND
+                                     IF diabetes_pedigree > 0.245 AND
+                                         IF diabetes_pedigree > 0.399 THEN
+                                             diabetes = false
+                                         IF diabetes_pedigree <= 0.399 THEN
+                                             diabetes = true
+                                     IF diabetes_pedigree <= 0.245 THEN
+                                         diabetes = false
+                 IF blood_pressure <= 73 AND
+                     IF blood_pressure > 59 THEN
+                         diabetes = true
+                     IF blood_pressure <= 59 AND
+                         IF diabetes_pedigree > 0.457 THEN
+                             diabetes = true
+                         IF diabetes_pedigree <= 0.457 THEN
+                             diabetes = false
+             IF plasma_glucose <= 94 THEN
+                 diabetes = false
+         IF age <= 30 AND
+             IF insulin > 92 AND
+                 IF plasma_glucose > 94 THEN
+                     diabetes = false
+                 IF plasma_glucose <= 94 AND
+                     IF bmi > 33.05 THEN
+                         diabetes = true
+                     IF bmi <= 33.05 THEN
+                         diabetes = false
+             IF insulin <= 92 AND
+                 IF diabetes_pedigree > 1.043 THEN
+                     diabetes = true
+                 IF diabetes_pedigree <= 1.043 AND
+                     IF insulin > 82 THEN
+                         diabetes = true
+                     IF insulin <= 82 AND
+                         IF plasma_glucose > 118 AND
+                             IF triceps_skin_thickness > 13 AND
+                                 IF bmi > 30.7 THEN
+                                     diabetes = false
+                                 IF bmi <= 30.7 THEN
+                                     diabetes = true
+                             IF triceps_skin_thickness <= 13 THEN
+                                 diabetes = true
+                         IF plasma_glucose <= 118 AND
+                             IF triceps_skin_thickness > 39 THEN
+                                 diabetes = true
+                             IF triceps_skin_thickness <= 39 THEN
+                                 diabetes = false
+     IF bmi <= 26.92 AND
+         IF bmi > 9.7 THEN
+             diabetes = false
+         IF bmi <= 9.7 AND
+             IF diabetes_pedigree > 0.2825 THEN
+                 diabetes = false
+             IF diabetes_pedigree <= 0.2825 THEN
+                 diabetes = true

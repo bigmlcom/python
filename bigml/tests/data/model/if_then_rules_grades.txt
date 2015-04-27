@@ -1,0 +1,217 @@
+ IF midterm > 75.47 AND
+     IF midterm > 95.31 AND
+         IF takehome > 102.13 AND
+             IF midterm > 98.435 AND
+                 IF tutorial > 98.3 THEN
+                     final = 108.89
+                 IF tutorial <= 98.3 THEN
+                     final = 107.78
+             IF midterm <= 98.435 THEN
+                 final = 102.22
+         IF takehome <= 102.13 AND
+             IF tutorial > 105.45 THEN
+                 final = 88.89
+             IF tutorial <= 105.45 AND
+                 IF tutorial > 98.1 THEN
+                     final = 102.78
+                 IF tutorial <= 98.1 AND
+                     IF tutorial > 88.34 THEN
+                         final = 95
+                     IF tutorial <= 88.34 THEN
+                         final = 90.83
+     IF midterm <= 95.31 AND
+         IF midterm > 90.935 AND
+             IF tutorial > 100.745 AND
+                 IF tutorial > 103.425 THEN
+                     final = 87.22
+                 IF tutorial <= 103.425 THEN
+                     final = 94.44
+             IF tutorial <= 100.745 AND
+                 IF tutorial > 89.615 AND
+                     IF assignment > 93.16 THEN
+                         final = 68.06
+                     IF assignment <= 93.16 AND
+                         IF tutorial > 96.055 THEN
+                             final = 72.22
+                         IF tutorial <= 96.055 THEN
+                             final = 73.89
+                 IF tutorial <= 89.615 THEN
+                     final = 89.17
+         IF midterm <= 90.935 AND
+             IF midterm > 90 AND
+                 IF tutorial > 91.33 THEN
+                     final = 101.11
+                 IF tutorial <= 91.33 THEN
+                     final = 99.17
+             IF midterm <= 90 AND
+                 IF tutorial > 100.63 AND
+                     IF tutorial > 108.145 THEN
+                         final = 83.33
+                     IF tutorial <= 108.145 THEN
+                         final = 78.89
+                 IF tutorial <= 100.63 AND
+                     IF assignment > 88.62 AND
+                         IF takehome > 100.37 AND
+                             IF tutorial > 94.625 THEN
+                                 final = 85.56
+                             IF tutorial <= 94.625 THEN
+                                 final = 85
+                         IF takehome <= 100.37 AND
+                             IF takehome > 93.24 AND
+                                 IF tutorial > 89.385 THEN
+                                     final = 92.78
+                                 IF tutorial <= 89.385 THEN
+                                     final = 92.22
+                             IF takehome <= 93.24 AND
+                                 IF tutorial > 89.18 THEN
+                                     final = 90
+                                 IF tutorial <= 89.18 THEN
+                                     final = 91.11
+                     IF assignment <= 88.62 THEN
+                         final = 82.22
+ IF midterm <= 75.47 AND
+     IF midterm > 45.315 AND
+         IF takehome > 53.055 AND
+             IF takehome > 72.035 AND
+                 IF midterm > 74.69 THEN
+                     final = 39.72
+                 IF midterm <= 74.69 AND
+                     IF tutorial > 72.89 AND
+                         IF takehome > 72.5 AND
+                             IF midterm > 50.315 AND
+                                 IF midterm > 62.5 AND
+                                     IF tutorial > 89.94 AND
+                                         IF tutorial > 101.44 AND
+                                             IF tutorial > 104.6 THEN
+                                                 final = 68.33
+                                             IF tutorial <= 104.6 THEN
+                                                 final = 63.33
+                                         IF tutorial <= 101.44 AND
+                                             IF tutorial > 95.865 THEN
+                                                 final = 83.06
+                                             IF tutorial <= 95.865 THEN
+                                                 final = 75.56
+                                     IF tutorial <= 89.94 AND
+                                         IF prefix > 6 AND
+                                             IF assignment > 93.53 THEN
+                                                 final = 65.56
+                                             IF assignment <= 93.53 AND
+                                                 IF midterm > 69.375 AND
+                                                     IF tutorial > 85.29 THEN
+                                                         final = 55
+                                                     IF tutorial <= 85.29 THEN
+                                                         final = 56.39
+                                                 IF midterm <= 69.375 THEN
+                                                     final = 58.33
+                                         IF prefix <= 6 THEN
+                                             final = 77.5
+                                 IF midterm <= 62.5 AND
+                                     IF tutorial > 95.71 AND
+                                         IF tutorial > 103.585 THEN
+                                             final = 67.22
+                                         IF tutorial <= 103.585 AND
+                                             IF prefix > 7 AND
+                                                 IF tutorial > 96.205 THEN
+                                                     final = 50
+                                                 IF tutorial <= 96.205 THEN
+                                                     final = 48.89
+                                             IF prefix <= 7 THEN
+                                                 final = 63.61
+                                     IF tutorial <= 95.71 AND
+                                         IF tutorial > 94.235 THEN
+                                             final = 64.72
+                                         IF tutorial <= 94.235 THEN
+                                             final = 66.67
+                             IF midterm <= 50.315 AND
+                                 IF tutorial > 93.13 THEN
+                                     final = 80.56
+                                 IF tutorial <= 93.13 THEN
+                                     final = 72.22
+                         IF takehome <= 72.5 THEN
+                             final = 43.33
+                     IF tutorial <= 72.89 AND
+                         IF tutorial > 64.285 THEN
+                             final = 45.56
+                         IF tutorial <= 64.285 THEN
+                             final = 50.83
+             IF takehome <= 72.035 AND
+                 IF assignment > 79.485 AND
+                     IF tutorial > 91.875 AND
+                         IF midterm > 63.745 THEN
+                             final = 65.28
+                         IF midterm <= 63.745 THEN
+                             final = 63.89
+                     IF tutorial <= 91.875 THEN
+                         final = 57.78
+                 IF assignment <= 79.485 AND
+                     IF takehome > 58.61 AND
+                         IF midterm > 66.25 AND
+                             IF midterm > 69.69 THEN
+                                 final = 80
+                             IF midterm <= 69.69 THEN
+                                 final = 88.89
+                         IF midterm <= 66.25 THEN
+                             final = 66.11
+                     IF takehome <= 58.61 AND
+                         IF tutorial > 70.18 THEN
+                             final = 62.5
+                         IF tutorial <= 70.18 THEN
+                             final = 68.33
+         IF takehome <= 53.055 AND
+             IF tutorial > 102.275 THEN
+                 final = 36.11
+             IF tutorial <= 102.275 AND
+                 IF midterm > 46.875 AND
+                     IF assignment > 68.98 AND
+                         IF takehome > 20.025 AND
+                             IF tutorial > 85.96 THEN
+                                 final = 49.44
+                             IF tutorial <= 85.96 THEN
+                                 final = 47.78
+                         IF takehome <= 20.025 AND
+                             IF tutorial > 91.09 THEN
+                                 final = 50.83
+                             IF tutorial <= 91.09 THEN
+                                 final = 53.33
+                     IF assignment <= 68.98 AND
+                         IF tutorial > 63.885 THEN
+                             final = 61.39
+                         IF tutorial <= 63.885 AND
+                             IF midterm > 65.63 THEN
+                                 final = 55.83
+                             IF midterm <= 65.63 THEN
+                                 final = 52.5
+                 IF midterm <= 46.875 THEN
+                     final = 60.56
+     IF midterm <= 45.315 AND
+         IF tutorial > 70.66 AND
+             IF takehome > 92.685 THEN
+                 final = 28.06
+             IF takehome <= 92.685 AND
+                 IF takehome > 51.295 AND
+                     IF midterm > 40 THEN
+                         final = 46.67
+                     IF midterm <= 40 AND
+                         IF tutorial > 105.745 THEN
+                             final = 47.78
+                         IF tutorial <= 105.745 AND
+                             IF tutorial > 92.845 THEN
+                                 final = 49.17
+                             IF tutorial <= 92.845 THEN
+                                 final = 48.89
+                 IF takehome <= 51.295 AND
+                     IF tutorial > 82.645 THEN
+                         final = 35.83
+                     IF tutorial <= 82.645 THEN
+                         final = 34.44
+         IF tutorial <= 70.66 AND
+             IF takehome > 67.685 AND
+                 IF tutorial > 57.645 THEN
+                     final = 51.67
+                 IF tutorial <= 57.645 THEN
+                     final = 45.56
+             IF takehome <= 67.685 AND
+                 IF midterm > 42.19 THEN
+                     final = 65.28
+                 IF midterm <= 42.19 THEN
+                     final = 78.89

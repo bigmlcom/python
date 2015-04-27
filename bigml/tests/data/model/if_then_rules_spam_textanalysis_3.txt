@@ -1,0 +1,133 @@
+ IF message contains call  AND
+     IF message contains ll  THEN
+         type = ham
+     IF message does not contain ll  AND
+         IF message contains mobile  THEN
+             type = spam
+         IF message does not contain mobile  AND
+             IF message contains claim  THEN
+                 type = spam
+             IF message does not contain claim  AND
+                 IF message contains 1  THEN
+                     type = spam
+                 IF message does not contain 1  AND
+                     IF message contains landline  THEN
+                         type = spam
+                     IF message does not contain landline  AND
+                         IF message contains 04  THEN
+                             type = spam
+                         IF message does not contain 04  AND
+                             IF message contains line  THEN
+                                 type = spam
+                             IF message does not contain line  AND
+                                 IF message contains uk  THEN
+                                     type = spam
+                                 IF message does not contain uk  AND
+                                     IF message contains girls  THEN
+                                         type = spam
+                                     IF message does not contain girls  AND
+                                         IF message contains time  AND
+                                             IF message contains hi  THEN
+                                                 type = ham
+                                             IF message does not contain hi  THEN
+                                                 type = spam
+                                         IF message does not contain time  AND
+                                             IF message contains hi  THEN
+                                                 type = spam
+                                             IF message does not contain hi  THEN
+                                                 type = ham
+ IF message does not contain call  AND
+     IF message contains free  AND
+         IF message contains ü  THEN
+             type = ham
+         IF message does not contain ü  AND
+             IF message contains night  THEN
+                 type = ham
+             IF message does not contain night  AND
+                 IF message contains oso  THEN
+                     type = ham
+                 IF message does not contain oso  AND
+                     IF message contains sent  THEN
+                         type = ham
+                     IF message does not contain sent  AND
+                         IF message contains txt  THEN
+                             type = spam
+                         IF message does not contain txt  AND
+                             IF message contains text  THEN
+                                 type = spam
+                             IF message does not contain text  AND
+                                 IF message contains uk  THEN
+                                     type = spam
+                                 IF message does not contain uk  THEN
+                                     type = spam
+     IF message does not contain free  AND
+         IF message contains txt  AND
+             IF message contains finish  THEN
+                 type = ham
+             IF message does not contain finish  THEN
+                 type = spam
+         IF message does not contain txt  AND
+             IF message contains text  AND
+                 IF message contains flirt  THEN
+                     type = spam
+                 IF message does not contain flirt  AND
+                     IF message contains unsubscribe  THEN
+                         type = spam
+                     IF message does not contain unsubscribe  AND
+                         IF message contains prize  THEN
+                             type = spam
+                         IF message does not contain prize  AND
+                             IF message contains started  THEN
+                                 type = spam
+                             IF message does not contain started  AND
+                                 IF message contains re  THEN
+                                     type = ham
+                                 IF message does not contain re  THEN
+                                     type = ham
+             IF message does not contain text  AND
+                 IF message contains send  AND
+                     IF message contains auction  THEN
+                         type = spam
+                     IF message does not contain auction  AND
+                         IF message contains word  THEN
+                             type = spam
+                         IF message does not contain word  AND
+                             IF message contains msg  THEN
+                                 type = spam
+                             IF message does not contain msg  THEN
+                                 type = ham
+                 IF message does not contain send  AND
+                     IF message contains http  THEN
+                         type = spam
+                     IF message does not contain http  AND
+                         IF message contains weekly  THEN
+                             type = spam
+                         IF message does not contain weekly  AND
+                             IF message contains sex  THEN
+                                 type = spam
+                             IF message does not contain sex  AND
+                                 IF message contains rate  THEN
+                                     type = spam
+                                 IF message does not contain rate  AND
+                                     IF message contains calls  THEN
+                                         type = spam
+                                     IF message does not contain calls  AND
+                                         IF message contains station  AND
+                                             IF message contains news  THEN
+                                                 type = spam
+                                             IF message does not contain news  THEN
+                                                 type = ham
+                                         IF message does not contain station  AND
+                                             IF message contains lost  AND
+                                                 IF message contains thank  THEN
+                                                     type = ham
+                                                 IF message does not contain thank  THEN
+                                                     type = spam
+                                             IF message does not contain lost  AND
+                                                 IF message contains girls  AND
+                                                     IF message contains waiting  THEN
+                                                         type = spam
+                                                     IF message does not contain waiting  THEN
+                                                         type = ham
+                                                 IF message does not contain girls  THEN
+                                                     type = ham

@@ -1,0 +1,250 @@
+ IF message contains FREE  THEN
+     type = spam
+ IF message does not contain FREE  AND
+     IF message contains from  AND
+         IF message contains call  THEN
+             type = spam
+         IF message does not contain call  AND
+             IF message contains I  THEN
+                 type = ham
+             IF message does not contain I  AND
+                 IF message contains of  THEN
+                     type = spam
+                 IF message does not contain of  AND
+                     IF message contains only  THEN
+                         type = spam
+                     IF message does not contain only  AND
+                         IF message contains today  THEN
+                             type = spam
+                         IF message does not contain today  AND
+                             IF message contains Win  THEN
+                                 type = spam
+                             IF message does not contain Win  THEN
+                                 type = ham
+     IF message does not contain from  AND
+         IF message contains prize  THEN
+             type = spam
+         IF message does not contain prize  AND
+             IF message contains txt  AND
+                 IF message contains time  THEN
+                     type = ham
+                 IF message does not contain time  THEN
+                     type = spam
+             IF message does not contain txt  AND
+                 IF message contains Your  AND
+                     IF message contains you  THEN
+                         type = ham
+                     IF message does not contain you  THEN
+                         type = spam
+                 IF message does not contain Your  AND
+                     IF message contains cash  AND
+                         IF message contains got  THEN
+                             type = ham
+                         IF message does not contain got  THEN
+                             type = spam
+                     IF message does not contain cash  AND
+                         IF message contains Call  AND
+                             IF message contains I  THEN
+                                 type = ham
+                             IF message does not contain I  AND
+                                 IF message contains me  THEN
+                                     type = ham
+                                 IF message does not contain me  THEN
+                                     type = spam
+                         IF message does not contain Call  AND
+                             IF message contains C  AND
+                                 IF message contains Ok  THEN
+                                     type = ham
+                                 IF message does not contain Ok  THEN
+                                     type = spam
+                             IF message does not contain C  AND
+                                 IF message contains text  AND
+                                     IF message contains the  THEN
+                                         type = ham
+                                     IF message does not contain the  AND
+                                         IF message contains time  THEN
+                                             type = ham
+                                         IF message does not contain time  THEN
+                                             type = spam
+                                 IF message does not contain text  AND
+                                     IF message contains send  AND
+                                         IF message contains 3  THEN
+                                             type = spam
+                                         IF message does not contain 3  AND
+                                             IF message contains is  THEN
+                                                 type = spam
+                                             IF message does not contain is  THEN
+                                                 type = ham
+                                     IF message does not contain send  AND
+                                         IF message contains call  AND
+                                             IF message contains You  AND
+                                                 IF message contains only  THEN
+                                                     type = ham
+                                                 IF message does not contain only  THEN
+                                                     type = spam
+                                             IF message does not contain You  AND
+                                                 IF message contains your  AND
+                                                     IF message contains for  THEN
+                                                         type = ham
+                                                     IF message does not contain for  THEN
+                                                         type = spam
+                                                 IF message does not contain your  THEN
+                                                     type = ham
+                                         IF message does not contain call  AND
+                                             IF message contains Latest  THEN
+                                                 type = spam
+                                             IF message does not contain Latest  AND
+                                                 IF message contains 10p  THEN
+                                                     type = spam
+                                                 IF message does not contain 10p  AND
+                                                     IF message contains POBOX  THEN
+                                                         type = spam
+                                                     IF message does not contain POBOX  AND
+                                                         IF message contains rate  THEN
+                                                             type = spam
+                                                         IF message does not contain rate  AND
+                                                             IF message contains waiting  THEN
+                                                                 type = ham
+                                                             IF message does not contain waiting  AND
+                                                                 IF message contains I  THEN
+                                                                     type = ham
+                                                                 IF message does not contain I  AND
+                                                                     IF message contains you  THEN
+                                                                         type = ham
+                                                                     IF message does not contain you  AND
+                                                                         IF message contains to  THEN
+                                                                             type = ham
+                                                                         IF message does not contain to  AND
+                                                                             IF message contains i  THEN
+                                                                                 type = ham
+                                                                             IF message does not contain i  AND
+                                                                                 IF message contains is  THEN
+                                                                                     type = ham
+                                                                                 IF message does not contain is  AND
+                                                                                     IF message contains the  THEN
+                                                                                         type = ham
+                                                                                     IF message does not contain the  AND
+                                                                                         IF message contains s  THEN
+                                                                                             type = ham
+                                                                                         IF message does not contain s  AND
+                                                                                             IF message contains a  THEN
+                                                                                                 type = ham
+                                                                                             IF message does not contain a  AND
+                                                                                                 IF message contains Ok  THEN
+                                                                                                     type = ham
+                                                                                                 IF message does not contain Ok  AND
+                                                                                                     IF message contains U  THEN
+                                                                                                         type = ham
+                                                                                                     IF message does not contain U  AND
+                                                                                                         IF message contains lt  THEN
+                                                                                                             type = ham
+                                                                                                         IF message does not contain lt  AND
+                                                                                                             IF message contains lor  THEN
+                                                                                                                 type = ham
+                                                                                                             IF message does not contain lor  AND
+                                                                                                                 IF message contains then  THEN
+                                                                                                                     type = ham
+                                                                                                                 IF message does not contain then  AND
+                                                                                                                     IF message contains got  THEN
+                                                                                                                         type = ham
+                                                                                                                     IF message does not contain got  AND
+                                                                                                                         IF message contains it  THEN
+                                                                                                                             type = ham
+                                                                                                                         IF message does not contain it  AND
+                                                                                                                             IF message contains he  THEN
+                                                                                                                                 type = ham
+                                                                                                                             IF message does not contain he  AND
+                                                                                                                                 IF message contains are  THEN
+                                                                                                                                     type = ham
+                                                                                                                                 IF message does not contain are  AND
+                                                                                                                                     IF message contains your  THEN
+                                                                                                                                         type = ham
+                                                                                                                                     IF message does not contain your  AND
+                                                                                                                                         IF message contains No  THEN
+                                                                                                                                             type = ham
+                                                                                                                                         IF message does not contain No  AND
+                                                                                                                                             IF message contains u  THEN
+                                                                                                                                                 type = ham
+                                                                                                                                             IF message does not contain u  AND
+                                                                                                                                                 IF message contains time  THEN
+                                                                                                                                                     type = ham
+                                                                                                                                                 IF message does not contain time  AND
+                                                                                                                                                     IF message contains A  THEN
+                                                                                                                                                         type = ham
+                                                                                                                                                     IF message does not contain A  AND
+                                                                                                                                                         IF message contains What  THEN
+                                                                                                                                                             type = ham
+                                                                                                                                                         IF message does not contain What  AND
+                                                                                                                                                             IF message contains ü  THEN
+                                                                                                                                                                 type = ham
+                                                                                                                                                             IF message does not contain ü  AND
+                                                                                                                                                                 IF message contains Hmm  THEN
+                                                                                                                                                                     type = ham
+                                                                                                                                                                 IF message does not contain Hmm  AND
+                                                                                                                                                                     IF message contains and  THEN
+                                                                                                                                                                         type = ham
+                                                                                                                                                                     IF message does not contain and  AND
+                                                                                                                                                                         IF message contains work  THEN
+                                                                                                                                                                             type = ham
+                                                                                                                                                                         IF message does not contain work  AND
+                                                                                                                                                                             IF message contains which  THEN
+                                                                                                                                                                                 type = ham
+                                                                                                                                                                             IF message does not contain which  AND
+                                                                                                                                                                                 IF message contains were  THEN
+                                                                                                                                                                                     type = ham
+                                                                                                                                                                                 IF message does not contain were  AND
+                                                                                                                                                                                     IF message contains some  THEN
+                                                                                                                                                                                         type = ham
+                                                                                                                                                                                     IF message does not contain some  AND
+                                                                                                                                                                                         IF message contains You  THEN
+                                                                                                                                                                                             type = ham
+                                                                                                                                                                                         IF message does not contain You  AND
+                                                                                                                                                                                             IF message contains his  THEN
+                                                                                                                                                                                                 type = ham
+                                                                                                                                                                                             IF message does not contain his  AND
+                                                                                                                                                                                                 IF message contains enjoy  THEN
+                                                                                                                                                                                                     type = ham
+                                                                                                                                                                                                 IF message does not contain enjoy  AND
+                                                                                                                                                                                                     IF message contains ur  THEN
+                                                                                                                                                                                                         type = ham
+                                                                                                                                                                                                     IF message does not contain ur  AND
+                                                                                                                                                                                                         IF message contains company  THEN
+                                                                                                                                                                                                             type = ham
+                                                                                                                                                                                                         IF message does not contain company  AND
+                                                                                                                                                                                                             IF message contains IN  THEN
+                                                                                                                                                                                                                 type = ham
+                                                                                                                                                                                                             IF message does not contain IN  AND
+                                                                                                                                                                                                                 IF message contains Dude  THEN
+                                                                                                                                                                                                                     type = ham
+                                                                                                                                                                                                                 IF message does not contain Dude  AND
+                                                                                                                                                                                                                     IF message contains please  THEN
+                                                                                                                                                                                                                         type = ham
+                                                                                                                                                                                                                     IF message does not contain please  AND
+                                                                                                                                                                                                                         IF message contains AT  THEN
+                                                                                                                                                                                                                             type = ham
+                                                                                                                                                                                                                         IF message does not contain AT  AND
+                                                                                                                                                                                                                             IF message contains on  THEN
+                                                                                                                                                                                                                                 type = ham
+                                                                                                                                                                                                                             IF message does not contain on  AND
+                                                                                                                                                                                                                                 IF message contains Okie  THEN
+                                                                                                                                                                                                                                     type = ham
+                                                                                                                                                                                                                                 IF message does not contain Okie  AND
+                                                                                                                                                                                                                                     IF message contains Thats  THEN
+                                                                                                                                                                                                                                         type = ham
+                                                                                                                                                                                                                                     IF message does not contain Thats  AND
+                                                                                                                                                                                                                                         IF message contains class  THEN
+                                                                                                                                                                                                                                             type = ham
+                                                                                                                                                                                                                                         IF message does not contain class  AND
+                                                                                                                                                                                                                                             IF message contains ah  THEN
+                                                                                                                                                                                                                                                 type = ham
+                                                                                                                                                                                                                                             IF message does not contain ah  AND
+                                                                                                                                                                                                                                                 IF message contains That  THEN
+                                                                                                                                                                                                                                                     type = ham
+                                                                                                                                                                                                                                                 IF message does not contain That  AND
+                                                                                                                                                                                                                                                     IF message contains Where  THEN
+                                                                                                                                                                                                                                                         type = ham
+                                                                                                                                                                                                                                                     IF message does not contain Where  AND
+                                                                                                                                                                                                                                                         IF message contains eggs  THEN
+                                                                                                                                                                                                                                                             type = ham
+                                                                                                                                                                                                                                                         IF message does not contain eggs  THEN
+                                                                                                                                                                                                                                                             type = ham

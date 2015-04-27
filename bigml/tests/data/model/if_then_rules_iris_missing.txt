@@ -1,0 +1,7 @@
+ IF petal_width > 0.8 AND
+     IF petal_width > 1.7 THEN
+         species = Iris-virginica
+     IF petal_width <= 1.7 THEN
+         species = Iris-versicolor
+ IF petal_width <= 0.8 THEN
+     species = Iris-setosa

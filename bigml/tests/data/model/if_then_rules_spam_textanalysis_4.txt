@@ -1,0 +1,100 @@
+ IF message contains call  AND
+     IF message contains i  AND
+         IF message contains s  THEN
+             type = spam
+         IF message does not contain s  AND
+             IF message contains over  THEN
+                 type = spam
+             IF message does not contain over  THEN
+                 type = ham
+     IF message does not contain i  AND
+         IF message contains me  AND
+             IF message contains private  THEN
+                 type = spam
+             IF message does not contain private  THEN
+                 type = ham
+         IF message does not contain me  AND
+             IF message contains there  THEN
+                 type = ham
+             IF message does not contain there  AND
+                 IF message contains food  THEN
+                     type = ham
+                 IF message does not contain food  AND
+                     IF message contains looking  THEN
+                         type = ham
+                     IF message does not contain looking  AND
+                         IF message contains ill  THEN
+                             type = ham
+                         IF message does not contain ill  THEN
+                             type = spam
+ IF message does not contain call  AND
+     IF message contains free  AND
+         IF message contains i  AND
+             IF message contains in  THEN
+                 type = spam
+             IF message does not contain in  THEN
+                 type = ham
+         IF message does not contain i  AND
+             IF message contains seen  THEN
+                 type = ham
+             IF message does not contain seen  THEN
+                 type = spam
+     IF message does not contain free  AND
+         IF message contains txt  AND
+             IF message contains sure  THEN
+                 type = ham
+             IF message does not contain sure  THEN
+                 type = spam
+         IF message does not contain txt  AND
+             IF message contains text  AND
+                 IF message contains with  THEN
+                     type = spam
+                 IF message does not contain with  AND
+                     IF message contains the  THEN
+                         type = ham
+                     IF message does not contain the  AND
+                         IF message contains a  THEN
+                             type = spam
+                         IF message does not contain a  AND
+                             IF message contains for  THEN
+                                 type = spam
+                             IF message does not contain for  THEN
+                                 type = ham
+             IF message does not contain text  AND
+                 IF message contains currently  THEN
+                     type = spam
+                 IF message does not contain currently  AND
+                     IF message contains cost  AND
+                         IF message contains also  THEN
+                             type = ham
+                         IF message does not contain also  AND
+                             IF message contains it  THEN
+                                 type = ham
+                             IF message does not contain it  THEN
+                                 type = spam
+                     IF message does not contain cost  AND
+                         IF message contains rate  THEN
+                             type = spam
+                         IF message does not contain rate  AND
+                             IF message contains std  THEN
+                                 type = spam
+                             IF message does not contain std  AND
+                                 IF message contains http  THEN
+                                     type = spam
+                                 IF message does not contain http  AND
+                                     IF message contains latest  THEN
+                                         type = spam
+                                     IF message does not contain latest  AND
+                                         IF message contains lost  AND
+                                             IF message contains way  THEN
+                                                 type = ham
+                                             IF message does not contain way  THEN
+                                                 type = spam
+                                         IF message does not contain lost  AND
+                                             IF message contains girls  AND
+                                                 IF message contains it  THEN
+                                                     type = ham
+                                                 IF message does not contain it  THEN
+                                                     type = spam
+                                             IF message does not contain girls  THEN
+                                                 type = ham

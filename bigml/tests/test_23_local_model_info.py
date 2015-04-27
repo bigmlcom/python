@@ -27,7 +27,7 @@ import compare_predictions_steps as prediction_compare
 import inspect_model_steps as inspect_model
 
 class TestLocalModelOutputs(object):
-        
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a model and translate the tree model into a set of IF-THEN rules:
@@ -242,46 +242,46 @@ class TestLocalModelOutputs(object):
             inspect_model.i_check_the_predictions_distribution(self, example[4])
 
 
-#    def test_scenario6(self):
-#        """
-#            Scenario: Successfully creating a model and check its summary information:
-#                Given I create a data source uploading a "<data>" file
-#                And I wait until the source is ready less than <time_1> secs
-#                And I create a dataset
-#                And I wait until the dataset is ready less than <time_2> secs
-#                And I create a model
-#                And I wait until the model is ready less than <time_3> secs
-#                And I create a local model
-#                And I translate the tree into IF_THEN rules
-#                Then I check the model summary with "<expected_file>" file
-#
-#                Examples:
-#                | data                   | time_1  | time_2 | time_3 | expected_file                                        |
-#                | data/iris.csv          | 10      | 10     | 10     | data/model/summarize_iris.txt              |
-#                | data/iris_sp_chars.csv | 10      | 10     | 10     | data/model/summarize_iris_sp_chars.txt     |
-#                | data/spam.csv          | 20      | 20     | 30     | data/model/summarize_spam.txt              |
-#                | data/grades.csv        | 10      | 10     | 10     | data/model/summarize_grades.txt            |
-#                | data/diabetes.csv      | 20      | 20     | 30     | data/model/summarize_diabetes.txt          |
-#                | data/iris_missing2.csv | 10      | 10     | 10     | data/model/summarize_iris_missing2.txt     |
-#                | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/summarize_tiny_kdd.txt          |
-#
-#        """
-#        print self.test_scenario6.__doc__
-#        examples = [
-#            ['data/iris.csv', '10', '10', '10', 'data/model/summarize_iris.txt'],
-#            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/summarize_iris_sp_chars.txt'],
-#            ['data/spam.csv', '10', '10', '10', 'data/model/summarize_spam.txt'],
-#            ['data/grades.csv', '10', '10', '10', 'data/model/summarize_grades.txt'],
-#            ['data/diabetes.csv', '10', '10', '10', 'data/model/summarize_diabetes.txt'],
-#            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/summarize_iris_missing2.txt'],
-#            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/summarize_tiny_kdd.txt']]
-#        for example in examples:
-#            print "\nTesting with:\n", example
-#            source_create.i_upload_a_file(self, example[0])
-#            source_create.the_source_is_finished(self, example[1])
-#            dataset_create.i_create_a_dataset(self)
-#            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-#            model_create.i_create_a_model(self)
-#            model_create.the_model_is_finished_in_less_than(self, example[3])
-#            prediction_compare.i_create_a_local_model(self)
-#            inspect_model.i_check_the_model_summary_with(self, example[4])
+    def test_scenario6(self):
+        """
+            Scenario: Successfully creating a model and check its summary information:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the model is ready less than <time_3> secs
+                And I create a local model
+                And I translate the tree into IF_THEN rules
+                Then I check the model summary with "<expected_file>" file
+
+                Examples:
+                | data                   | time_1  | time_2 | time_3 | expected_file                                        |
+                | data/iris.csv          | 10      | 10     | 10     | data/model/summarize_iris.txt              |
+                | data/iris_sp_chars.csv | 10      | 10     | 10     | data/model/summarize_iris_sp_chars.txt     |
+                | data/spam.csv          | 20      | 20     | 30     | data/model/summarize_spam.txt              |
+                | data/grades.csv        | 10      | 10     | 10     | data/model/summarize_grades.txt            |
+                | data/diabetes.csv      | 20      | 20     | 30     | data/model/summarize_diabetes.txt          |
+                | data/iris_missing2.csv | 10      | 10     | 10     | data/model/summarize_iris_missing2.txt     |
+                | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/summarize_tiny_kdd.txt          |
+
+        """
+        print self.test_scenario6.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '10', 'data/model/summarize_iris.txt'],
+            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/summarize_iris_sp_chars.txt'],
+            ['data/spam.csv', '10', '10', '10', 'data/model/summarize_spam.txt'],
+            ['data/grades.csv', '10', '10', '10', 'data/model/summarize_grades.txt'],
+            ['data/diabetes.csv', '10', '10', '10', 'data/model/summarize_diabetes.txt'],
+            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/summarize_iris_missing2.txt'],
+            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/summarize_tiny_kdd.txt']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model(self)
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_model(self)
+            inspect_model.i_check_the_model_summary_with(self, example[4])

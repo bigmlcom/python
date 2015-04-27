@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import io
 import StringIO
 from bigml.tests.world import res_filename
 from world import world
@@ -57,12 +58,11 @@ def i_check_the_predictions_distribution(step, file):
 
 #@step(r'I check the model summary with "(.*)" file$')
 def i_check_the_model_summary_with(step, file):
-    output = StringIO.StringIO()
+    output = io.BytesIO()
     world.local_model.summarize(out=output)
-
     world.output = output.getvalue()
 
-    i_check_if_the_output_is_like_expected_file(step,file)
+    i_check_if_the_output_is_like_expected_file(step, file)
 
 
 #@step(r'I check the output is like "(.*)" expected file')
@@ -73,4 +73,5 @@ def i_check_if_the_output_is_like_expected_file(step, expected_file):
     if world.output == expected_content:
         assert True
     else:
-        assert False
+        assert False, "Found:\n%s\n\nExpected:\n%s\n\n" % (world.output,
+                                                           expected_content)

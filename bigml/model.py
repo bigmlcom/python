@@ -113,7 +113,7 @@ def print_distribution(distribution, out=sys.stdout):
                 group[0],
                 round(group[1] * 1.0 / total, 4) * 100,
                 group[1],
-                "" if group[1] == 1 else "s")))
+                u"" if group[1] == 1 else u"s")))
 
 
 class Model(BaseModel):
@@ -573,19 +573,19 @@ class Model(BaseModel):
 
         distribution = self.get_data_distribution()
 
-        out.write(u"Data distribution:\n")
+        out.write(utf8(u"Data distribution:\n"))
         print_distribution(distribution, out=out)
-        out.write(u"\n\n")
+        out.write(utf8(u"\n\n"))
 
         groups = self.group_prediction()
         predictions = self.get_prediction_distribution(groups)
 
-        out.write(u"Predicted distribution:\n")
+        out.write(utf8(u"Predicted distribution:\n"))
         print_distribution(predictions, out=out)
-        out.write(u"\n\n")
+        out.write(utf8(u"\n\n"))
 
         if self.field_importance:
-            out.write(u"Field importance:\n")
+            out.write(utf8(u"Field importance:\n"))
             print_importance(self, out=out)
 
         extract_common_path(groups)
@@ -603,7 +603,8 @@ class Model(BaseModel):
                             " and ".join(path))))
 
             if len(details) == 0:
-                out.write(u"    The model will never predict this class\n")
+                out.write(utf8(u"    The model will never predict this"
+                               u" class\n"))
             for j in range(0, len(details)):
                 subgroup = details[j]
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]

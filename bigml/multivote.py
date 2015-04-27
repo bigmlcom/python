@@ -138,7 +138,7 @@ class MultiVote(object):
     def grouped_distribution(cls, instance):
         """Returns a distribution formed by grouping the distributions of
            each predicted node.
-           
+
         """
         joined_distribution = {}
         distribution_unit = 'counts'
@@ -152,7 +152,7 @@ class MultiVote(object):
                                    key=lambda x: x[0])]
             if distribution_unit == 'counts':
                 distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
-                                     else 'counts')            
+                                     else 'counts')
             distribution = merge_bins(distribution, BINS_LIMIT)
         return {'distribution': distribution,
                 'distribution_unit': distribution_unit}
@@ -187,22 +187,23 @@ class MultiVote(object):
             if add_count:
                 instances += prediction['count']
         if with_confidence:
-            return ((result / total, confidence / total) if total > 0 else
+            return ((result / total, confidence / total) if total > 0 else \
                     (float('nan'), 0))
         if (add_confidence or add_distribution or add_count or
                 add_median):
-            output = {'prediction': result / total
-                      if total > 0 else float('nan')}
+            output = {'prediction': result / total if total > 0 else \
+                      float('nan')}
             if add_confidence:
-                output.update({'confidence': confidence / total 
-                               if total > 0 else 0})
+                output.update(
+                    {'confidence': confidence / total if total > 0 else 0})
             if add_distribution:
                 output.update(cls.grouped_distribution(instance))
             if add_count:
                 output.update({'count': instances})
             if add_median:
-                output.update({'median': median_result / total if total > 0
-                               else float('nan')})
+                output.update(
+                    {'median': median_result / total if total > 0 else \
+                     float('nan')})
             return output
         return result / total if total > 0 else float('nan')
 
@@ -252,7 +253,7 @@ class MultiVote(object):
                 add_median):
             output = {'prediction': result / normalization_factor}
             if add_confidence:
-                output.update({'confidence': 
+                output.update({'confidence':
                                combined_error / normalization_factor})
             if add_distribution:
                 output.update(cls.grouped_distribution(instance))
@@ -486,7 +487,7 @@ class MultiVote(object):
                                                     ws_n=count)
         if with_confidence:
             return prediction, combined_confidence
-        if (add_confidence or add_distribution or add_count):
+        if add_confidence or add_distribution or add_count:
             output = {'prediction': prediction}
             if add_confidence:
                 output.update({'confidence': combined_confidence})

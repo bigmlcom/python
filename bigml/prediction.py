@@ -22,7 +22,7 @@ Tree module to store all the available prediction info.
 """
 
 class Prediction(object):
-    """A Prediction object containing the predicted Node info or the 
+    """A Prediction object containing the predicted Node info or the
        subtree grouped prediction info for proportional missing strategy
 
     """
@@ -33,7 +33,7 @@ class Prediction(object):
         self.path = path
         self.confidence = confidence
         self.distribution = [] if distribution is None else distribution
-        self.count = (sum([instances for _, intances in self.distribution])
+        self.count = (sum([instances for _, instances in self.distribution])
                       if count is None else count)
         self.distribution_unit = ('categorical' if distribution_unit is None
                                   else distribution_unit)

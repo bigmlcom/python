@@ -3,6 +3,13 @@
 History
 -------
 
+4.1.1 (2015-04-26)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in method to print the fields in the anomaly trees.
+- Fixing bug in the create_source method for Python3. Creation failed when
+  the `tags` argument was used.
+
 4.1.0 (2015-04-14)
 ~~~~~~~~~~~~~~~~~~
 

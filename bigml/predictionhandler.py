@@ -32,7 +32,7 @@ from bigml.resourcehandler import (check_resource_type, get_prediction_id,
                                    check_resource, get_ensemble_id,
                                    get_model_id, get_resource_type)
 from bigml.resourcehandler import (PREDICTION_PATH, ENSEMBLE_PATH, MODEL_PATH,
-                                   TINY_RESOURCE, LOGGER)
+                                   TINY_RESOURCE)
 
 class PredictionHandler(ResourceHandler):
     """This class is used by the BigML class as

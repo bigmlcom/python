@@ -308,7 +308,7 @@ class Model(BaseModel):
         # Prediction path
         if print_path:
             out.write(utf8(u' AND '.join(prediction.path) + u' => %s \n' %
-                          prediction.output))
+                           prediction.output))
             out.flush()
         output = prediction.output
         if with_confidence:
@@ -320,7 +320,7 @@ class Model(BaseModel):
         if multiple is not None and not self.tree.regression:
             output = []
             total_instances = float(prediction.count)
-            distribution =  enumerate(prediction.distribution)
+            distribution = enumerate(prediction.distribution)
             for index, [category, instances] in distribution:
                 if ((isinstance(multiple, basestring) and multiple == 'all') or
                         (isinstance(multiple, int) and index < multiple)):

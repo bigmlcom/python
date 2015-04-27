@@ -23,6 +23,7 @@ without needing to send requests to BigML.io.
 
 """
 from bigml.predicates import Predicates
+from bigml.util import sort_fields, utf8
 
 
 class AnomalyTree(object):
@@ -38,12 +39,6 @@ class AnomalyTree(object):
             self.predicates = Predicates([True])
         else:
             self.predicates = Predicates(tree['predicates'])
-        if 'id' in tree:
-            self.id = tree['id']
-            self.parent_id = parent_id
-            if isinstance(ids_map, dict):
-                ids_map[self.id] = self
-        else:
             self.id = None
 
         children = []
@@ -56,14 +51,9 @@ class AnomalyTree(object):
         """Lists a description of the model's fields.
 
         """
-        out.write(utf8(u'<%-32s : %s>\n' % (
-            self.fields[self.objective_id]['name'],
-            self.fields[self.objective_id]['optype'])))
-        out.flush()
 
-        for field in [(val['name'], val['optype']) for key, val in
-                      sort_fields(self.fields)
-                      if key != self.objective_id]:
+        for field in [(val['name'], val['optype']) for _, val in
+                      sort_fields(self.fields)]:
             out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
@@ -91,5 +81,5 @@ class AnomalyTree(object):
             for child in self.children:
                 if child.predicates.apply(input_data, self.fields):
                     path.append(child.predicates.to_rule(self.fields))
-                    return child.depth(input_data, path=path, depth=depth + 1) 
+                    return child.depth(input_data, path=path, depth=depth + 1)
         return depth, path

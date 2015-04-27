@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_ensemble_id)
-from bigml.resourcehandler import ENSEMBLE_PATH, LOGGER
+from bigml.resourcehandler import ENSEMBLE_PATH
 
 
 class EnsembleHandler(ResourceHandler):

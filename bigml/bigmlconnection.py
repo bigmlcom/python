@@ -317,7 +317,7 @@ class BigMLConnection(object):
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
             except ValueError, exc:
-                LOGGER.error("Malformed response: %s" % str(exc))
+                LOGGER.error("Malformed response: %s", str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         return maybe_save(resource_id, self.storage, code,
@@ -475,7 +475,7 @@ class BigMLConnection(object):
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
         except ValueError, exc:
-            LOGGER.error("Malformed response: %s" % str(exc))
+            LOGGER.error("Malformed response: %s", str(exc))
 
         return {
             'code': code,
@@ -524,9 +524,9 @@ class BigMLConnection(object):
                                   location, resource, error)
         else:
             try:
-               response = requests.put(url + self.auth,
-                                       headers=SEND_JSON,
-                                       data=body, verify=self.verify)
+                response = requests.put(url + self.auth,
+                                        headers=SEND_JSON,
+                                        data=body, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException), exc:

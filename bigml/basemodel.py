@@ -125,7 +125,7 @@ class BaseModel(ModelFields):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
                 if ('model_fields' in model['model'] or
-                    'fields' in model['model']):
+                        'fields' in model['model']):
                     fields = model['model'].get('model_fields',
                                                 model['model'].get('fields',
                                                                    []))

@@ -26,68 +26,115 @@ import sys, csv
 
 PY3 = sys.version > '3'
 
-class UnicodeReader:
+class UnicodeReader(object):
+    """Adapter to handle Python 2 to 3 conversion when reading files
+
+    """
     def __init__(self, filename, dialect=csv.excel,
-                 encoding="utf-8", **kw):
+                 encoding="utf-8", **kwargs):
+        """Constructor method for the reader
+
+        """
         self.filename = filename
         self.dialect = dialect
         self.encoding = encoding
-        self.kw = kw
+        self.kwargs = kwargs
+        self.file_handler = None
+        self.reader = None
 
     def __enter__(self):
+        """Opening files
+
+        """
         if PY3:
-            self.f = open(self.filename, 'rt',
-                          encoding=self.encoding, newline='')
+            self.file_handler = open(self.filename, 'rt',
+                                     encoding=self.encoding, newline='')
         else:
-            self.f = open(self.filename, 'rb')
-        self.reader = csv.reader(self.f, dialect=self.dialect,
-                                 **self.kw)
+            self.file_handler = open(self.filename, 'rb')
+        self.reader = csv.reader(self.file_handler, dialect=self.dialect,
+                                 **self.kwargs)
         return self
 
-    def __exit__(self, type, value, traceback):
-        self.f.close()
+    def __exit__(self, ftype, value, traceback):
+        """Closing on exit
+
+        """
+        self.file_handler.close()
 
     def next(self):
+        """Reading records
+
+        """
         row = next(self.reader)
         if PY3:
             return row
         return [s.decode("utf-8") for s in row]
 
     def __iter__(self):
+        """Iterator
+
+        """
         return self
 
-class UnicodeWriter:
+class UnicodeWriter(object):
+    """Adapter to handle Python 2 to 3 conversion when writing to files
+
+    """
     def __init__(self, filename, dialect=csv.excel,
-                 encoding="utf-8", **kw):
+                 encoding="utf-8", **kwargs):
+        """Constructor method for the writer
+
+        """
         self.filename = filename
         self.dialect = dialect
         self.encoding = encoding
-        self.kw = kw
+        self.kwargs = kwargs
+        self.file_handler = None
+        self.writer = None
 
     def open_writer(self):
+        """Opening the file
+
+        """
         if PY3:
-            self.f = open(self.filename, 'wt',
-                          encoding=self.encoding, newline='')
+            self.file_handler = open(self.filename, 'wt',
+                                     encoding=self.encoding, newline='')
         else:
-            self.f = open(self.filename, 'wb')
-        self.writer = csv.writer(self.f, dialect=self.dialect, **self.kw)
+            self.file_handler = open(self.filename, 'wb')
+        self.writer = csv.writer(self.file_handler, dialect=self.dialect,
+                                 **self.kwargs)
         return self
 
     def close_writer(self):
-        self.f.close()
+        """Closing the file
+
+        """
+        self.file_handler.close()
 
     def __enter__(self):
+        """Opening the file
+
+        """
         return self.open_writer()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, ftype, value, traceback):
+        """Closing on exit
+
+        """
         self.close_writer()
 
     def writerow(self, row):
+        """Writer emulating CSV writerow
+
+        """
         if not PY3:
-            row = [(s if not isinstance(s,basestring) else
+            row = [(s if not isinstance(s, basestring) else
                     s.encode(self.encoding)) for s in row]
         self.writer.writerow(row)
 
     def writerows(self, rows):
+        """Writer emulating CSV writerows
+
+        """
         for row in rows:
             self.writerow(row)

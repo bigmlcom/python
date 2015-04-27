@@ -355,7 +355,7 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     """
     clear_console_line(out=out, length=length)
     reset_console_line(out=out, length=length)
-    if out==sys.stdout and sys.platform == "win32" and sys.stdout.isatty():
+    if out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty():
         message = message.decode('utf8').encode('850')
     out.write(message)
     reset_console_line(out=out, length=length)

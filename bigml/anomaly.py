@@ -41,7 +41,6 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 import math
-import re
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_anomaly_id, get_status)
@@ -101,9 +100,9 @@ class Anomaly(ModelFields):
                                         "Score will"
                                         " not be available")
                     else:
-                        default_depth =  (
-                            2 * (0.5772156649 + 
-                                 math.log(self.sample_size - 1) -
+                        default_depth = (
+                            2 * (0.5772156649 + \
+                            math.log(self.sample_size - 1) - \
                             (float(self.sample_size - 1) / self.sample_size)))
                         self.expected_mean_depth = min(self.mean_depth,
                                                        default_depth)

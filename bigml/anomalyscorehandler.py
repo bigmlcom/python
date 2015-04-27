@@ -32,7 +32,7 @@ from bigml.resourcehandler import (check_resource_type, get_resource_type,
                                    check_resource,
                                    get_anomaly_score_id, get_anomaly_id)
 from bigml.resourcehandler import (ANOMALY_SCORE_PATH, ANOMALY_PATH,
-                                   TINY_RESOURCE, LOGGER)
+                                   TINY_RESOURCE)
 
 
 class AnomalyScoreHandler(ResourceHandler):
@@ -117,4 +117,3 @@ class AnomalyScoreHandler(ResourceHandler):
         anomaly_score_id = get_anomaly_score_id(anomaly_score)
         if anomaly_score_id:
             return self._delete("%s%s" % (self.url, anomaly_score_id))
-

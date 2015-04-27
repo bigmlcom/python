@@ -28,10 +28,10 @@ except ImportError:
 
 
 from bigml.resourcehandler import ResourceHandler
-from bigml.resourcehandler import (check_resource_type, resource_is_ready,
+from bigml.resourcehandler import (check_resource_type,
                                    get_sample_id, get_resource_type,
                                    get_dataset_id, check_resource)
-from bigml.resourcehandler import (SAMPLE_PATH, DATASET_PATH, LOGGER,
+from bigml.resourcehandler import (SAMPLE_PATH, DATASET_PATH,
                                    TINY_RESOURCE)
 
 
@@ -91,7 +91,7 @@ class SampleHandler(ResourceHandler):
         if sample_id:
             return self._get("%s%s" % (self.url, sample_id),
                              query_string=query_string)
-                             
+
     def list_samples(self, query_string=''):
         """Lists all your samples.
 

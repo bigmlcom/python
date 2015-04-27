@@ -40,6 +40,17 @@ def i_upload_a_file(step, file):
     # save reference
     world.sources.append(resource['resource'])
 
+
+#@step(r'I create a data source uploading a "(.*)" file with args "(.*)"$')
+def i_upload_a_file_with_args(step, file, args):
+    resource = world.api.create_source(res_filename(file), json.loads(args))
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
+
 #@step(r'I create a data source using the url "(.*)"')
 def i_create_using_url(step, url):
     resource = world.api.create_source(url)
@@ -111,3 +122,16 @@ def i_update_source_with(step, data="{}"):
     resource = world.api.update_source(world.source.get('resource'), json.loads(data))
     world.status = resource['code']
     assert world.status == HTTP_ACCEPTED
+
+#@step(r'the source exists and has args "(.*)"')
+def source_has_args(step, args="{}"):
+    args = json.loads(args)
+    for key, value in args.items():
+        if key in world.source:
+            if world.source[key] == value:
+                assert True
+            else:
+                assert False, "Expected key %s: %s. Found %s" % (
+                    key, value, world.source[key])
+        else:
+            assert False, "No key %s in source." % key

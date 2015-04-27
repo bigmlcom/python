@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_anomaly_id)
-from bigml.resourcehandler import ANOMALY_PATH, LOGGER
+from bigml.resourcehandler import ANOMALY_PATH
 
 
 class AnomalyHandler(ResourceHandler):

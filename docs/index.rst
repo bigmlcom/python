@@ -2636,19 +2636,18 @@ Running the Tests
 -----------------
 
 To run the tests you will need to install
-`lettuce <http://packages.python.org/lettuce/tutorial/simple.html>`_:
+`nose <https://nose.readthedocs.org/en/latest/>`_:
 
 .. code-block:: bash
 
-    $ pip install lettuce
+    $ pip install nose
 
 and set up your authentication via environment variables, as explained
 above. With that in place, you can run the test suite simply by:
 
 .. code-block:: bash
 
-    $ cd tests
-    $ lettuce
+    $ python setup.py nosetests
 
 Some tests need the `numpy <http://www.numpy.org/>`_ and
 `scipy <http://www.scipy.org/>`_ libraries to be installed too. They are not

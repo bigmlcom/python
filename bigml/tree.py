@@ -282,8 +282,8 @@ class Tree(object):
         purity = 0.0
         if self.distribution is None:
             return None
-        for category, instances in self.distribution:
-           purity += math.pow(instances / float(self.count), 2)
+        for _, instances in self.distribution:
+            purity += math.pow(instances / float(self.count), 2)
         return (1.0 - purity) / 2
 
     def list_fields(self, out):
@@ -337,13 +337,13 @@ class Tree(object):
                                            filter_function=filter_function)
         else:
             leaf = {
-                    'id': self.id,
-                    'confidence': self.confidence,
-                    'count': self.count,
-                    'distribution': self.distribution,
-                    'impurity': self.impurity,
-                    'output': self.output,
-                    'path': path}
+                'id': self.id,
+                'confidence': self.confidence,
+                'count': self.count,
+                'distribution': self.distribution,
+                'impurity': self.impurity,
+                'output': self.output,
+                'path': path}
             if (not hasattr(filter_function, '__call__')
                     or filter_function(leaf)):
                 leaves += [leaf]
@@ -374,7 +374,9 @@ class Tree(object):
                 if len(final_distribution.items()) == 1:
                     prediction, instances = final_distribution.items()[0]
                     if instances == 1:
-                        return Prediction(last_node.output, path,
+                        return Prediction(
+                            last_node.output,
+                            path,
                             last_node.confidence,
                             distribution=last_node.distribution,
                             count=instances,
@@ -394,7 +396,10 @@ class Tree(object):
                 confidence = regression_error(
                     unbiased_sample_variance(distribution, prediction),
                     total_instances)
-                return Prediction(prediction, path, confidence,
+                return Prediction(
+                    prediction,
+                    path,
+                    confidence,
                     distribution=distribution,
                     count=total_instances,
                     median=dist_median(distribution, total_instances),
@@ -404,7 +409,9 @@ class Tree(object):
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
                                        key=lambda x: (-x[1], x[0]))]
-                return Prediction(distribution[0][0], path,
+                return Prediction(
+                    distribution[0][0],
+                    path,
                     ws_confidence(distribution[0][0], final_distribution),
                     distribution=distribution,
                     count=get_instances(distribution),
@@ -419,12 +426,15 @@ class Tree(object):
                         path.append(child.predicate.to_rule(self.fields))
                         return child.predict(input_data, path=path)
 
-            return Prediction(self.output, path, self.confidence,
-                    distribution=self.distribution,
-                    count=get_instances(self.distribution),
-                    median=None if not self.regression else self.median,
-                    distribution_unit=self.distribution_unit,
-                    children=self.children)
+            return Prediction(
+                self.output,
+                path,
+                self.confidence,
+                distribution=self.distribution,
+                count=get_instances(self.distribution),
+                median=None if not self.regression else self.median,
+                distribution_unit=self.distribution_unit,
+                children=self.children)
 
     def predict_proportional(self, input_data, path=None,
                              missing_found=False, median=False):
@@ -531,7 +541,7 @@ class Tree(object):
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
             if (not has_missing_branch and
-                not self.fields[field]['slug'] in cmv):
+                    not self.fields[field]['slug'] in cmv):
                 body += (u"%sif (%s is None):\n" %
                          (INDENT * depth,
                           map_data(self.fields[field]['slug'], True)))
@@ -550,16 +560,16 @@ class Tree(object):
                 if has_missing_branch and child.predicate.value is not None:
                     negation = u"" if child.predicate.missing else u" not"
                     connection = u"or" if child.predicate.missing else u"and"
-                    pre_condition = (u"%s is%s None %s " % (
-                                     map_data(self.fields[field]['slug'],
-                                              True),
-                                     negation,
-                                     connection))
+                    pre_condition = (
+                        u"%s is%s None %s " % (
+                            map_data(self.fields[field]['slug'], True),
+                            negation,
+                            connection))
                     if not child.predicate.missing:
                         cmv.append(self.fields[field]['slug'])
                 optype = self.fields[field]['optype']
                 if (optype == 'numeric' or optype == 'text' or
-                    child.predicate.value is None):
+                        child.predicate.value is None):
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
@@ -807,9 +817,9 @@ class Tree(object):
                 if has_missing_branch and child.predicate.value is not None:
                     negation = u"" if child.predicate.missing else u"NOT "
                     connection = u"OR" if child.predicate.missing else u"AND"
-                    pre_condition = (u"(%sISNULL([%s]) %s " % (
-                                     negation, self.fields[field]['name'],
-                                     connection))
+                    pre_condition = (
+                        u"(%sISNULL([%s]) %s " % (
+                            negation, self.fields[field]['name'], connection))
                     if not child.predicate.missing:
                         cmv.append(self.fields[field]['name'])
                     post_condition = u")"

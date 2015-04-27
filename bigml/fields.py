@@ -91,7 +91,7 @@ def get_fields_structure(resource):
             fields = resource['object']['clusters']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
-                          resource['object']['sample']['fields']])
+                           resource['object']['sample']['fields']])
         else:
             fields = resource['object']['fields']
         return fields, resource_locale, missing_tokens
@@ -365,4 +365,3 @@ class Fields(object):
         field_id = self.field_id(field_name)
         summary = self.fields[field_id].get('summary', {})
         return summary
-            

@@ -28,9 +28,8 @@ except ImportError:
 
 
 from bigml.resourcehandler import ResourceHandler
-from bigml.resourcehandler import (check_resource_type, resource_is_ready,
-                                   get_project_id)
-from bigml.resourcehandler import PROJECT_PATH, LOGGER
+from bigml.resourcehandler import check_resource_type, get_project_id
+from bigml.resourcehandler import PROJECT_PATH
 
 
 class ProjectHandler(ResourceHandler):
@@ -48,7 +47,7 @@ class ProjectHandler(ResourceHandler):
         """
         self.project_url = self.url + PROJECT_PATH
 
-    def create_project(self, args=None, wait_time=3, retries=10):
+    def create_project(self, args=None):
         """Creates a project.
 
         """

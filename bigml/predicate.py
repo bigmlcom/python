@@ -154,8 +154,8 @@ class Predicate(object):
                                        relation_missing)
         if self.value is None:
             return u"%s %s" % (name,
-                              u"is None" if self.operator == '=' 
-                              else u"is not None")
+                               u"is None" if self.operator == '='
+                               else u"is not None")
         return u"%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,

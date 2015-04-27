@@ -50,16 +50,15 @@ elif PYTHON_2:
 
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
-from bigml.bigmlconnection import BigMLConnection
 from bigml.bigmlconnection import (
     HTTP_CREATED, HTTP_ACCEPTED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
-    HTTP_TOO_MANY_REQUESTS,
-    HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED)
-from bigml.resourcehandler import (check_resource_type, get_resource,
-                                   resource_is_ready, check_resource,
+    HTTP_TOO_MANY_REQUESTS, HTTP_FORBIDDEN,
+    HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
+from bigml.resourcehandler import (check_resource_type,
+                                   resource_is_ready,
                                    get_source_id)
-from bigml.resourcehandler import SOURCE_RE, SOURCE_PATH, UPLOADING, LOGGER
+from bigml.resourcehandler import SOURCE_PATH, UPLOADING, LOGGER
 from bigml.resourcehandler import ResourceHandler
 
 if PYTHON_2:
@@ -107,9 +106,9 @@ class SourceHandler(ResourceHandler):
             create_args.update(args)
 
         # some basic validation
-        if (not isinstance(src_obj, list) or
-            (not all([isinstance(row, dict) for row in src_obj]) and
-             not all([isinstance(row, list) for row in src_obj]))):
+        if (not isinstance(src_obj, list) or (
+                not all([isinstance(row, dict) for row in src_obj]) and
+                not all([isinstance(row, list) for row in src_obj]))):
             raise TypeError(
                 'ERROR: inline source must be a list of dicts or a '
                 'list of lists')
@@ -309,9 +308,10 @@ class SourceHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        if 'source_parser' in create_args:
-            create_args['source_parser'] = json.dumps(
-                create_args['source_parser'])
+        for key, value in create_args.items():
+            if value is not None and (isinstance(value, list) or
+                                      isinstance(value, dict)):
+                create_args[key] = json.dumps(value)
 
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None

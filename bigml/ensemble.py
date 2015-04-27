@@ -44,7 +44,7 @@ import gc
 import json
 LOGGER = logging.getLogger('BigML')
 
-from bigml.api import BigML, get_ensemble_id, get_model_id, check_resource
+from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION
 from bigml.multivote import MultiVote
@@ -164,9 +164,9 @@ class Ensemble(object):
                 if self.resource_id is None:
                     if ensemble.find('ensemble/') > -1:
                         raise Exception(
-                            api.error_message(ensemble,
-                                              resource_type='ensemble',
-                                              method='get'))
+                            self.api.error_message(ensemble,
+                                                   resource_type='ensemble',
+                                                   method='get'))
                     else:
                         raise IOError("Failed to open the expected JSON file"
                                       " at %s" % ensemble)
@@ -229,16 +229,17 @@ class Ensemble(object):
             for models_split in self.models_splits:
                 if not isinstance(models_split[0], Model):
                     if (self.cache_get is not None and
-                            has_attr(self.cache_get, '__call__')):
+                            hasattr(self.cache_get, '__call__')):
                         # retrieve the models from a cache get function
                         try:
                             models = [self.cache_get(model_id) for model_id
-                                      in self.models_split]
+                                      in models_split]
                         except Exception, exc:
                             raise Exception('Error while calling the '
                                             'user-given'
                                             ' function %s: %s' %
-                                            (cache_get.__name__, str(exc)))
+                                            (self.cache_get.__name__,
+                                             str(exc)))
                     else:
                         models = [retrieve_resource(self.api, model_id,
                                                     query_string=ONLY_MODEL)

@@ -38,14 +38,8 @@ import os
 import pprint
 
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-from bigml.util import (check_dir,
-                        get_exponential_wait)
-from bigml.bigmlconnection import BigMLConnection
+from bigml.util import check_dir
+from bigml.bigmlconnection import BigMLConnection, stream_copy
 from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
@@ -106,25 +100,6 @@ STATUSES = {
     UNKNOWN: "UNKNOWN",
     RUNNABLE: "RUNNABLE"
 }
-
-
-def stream_copy(response, filename):
-    """Copies the contents of a response stream to a local file.
-
-    """
-    file_size = 0
-    path = os.path.dirname(filename)
-    check_dir(path)
-    try:
-        with open(filename, 'wb') as file_handle:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file_handle.write(chunk)
-                    file_handle.flush()
-                    file_size += len(chunk)
-    except IOError:
-        file_size = 0
-    return file_size
 
 
 def count(listing):

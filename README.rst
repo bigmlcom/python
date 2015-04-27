@@ -74,15 +74,10 @@ from the Git repository
 Running the Tests
 -----------------
 
-To run the tests you will need to install
-`nose <https://nose.readthedocs.org/en/latest/>`_
-
-.. code-block:: bash
-
-    $ pip install nose
-
-and set up your authentication via environment variables, as explained
-below. With that in place, you can run the test suite simply by
+The test will be run using `nose <https://nose.readthedocs.org/en/latest/>`_ ,
+that is installed on setup, and you'll need to set up your authentication
+via environment variables, as explained
+below. With that in place, you can run the test suite simply by issuing
 
 .. code-block:: bash
 

@@ -52,6 +52,9 @@ from bigml.modelfields import ModelFields
 from bigml.anomalytree import AnomalyTree
 
 
+DEPTH_FACTOR = 0.5772156649
+
+
 class Anomaly(ModelFields):
     """ A lightweight wrapper around an anomaly detector.
 
@@ -101,7 +104,7 @@ class Anomaly(ModelFields):
                                         " not be available")
                     else:
                         default_depth = (
-                            2 * (0.5772156649 + \
+                            2 * (DEPTH_FACTOR + \
                             math.log(self.sample_size - 1) - \
                             (float(self.sample_size - 1) / self.sample_size)))
                         self.expected_mean_depth = min(self.mean_depth,

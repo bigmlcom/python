@@ -3,6 +3,12 @@
 History
 -------
 
+4.1.2 (2015-04-28)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in summarize method for local models. Ensuring unicode use and
+  adding tests for generated outputs.
+
 4.1.1 (2015-04-26)
 ~~~~~~~~~~~~~~~~~~
 

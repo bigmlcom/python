@@ -162,7 +162,7 @@ class World(object):
 world = World()
 
 def res_filename(file):
-    return pkg_resources.resource_filename('bigml.tests', file)
+    return pkg_resources.resource_filename('bigml', "../../../%s" % file)
 
 def setup_module():
     """Operations to be performed before each module

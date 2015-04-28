@@ -58,7 +58,6 @@ setuptools.setup(
     setup_requires = ['nose'],
     install_requires = INSTALL_REQUIRES,
     packages = ['bigml', 'bigml.tests'],
-    package_data={'bigml.tests':['data/*.csv', 'data/*.json', 'data/*/*.txt']},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

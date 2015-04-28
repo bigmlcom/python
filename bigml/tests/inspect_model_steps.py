@@ -16,14 +16,13 @@
 # under the License.
 
 import io
-import StringIO
 from bigml.tests.world import res_filename
 from world import world
 
 
 #@step(r'I translate the tree into IF-THEN rules$')
 def i_translate_the_tree_into_IF_THEN_rules(step):
-    output = StringIO.StringIO()
+    output = io.BytesIO()
     world.local_model.rules(out=output)
 
     world.output = output.getvalue()
@@ -37,9 +36,9 @@ def i_check_the_data_distribution(step, file):
     for bin_value, bin_instances in distribution:
         distribution_str += "[%s,%s]\n" % (bin_value, bin_instances)
 
-    world.output = distribution_str
+    world.output = distribution_str.encode('utf-8')
 
-    i_check_if_the_output_is_like_expected_file(step,file)
+    i_check_if_the_output_is_like_expected_file(step, file)
 
 
 #@step(r'I check the predictions distribution with "(.*)" file$')
@@ -51,9 +50,9 @@ def i_check_the_predictions_distribution(step, file):
     for group, instances in predictions:
         distribution_str += "[%s,%s]\n" % (group, instances)
 
-    world.output = distribution_str
+    world.output = distribution_str.encode('utf-8')
 
-    i_check_if_the_output_is_like_expected_file(step,file)
+    i_check_if_the_output_is_like_expected_file(step, file)
 
 
 #@step(r'I check the model summary with "(.*)" file$')
@@ -61,13 +60,12 @@ def i_check_the_model_summary_with(step, file):
     output = io.BytesIO()
     world.local_model.summarize(out=output)
     world.output = output.getvalue()
-
     i_check_if_the_output_is_like_expected_file(step, file)
 
 
 #@step(r'I check the output is like "(.*)" expected file')
 def i_check_if_the_output_is_like_expected_file(step, expected_file):
-    file = open(res_filename(expected_file))
+    file = open(res_filename(expected_file), "rb")
     expected_content = file.read()
     file.close()
     if world.output == expected_content:

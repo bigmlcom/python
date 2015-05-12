@@ -323,7 +323,11 @@ class SourceHandler(ResourceHandler):
                 "message": "The resource couldn't be created"}}
 
         try:
-            files = {os.path.basename(file_name): open(file_name, "rb")}
+
+            if isinstance(file_name, basestring):
+                files = {os.path.basename(file_name): open(file_name, "rb")}
+            else:
+                files = {'stdin': file_name}
         except IOError:
             sys.exit("ERROR: cannot read training set")
 

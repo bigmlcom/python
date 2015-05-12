@@ -3,6 +3,11 @@
 History
 -------
 
+4.1.3 (2015-05-19)
+~~~~~~~~~~~~~~~~~~
+
+- Adapting code to handle uploading from String objects.
+
 4.1.2 (2015-04-28)
 ~~~~~~~~~~~~~~~~~~
 

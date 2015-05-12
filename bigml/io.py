@@ -42,11 +42,13 @@ class UnicodeReader(object):
         self.file_handler = None
         self.reader = None
 
-    def __enter__(self):
-        """Opening files
+    def open_reader(self):
+        """Opening the file
 
         """
-        if PY3:
+        if self.filename.__class__.__name__ == 'UTF8Recoder':
+            self.file_handler = self.filename
+        elif PY3:
             self.file_handler = open(self.filename, 'rt',
                                      encoding=self.encoding, newline='')
         else:
@@ -55,11 +57,18 @@ class UnicodeReader(object):
                                  **self.kwargs)
         return self
 
+    def __enter__(self):
+        """Opening files
+
+        """
+        return self.open_reader()
+
     def __exit__(self, ftype, value, traceback):
         """Closing on exit
 
         """
-        self.file_handler.close()
+        if not self.filename.__class__.__name__ == 'UTFRecoder':
+            self.file_handler.close()
 
     def next(self):
         """Reading records
@@ -75,6 +84,7 @@ class UnicodeReader(object):
 
         """
         return self
+
 
 class UnicodeWriter(object):
     """Adapter to handle Python 2 to 3 conversion when writing to files

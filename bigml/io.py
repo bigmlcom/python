@@ -67,8 +67,7 @@ class UnicodeReader(object):
         """Closing on exit
 
         """
-        if not self.filename.__class__.__name__ == 'UTFRecoder':
-            self.file_handler.close()
+        self.close_reader()
 
     def next(self):
         """Reading records
@@ -77,13 +76,20 @@ class UnicodeReader(object):
         row = next(self.reader)
         if PY3:
             return row
-        return [s.decode("utf-8") for s in row]
+        return [s.decode(self.encoding) for s in row]
 
     def __iter__(self):
         """Iterator
 
         """
         return self
+
+    def close_reader(self):
+        """Closing the file
+
+        """
+        if not self.filename.__class__.__name__ == 'UTF8Recoder':
+            self.file_handler.close()
 
 
 class UnicodeWriter(object):

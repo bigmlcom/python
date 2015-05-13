@@ -106,22 +106,30 @@ def proportion_datasets_instances(step, rate):
             world.datasets_instances[0],
             int(world.datasets_instances[1] * float(rate))))
 
-#@step(r'I create a dataset from the cluster and the centroid$')
-def i_create_a_dataset_from_cluster_centroid(step):
+#@step(r'I create a dataset associated to centroid "(.*)"')
+def i_create_a_dataset_from_cluster(step, centroid_id):
     resource = world.api.create_dataset(
         world.cluster['resource'],
-        args={'centroid': world.centroid['centroid_id']})
+        args={'centroid': centroid_id})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
 
-#@step(r'I check that the dataset is created for the cluster and the centroid$')
-def i_check_dataset_from_cluster_centroid(step):
+#@step(r'I create a dataset from the cluster and the centroid$')
+def i_create_a_dataset_from_cluster_centroid(step):
+    i_create_a_dataset_from_cluster(step, world.centroid['centroid_id'])
+
+#@step(r'the dataset is associated to the centroid "(.*)" of the cluster')
+def is_associated_to_centroid_id(step, centroid_id):
     cluster = world.api.get_cluster(world.cluster['resource'])
     world.status = cluster['code']
     assert world.status == HTTP_OK
     assert "dataset/%s" % (
         cluster['object']['cluster_datasets'][
-            world.centroid['centroid_id']]) == world.dataset['resource']
+            centroid_id]) == world.dataset['resource']
+
+#@step(r'I check that the dataset is created for the cluster and the centroid$')
+def i_check_dataset_from_cluster_centroid(step):
+    is_associated_to_centroid_id(step, world.centroid['centroid_id'])

@@ -7,6 +7,7 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Adapting code to handle uploading from String objects.
+- Adding models creation new origin resources: clusters and centroids
 
 4.1.2 (2015-04-28)
 ~~~~~~~~~~~~~~~~~~

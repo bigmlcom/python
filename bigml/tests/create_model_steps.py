@@ -22,6 +22,7 @@ import nose.tools
 from datetime import datetime, timedelta
 from world import world
 
+from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -132,3 +133,23 @@ def model_from_shared_key(step):
 def field_name_to_new_name(step, field_id, new_name):
     nose.tools.assert_equals(
         world.local_model.tree.fields[field_id]['name'], new_name)
+
+#@step(r'I create a model associated to centroid "(.*)"')
+def i_create_a_model_from_cluster(step, centroid_id):
+    resource = world.api.create_model(
+        world.cluster['resource'],
+        args={'centroid': centroid_id})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.model = resource['object']
+    world.models.append(resource['resource'])
+
+#@step(r'the model is associated to the centroid "(.*)" of the cluster')
+def is_associated_to_centroid_id(step, centroid_id):
+    cluster = world.api.get_cluster(world.cluster['resource'])
+    world.status = cluster['code']
+    assert world.status == HTTP_OK
+    assert "model/%s" % (
+        cluster['object']['cluster_models'][
+            centroid_id]) == world.model['resource']

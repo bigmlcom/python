@@ -29,8 +29,10 @@ except ImportError:
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
-                                   get_model_id)
-from bigml.resourcehandler import MODEL_PATH
+                                   get_resource_type, check_resource,
+                                   get_model_id, get_cluster_id)
+from bigml.resourcehandler import (MODEL_PATH, CLUSTER_PATH, DATASET_PATH,
+                                   TINY_RESOURCE)
 
 
 class ModelHandler(ResourceHandler):
@@ -48,12 +50,59 @@ class ModelHandler(ResourceHandler):
         """
         self.model_url = self.url + MODEL_PATH
 
-    def create_model(self, datasets, args=None, wait_time=3, retries=10):
-        """Creates a model from a `dataset` or a list of `datasets`.
+    def create_model(self, origin_resource, args=None, wait_time=3, retries=10):
+        """Creates a model from an origin_resource.
+
+        Uses a remote resource to create a new model using the
+        arguments in `args`.
+        The allowed remote resources can be:
+            - dataset
+            - list of datasets
+            - cluster
+        In the case of using cluster id as origin_resource, a centroid must
+        also be provided in the args argument. The first centroid is used
+        otherwise.
 
         """
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
+
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        if isinstance(origin_resource, list):
+            # mutidatasets
+            create_args = self._set_create_from_datasets_args(
+                origin_resource, args=create_args, wait_time=wait_time,
+                retries=retries)
+        else:
+            resource_type = get_resource_type(origin_resource)
+            # model from cluster and centroid
+            if resource_type == CLUSTER_PATH:
+                cluster_id = get_cluster_id(origin_resource)
+                cluster = check_resource(cluster_id,
+                                         query_string=TINY_RESOURCE,
+                                         wait_time=wait_time,
+                                         retries=retries,
+                                         raise_on_error=True, api=self)
+                if not 'centroid' in create_args:
+                    try:
+                        centroid = cluster['object'][
+                            'cluster_models'].keys()[0]
+                        create_args.update({'centroid': centroid})
+                    except KeyError:
+                        raise KeyError("Failed to generate the model. A "
+                                       "centroid id is needed in the args "
+                                       "argument to generate a model from "
+                                       "a cluster.")
+                create_args.update({'cluster': cluster_id})
+            elif resource_type == DATASET_PATH:
+                create_args = self._set_create_from_datasets_args(
+                    origin_resource, args=create_args, wait_time=wait_time,
+                    retries=retries)
+            else:
+                raise Exception("A dataset, list of dataset ids"
+                                " or cluster id plus centroid id are needed"
+                                " to create a"
+                                " dataset. %s found." % resource_type)
 
         body = json.dumps(create_args)
         return self._create(self.model_url, body)

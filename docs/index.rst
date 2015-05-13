@@ -1253,6 +1253,25 @@ invocation:
 Again, the model is scheduled for creation, and you can retrieve its
 status at any time by means of ``api.status(model)``.
 
+Models can also be created from lists of datasets. Just use the list of ids
+as the first argument in the api call
+
+.. code-block:: python
+
+    model = api.create_model([dataset1, dataset2], {
+        "name": "my model", "input_fields": ["000000", "000001"], "range": [1, 10]})
+
+And they can also be generated as the result of a clustering procedure. When
+a cluster is created, a model that predicts if a certain instance belongs to
+a concrete centroid can be built by providing the cluster and centroid ids:
+
+.. code-block:: python
+
+    model = api.create_model(cluster, {
+        "name": "model for centroid 000001", "centroid": "000001"})
+
+if no centroid id is provided, the first one appearing in the cluster is used.
+
 Creating clusters
 ~~~~~~~~~~~~~~~~~
 

@@ -179,7 +179,7 @@ class TestPrediction(object):
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 6']]
+            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 5']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -222,4 +222,3 @@ class TestPrediction(object):
             anomaly_create.the_anomaly_is_finished_in_less_than(self, example[3])
             prediction_create.i_create_an_anomaly_score(self, example[4])
             prediction_create.the_anomaly_score_is(self, example[5])
-

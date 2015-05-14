@@ -180,6 +180,7 @@ def teardown_module():
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
+
     world.delete_resources()
     world.count_resources('final', changed=True)
 

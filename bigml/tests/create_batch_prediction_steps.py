@@ -146,7 +146,7 @@ def check_rows(prediction_rows, test_rows):
                     check_row[index] = round(float(check_row[index]), decs)
                 except ValueError:
                     pass
-            assert check_row[index] == row[index], ("%s/%s" % (row, check_row))
+            assert check_row[index] == row[index], ("Got: %s/ Expected: %s" % (row, check_row))
 
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):

@@ -254,7 +254,7 @@ class TestComparePrediction(object):
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 0', '0.713698082167']]
+            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 0', '0.7310939266123302']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

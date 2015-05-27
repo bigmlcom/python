@@ -3,11 +3,17 @@
 History
 -------
 
+4.1.4 (2015-05-27)
+~~~~~~~~~~~~~~~~~~
+
+- Ensuring unique ordering in MultiVote categorical combinations (only
+  needed in Python 3).
+
 4.1.3 (2015-05-19)
 ~~~~~~~~~~~~~~~~~~
 
 - Adapting code to handle uploading from String objects.
-- Adding models creation new origin resources: clusters and centroids
+- Adding models creation new origin resources: clusters and centroids.
 
 4.1.2 (2015-04-28)
 ~~~~~~~~~~~~~~~~~~
@@ -45,7 +51,7 @@ History
 
 
 3.0.3 (2015-04-08)
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Changing setup to ensure compatible Python and requests versions.
 - Hiding warnings when SSL verification is disabled.

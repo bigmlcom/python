@@ -473,7 +473,8 @@ class MultiVote(object):
                 mode[category] = {"count": weight,
                                   "order": prediction['order']}
         prediction = sorted(mode.items(), key=lambda x: (x[1]['count'],
-                                                         -x[1]['order']),
+                                                         -x[1]['order'],
+                                                         x[0]),
                             reverse=True)[0][0]
         if with_confidence or add_confidence:
             if 'confidence' in self.predictions[0]:

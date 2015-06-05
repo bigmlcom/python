@@ -3,6 +3,12 @@
 History
 -------
 
+4.1.5 (2015-06-06)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: create_source method failed when unicode literals were used in
+  args.
+
 4.1.4 (2015-05-27)
 ~~~~~~~~~~~~~~~~~~
 

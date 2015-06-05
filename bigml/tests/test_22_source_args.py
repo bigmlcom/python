@@ -35,10 +35,13 @@ class TestUploadSource(object):
                 Examples:
                 | data             | time_1  | args |
                 | ../data/iris.csv | 30      | {"tags": ["my tag", "my second tag"]}
+                | ../data/iris.csv | 30      | {"name": "Testing unicode names: áé"}]}
+
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '30', '{"tags": ["my tag", "my second tag"]}']]
+            ['data/iris.csv', '30', '{"tags": ["my tag", "my second tag"]}'],
+            ['data/iris.csv', '30', '{"name": "Testing unicode names: áé"}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file_with_args(self, example[0], example[2])

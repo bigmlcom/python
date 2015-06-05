@@ -268,11 +268,11 @@ class SourceHandler(ResourceHandler):
                 if code == HTTP_CREATED:
                     location = response.headers['location']
                     content = response.read()
-                    resource = json.loads(content.decode(), 'utf-8')
+                    resource = json.loads(content, 'utf-8')
                     resource_id = resource['resource']
                     error = {}
             except ValueError:
-                LOGGER.error("Malformed response")
+                LOGGER.error("Malformed response.")
             except urllib2.HTTPError, exception:
                 code = exception.code
                 if code in [HTTP_BAD_REQUEST,

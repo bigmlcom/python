@@ -3,6 +3,12 @@
 History
 -------
 
+4.1.6 (2015-06-25)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Removing id fields from the filter to select the anomalies listed
+  in the Anomaly object from the origin dataset.
+
 4.1.5 (2015-06-06)
 ~~~~~~~~~~~~~~~~~~
 

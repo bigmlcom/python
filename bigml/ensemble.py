@@ -263,6 +263,7 @@ class Ensemble(object):
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']
+        print votes.predictions
         return votes.combine(method=method, with_confidence=with_confidence,
                              add_confidence=add_confidence,
                              add_distribution=add_distribution,

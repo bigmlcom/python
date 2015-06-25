@@ -63,7 +63,8 @@ CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
 CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
 BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
                                              ID_PATTERN))
-ANOMALY_RE = re.compile(r'^%s/%s$' % (ANOMALY_PATH, ID_PATTERN))
+ANOMALY_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    ANOMALY_PATH, ID_PATTERN, ANOMALY_PATH, SHARED_PATTERN))
 ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
 BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
                                                   ID_PATTERN))

@@ -26,7 +26,7 @@ import create_anomaly_steps as anomaly_create
 import create_multimodel_steps as mm_create
 
 class TestAnomaly(object):
-        
+
     def test_scenario1(self):
         """
 
@@ -47,8 +47,8 @@ class TestAnomaly(object):
                 And I check the anomaly detector stems from the original dataset list
 
                 Examples:
-                | data                 | time_1  | time_2 | time_3 |  time_4 | 
-                | ../data/tiny_kdd.csv | 40      | 40     | 40     |  100
+                | data                 | time_1  | time_2 | time_3 |  time_4 |
+                | ../data/tiny_kdd.csv | 40      | 40     | 80     |  100
         """
         print self.test_scenario1.__doc__
         examples = [
@@ -73,3 +73,40 @@ class TestAnomaly(object):
             anomaly_create.the_anomaly_is_finished_in_less_than(self,
                                                                 example[4])
             anomaly_create.i_check_anomaly_datasets_and_datasets_ids(self)
+
+    def test_scenario2(self):
+        """
+
+            Scenario: Successfully creating an anomaly detector from a dataset and generating the anomalous dataset:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                Then I create an anomaly detector of <rows> anomalies from a dataset
+                And I wait until the anomaly detector is ready less than <time_4> secs
+                And I create a dataset with only the anomalies
+                And I wait until the dataset is ready less than <time_3> secs
+                And I check that the dataset has <rows> rows
+
+                Examples:
+                | data                       | time_1  | time_2 | time_3 |time_4|  rows|
+                | ../data/iris_anomalous.csv | 40      | 40     | 80     | 40   |  1
+        """
+        print self.test_scenario2.__doc__
+        examples = [
+            ['data/iris_anomalous.csv', '40', '40', '80', '40', '1']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            anomaly_create.i_create_an_anomaly_with_top_n_from_dataset(
+                self, example[5])
+            anomaly_create.the_anomaly_is_finished_in_less_than(self,
+                                                                example[3])
+            anomaly_create.create_dataset_with_anomalies(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[4])
+            anomaly_create.the_dataset_has_n_rows(self, example[5])

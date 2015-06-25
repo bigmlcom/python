@@ -41,6 +41,7 @@ import logging
 LOGGER = logging.getLogger('BigML')
 
 import math
+import json
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_anomaly_id, get_status)
@@ -72,6 +73,7 @@ class Anomaly(ModelFields):
         self.expected_mean_depth = None
         self.iforest = None
         self.top_anomalies = None
+        self.id_fields = []
         if not (isinstance(anomaly, dict) and 'resource' in anomaly and
                 anomaly['resource'] is not None):
             if api is None:
@@ -90,6 +92,7 @@ class Anomaly(ModelFields):
             anomaly = anomaly['object']
             self.sample_size = anomaly.get('sample_size')
             self.input_fields = anomaly.get('input_fields')
+            self.id_fields = anomaly.get('id_fields', [])
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
             ModelFields.__init__(self, anomaly['model'].get('fields'))
             if ('top_anomalies' in anomaly['model'] and
@@ -166,15 +169,18 @@ class Anomaly(ModelFields):
             row = anomaly.get('row', [])
             for index in range(len(row)):
                 field_id = self.input_fields[index]
+                if field_id in self.id_fields:
+                    continue
                 value = row[index]
                 if value is None:
                     filter_rules.append('(missing? "%s")' % field_id)
                 else:
                     if (self.fields[field_id]["optype"]
                             in ["categorical", "text"]):
-                        value = '"%s"' % value
+                        value = json.dumps(value)
                     filter_rules.append('(= (f "%s") %s)' % (field_id, value))
-            anomaly_filters.append("(and %s)" % " ".join(filter_rules))
+            if filter_rules:
+                anomaly_filters.append("(and %s)" % " ".join(filter_rules))
 
         anomalies_filter = " ".join(anomaly_filters)
         if include:

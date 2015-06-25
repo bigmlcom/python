@@ -11,6 +11,7 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.anomaly import Anomaly
 
 #@step(r'I check the anomaly detector stems from the original dataset list')
 def i_check_anomaly_datasets_and_datasets_ids(step):
@@ -51,6 +52,17 @@ def i_create_an_anomaly_from_dataset(step):
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
 
+#@step(r'I create an anomaly detector with (\d+) anomalies from a dataset$')
+def i_create_an_anomaly_with_top_n_from_dataset(step, top_n):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_anomaly(
+        dataset, {'seed': 'BigML', 'top_n': int(top_n)})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED, "Expected: %s, found: %s" % (
+        HTTP_CREATED, world.status)
+    world.location = resource['location']
+    world.anomaly = resource['object']
+    world.anomalies.append(resource['resource'])
 
 #@step(r'I create an anomaly detector from a dataset list$')
 def i_create_an_anomaly_from_dataset_list(step):
@@ -77,3 +89,16 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')
 def the_anomaly_is_finished_in_less_than(step, secs):
     wait_until_anomaly_status_code_is(step, FINISHED, FAULTY, secs)
+
+#@step(r'I create a dataset with only the anomalies')
+def create_dataset_with_anomalies(step):
+    local_anomalies = Anomaly(world.anomaly['resource'])
+    world.dataset = world.api.create_dataset(
+        world.dataset['resource'],
+        {"lisp_filter": local_anomalies.anomalies_filter()})
+    world.datasets.append(world.dataset['resource'])
+
+#@step(r'I check that the dataset has (\d+) rows')
+def the_dataset_has_n_rows(step, rows):
+    assert world.dataset['rows'] == int(rows), "Expected: %s, found: %s" % (
+        rows, world.dataset['rows'])

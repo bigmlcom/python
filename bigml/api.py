@@ -56,6 +56,7 @@ from bigml.batchcentroidhandler import BatchCentroidHandler
 from bigml.batchanomalyscorehandler import BatchAnomalyScoreHandler
 from bigml.projecthandler import ProjectHandler
 from bigml.samplehandler import SampleHandler
+from bigml.correlationhandler import CorrelationHandler
 
 # Repeating constants and functions for backwards compatibility
 
@@ -76,7 +77,7 @@ from bigml.resourcehandler import (
     DATASET_PATH, MODEL_PATH, PREDICTION_PATH, EVALUATION_PATH, ENSEMBLE_PATH,
     BATCH_PREDICTION_PATH, CLUSTER_PATH, CENTROID_PATH, BATCH_CENTROID_PATH,
     ANOMALY_PATH, ANOMALY_SCORE_PATH, BATCH_ANOMALY_SCORE_PATH, PROJECT_PATH,
-    SAMPLE_PATH, SAMPLE_RE)
+    SAMPLE_PATH, SAMPLE_RE, CORRELATION_RE)
 
 
 from bigml.resourcehandler import (
@@ -85,7 +86,8 @@ from bigml.resourcehandler import (
     get_cluster_id, get_centroid_id, get_anomaly_id, get_anomaly_score_id,
     get_prediction_id, get_batch_prediction_id, get_batch_centroid_id,
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
-    get_status, check_resource, http_ok, get_project_id, get_sample_id)
+    get_status, check_resource, http_ok, get_project_id, get_sample_id,
+    get_correlation_id)
 
 # Map status codes to labels
 STATUSES = {
@@ -110,8 +112,8 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(SampleHandler, ProjectHandler, BatchAnomalyScoreHandler,
-            BatchCentroidHandler,
+class BigML(CorrelationHandler, SampleHandler, ProjectHandler,
+            BatchAnomalyScoreHandler, BatchCentroidHandler,
             BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
             AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
             EnsembleHandler, ModelHandler, DatasetHandler,
@@ -172,6 +174,7 @@ class BigML(SampleHandler, ProjectHandler, BatchAnomalyScoreHandler,
         BatchAnomalyScoreHandler.__init__(self)
         ProjectHandler.__init__(self)
         SampleHandler.__init__(self)
+        CorrelationHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:
@@ -220,8 +223,16 @@ class BigML(SampleHandler, ProjectHandler, BatchAnomalyScoreHandler,
 
             """
             if resource['code'] in [HTTP_OK, HTTP_ACCEPTED]:
-                if MODEL_RE.match(resource_id):
+                if (MODEL_RE.match(resource_id) or
+                        ANOMALY_RE.match(resource_id)):
                     return resource['object']['model']['model_fields']
+                elif CLUSTER_RE.match(resource_id):
+                    return resource['object']['clusters']['fields']
+                elif CORRELATIONS_RE.match(resource_id):
+                    return resource['object']['correlations']['fields']
+                elif SAMPLE_TYPE_RE.match(resource_id):
+                    return dict([(field['id'], field) for field in
+                                 resource['object']['sample']['fields']])
                 else:
                     return resource['object']['fields']
             return None

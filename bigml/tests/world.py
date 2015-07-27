@@ -43,7 +43,8 @@ RESOURCE_TYPES = [
     'anomalyscore',
     'batchanomalyscore',
     'project',
-    'sample']
+    'sample',
+    'correlation']
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
     'batchprediction': 'batch_predictions',
@@ -111,8 +112,8 @@ class World(object):
                     if resources['code'] == HTTP_OK:
                         assert True
                     else:
-                        assert False, ("HTTP returned code %s" %
-                                       resources['code'])
+                        assert False, ("HTTP returned code %s for %s" %
+                                       (resources['code'], resource_type))
                     if (not resource_type in self.counters):
                         self.counters[resource_type] = {}
                     self.counters[resource_type][time_tag] = resources[

@@ -3,6 +3,11 @@
 History
 -------
 
+4.2.0 (2015-07-27)
+~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods to manage new type of resource: correlations
+
 4.1.6 (2015-06-25)
 ~~~~~~~~~~~~~~~~~~
 

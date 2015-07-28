@@ -91,6 +91,8 @@ def get_fields_structure(resource):
             fields = resource['object']['clusters']['fields']
         elif resource_type == CORRELATIONS_TYPE:
             fields = resource['object']['correlations']['fields']
+        elif resource_type == TESTS_TYPE:
+            fields = resource['object']['tests']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
                            resource['object']['sample']['fields']])

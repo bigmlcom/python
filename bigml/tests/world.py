@@ -44,7 +44,8 @@ RESOURCE_TYPES = [
     'batchanomalyscore',
     'project',
     'sample',
-    'correlation']
+    'correlation',
+    'test']
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
     'batchprediction': 'batch_predictions',
@@ -177,7 +178,6 @@ def teardown_module():
     """Operations to be performed after each module
 
     """
-
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 

@@ -24,7 +24,19 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 
 class TestPublicDataset(object):
-        
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating and reading a public dataset:
@@ -54,4 +66,3 @@ class TestPublicDataset(object):
             dataset_create.the_dataset_is_finished_in_less_than(self, example[3])
             dataset_create.build_local_dataset_from_public_url(self)
             dataset_create.dataset_status_finished(self)
-

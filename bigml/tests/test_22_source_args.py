@@ -24,6 +24,18 @@ import create_source_steps as source_create
 
 class TestUploadSource(object):
 
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
 

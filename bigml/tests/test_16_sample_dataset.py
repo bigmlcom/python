@@ -25,7 +25,19 @@ import create_dataset_steps as dataset_create
 import create_sample_steps as sample_create
 
 class TestSampleDataset(object):
-        
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a sample from a dataset:

@@ -26,6 +26,18 @@ import delete_project_steps as delete
 
 class Test_projects(object):
 
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         name = "my project"
         new_name = "my new project"

@@ -44,6 +44,7 @@ BATCH_ANOMALY_SCORE_PATH = 'batchanomalyscore'
 PROJECT_PATH = 'project'
 SAMPLE_PATH = 'sample'
 CORRELATION_PATH = 'correlation'
+TEST_PATH = 'test'
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
@@ -71,6 +72,7 @@ BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
 PROJECT_RE = re.compile(r'^%s/%s$' % (PROJECT_PATH, ID_PATTERN))
 SAMPLE_RE = re.compile(r'^%s/%s$' % (SAMPLE_PATH, ID_PATTERN))
 CORRELATION_RE = re.compile(r'^%s/%s$' % (CORRELATION_PATH, ID_PATTERN))
+TEST_RE = re.compile(r'^%s/%s$' % (TEST_PATH, ID_PATTERN))
 
 RESOURCE_RE = {
     'source': SOURCE_RE,
@@ -88,7 +90,8 @@ RESOURCE_RE = {
     'batchanomalyscore': BATCH_ANOMALY_SCORE_RE,
     'project': PROJECT_RE,
     'sample': SAMPLE_RE,
-    'correlation': CORRELATION_RE}
+    'correlation': CORRELATION_RE,
+    'test': TEST_RE}
 
 RENAMED_RESOURCES = {
     'batchprediction': 'batch_prediction',
@@ -291,6 +294,13 @@ def get_correlation_id(correlation):
 
     """
     return get_resource(CORRELATION_RE, correlation)
+
+
+def get_test_id(test):
+    """Returns a test/id.
+
+    """
+    return get_resource(TEST_RE, test)
 
 
 def get_resource_id(resource):

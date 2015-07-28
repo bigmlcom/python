@@ -16,26 +16,21 @@
 # under the License.
 
 
-""" Testing prediction creation in DEV mode
+""" Creating test
 
 """
 from world import world, setup_module, teardown_module
 import create_source_steps as source_create
-import read_source_steps as source_read
 import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_prediction_steps as prediction_create
+import create_tst_steps as tst_create
 
-
-class TestDevPrediction(object):
+class TestTest(object):
 
     def setup(self):
         """
-            Switches to DEV mode for this class methods only
+            Debug information
         """
         print "\n-------------------\nTests in: %s\n" % __name__
-        world.api = world.api_dev_mode
-        world.count_resources('init')
 
     def teardown(self):
         """
@@ -45,34 +40,32 @@ class TestDevPrediction(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a prediction in DEV mode:
-                Given I want to use api in DEV mode
-                When I create a data source uploading a "<data>" file
+            Scenario: Successfully creating a test from a dataset:
+                Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
-                And the source has DEV True
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a model
-                And I wait until the model is ready less than <time_3> secs
-                When I create a prediction for "<data_input>"
-                Then the prediction for "<objective>" is "<prediction>"
+                And I create a test from a dataset
+                And I wait until the test is ready less than <time_3> secs
+                And I update the test name to "<test_name>"
+                When I wait until the test is ready less than <time_4> secs
+                Then the test name is "<correlation_name>"
 
                 Examples:
-                | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
-
+                | data                | time_1  | time_2 | time_3 | time_4 | test_name |
+                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new test name |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
+            ['data/iris.csv', '10', '10', '10', '10', 'my new test name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
-            source_read.source_has_dev(self, True)
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            prediction_create.i_create_a_prediction(self, example[4])
-            prediction_create.the_prediction_is(self, example[5], example[6])
+            tst_create.i_create_a_tst_from_dataset(self)
+            tst_create.the_tst_is_finished_in_less_than(self, example[3])
+            tst_create.i_update_tst_name(self, example[5])
+            tst_create.the_tst_is_finished_in_less_than(self, example[4])
+            tst_create.i_check_tst_name(self, example[5])

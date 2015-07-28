@@ -27,7 +27,19 @@ import create_ensemble_steps as ensemble_create
 import create_evaluation_steps as evaluation_create
 
 class TestEvaluation(object):
-        
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating an evaluation:
@@ -92,4 +104,3 @@ class TestEvaluation(object):
             evaluation_create.i_create_an_evaluation_ensemble(self)
             evaluation_create.the_evaluation_is_finished_in_less_than(self, example[6])
             evaluation_create.the_measured_measure_is_value(self, example[7], example[8])
-

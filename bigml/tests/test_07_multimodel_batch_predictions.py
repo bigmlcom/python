@@ -23,10 +23,22 @@ from world import world, setup_module, teardown_module
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
-import compare_predictions_steps as compare_pred 
+import compare_predictions_steps as compare_pred
 
 class TestMultimodelBatchPrediction(object):
-        
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a batch prediction from a multi model:
@@ -73,4 +85,3 @@ class TestMultimodelBatchPrediction(object):
             compare_pred.i_combine_the_votes(self, example[7])
             compare_pred.the_plurality_combined_prediction(self, example[8])
             compare_pred.the_confidence_weighted_prediction(self, example[8])
-

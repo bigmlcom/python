@@ -28,6 +28,18 @@ import inspect_model_steps as inspect_model
 
 class TestLocalModelOutputs(object):
 
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a model and translate the tree model into a set of IF-THEN rules:

@@ -57,6 +57,7 @@ from bigml.batchanomalyscorehandler import BatchAnomalyScoreHandler
 from bigml.projecthandler import ProjectHandler
 from bigml.samplehandler import SampleHandler
 from bigml.correlationhandler import CorrelationHandler
+from bigml.testhandler import TestHandler
 
 # Repeating constants and functions for backwards compatibility
 
@@ -77,7 +78,8 @@ from bigml.resourcehandler import (
     DATASET_PATH, MODEL_PATH, PREDICTION_PATH, EVALUATION_PATH, ENSEMBLE_PATH,
     BATCH_PREDICTION_PATH, CLUSTER_PATH, CENTROID_PATH, BATCH_CENTROID_PATH,
     ANOMALY_PATH, ANOMALY_SCORE_PATH, BATCH_ANOMALY_SCORE_PATH, PROJECT_PATH,
-    SAMPLE_PATH, SAMPLE_RE, CORRELATION_RE)
+    SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
+    TEST_PATH, TEST_RE)
 
 
 from bigml.resourcehandler import (
@@ -87,7 +89,7 @@ from bigml.resourcehandler import (
     get_prediction_id, get_batch_prediction_id, get_batch_centroid_id,
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
-    get_correlation_id)
+    get_correlation_id, get_test_id)
 
 # Map status codes to labels
 STATUSES = {
@@ -112,7 +114,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(CorrelationHandler, SampleHandler, ProjectHandler,
+class BigML(TestHandler, CorrelationHandler, SampleHandler, ProjectHandler,
             BatchAnomalyScoreHandler, BatchCentroidHandler,
             BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
             AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
@@ -175,6 +177,7 @@ class BigML(CorrelationHandler, SampleHandler, ProjectHandler,
         ProjectHandler.__init__(self)
         SampleHandler.__init__(self)
         CorrelationHandler.__init__(self)
+        TestHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:
@@ -230,6 +233,8 @@ class BigML(CorrelationHandler, SampleHandler, ProjectHandler,
                     return resource['object']['clusters']['fields']
                 elif CORRELATIONS_RE.match(resource_id):
                     return resource['object']['correlations']['fields']
+                elif TESTS_RE.match(resource_id):
+                    return resource['object']['tests']['fields']
                 elif SAMPLE_TYPE_RE.match(resource_id):
                     return dict([(field['id'], field) for field in
                                  resource['object']['sample']['fields']])

@@ -27,6 +27,18 @@ import create_cluster_steps as cluster_create
 
 class TestClusterDerived(object):
 
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating datasets for first centroid of a cluster:

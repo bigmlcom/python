@@ -28,7 +28,19 @@ import create_prediction_steps as prediction_create
 import compare_predictions_steps as compare_pred
 
 class TestMultimodelPrediction(object):
-        
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print "\n-------------------\nTests in: %s\n" % __name__
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
     def test_scenario1(self):
         """
             Scenario: Successfully creating a prediction from a multi model:
@@ -113,4 +125,3 @@ class TestMultimodelPrediction(object):
             compare_pred.i_create_a_local_multi_model(self)
             compare_pred.i_create_a_batch_prediction_from_a_multi_model(self, example[6])
             compare_pred.the_batch_mm_predictions_are(self, example[7])
-

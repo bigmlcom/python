@@ -922,6 +922,459 @@ If requested, a sample can also perform linear regression and compute
 Pearson's and Spearman's correlations for either one numeric field
 against all other numeric fields or between two specific numeric fields.
 
+Correlations
+------------
+
+A ``correlation`` resource contains a series of computations that reflect the
+degree of dependence between the field set as objective for your predictions
+and the rest of fields in your dataset. The dependence degree is obtained by
+comparing the distributions in every objective and non-objective field pair,
+as independent fields should have probabilistic
+independent distributions. Depending on the types of the fields to compare,
+the metrics used to compute the correlation degree will be:
+
+- for numeric to numeric pairs:
+  `Pearson's <https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>`_
+  and `Spearman's correlation <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_
+  coefficients.
+- for numeric to categorical pairs:
+  `One-way Analysis of Variance <https://en.wikipedia.org/wiki/One-way_analysis_of_variance>`_, with the
+  categorical field as the predictor variable.
+- for categorical to categorical pairs:
+  `contingency table (or two-way table) <https://en.wikipedia.org/wiki/Contingency_table>`,
+  `Chi-square test of independence <https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test>`_
+  , and `Cramer's V <https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V>`_
+  and `Tschuprow's T <https://en.wikipedia.org/wiki/Tschuprow%27s_T>`_ coefficients.
+
+An example of the correlation resource JSON structure is:
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> correlation = api.create_correlation('dataset/55b7a6749841fa2500000d41')
+    >>> api.ok(correlation)
+    >>> api.pprint(correlation['object'])
+    {   u'category': 0,
+        u'clones': 0,
+        u'code': 200,
+        u'columns': 5,
+        u'correlations': {   u'correlations': [   {   u'name': u'one_way_anova',
+                                                      u'result': {   u'000000': {   u'eta_square': 0.61871,
+                                                                                    u'f_ratio': 119.2645,
+                                                                                    u'p_value': 0,
+                                                                                    u'significant': [   True,
+                                                                                                        True,
+                                                                                                        True]},
+                                                                     u'000001': {   u'eta_square': 0.40078,
+                                                                                    u'f_ratio': 49.16004,
+                                                                                    u'p_value': 0,
+                                                                                    u'significant': [   True,
+                                                                                                        True,
+                                                                                                        True]},
+                                                                     u'000002': {   u'eta_square': 0.94137,
+                                                                                    u'f_ratio': 1180.16118,
+                                                                                    u'p_value': 0,
+                                                                                    u'significant': [   True,
+                                                                                                        True,
+                                                                                                        True]},
+                                                                     u'000003': {   u'eta_square': 0.92888,
+                                                                                    u'f_ratio': 960.00715,
+                                                                                    u'p_value': 0,
+                                                                                    u'significant': [   True,
+                                                                                                        True,
+                                                                                                        True]}}}],
+                             u'fields': {   u'000000': {   u'column_number': 0,
+                                                           u'datatype': u'double',
+                                                           u'idx': 0,
+                                                           u'name': u'sepal length',
+                                                           u'optype': u'numeric',
+                                                           u'order': 0,
+                                                           u'preferred': True,
+                                                           u'summary': {   u'bins': [   [   4.3,
+                                                                                            1],
+                                                                                        [   4.425,
+                                                                                            4],
+    ...
+                                                                                        [   7.9,
+                                                                                            1]],
+                                                                           u'kurtosis': -0.57357,
+                                                                           u'maximum': 7.9,
+                                                                           u'mean': 5.84333,
+                                                                           u'median': 5.8,
+                                                                           u'minimum': 4.3,
+                                                                           u'missing_count': 0,
+                                                                           u'population': 150,
+                                                                           u'skewness': 0.31175,
+                                                                           u'splits': [   4.51526,
+                                                                                          4.67252,
+                                                                                          4.81113,
+                                                                                          4.89582,
+                                                                                          4.96139,
+                                                                                          5.01131,
+    ...
+                                                                                          6.92597,
+                                                                                          7.20423,
+                                                                                          7.64746],
+                                                                           u'standard_deviation': 0.82807,
+                                                                           u'sum': 876.5,
+                                                                           u'sum_squares': 5223.85,
+                                                                           u'variance': 0.68569}},
+                                            u'000001': {   u'column_number': 1,
+                                                           u'datatype': u'double',
+                                                           u'idx': 1,
+                                                           u'name': u'sepal width',
+                                                           u'optype': u'numeric',
+                                                           u'order': 1,
+                                                           u'preferred': True,
+                                                           u'summary': {   u'counts': [   [   2,
+                                                                                              1],
+                                                                                          [   2.2,
+    ...
+                                            u'000004': {   u'column_number': 4,
+                                                           u'datatype': u'string',
+                                                           u'idx': 4,
+                                                           u'name': u'species',
+                                                           u'optype': u'categorical',
+                                                           u'order': 4,
+                                                           u'preferred': True,
+                                                           u'summary': {   u'categories': [   [   u'Iris-setosa',
+                                                                                                  50],
+                                                                                              [   u'Iris-versicolor',
+                                                                                                  50],
+                                                                                              [   u'Iris-virginica',
+                                                                                                  50]],
+                                                                           u'missing_count': 0},
+                                                           u'term_analysis': {   u'enabled': True}}},
+                             u'significance_levels': [0.01, 0.05, 0.1]},
+        u'created': u'2015-07-28T18:07:37.010000',
+        u'credits': 0.017581939697265625,
+        u'dataset': u'dataset/55b7a6749841fa2500000d41',
+        u'dataset_status': True,
+        u'dataset_type': 0,
+        u'description': u'',
+        u'excluded_fields': [],
+        u'fields_meta': {   u'count': 5,
+                            u'limit': 1000,
+                            u'offset': 0,
+                            u'query_total': 5,
+                            u'total': 5},
+        u'input_fields': [u'000000', u'000001', u'000002', u'000003'],
+        u'locale': u'en_US',
+        u'max_columns': 5,
+        u'max_rows': 150,
+        u'name': u"iris' dataset correlation",
+        u'objective_field_details': {   u'column_number': 4,
+                                        u'datatype': u'string',
+                                        u'name': u'species',
+                                        u'optype': u'categorical',
+                                        u'order': 4},
+        u'out_of_bag': False,
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'range': [1, 150],
+        u'replacement': False,
+        u'resource': u'correlation/55b7c4e99841fa24f20009bf',
+        u'rows': 150,
+        u'sample_rate': 1.0,
+        u'shared': False,
+        u'size': 4609,
+        u'source': u'source/55b7a6729841fa24f100036a',
+        u'source_status': True,
+        u'status': {   u'code': 5,
+                       u'elapsed': 274,
+                       u'message': u'The correlation has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'updated': u'2015-07-28T18:07:49.057000',
+        u'white_box': False}
+
+Note that the output in the snippet above has been abbreviated. As you see, the
+``correlations`` attribute contains the information about each field
+correlation to the objective field.
+
+Tests
+-----
+
+A ``test`` resource contains a series of statistical tests that compare the
+distribution of data in each numeric field to certain canonical distributions,
+such as the
+`normal distribution <https://en.wikipedia.org/wiki/Normal_distribution>`_
+or `Benford's law <https://en.wikipedia.org/wiki/Benford%27s_law>`_ distribution.
+
+The normal
+distribution is the one expected to be found in average for random variables.
+Fields whose values deviate from this distribution
+hold significant information. The tests include several metrics to
+compute how close
+each field distribution is to the nomal distribution (Anderson-Darling,
+Jarque-Bera and z-score).
+
+Even if your data is normaly distributed, a few values may deviate from the
+mean distribution. The tests resource informs of whether at
+least one value in each field differs significantly from the mean using
+Grubb's test for outliers. If some outlier is found, then its value will be
+returned.
+
+Also Benford's law states that usually the frequency distribution of leading
+digits in sets of numerical data is not homogeneous. On the contrary,
+the small digits
+occur disproportionately often as leading significant digits. The tests include
+a comparison of the distribution of first significant digits (FSDs) in each
+field to the Benford's law distribution using a Chi-square goodness-of-fit
+test, and Cho-Gaines d test. If a field has a dissimilar distribution, probably
+contains anomalous or fraudulent values.
+
+The JSON structure for a test resources is similar to this one:
+
+.. code-block:: python
+
+    >>> test = api.create_test('dataset/55b7a6749841fa2500000d41')
+    >>> api.ok(test)
+    True
+    >>> api.pprint(test['object'])
+    {   u'category': 0,
+        u'clones': 0,
+        u'code': 200,
+        u'columns': 5,
+        u'created': u'2015-07-28T18:16:40.582000',
+        u'credits': 0.017581939697265625,
+        u'dataset': u'dataset/55b7a6749841fa2500000d41',
+        u'dataset_status': True,
+        u'dataset_type': 0,
+        u'description': u'',
+        u'excluded_fields': [],
+        u'fields_meta': {   u'count': 5,
+                            u'limit': 1000,
+                            u'offset': 0,
+                            u'query_total': 5,
+                            u'total': 5},
+        u'input_fields': [u'000000', u'000001', u'000002', u'000003'],
+        u'locale': u'en_US',
+        u'max_columns': 5,
+        u'max_rows': 150,
+        u'name': u"iris' dataset test",
+        u'out_of_bag': False,
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'range': [1, 150],
+        u'replacement': False,
+        u'resource': u'test/55b7c7089841fa25000010ad',
+        u'rows': 150,
+        u'sample_rate': 1.0,
+        u'shared': False,
+        u'size': 4609,
+        u'source': u'source/55b7a6729841fa24f100036a',
+        u'source_status': True,
+        u'status': {   u'code': 5,
+                       u'elapsed': 302,
+                       u'message': u'The test has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'tests': {   u'ad_sample_size': 1024,
+                      u'fields': {   u'000000': {   u'column_number': 0,
+                                                    u'datatype': u'double',
+                                                    u'idx': 0,
+                                                    u'name': u'sepal length',
+                                                    u'optype': u'numeric',
+                                                    u'order': 0,
+                                                    u'preferred': True,
+                                                    u'summary': {   u'bins': [   [   4.3,
+                                                                                     1],
+                                                                                 [   4.425,
+                                                                                     4],
+    ...
+                                                                                 [   7.9,
+                                                                                     1]],
+                                                                    u'kurtosis': -0.57357,
+                                                                    u'maximum': 7.9,
+                                                                    u'mean': 5.84333,
+                                                                    u'median': 5.8,
+                                                                    u'minimum': 4.3,
+                                                                    u'missing_count': 0,
+                                                                    u'population': 150,
+                                                                    u'skewness': 0.31175,
+                                                                    u'splits': [   4.51526,
+                                                                                   4.67252,
+                                                                                   4.81113,
+                                                                                   4.89582,
+    ...
+                                                                                   7.20423,
+                                                                                   7.64746],
+                                                                    u'standard_deviation': 0.82807,
+                                                                    u'sum': 876.5,
+                                                                    u'sum_squares': 5223.85,
+                                                                    u'variance': 0.68569}},
+    ...
+                                     u'000004': {   u'column_number': 4,
+                                                    u'datatype': u'string',
+                                                    u'idx': 4,
+                                                    u'name': u'species',
+                                                    u'optype': u'categorical',
+                                                    u'order': 4,
+                                                    u'preferred': True,
+                                                    u'summary': {   u'categories': [   [   u'Iris-setosa',
+                                                                                           50],
+                                                                                       [   u'Iris-versicolor',
+                                                                                           50],
+                                                                                       [   u'Iris-virginica',
+                                                                                           50]],
+                                                                    u'missing_count': 0},
+                                                    u'term_analysis': {   u'enabled': True}}},
+                      u'fraud': [   {   u'name': u'benford',
+                                        u'result': {   u'000000': {   u'chi_square': {   u'chi_square_value': 506.39302,
+                                                                                         u'p_value': 0,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'cho_gaines': {   u'd_statistic': 7.124311073683573,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'distribution': [   0,
+                                                                                           0,
+                                                                                           0,
+                                                                                           22,
+                                                                                           61,
+                                                                                           54,
+                                                                                           13,
+                                                                                           0,
+                                                                                           0],
+                                                                      u'negatives': 0,
+                                                                      u'zeros': 0},
+                                                       u'000001': {   u'chi_square': {   u'chi_square_value': 396.76556,
+                                                                                         u'p_value': 0,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'cho_gaines': {   u'd_statistic': 7.503503138331123,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'distribution': [   0,
+                                                                                           57,
+                                                                                           89,
+                                                                                           4,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0],
+                                                                      u'negatives': 0,
+                                                                      u'zeros': 0},
+                                                       u'000002': {   u'chi_square': {   u'chi_square_value': 154.20728,
+                                                                                         u'p_value': 0,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'cho_gaines': {   u'd_statistic': 3.9229974017266054,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'distribution': [   50,
+                                                                                           0,
+                                                                                           11,
+                                                                                           43,
+                                                                                           35,
+                                                                                           11,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0],
+                                                                      u'negatives': 0,
+                                                                      u'zeros': 0},
+                                                       u'000003': {   u'chi_square': {   u'chi_square_value': 111.4438,
+                                                                                         u'p_value': 0,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'cho_gaines': {   u'd_statistic': 4.103257341299901,
+                                                                                         u'significant': [   True,
+                                                                                                             True,
+                                                                                                             True]},
+                                                                      u'distribution': [   76,
+                                                                                           58,
+                                                                                           7,
+                                                                                           7,
+                                                                                           1,
+                                                                                           1,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0],
+                                                                      u'negatives': 0,
+                                                                      u'zeros': 0}}}],
+                      u'normality': [   {   u'name': u'anderson_darling',
+                                            u'result': {   u'000000': {   u'p_value': 0.02252,
+                                                                          u'significant': [   False,
+                                                                                              True,
+                                                                                              True]},
+                                                           u'000001': {   u'p_value': 0.02023,
+                                                                          u'significant': [   False,
+                                                                                              True,
+                                                                                              True]},
+                                                           u'000002': {   u'p_value': 0,
+                                                                          u'significant': [   True,
+                                                                                              True,
+                                                                                              True]},
+                                                           u'000003': {   u'p_value': 0,
+                                                                          u'significant': [   True,
+                                                                                              True,
+                                                                                              True]}}},
+                                        {   u'name': u'jarque_bera',
+                                            u'result': {   u'000000': {   u'p_value': 0.10615,
+                                                                          u'significant': [   False,
+                                                                                              False,
+                                                                                              False]},
+                                                           u'000001': {   u'p_value': 0.25957,
+                                                                          u'significant': [   False,
+                                                                                              False,
+                                                                                              False]},
+                                                           u'000002': {   u'p_value': 0.0009,
+                                                                          u'significant': [   True,
+                                                                                              True,
+                                                                                              True]},
+                                                           u'000003': {   u'p_value': 0.00332,
+                                                                          u'significant': [   True,
+                                                                                              True,
+                                                                                              True]}}},
+                                        {   u'name': u'z_score',
+                                            u'result': {   u'000000': {   u'expected_max_z': 2.71305,
+                                                                          u'max_z': 2.48369},
+                                                           u'000001': {   u'expected_max_z': 2.71305,
+                                                                          u'max_z': 3.08044},
+                                                           u'000002': {   u'expected_max_z': 2.71305,
+                                                                          u'max_z': 1.77987},
+                                                           u'000003': {   u'expected_max_z': 2.71305,
+                                                                          u'max_z': 1.70638}}}],
+                      u'outliers': [   {   u'name': u'grubbs',
+                                           u'result': {   u'000000': {   u'p_value': 1,
+                                                                         u'significant': [   False,
+                                                                                             False,
+                                                                                             False]},
+                                                          u'000001': {   u'p_value': 0.26555,
+                                                                         u'significant': [   False,
+                                                                                             False,
+                                                                                             False]},
+                                                          u'000002': {   u'p_value': 1,
+                                                                         u'significant': [   False,
+                                                                                             False,
+                                                                                             False]},
+                                                          u'000003': {   u'p_value': 1,
+                                                                         u'significant': [   False,
+                                                                                             False,
+                                                                                             False]}}}],
+                      u'significance_levels': [0.01, 0.05, 0.1]},
+        u'updated': u'2015-07-28T18:17:11.829000',
+        u'white_box': False}
+
+Note that the output in the snippet above has been abbreviated. As you see, the
+``tests`` attribute contains the ``fraud`, ``normality`` and ``outliers``
+sections where the information for each field's distribution is stored.
+
+
 Creating Resources
 ------------------
 

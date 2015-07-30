@@ -231,11 +231,11 @@ class BigML(TestHandler, CorrelationHandler, SampleHandler, ProjectHandler,
                     return resource['object']['model']['model_fields']
                 elif CLUSTER_RE.match(resource_id):
                     return resource['object']['clusters']['fields']
-                elif CORRELATIONS_RE.match(resource_id):
+                elif CORRELATION_RE.match(resource_id):
                     return resource['object']['correlations']['fields']
-                elif TESTS_RE.match(resource_id):
+                elif TEST_RE.match(resource_id):
                     return resource['object']['tests']['fields']
-                elif SAMPLE_TYPE_RE.match(resource_id):
+                elif SAMPLE_RE.match(resource_id):
                     return dict([(field['id'], field) for field in
                                  resource['object']['sample']['fields']])
                 else:

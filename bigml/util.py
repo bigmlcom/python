@@ -30,7 +30,7 @@ import json
 import math
 import random
 
-
+PY3 = sys.version > '3'
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
 LOCALE_SYNONYMS = {
@@ -355,7 +355,8 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     """
     clear_console_line(out=out, length=length)
     reset_console_line(out=out, length=length)
-    if out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty():
+    if (out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty()
+            and not PY3):
         message = message.decode('utf8').encode('850')
     out.write(message)
     reset_console_line(out=out, length=length)

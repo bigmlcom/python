@@ -3,6 +3,11 @@
 History
 -------
 
+4.1.7 (2015-08-15)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: console messages failed when used with Python3 on Windows.
+
 4.1.6 (2015-06-25)
 ~~~~~~~~~~~~~~~~~~
 

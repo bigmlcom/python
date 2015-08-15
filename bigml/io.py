@@ -24,7 +24,8 @@
 
 import sys, csv
 
-PY3 = sys.version > '3'
+from bigml.util import PY3
+
 
 class UnicodeReader(object):
     """Adapter to handle Python 2 to 3 conversion when reading files

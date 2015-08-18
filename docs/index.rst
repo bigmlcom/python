@@ -2337,7 +2337,9 @@ shows the path leading to a final unique node, that gives the prediction, or
 to the first split where a missing value is found. Other options are
 ``add_next`` which includes the field that determines the next split after
 the prediction node and ``add_distribution`` that adds the distribution
-that leads to the prediction.
+that leads to the prediction. For regression models, ``add_min`` and
+``add_max`` will add the limit values for the data that supports the
+prediction.
 
 In classification models, the prediction is always the most frequent category
 amongst the ones that form the distribution in the predicted node. However, you

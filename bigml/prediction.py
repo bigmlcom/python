@@ -28,7 +28,7 @@ class Prediction(object):
     """
     def __init__(self, output, path, confidence,
                  distribution=None, count=None, distribution_unit=None,
-                 median=None, children=None):
+                 median=None, children=None, d_max=None, d_min=None):
         self.output = output
         self.path = path
         self.confidence = confidence
@@ -39,3 +39,5 @@ class Prediction(object):
                                   else distribution_unit)
         self.median = median
         self.children = [] if children is None else children
+        self.min = d_min
+        self.max = d_max

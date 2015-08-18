@@ -245,6 +245,8 @@ class Model(BaseModel):
                 add_count=False,
                 add_median=False,
                 add_next=False,
+                add_min=False,
+                add_max=False,
                 multiple=None):
         """Makes a prediction based on a number of field values.
 
@@ -271,6 +273,10 @@ class Model(BaseModel):
                     the distribution
         add_next: Boolean, if True adds the field that determines next
                   split in the tree
+        add_min: Boolean, if True adds the minimum value in the prediction's
+                 distribution (for regressions only)
+        add_max: Boolean, if True adds the maximum value in the prediction's
+                 distribution (for regressions only)
         multiple: For categorical fields, it will return the categories
                   in the distribution of the predicted node as a
                   list of dicts:
@@ -333,7 +339,7 @@ class Model(BaseModel):
                     output.append(prediction_dict)
         else:
             if (add_confidence or add_path or add_distribution or add_count or
-                    add_median or add_next):
+                    add_median or add_next or add_min or add_max):
                 output = {'prediction': prediction.output}
                 if add_confidence:
                     output.update({'confidence': prediction.confidence})
@@ -353,6 +359,10 @@ class Model(BaseModel):
                     if field is not None and field in self.fields:
                         field = self.fields[field]['name']
                     output.update({'next': field})
+                if self.tree.regression and add_min:
+                    output.update({'min': prediction.min})
+                if self.tree.regression and add_max:
+                    output.update({'max': prediction.max})
 
         return output
 

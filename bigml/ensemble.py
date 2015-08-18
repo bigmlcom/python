@@ -184,6 +184,7 @@ class Ensemble(object):
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
+                add_min=False, add_max=False,
                 options=None, missing_strategy=LAST_PREDICTION, median=False):
         """Makes a prediction based on the prediction made by every model.
 
@@ -212,6 +213,10 @@ class Ensemble(object):
                           prediction
         :param add_median: Adds the median of the predicted nodes' distribution
                            to the prediction
+        :param add_min: Boolean, if True adds the minimum value in the
+                        prediction's distribution (for regressions only)
+        :param add_max: Boolean, if True adds the maximum value in the
+                        prediction's distribution (for regressions only)
         :param options: Options to be used in threshold filtered votes.
         :param missing_strategy: numeric key for the individual model's
                                  prediction method. See the model predict
@@ -248,7 +253,8 @@ class Ensemble(object):
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
-                    add_median=(add_median or median))
+                    add_median=(add_median or median),
+                    add_min=add_min, add_max=add_max)
                 if median:
                     for prediction in votes_split.predictions:
                         prediction['prediction'] = prediction['median']
@@ -258,7 +264,8 @@ class Ensemble(object):
             # corresponding multimodel to predict
             votes_split = self.multi_model.generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
-                add_median=(add_median or median))
+                add_median=(add_median or median), add_min=add_min,
+                add_max=add_max)
             votes = MultiVote(votes_split.predictions)
             if median:
                 for prediction in votes.predictions:
@@ -268,6 +275,8 @@ class Ensemble(object):
                              add_distribution=add_distribution,
                              add_count=add_count,
                              add_median=add_median,
+                             add_min=add_min,
+                             add_max=add_max,
                              options=options)
 
     def field_importance_data(self):

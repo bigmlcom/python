@@ -251,6 +251,8 @@ class Tree(object):
         self.count = tree['count']
         self.confidence = tree.get('confidence', None)
         self.distribution = None
+        self.max = None
+        self.min = None
         summary = None
         if 'distribution' in tree:
             self.distribution = tree['distribution']
@@ -270,6 +272,10 @@ class Tree(object):
                 self.median = summary.get('median')
             if not self.median:
                 self.median = dist_median(self.distribution, self.count)
+            self.max = summary.get('maximum') or \
+                max([value for [value, _] in self.distribution])
+            self.min = summary.get('minimum') or \
+                min([value for [value, _] in self.distribution])
         self.impurity = None
         if not self.regression and self.distribution is not None:
             self.impurity = self.gini_impurity()
@@ -366,6 +372,8 @@ class Tree(object):
             path = []
         if missing_strategy == PROPORTIONAL:
             (final_distribution,
+             d_min,
+             d_max,
              last_node) = self.predict_proportional(input_data, path=path)
 
             if self.regression:
@@ -382,7 +390,9 @@ class Tree(object):
                             count=instances,
                             median=last_node.median,
                             distribution_unit=last_node.distribution_unit,
-                            children=last_node.children)
+                            children=last_node.children,
+                            d_min=last_node.min,
+                            d_max=last_node.max)
                 # when there's more instances, sort elements by their mean
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
@@ -404,7 +414,9 @@ class Tree(object):
                     count=total_instances,
                     median=dist_median(distribution, total_instances),
                     distribution_unit=distribution_unit,
-                    children=last_node.children)
+                    children=last_node.children,
+                    d_min=d_min,
+                    d_max=d_max)
             else:
                 distribution = [list(element) for element in
                                 sorted(final_distribution.items(),
@@ -434,7 +446,9 @@ class Tree(object):
                 count=get_instances(self.distribution),
                 median=None if not self.regression else self.median,
                 distribution_unit=self.distribution_unit,
-                children=self.children)
+                children=self.children,
+                d_min=None if not self.regression else self.min,
+                d_max=None if not self.regression else self.max)
 
     def predict_proportional(self, input_data, path=None,
                              missing_found=False, median=False):
@@ -455,7 +469,7 @@ class Tree(object):
         if not self.children:
             return (merge_distributions({}, dict((x[0], x[1])
                                                  for x in self.distribution)),
-                    self)
+                    self.min, self.max, self)
         if one_branch(self.children, input_data):
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
@@ -467,12 +481,19 @@ class Tree(object):
         else:
             # missing value found, the unique path stops
             missing_found = True
+            minimums = []
+            maximums = []
             for child in self.children:
-                final_distribution = merge_distributions(
-                    final_distribution,
+                subtree_distribution, subtree_min, subtree_max, _ = \
                     child.predict_proportional(input_data, path,
-                                               missing_found, median)[0])
-            return final_distribution, self
+                                               missing_found, median)
+                minimums.append(subtree_min)
+                maximums.append(subtree_max)
+                final_distribution = merge_distributions(
+                    final_distribution, subtree_distribution)
+            return (final_distribution,
+                    min(minimums),
+                    max(maximums), self)
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):
         """Translates a tree model into a set of IF-THEN rules.

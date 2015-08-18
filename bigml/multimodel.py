@@ -121,7 +121,9 @@ class MultiModel(object):
                 add_confidence=False,
                 add_distribution=False,
                 add_count=False,
-                add_median=False):
+                add_median=False,
+                add_min=False,
+                add_max=False):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -137,17 +139,20 @@ class MultiModel(object):
 
         votes = self.generate_votes(input_data, by_name=by_name,
                                     missing_strategy=missing_strategy,
-                                    add_median=add_median)
+                                    add_median=add_median, add_min=add_min,
+                                    add_max=add_max)
         return votes.combine(method=method, with_confidence=with_confidence,
                              options=options,
                              add_confidence=add_confidence,
                              add_distribution=add_distribution,
                              add_count=add_count,
-                             add_median=add_median)
+                             add_median=add_median,
+                             add_min=add_min,
+                             add_max=add_max)
 
     def generate_votes(self, input_data, by_name=True,
                        missing_strategy=LAST_PREDICTION,
-                       add_median=False):
+                       add_median=False, add_min=False, add_max=False):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
@@ -159,6 +164,8 @@ class MultiModel(object):
                                             add_distribution=True,
                                             add_count=True,
                                             add_median=add_median,
+                                            add_min=add_min,
+                                            add_max=add_max,
                                             missing_strategy=missing_strategy)
             votes.append(prediction_info)
         return votes

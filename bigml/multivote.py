@@ -160,7 +160,7 @@ class MultiVote(object):
     @classmethod
     def avg(cls, instance, with_confidence=False,
             add_confidence=False, add_distribution=False,
-            add_count=False, add_median=False):
+            add_count=False, add_median=False, add_min=False, add_max=False):
         """Returns the average of a list of numeric values.
 
            If with_confidence is True, the combined confidence (as the
@@ -178,6 +178,8 @@ class MultiVote(object):
         median_result = 0.0
         confidence = 0.0
         instances = 0
+        d_min = float('Inf')
+        d_max = float('-Inf')
         for prediction in instance.predictions:
             result += prediction['prediction']
             if add_median:
@@ -186,11 +188,15 @@ class MultiVote(object):
                 confidence += prediction['confidence']
             if add_count:
                 instances += prediction['count']
+            if add_min and d_min > prediction['min']:
+                d_min = prediction['min']
+            if add_max and d_max < prediction['max']:
+                d_max = prediction['max']
         if with_confidence:
             return ((result / total, confidence / total) if total > 0 else \
                     (float('nan'), 0))
         if (add_confidence or add_distribution or add_count or
-                add_median):
+                add_median or add_min or add_max):
             output = {'prediction': result / total if total > 0 else \
                       float('nan')}
             if add_confidence:
@@ -204,13 +210,20 @@ class MultiVote(object):
                 output.update(
                     {'median': median_result / total if total > 0 else \
                      float('nan')})
+            if add_min:
+                output.update(
+                    {'min': d_min})
+            if add_max:
+                output.update(
+                    {'max': d_max})
             return output
         return result / total if total > 0 else float('nan')
 
     @classmethod
     def error_weighted(cls, instance, with_confidence=False,
                        add_confidence=False, add_distribution=False,
-                       add_count=False, add_median=False):
+                       add_count=False, add_median=False, add_min=False,
+                       add_max=False):
         """Returns the prediction combining votes using error to compute weight
 
            If with_confidences is true, the combined confidence (as the
@@ -227,6 +240,8 @@ class MultiVote(object):
         result = 0.0
         median_result = 0.0
         instances = 0
+        d_min = float('Inf')
+        d_max = float('-Inf')
         normalization_factor = cls.normalize_error(instance, top_range)
         if normalization_factor == 0:
             if with_confidence:
@@ -242,6 +257,10 @@ class MultiVote(object):
                                   prediction['_error_weight'])
             if add_count:
                 instances += prediction['count']
+            if add_min and d_min > prediction['min']:
+                d_min = prediction['min']
+            if add_max and d_max < prediction['max']:
+                d_max = prediction['max']
             if with_confidence or add_confidence:
                 combined_error += (prediction['confidence'] *
                                    prediction['_error_weight'])
@@ -250,7 +269,7 @@ class MultiVote(object):
             return (result / normalization_factor,
                     combined_error / normalization_factor)
         if (add_confidence or add_distribution or add_count or
-                add_median):
+                add_median or add_min or add_max):
             output = {'prediction': result / normalization_factor}
             if add_confidence:
                 output.update({'confidence':
@@ -261,6 +280,12 @@ class MultiVote(object):
                 output.update({'count': instances})
             if add_median:
                 output.update({'median': median_result / normalization_factor})
+            if add_min:
+                output.update(
+                    {'min': d_min})
+            if add_max:
+                output.update(
+                    {'max': d_max})
             return output
         return result / normalization_factor
 
@@ -335,7 +360,8 @@ class MultiVote(object):
 
     def combine(self, method=DEFAULT_METHOD, with_confidence=False,
                 add_confidence=False, add_distribution=False,
-                add_count=False, add_median=False, options=None):
+                add_count=False, add_median=False, add_min=False,
+                add_max=False, options=None):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
@@ -369,7 +395,9 @@ class MultiVote(object):
                             add_confidence=add_confidence,
                             add_distribution=add_distribution,
                             add_count=add_count,
-                            add_median=add_median)
+                            add_median=add_median,
+                            add_min=add_min,
+                            add_max=add_max)
         else:
             if method == THRESHOLD:
                 if options is None:

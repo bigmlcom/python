@@ -1832,14 +1832,13 @@ include in the request all the additional arguments accepted by BigML
 and documented in the `Evaluations section of the Developer's
 documentation <https://bigml.com/developers/evaluations>`_.
 
-For instance, to evaluate a previously created model using at most 10000 rows
-from an existing dataset
+For instance, to evaluate a previously created model using an existing dataset
 you can use the following call:
 
 .. code-block:: python
 
     evaluation = api.create_evaluation(model, dataset, {
-        "name": "my model", "max_rows": 10000})
+        "name": "my model"})
 
 Again, the evaluation is scheduled for creation and ``api.status(evaluation)``
 will show its state.
@@ -2775,6 +2774,10 @@ And you can add more information to the predictions in a JSON format using:
                      every model the ensemble is composed of
 - ``add_median=True`` for regression ensembles, it computes the prediction
                       based on the median (instead of the usual mean)
+- ``add_min=True`` adds the minimum value in the prediction's
+                    distribution (for regressions only)
+- ``add_max=True`` adds the maximum value in the prediction's
+                   distribution (for regressions only)
 
 .. code-block:: python
 

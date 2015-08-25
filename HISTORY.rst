@@ -9,6 +9,8 @@ History
 - Adding REST methods to manage new type of resource: correlations.
 - Adding REST methods to manage new type of resource: tests.
 - Adding min and max values predictions for regression models and ensembles.
+- Fixing bug: Fields object was not retrieving objective id from the
+  resource info.
 
 4.1.7 (2015-08-15)
 ~~~~~~~~~~~~~~~~~~

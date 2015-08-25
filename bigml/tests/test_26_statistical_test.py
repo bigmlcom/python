@@ -22,9 +22,9 @@
 from world import world, setup_module, teardown_module
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
-import create_tst_steps as tst_create
+import create_statistical_tst_steps as statistical_tst_create
 
-class TestTest(object):
+class TestStatisticalTest(object):
 
     def setup(self):
         """
@@ -40,32 +40,32 @@ class TestTest(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a test from a dataset:
+            Scenario: Successfully creating an statistical test from a dataset:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a test from a dataset
-                And I wait until the test is ready less than <time_3> secs
-                And I update the test name to "<test_name>"
-                When I wait until the test is ready less than <time_4> secs
-                Then the test name is "<correlation_name>"
+                And I create an statistical test from a dataset
+                And I wait until the statistical test is ready less than <time_3> secs
+                And I update the statistical test name to "<test_name>"
+                When I wait until the statistical test is ready less than <time_4> secs
+                Then the statistical test name is "<correlation_name>"
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | test_name |
-                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new test name |
+                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new statistical test name |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '10', 'my new test name']]
+            ['data/iris.csv', '10', '10', '10', '10', 'my new statistical test name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            tst_create.i_create_a_tst_from_dataset(self)
-            tst_create.the_tst_is_finished_in_less_than(self, example[3])
-            tst_create.i_update_tst_name(self, example[5])
-            tst_create.the_tst_is_finished_in_less_than(self, example[4])
-            tst_create.i_check_tst_name(self, example[5])
+            statistical_tst_create.i_create_a_tst_from_dataset(self)
+            statistical_tst_create.the_tst_is_finished_in_less_than(self, example[3])
+            statistical_tst_create.i_update_tst_name(self, example[5])
+            statistical_tst_create.the_tst_is_finished_in_less_than(self, example[4])
+            statistical_tst_create.i_check_tst_name(self, example[5])

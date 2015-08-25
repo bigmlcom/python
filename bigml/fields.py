@@ -56,11 +56,11 @@ CLUSTER_TYPE = 'cluster'
 ANOMALY_TYPE = 'anomaly'
 SAMPLE_TYPE = 'sample'
 CORRELATION_TYPE = 'correlation'
-TEST_TYPE = 'test'
+STATISTICAL_TEST_TYPE = 'statisticaltest'
 
 RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE,
                          PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE,
-                         SAMPLE_TYPE, CORRELATION_TYPE, TEST_TYPE]
+                         SAMPLE_TYPE, CORRELATION_TYPE, STATISTICAL_TEST_TYPE]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -93,16 +93,26 @@ def get_fields_structure(resource):
             fields = resource['object']['clusters']['fields']
         elif resource_type == CORRELATION_TYPE:
             fields = resource['object']['correlations']['fields']
-        elif resource_type == TEST_TYPE:
-            fields = resource['object']['tests']['fields']
+        elif resource_type == STATISTICAL_TEST_TYPE:
+            fields = resource['object']['statistical_tests']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
                            resource['object']['sample']['fields']])
         else:
             fields = resource['object']['fields']
-        return fields, resource_locale, missing_tokens
+        # Check whether there's an objective id
+        objective_column = None
+        if resource_type == DATASET_TYPE:
+            objective_column = resource['object'].get( \
+                'objective_field', {}).get('id')
+        elif resource_type == MODEL_TYPE:
+            objective_id = resource['object'].get( \
+                'objective_fields', [None])[0]
+            objective_column = fields.get( \
+                objective_id, {}).get('column_number')
+        return fields, resource_locale, missing_tokens, objective_column
     else:
-        return None, None, None
+        return None, None, None, None
 
 
 class Fields(object):
@@ -121,7 +131,8 @@ class Fields(object):
             resource_info = get_fields_structure(resource_or_fields)
             (self.fields,
              resource_locale,
-             resource_missing_tokens) = resource_info
+             resource_missing_tokens,
+             objective_column) = resource_info
             if data_locale is None:
                 data_locale = resource_locale
             if missing_tokens is None:
@@ -135,6 +146,7 @@ class Fields(object):
                 data_locale = DEFAULT_LOCALE
             if missing_tokens is None:
                 missing_tokens = DEFAULT_MISSING_TOKENS
+            objective_column = None
         if self.fields is None:
             raise ValueError("No fields structure was found.")
         self.fields_by_name = invert_dictionary(self.fields, 'name')
@@ -152,6 +164,11 @@ class Fields(object):
         self.objective_field = None
         self.objective_field_present = None
         self.filtered_indexes = None
+        # if the objective field is not set by the user
+        # use the one extracted from the resource info
+        if not objective_field and objective_column is not None:
+            objective_field = objective_column
+            objective_field_present = True
         self.update_objective_field(objective_field, objective_field_present)
 
     def update_objective_field(self, objective_field, objective_field_present,

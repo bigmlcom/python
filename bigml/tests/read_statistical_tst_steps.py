@@ -20,7 +20,7 @@ from bigml.api import HTTP_OK
 
 #@step(r'I get the test "(.*)"')
 def i_get_the_tst(step, resource):
-    resource = world.api.get_test(resource)
+    resource = world.api.get_statistical_test(resource)
     world.status = resource['code']
     assert world.status == HTTP_OK
-    world.test = resource['object']
+    world.statistical_test = resource['object']

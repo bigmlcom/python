@@ -1095,46 +1095,64 @@ Note that the output in the snippet above has been abbreviated. As you see, the
 ``correlations`` attribute contains the information about each field
 correlation to the objective field.
 
-Tests
------
+Statistical Tests
+-----------------
 
-A ``test`` resource contains a series of statistical tests that compare the
-distribution of data in each numeric field to certain canonical distributions,
+A ``statisticaltest`` resource contains a series of tests
+that compare the
+distribution of data in each numeric field of a dataset
+to certain canonical distributions,
 such as the
 `normal distribution <https://en.wikipedia.org/wiki/Normal_distribution>`_
-or `Benford's law <https://en.wikipedia.org/wiki/Benford%27s_law>`_ distribution.
+or `Benford's law <https://en.wikipedia.org/wiki/Benford%27s_law>`_
+distribution. Statistical test are useful in tasks such as fraud, normality,
+or outlier detection.
 
-The normal
-distribution is the one expected to be found in average for random variables.
-Fields whose values deviate from this distribution
-hold significant information. The tests include several metrics to
-compute how close
-each field distribution is to the nomal distribution (Anderson-Darling,
-Jarque-Bera and z-score).
+- Fraud Detection Tests:
+Benford: This statistical test performs a comparison of the distribution of
+first significant digits (FSDs) of each value of the field to the Benford's
+law distribution. Benford's law applies to numerical distributions spanning
+several orders of magnitude, such as the values found on financial balance
+sheets. It states that the frequency distribution of leading, or first
+significant digits (FSD) in such distributions is not uniform.
+On the contrary, lower digits like 1 and 2 occur disproportionately
+often as leading significant digits. The test compares the distribution
+in the field to Bendford's distribution using a Chi-square goodness-of-fit
+test, and Cho-Gaines d test. If a field has a dissimilar distribution,
+it may contain anomalous or fraudulent values.
 
-Even if your data is normaly distributed, a few values may deviate from the
-mean distribution. The tests resource informs of whether at
-least one value in each field differs significantly from the mean using
-Grubb's test for outliers. If some outlier is found, then its value will be
-returned.
+- Normality tests:
+These tests can be used to confirm the assumption that the data in each field
+of a dataset is distributed according to a normal distribution. The results
+are relevant because many statistical and machine learning techniques rely on
+this assumption.
+Anderson-Darling: The Anderson-Darling test computes a test statistic based on
+the difference between the observed cumulative distribution function (CDF) to
+that of a normal distribution. A significant result indicates that the
+assumption of normality is rejected.
+Jarque-Bera: The Jarque-Bera test computes a test statistic based on the third
+and fourth central moments (skewness and kurtosis) of the data. Again, a
+significant result indicates that the normality assumption is rejected.
+Z-score: For a given sample size, the maximum deviation from the mean that
+would expected in a sampling of a normal distribution can be computed based
+on the 68-95-99.7 rule. This test simply reports this expected deviation and
+the actual deviation observed in the data, as a sort of sanity check.
 
-Also Benford's law states that usually the frequency distribution of leading
-digits in sets of numerical data is not homogeneous. On the contrary,
-the small digits
-occur disproportionately often as leading significant digits. The tests include
-a comparison of the distribution of first significant digits (FSDs) in each
-field to the Benford's law distribution using a Chi-square goodness-of-fit
-test, and Cho-Gaines d test. If a field has a dissimilar distribution, probably
-contains anomalous or fraudulent values.
+- Outlier tests:
+Grubbs: When the values of a field are normally distributed, a few values may
+still deviate from the mean distribution. The outlier tests reports whether
+at least one value in each numeric field differs significantly from the mean
+using Grubb's test for outliers. If an outlier is found, then its value will
+be returned.
 
-The JSON structure for a test resources is similar to this one:
+The JSON structure for ``statisticaltest`` resources is similar to this one:
 
 .. code-block:: python
 
-    >>> test = api.create_test('dataset/55b7a6749841fa2500000d41')
-    >>> api.ok(test)
+    >>> statistical_test = api.create_statistical_test('dataset/55b7a6749841fa2500000d41')
+    >>> api.ok(statistical_test)
     True
-    >>> api.pprint(test['object'])
+    >>> api.pprint(statistical_test['object'])
     {   u'category': 0,
         u'clones': 0,
         u'code': 200,
@@ -1162,7 +1180,7 @@ The JSON structure for a test resources is similar to this one:
         u'project': None,
         u'range': [1, 150],
         u'replacement': False,
-        u'resource': u'test/55b7c7089841fa25000010ad',
+        u'resource': u'statisticaltest/55b7c7089841fa25000010ad',
         u'rows': 150,
         u'sample_rate': 1.0,
         u'shared': False,
@@ -1175,7 +1193,7 @@ The JSON structure for a test resources is similar to this one:
                        u'progress': 1.0},
         u'subscription': True,
         u'tags': [],
-        u'tests': {   u'ad_sample_size': 1024,
+        u'statistical_tests': {   u'ad_sample_size': 1024,
                       u'fields': {   u'000000': {   u'column_number': 0,
                                                     u'datatype': u'double',
                                                     u'idx': 0,
@@ -1371,7 +1389,8 @@ The JSON structure for a test resources is similar to this one:
         u'white_box': False}
 
 Note that the output in the snippet above has been abbreviated. As you see, the
-``tests`` attribute contains the ``fraud`, ``normality`` and ``outliers``
+``statistical_tests`` attribute contains the ``fraud`, ``normality``
+and ``outliers``
 sections where the information for each field's distribution is stored.
 
 

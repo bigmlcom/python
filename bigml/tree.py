@@ -487,13 +487,15 @@ class Tree(object):
                 subtree_distribution, subtree_min, subtree_max, _ = \
                     child.predict_proportional(input_data, path,
                                                missing_found, median)
-                minimums.append(subtree_min)
-                maximums.append(subtree_max)
+                if subtree_min is not None:
+                    minimums.append(subtree_min)
+                if subtree_max is not None:
+                    maximums.append(subtree_max)
                 final_distribution = merge_distributions(
                     final_distribution, subtree_distribution)
             return (final_distribution,
-                    min(minimums),
-                    max(maximums), self)
+                    min(minimums) if minimums else None,
+                    max(maximums) if maximums else None, self)
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):
         """Translates a tree model into a set of IF-THEN rules.

@@ -133,7 +133,10 @@ class Predicate(object):
         """ Builds rule string from a predicate
 
         """
-        name = fields[self.field][label]
+        if label is not None:
+            name = fields[self.field][label]
+        else:
+            name = u""
         full_term = self.is_full_term(fields)
         relation_missing = u" or missing" if self.missing else u""
         if self.term is not None:

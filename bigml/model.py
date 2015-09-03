@@ -69,6 +69,7 @@ from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
 from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
+from bigml.path import Path, BRIEF
 
 # we use the atof conversion for integers to include integers written as
 # 10.0
@@ -536,7 +537,7 @@ class Model(BaseModel):
 
         return sorted(predictions, key=lambda x: x[0])
 
-    def summarize(self, out=sys.stdout):
+    def summarize(self, out=sys.stdout, format=BRIEF):
         """Prints summary grouping distribution as class header and details
 
         """
@@ -602,15 +603,18 @@ class Model(BaseModel):
 
         for group in [x[0] for x in predictions]:
             details = groups[group]['details']
+            """
             path = [prediction.to_rule(self.fields) for
                     prediction in groups[group]['total'][0]]
+            """
+            path = Path(groups[group]['total'][0])
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
             out.write(utf8(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
                            (group,
                             round(data_per_group, 4) * 100,
                             round(pred_per_group, 4) * 100,
-                            " and ".join(path))))
+                            path.to_rules(self.fields, format=format))))
 
             if len(details) == 0:
                 out.write(utf8(u"    The model will never predict this"
@@ -618,9 +622,13 @@ class Model(BaseModel):
             for j in range(0, len(details)):
                 subgroup = details[j]
                 pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
+                """
                 path = [prediction.to_rule(self.fields) for
                         prediction in subgroup[0]]
-                path_chain = " and ".join(path) if len(path) else "(root node)"
+                """
+                path = Path(subgroup[0])
+                path_chain = path.to_rules(self.fields, format=format) if \
+                    path.predicates else "(root node)"
                 out.write(utf8(u"    · %.2f%%: %s%s\n" %
                                (round(pred_per_sgroup, 4) * 100,
                                 path_chain,

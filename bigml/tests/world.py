@@ -44,24 +44,24 @@ RESOURCE_TYPES = [
     'anomalyscore',
     'batchanomalyscore',
     'project',
-    'sample'#,
-    #'correlation',
-    #'statisticaltest'
+    'sample',
+    'correlation',
+    'statisticaltest'
 ]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
     'batchprediction': 'batch_predictions',
     'batchcentroid': 'batch_centroids',
     'anomalyscore': 'anomaly_scores',
-    'batchanomalyscore': 'batch_anomaly_scores'#,
-    #'statisticaltest': 'statistical_tests'
+    'batchanomalyscore': 'batch_anomaly_scores',
+    'statisticaltest': 'statistical_tests'
 }
 TRANSLATED_RESOURCES = {
     'batchprediction': 'batch_prediction',
     'batchcentroid': 'batch_centroid',
     'anomalyscore': 'anomaly_score',
-    'batchanomalyscore': 'batch_anomaly_score'#,
-    #'statisticaltest': 'statistical_test'
+    'batchanomalyscore': 'batch_anomaly_score',
+    'statisticaltest': 'statistical_test'
 }
 
 

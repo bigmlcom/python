@@ -601,39 +601,40 @@ class Model(BaseModel):
 
         extract_common_path(groups)
 
+        out.write(utf8(u"\n\nRules summary:"))
+
         for group in [x[0] for x in predictions]:
             details = groups[group]['details']
-            """
-            path = [prediction.to_rule(self.fields) for
-                    prediction in groups[group]['total'][0]]
-            """
             path = Path(groups[group]['total'][0])
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write(utf8(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s\n" %
+            out.write(utf8(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s" %
                            (group,
                             round(data_per_group, 4) * 100,
                             round(pred_per_group, 4) * 100,
                             path.to_rules(self.fields, format=format))))
 
             if len(details) == 0:
-                out.write(utf8(u"    The model will never predict this"
+                out.write(utf8(u"\n    The model will never predict this"
                                u" class\n"))
-            for j in range(0, len(details)):
-                subgroup = details[j]
-                pred_per_sgroup = subgroup[1] * 1.0 / groups[group]['total'][2]
-                """
-                path = [prediction.to_rule(self.fields) for
-                        prediction in subgroup[0]]
-                """
-                path = Path(subgroup[0])
-                path_chain = path.to_rules(self.fields, format=format) if \
-                    path.predicates else "(root node)"
-                out.write(utf8(u"    · %.2f%%: %s%s\n" %
-                               (round(pred_per_sgroup, 4) * 100,
-                                path_chain,
-                                confidence_error(subgroup[2],
-                                                 impurity=subgroup[3]))))
+            elif len(details) == 1:
+                subgroup = details[0]
+                out.write(utf8("%s\n" % confidence_error(
+                    subgroup[2], impurity=subgroup[3])))
+            else:
+                for j in range(0, len(details)):
+                    subgroup = details[j]
+                    pred_per_sgroup = subgroup[1] * 1.0 / \
+                        groups[group]['total'][2]
+                    path = Path(subgroup[0])
+                    path_chain = path.to_rules(self.fields, format=format) if \
+                        path.predicates else "(root node)"
+                    out.write(utf8(u"\n    · %.2f%%: %s%s\n" %
+                                   (round(pred_per_sgroup, 4) * 100,
+                                    path_chain,
+                                    confidence_error(subgroup[2],
+                                                     impurity=subgroup[3]))))
+
         out.flush()
 
     def hadoop_python_mapper(self, out=sys.stdout, ids_path=None,

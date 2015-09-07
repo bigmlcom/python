@@ -98,7 +98,8 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
         if contains:
             rules.append(contains[0].to_rule(fields, label=label).strip())
             for predicate in contains[1:]:
-                rules.append(predicate.term)
+                if not predicate.term in rules:
+                    rules.append(predicate.term)
         rule = u" and ".join(rules)
         if not_contains:
             if not rules:
@@ -108,9 +109,9 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
                 rules_not.append(
                     " and %s" % \
                     not_contains[0].to_rule(fields, label=None).strip())
-                not_contains = not_contains[1:]
-            for predicate in not_contains:
-                rules_not.append(predicate.term)
+            for predicate in not_contains[1:]:
+                if not predicate.term in rules_not:
+                    rules_not.append(predicate.term)
         rule += u" or ".join(rules_not)
         return rule
 
@@ -128,13 +129,14 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
         if equal:
             rules.append(equal[0].to_rule(fields, label=label).strip())
             for predicate in equal[1:]:
-                rules.append(predicate.value)
+                if not predicate.value in rules:
+                    rules.append(predicate.value)
         rule = u" and ".join(rules)
         if not_equal and not rules:
             rules_not.append(not_equal[0].to_rule(fields, label=label).strip())
-            not_equal = not_equal[1:]
-            for predicate in not_equal:
-                rules_not.append(predicate.value)
+            for predicate in not_equal[1:]:
+                if not predicate.value in rules_not:
+                    rules_not.append(predicate.value)
         rule += u" or ".join(rules_not)
         return rule
 

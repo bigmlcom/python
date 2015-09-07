@@ -47,99 +47,122 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
     """
     field_type = field_info['optype']
     if field_type == NUMERIC:
-        minor = (None, float('-inf'), True)
-        major = (None, float('inf'), True)
-        equal = None
-        for predicate in list_of_predicates:
-            if (predicate.operator.startswith('>') and
-                    predicate.value > minor[1]):
-                minor = (predicate, predicate.value,
-                         minor[2] and predicate.missing)
-            if (predicate.operator.startswith('<') and
-                    predicate.value < major[1]):
-                major = (predicate, predicate.value,
-                         major[2] and predicate.missing)
-            if predicate.operator[0] in ['!', '=', '/', 'i']:
-                equal = predicate
-                break
-        if equal is not None:
-            return equal.to_rule(fields, label=label)
-        rule = u''
-        name = field_info[label]
-
-        if minor[0] is not None and major[0] is not None:
-            predicate, value, missing = minor
-            rule = u"%s %s " % (value, reverse(predicate.operator))
-            rule += name
-            predicate, value, missing = major
-            rule += u" %s %s " % (predicate.operator, value)
-            if missing and minor[3]:
-                rule += u" or missing"
-        else:
-            predicate = minor[0] if minor[0] is not None else major[0]
-            rule = predicate.to_rule(fields, label=label)
-        return rule
+        return merge_numeric_rules( \
+            list_of_predicates, field_info, fields, label=label)
 
     if field_type == TEXT:
-        contains = []
-        not_contains = []
-        for predicate in list_of_predicates:
-            if ((predicate.operator == '<' and predicate.value <= 1) or
-                    (predicate.operator == '<=' and predicate.value == 0)):
-                not_contains.append(predicate)
-            else:
-                contains.append(predicate)
-        rules = []
-        rules_not = []
-        if contains:
-            rules.append(contains[0].to_rule(fields, label=label).strip())
-            for predicate in contains[1:]:
-                if not predicate.term in rules:
-                    rules.append(predicate.term)
-        rule = u" and ".join(rules)
-        if not_contains:
-            if not rules:
-                rules_not.append(
-                    not_contains[0].to_rule(fields, label=label).strip())
-            else:
-                rules_not.append(
-                    " and %s" % \
-                    not_contains[0].to_rule(fields, label=None).strip())
-            for predicate in not_contains[1:]:
-                if not predicate.term in rules_not:
-                    rules_not.append(predicate.term)
-        rule += u" or ".join(rules_not)
-        return rule
-
+        return merge_text_rules( \
+            list_of_predicates, field_info, fields, label=label)
 
     if field_type == CATEGORICAL:
-        equal = []
-        not_equal = []
-        for predicate in list_of_predicates:
-            if predicate.operator.startswith("!"):
-                not_equal.append(predicate)
-            else:
-                equal.append(predicate)
-        rules = []
-        rules_not = []
-        if equal:
-            rules.append(equal[0].to_rule(fields, label=label).strip())
-            for predicate in equal[1:]:
-                if not predicate.value in rules:
-                    rules.append(predicate.value)
-        rule = u" and ".join(rules)
-        if not_equal and not rules:
-            rules_not.append(not_equal[0].to_rule(fields, label=label).strip())
-            for predicate in not_equal[1:]:
-                if not predicate.value in rules_not:
-                    rules_not.append(predicate.value)
-        rule += u" or ".join(rules_not)
-        return rule
+        return merge_categorical_rules( \
+            list_of_predicates, field_info, fields, label=label)
 
     return " and ".join(
         [predicate.to_rule(fields, label=label).strip() for
          predicate in list_of_predicates])
 
+
+def  merge_numeric_rules(list_of_predicates, field_info, fields, label='name'):
+    """ Summarizes the numeric predicates for the same field
+
+    """
+    minor = (None, float('-inf'), True)
+    major = (None, float('inf'), True)
+    equal = None
+    for predicate in list_of_predicates:
+        if (predicate.operator.startswith('>') and
+                predicate.value > minor[1]):
+            minor = (predicate, predicate.value,
+                     minor[2] and predicate.missing)
+        if (predicate.operator.startswith('<') and
+                predicate.value < major[1]):
+            major = (predicate, predicate.value,
+                     major[2] and predicate.missing)
+        if predicate.operator[0] in ['!', '=', '/', 'i']:
+            equal = predicate
+            break
+    if equal is not None:
+        return equal.to_rule(fields, label=label)
+    rule = u''
+    name = field_info[label]
+
+    if minor[0] is not None and major[0] is not None:
+        predicate, value, missing = minor
+        rule = u"%s %s " % (value, reverse(predicate.operator))
+        rule += name
+        predicate, value, missing = major
+        rule += u" %s %s " % (predicate.operator, value)
+        if missing and minor[3]:
+            rule += u" or missing"
+    else:
+        predicate = minor[0] if minor[0] is not None else major[0]
+        rule = predicate.to_rule(fields, label=label)
+    return rule
+
+
+def  merge_text_rules(list_of_predicates, field_info, fields, label='name'):
+    """ Summarizes the text predicates for the same field
+
+    """
+    contains = []
+    not_contains = []
+    for predicate in list_of_predicates:
+        if ((predicate.operator == '<' and predicate.value <= 1) or
+                (predicate.operator == '<=' and predicate.value == 0)):
+            not_contains.append(predicate)
+        else:
+            contains.append(predicate)
+    rules = []
+    rules_not = []
+    if contains:
+        rules.append(contains[0].to_rule(fields, label=label).strip())
+        for predicate in contains[1:]:
+            if not predicate.term in rules:
+                rules.append(predicate.term)
+    rule = u" and ".join(rules)
+    if not_contains:
+        if not rules:
+            rules_not.append(
+                not_contains[0].to_rule(fields, label=label).strip())
+        else:
+            rules_not.append(
+                " and %s" % \
+                not_contains[0].to_rule(fields, label=None).strip())
+        for predicate in not_contains[1:]:
+            if not predicate.term in rules_not:
+                rules_not.append(predicate.term)
+    rule += u" or ".join(rules_not)
+    return rule
+
+
+def  merge_categorical_rules(list_of_predicates, field_info,
+                             fields, label='name'):
+    """ Summarizes the categorical predicates for the same field
+
+    """
+    equal = []
+    not_equal = []
+    for predicate in list_of_predicates:
+        if predicate.operator.startswith("!"):
+            not_equal.append(predicate)
+        else:
+            equal.append(predicate)
+    rules = []
+    rules_not = []
+    if equal:
+        rules.append(equal[0].to_rule(fields, label=label).strip())
+        for predicate in equal[1:]:
+            if not predicate.value in rules:
+                rules.append(predicate.value)
+    rule = u" and ".join(rules)
+    if not_equal and not rules:
+        rules_not.append(not_equal[0].to_rule(fields, label=label).strip())
+        for predicate in not_equal[1:]:
+            if not predicate.value in rules_not:
+                rules_not.append(predicate.value)
+    rule += u" or ".join(rules_not)
+    return rule
 
 
 class Path(object):

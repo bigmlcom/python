@@ -130,8 +130,8 @@ def patch_requests():
 
         """
         response = original_request(method, url, **kwargs)
-        logging.debug("Data: {}".format(response.request.body))
-        logging.debug("Response: {}".format(response.content))
+        logging.debug("Data: %s", response.request.body)
+        logging.debug("Response: %s", response.content)
         return response
     original_request = requests.api.request
     requests.api.request = debug_request

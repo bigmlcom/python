@@ -22,7 +22,7 @@
 
 """
 
-import sys, csv
+import csv
 
 from bigml.util import PY3
 

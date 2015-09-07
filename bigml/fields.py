@@ -42,7 +42,6 @@ fields =  Fields(prediction['object']['fields'])
 
 """
 import sys
-import locale
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE

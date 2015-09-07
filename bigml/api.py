@@ -33,13 +33,10 @@ api.pprint(prediction)
 
 """
 import sys
-
-import os
 import pprint
 
 
-from bigml.util import check_dir
-from bigml.bigmlconnection import BigMLConnection, stream_copy
+from bigml.bigmlconnection import BigMLConnection
 from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler

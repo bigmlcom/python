@@ -619,7 +619,7 @@ class Model(BaseModel):
                                u" class\n"))
             elif len(details) == 1:
                 subgroup = details[0]
-                out.write(utf8("%s\n" % confidence_error(
+                out.write(utf8(u"%s\n" % confidence_error(
                     subgroup[2], impurity=subgroup[3])))
             else:
                 for j in range(0, len(details)):

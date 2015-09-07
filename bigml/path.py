@@ -21,10 +21,6 @@ This module defines an auxiliary Path structure that is used
 to store the predicates' info.
 
 """
-
-import re
-
-
 from bigml.predicate import Predicate
 
 
@@ -67,7 +63,7 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
                 equal = predicate
                 break
         if equal is not None:
-            return predicate.to_rule(fields, label=label)
+            return equal.to_rule(fields, label=label)
         rule = u''
         name = field_info[label]
 
@@ -143,7 +139,7 @@ def merge_rules(list_of_predicates, field_info, fields, label='name'):
     return " and ".join(
         [predicate.to_rule(fields, label=label).strip() for
          predicate in list_of_predicates])
-        
+
 
 
 class Path(object):
@@ -156,8 +152,8 @@ class Path(object):
         """
         if not predicates:
             self.predicates = []
-        elif (isinstance(predicates, list) and
-                isinstance(predicates[0], Predicate)):
+        elif isinstance(predicates, list) and \
+                isinstance(predicates[0], Predicate):
             self.predicates = predicates
         else:
             raise ValueError("The Path constructor accepts a list of Predicate"
@@ -169,9 +165,9 @@ class Path(object):
         """ Builds rules string from a list lf predicates in different formats
 
         """
-        if format==EXTENDED:
+        if format == EXTENDED:
             return self.to_extended_rules(fields, label=label)
-        elif format==BRIEF:
+        elif format == BRIEF:
             return self.to_brief_rules(fields, label=label)
         else:
             raise ValueError("Invalid format. The list of valid formats are 0 "
@@ -199,7 +195,7 @@ class Path(object):
                 groups_of_rules[predicate.field] = []
                 list_of_fields.append(predicate.field)
             groups_of_rules[predicate.field].append(predicate)
- 
+
         lines = []
         for field in list_of_fields:
             lines.append(
@@ -208,6 +204,7 @@ class Path(object):
         return " and ".join(lines)
 
     def append(self, predicate):
+        """ Adds new predicate to the path
+
+        """
         self.predicates.append(predicate)
-
-

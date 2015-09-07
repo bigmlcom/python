@@ -23,6 +23,7 @@ import os
 import shutil
 import time
 import pkg_resources
+import datetime
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
@@ -43,22 +44,25 @@ RESOURCE_TYPES = [
     'anomalyscore',
     'batchanomalyscore',
     'project',
-    'sample',
-    'correlation',
-    'statisticaltest']
+    'sample'#,
+    #'correlation',
+    #'statisticaltest'
+]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
     'batchprediction': 'batch_predictions',
     'batchcentroid': 'batch_centroids',
     'anomalyscore': 'anomaly_scores',
-    'batchanomalyscore': 'batch_anomaly_scores',
-    'statisticaltest': 'statistical_tests'}
+    'batchanomalyscore': 'batch_anomaly_scores'#,
+    #'statisticaltest': 'statistical_tests'
+}
 TRANSLATED_RESOURCES = {
     'batchprediction': 'batch_prediction',
     'batchcentroid': 'batch_centroid',
     'anomalyscore': 'anomaly_score',
-    'batchanomalyscore': 'batch_anomaly_score',
-    'statisticaltest': 'statistical_test'}
+    'batchanomalyscore': 'batch_anomaly_score'#,
+    #'statisticaltest': 'statistical_test'
+}
 
 
 def plural(resource_type):
@@ -81,6 +85,9 @@ class World(object):
         self.fields_properties_dict = {}
         self.counters = {}
         self.print_connection_info()
+        self.test_project_name = "Test: python bindings %s" % \
+            datetime.datetime.now()
+        self.project_id = None
 
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
@@ -94,33 +101,6 @@ class World(object):
             assert True
         self.api = BigML(self.USERNAME, self.API_KEY)
         print self.api.connection_info()
-
-    def count_resources(self, time_tag, changed=False):
-        """Counts the existing resources and stores it keyed by time_tag.
-           If changed is set to True, only resources that are logged as
-           changed are listed.
-
-        """
-        print "Counting resources (%s)." % time_tag
-        for resource_type in RESOURCE_TYPES:
-            resource_type = plural(resource_type)
-            if (not changed or len(getattr(self, resource_type))) > 0:
-                resources = getattr(self.api,"list_%s" % resource_type)()
-                if resource_type == 'source' and resources['code'] != HTTP_OK:
-                    assert False, (
-                        "Unable to list your sources. Please check the"
-                        " BigML domain and credentials to be:\n\n%s" %
-                        self.api.connection_info())
-                else:
-                    if resources['code'] == HTTP_OK:
-                        assert True
-                    else:
-                        assert False, ("HTTP returned code %s for %s" %
-                                       (resources['code'], resource_type))
-                    if (not resource_type in self.counters):
-                        self.counters[resource_type] = {}
-                    self.counters[resource_type][time_tag] = resources[
-                        'meta']['total_count']
 
     def clear(self):
         """Clears the stored resources' ids
@@ -173,7 +153,9 @@ def setup_module():
 
     """
     world.reset_api()
-    world.count_resources('init')
+    if world.project_id is None:
+        world.project_id = world.api.create_project( \
+            {"name": world.test_project_name})['resource']
     world.clear()
 
 def teardown_module():
@@ -185,18 +167,13 @@ def teardown_module():
 
 
     world.delete_resources()
-    world.count_resources('final', changed=True)
-
-    for resource_type in RESOURCE_TYPES:
-        resource_type = plural(resource_type)
-        if getattr(world, resource_type):
-            counters = world.counters[resource_type]
-            if counters['final'] == counters['init']:
-                assert True
-            else:
-                assert False , (
-                    "init: %s, final: %s" %
-                    (counters['init'], counters['final']))
+    project_stats = world.api.get_project( \
+        world.project_id)['object']['stats']
+    for resource_type, value in project_stats.items():
+        if value['count'] != 0:
+            assert False, ("Increment in %s: %s" % (resource_type, value))
+    world.api.delete_project(world.project_id)
+    world.project_id = None
 
 def teardown_class():
     """Operations to be performed after each class

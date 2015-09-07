@@ -34,8 +34,10 @@ class TestDevPrediction(object):
             Switches to DEV mode for this class methods only
         """
         print "\n-------------------\nTests in: %s\n" % __name__
+        world.api.delete_project(world.project_id)
         world.api = world.api_dev_mode
-        world.count_resources('init')
+        world.project_id = world.api.create_project( \
+            {"name": world.test_project_name})['resource']
 
     def teardown(self):
         """

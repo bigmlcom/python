@@ -32,7 +32,8 @@ import read_source_steps as read
 
 #@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
-    resource = world.api.create_source(res_filename(file))
+    resource = world.api.create_source(res_filename(file), \
+        {'project': world.project_id})
     # update status
     world.status = resource['code']
     world.location = resource['location']
@@ -43,7 +44,9 @@ def i_upload_a_file(step, file):
 
 #@step(r'I create a data source uploading a "(.*)" file with args "(.*)"$')
 def i_upload_a_file_with_args(step, file, args):
-    resource = world.api.create_source(res_filename(file), json.loads(args))
+    args = json.loads(args)
+    args.update({'project': world.project_id})
+    resource = world.api.create_source(res_filename(file), args)
     # update status
     world.status = resource['code']
     world.location = resource['location']

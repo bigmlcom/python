@@ -16,19 +16,20 @@ Field importance:
     3. sepal width: 0.71%
 
 
-Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45
-    · 100.00%: petal length <= 2.45 [Confidence: 92.86%]
+Rules summary:
+
+Iris-setosa : (data 33.33% / prediction 33.33%) petal length <= 2.45 [Confidence: 92.86%]
 
 
 Iris-versicolor : (data 33.33% / prediction 33.33%) petal length > 2.45
-    · 94.00%: petal length > 2.45 and petal width <= 1.75 and petal length <= 4.95 and petal width <= 1.65 [Confidence: 92.44%]
-    · 4.00%: petal length > 2.45 and petal width <= 1.75 and petal length > 4.95 and petal width > 1.55 and petal length <= 5.45 [Confidence: 34.24%]
-    · 2.00%: petal length > 2.45 and petal width > 1.75 and petal length <= 4.85 and sepal width > 3.1 [Confidence: 20.65%]
+    · 94.00%: 2.45 < petal length <= 4.95  and petal width <= 1.65 [Confidence: 92.44%]
+    · 4.00%: 4.95 < petal length <= 5.45  and 1.55 < petal width <= 1.75  [Confidence: 34.24%]
+    · 2.00%: 2.45 < petal length <= 4.85  and petal width > 1.75 and sepal width > 3.1 [Confidence: 20.65%]
 
 
 Iris-virginica : (data 33.33% / prediction 33.33%) petal length > 2.45
-    · 86.00%: petal length > 2.45 and petal width > 1.75 and petal length > 4.85 [Confidence: 91.80%]
-    · 6.00%: petal length > 2.45 and petal width <= 1.75 and petal length > 4.95 and petal width <= 1.55 [Confidence: 43.85%]
-    · 4.00%: petal length > 2.45 and petal width > 1.75 and petal length <= 4.85 and sepal width <= 3.1 [Confidence: 34.24%]
-    · 2.00%: petal length > 2.45 and petal width <= 1.75 and petal length <= 4.95 and petal width > 1.65 [Confidence: 20.65%]
-    · 2.00%: petal length > 2.45 and petal width <= 1.75 and petal length > 4.95 and petal width > 1.55 and petal length > 5.45 [Confidence: 20.65%]
+    · 86.00%: petal length > 4.85 and petal width > 1.75 [Confidence: 91.80%]
+    · 6.00%: petal length > 4.95 and petal width <= 1.55 [Confidence: 43.85%]
+    · 4.00%: 2.45 < petal length <= 4.85  and petal width > 1.75 and sepal width <= 3.1 [Confidence: 34.24%]
+    · 2.00%: 2.45 < petal length <= 4.95  and 1.65 < petal width <= 1.75  [Confidence: 20.65%]
+    · 2.00%: petal length > 5.45 and 1.55 < petal width <= 1.75  [Confidence: 20.65%]

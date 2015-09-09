@@ -622,6 +622,7 @@ class Model(BaseModel):
                 out.write(utf8(u"%s\n" % confidence_error(
                     subgroup[2], impurity=subgroup[3])))
             else:
+                out.write(utf8(u"\n"))
                 for j in range(0, len(details)):
                     subgroup = details[j]
                     pred_per_sgroup = subgroup[1] * 1.0 / \
@@ -629,7 +630,7 @@ class Model(BaseModel):
                     path = Path(subgroup[0])
                     path_chain = path.to_rules(self.fields, format=format) if \
                         path.predicates else "(root node)"
-                    out.write(utf8(u"\n    · %.2f%%: %s%s\n" %
+                    out.write(utf8(u"    · %.2f%%: %s%s\n" %
                                    (round(pred_per_sgroup, 4) * 100,
                                     path_chain,
                                     confidence_error(subgroup[2],

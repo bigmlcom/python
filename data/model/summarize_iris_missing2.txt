@@ -15,13 +15,12 @@ Field importance:
     2. petal length: 29.31%
 
 
-Iris-setosa : (data 34.04% / prediction 34.04%) petal width <= 0.7
-    · 100.00%: petal width <= 0.7 [Confidence: 80.64%]
+Rules summary:
+
+Iris-setosa : (data 34.04% / prediction 34.04%) petal width <= 0.7 [Confidence: 80.64%]
 
 
-Iris-versicolor : (data 29.79% / prediction 29.79%) petal width > 0.7 and petal length <= 4.75
-    · 100.00%: petal width > 0.7 and petal length <= 4.75 [Confidence: 78.47%]
+Iris-versicolor : (data 29.79% / prediction 29.79%) petal width > 0.7 and petal length <= 4.75 [Confidence: 78.47%]
 
 
-Iris-virginica : (data 36.17% / prediction 36.17%) petal width > 0.7 and petal length > 4.75
-    · 100.00%: petal width > 0.7 and petal length > 4.75 [Confidence: 81.57%]
+Iris-virginica : (data 36.17% / prediction 36.17%) petal width > 0.7 and petal length > 4.75 [Confidence: 81.57%]

@@ -56,7 +56,7 @@ def i_upload_a_file_with_args(step, file, args):
 
 #@step(r'I create a data source using the url "(.*)"')
 def i_create_using_url(step, url):
-    resource = world.api.create_source(url)
+    resource = world.api.create_source(url, {'project': world.project_id})
     # update status
     world.status = resource['code']
     world.location = resource['location']
@@ -74,7 +74,8 @@ def i_create_using_dict_data(step, data):
         reader = csv.DictReader(fid)
         dict_data = [row for row in reader]
     # create source
-    resource = world.api.create_source(dict_data)
+    resource = world.api.create_source(dict_data,
+                                       {'project': world.project_id})
     # update status
     world.status = resource['code']
     world.location = resource['location']
@@ -84,7 +85,9 @@ def i_create_using_dict_data(step, data):
 
 #@step(r'I create a data source uploading a "(.*)" file in asynchronous mode$')
 def i_upload_a_file_async(step, file):
-    resource = world.api.create_source(res_filename(file), async=True)
+    resource = world.api.create_source(res_filename(file),
+                                       {'project': world.project_id},
+                                       async=True)
     world.resource = resource
 
 #@step(r'I wait until the source has been created less than (\d+) secs')

@@ -73,7 +73,7 @@ def i_check_if_the_output_is_like_expected_file(step, expected_file):
     file = open(res_filename(expected_file), "rb")
     expected_content = file.read()
     file.close()
-    if world.output == expected_content:
+    if world.output.strip() == expected_content.strip():
         assert True
     else:
         assert False, "Found:\n%s\n\nExpected:\n%s\n\n" % (world.output,

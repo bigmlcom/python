@@ -3,6 +3,12 @@
 History
 -------
 
+4.3.0 (2015-09-23)
+~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods to manage new types of whizzml resources: scripts,
+  executions and libraries.
+
 4.2.0 (2015-07-27)
 ~~~~~~~~~~~~~~~~~~
 

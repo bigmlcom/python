@@ -45,35 +45,55 @@ PROJECT_PATH = 'project'
 SAMPLE_PATH = 'sample'
 CORRELATION_PATH = 'correlation'
 STATISTICAL_TEST_PATH = 'statisticaltest'
+SCRIPT_PATH = 'script'
+EXECUTION_PATH = 'execution'
+LIBRARY_PATH = 'library'
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
 SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
+# public resources: model and dataset
+# shared resources: all except sources
 DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))
 MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
-PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
-EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
-ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
-BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
-                                               ID_PATTERN))
-CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+#
+PREDICTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    PREDICTION_PATH, ID_PATTERN, PREDICTION_PATH, SHARED_PATTERN))
+EVALUATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    EVALUATION_PATH, ID_PATTERN, EVALUATION_PATH, SHARED_PATTERN))
+ENSEMBLE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    ENSEMBLE_PATH, ID_PATTERN, ENSEMBLE_PATH, SHARED_PATTERN))
+BATCH_PREDICTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    BATCH_PREDICTION_PATH, ID_PATTERN, BATCH_PREDICTION_PATH, SHARED_PATTERN))
+CLUSTER_RE = re.compile(r'^%s/%s$|^shared/%s/%s$' % (
     CLUSTER_PATH, ID_PATTERN, CLUSTER_PATH, SHARED_PATTERN))
-CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
-BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
-                                             ID_PATTERN))
+CENTROID_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    CENTROID_PATH, ID_PATTERN, CENTROID_PATH, SHARED_PATTERN))
+BATCH_CENTROID_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    BATCH_CENTROID_PATH, ID_PATTERN, BATCH_CENTROID_PATH, SHARED_PATTERN))
 ANOMALY_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     ANOMALY_PATH, ID_PATTERN, ANOMALY_PATH, SHARED_PATTERN))
-ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
-BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
-                                                  ID_PATTERN))
+ANOMALY_SCORE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    ANOMALY_SCORE_PATH, ID_PATTERN, ANOMALY_SCORE_PATH, SHARED_PATTERN))
+BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    BATCH_ANOMALY_SCORE_PATH, ID_PATTERN,
+    BATCH_ANOMALY_SCORE_PATH, SHARED_PATTERN))
 PROJECT_RE = re.compile(r'^%s/%s$' % (PROJECT_PATH, ID_PATTERN))
-SAMPLE_RE = re.compile(r'^%s/%s$' % (SAMPLE_PATH, ID_PATTERN))
-CORRELATION_RE = re.compile(r'^%s/%s$' % (CORRELATION_PATH, ID_PATTERN))
-STATISTICAL_TEST_RE = re.compile(r'^%s/%s$' % \
-    (STATISTICAL_TEST_PATH, ID_PATTERN))
+SAMPLE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    SAMPLE_PATH, ID_PATTERN, SAMPLE_PATH, SHARED_PATTERN))
+CORRELATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    CORRELATION_PATH, ID_PATTERN, CORRELATION_PATH, SHARED_PATTERN))
+STATISTICAL_TEST_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (STATISTICAL_TEST_PATH, ID_PATTERN, STATISTICAL_TEST_PATH, SHARED_PATTERN))
+SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
+EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (EXECUTION_PATH, ID_PATTERN, EXECUTION_PATH, SHARED_PATTERN))
+LIBRARY_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (LIBRARY_PATH, ID_PATTERN, LIBRARY_PATH, SHARED_PATTERN))
 
 RESOURCE_RE = {
     'source': SOURCE_RE,
@@ -92,7 +112,11 @@ RESOURCE_RE = {
     'project': PROJECT_RE,
     'sample': SAMPLE_RE,
     'correlation': CORRELATION_RE,
-    'statisticaltest': STATISTICAL_TEST_RE}
+    'statisticaltest': STATISTICAL_TEST_RE,
+    'script': SCRIPT_RE,
+    'execution': EXECUTION_RE,
+    'library': LIBRARY_RE}
+
 
 RENAMED_RESOURCES = {
     'batchprediction': 'batch_prediction',
@@ -304,6 +328,27 @@ def get_statistical_test_id(statistical_test):
 
     """
     return get_resource(STATISTICAL_TEST_RE, statistical_test)
+
+
+def get_script_id(script):
+    """Returns a script/id.
+
+    """
+    return get_resource(SCRIPT_RE, script)
+
+
+def get_execution_id(execution):
+    """Returns a execution/id.
+
+    """
+    return get_resource(EXECUTION_RE, execution)
+
+
+def get_library_id(library):
+    """Returns a library/id.
+
+    """
+    return get_resource(LIBRARY_RE, library)
 
 
 def get_resource_id(resource):

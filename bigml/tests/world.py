@@ -46,7 +46,10 @@ RESOURCE_TYPES = [
     'project',
     'sample',
     'correlation',
-    'statisticaltest'
+    'statisticaltest',
+    'script',
+    'execution',
+    'library'
 ]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
@@ -54,7 +57,8 @@ IRREGULAR_PLURALS = {
     'batchcentroid': 'batch_centroids',
     'anomalyscore': 'anomaly_scores',
     'batchanomalyscore': 'batch_anomaly_scores',
-    'statisticaltest': 'statistical_tests'
+    'statisticaltest': 'statistical_tests',
+    'library': 'libraries'
 }
 TRANSLATED_RESOURCES = {
     'batchprediction': 'batch_prediction',
@@ -175,6 +179,7 @@ def teardown_module():
             print "WARNING: Increment in %s: %s" % (resource_type, value)
     world.api.delete_project(world.project_id)
     world.project_id = None
+
 
 def teardown_class():
     """Operations to be performed after each class

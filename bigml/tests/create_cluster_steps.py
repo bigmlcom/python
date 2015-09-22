@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2012 BigML
+# Copyright 2012-2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -105,7 +105,7 @@ def cluster_from_shared_url(step):
 
 #@step(r'I check the cluster status using the model\'s shared key')
 def cluster_from_shared_key(step):
-   
+
     username = os.environ.get("BIGML_USERNAME")
     world.cluster = world.api.get_cluster(world.cluster['resource'],
         shared_username=username, shared_api_key=world.sharing_key)

@@ -49,6 +49,9 @@ RESOURCE_TYPES = [
     'statisticaltest',
     'logisticregression',
     'association'
+    'script',
+    'execution',
+    'library'
 ]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
@@ -58,6 +61,7 @@ IRREGULAR_PLURALS = {
     'batchanomalyscore': 'batch_anomaly_scores',
     'statisticaltest': 'statistical_tests',
     'logisticregression': 'logistic_regressions'
+    'library': 'libraries'
 }
 TRANSLATED_RESOURCES = {
     'batchprediction': 'batch_prediction',

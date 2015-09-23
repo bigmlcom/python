@@ -50,27 +50,41 @@ class ExecutionHandler(ResourceHandler):
         """
         self.execution_url = self.url + EXECUTION_PATH
 
-    def create_execution(self, script, args=None, wait_time=3, retries=10):
-        """Creates an execution from a `script`.
+    def create_execution(self, origin_resource, args=None,
+                         wait_time=3, retries=10):
+        """Creates an execution from a `script` or a list of `scripts`.
 
         """
-        script_id = None
-        resource_type = get_resource_type(script)
-        if resource_type == SCRIPT_PATH:
-            script_id = get_script_id(script)
-            check_resource(script_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
-            raise Exception("A script id is needed to create a"
-                            " script execution. %s found." % resource_type)
 
         create_args = {}
         if args is not None:
             create_args.update(args)
-        create_args.update({
-            "script": script_id})
+
+        if isinstance(origin_resource, basestring):
+            # single script
+            scripts = [origin_resource]
+        else:
+            scripts = origin_resource
+
+        script_ids = [get_script_id(script) for script in scripts]
+        if all([get_resource_type(script_id) == SCRIPT_PATH for
+               script_id in script_ids]):
+            for script in scripts:
+                check_resource(script,
+                               query_string=TINY_RESOURCE,
+                               wait_time=wait_time, retries=retries,
+                               raise_on_error=True, api=self)
+        else:
+            raise Exception("A script id or a list of them is needed to create"
+                            " a script execution. %s found." %
+                            get_resource_type(origin_resource))
+
+        if len(scripts) > 1:
+            create_args.update({
+                "scripts": script_ids})
+        else:
+            create_args.update({
+                "script": script_ids[0]})
 
         body = json.dumps(create_args)
         return self._create(self.execution_url, body)

@@ -32,6 +32,7 @@ from read_execution_steps import i_get_the_execution
 
 #@step(r'the script id is correct and the value of "(.*)" is "(.*)"')
 def the_execution_and_attributes(step, param, param_value):
+    assert world.script['resource'] == world.execution['script']
     res_param_value = world.execution[param]
     if res_param_value == param_value:
         assert True
@@ -41,9 +42,33 @@ def the_execution_and_attributes(step, param, param_value):
                        (param, param_value, param, param_value))
 
 
+#@step(r'the script ids are correct and the value of "(.*)" is "(.*)"')
+def the_execution_ids_and_attributes(step, number_of_scripts,
+                                     param, param_value):
+    scripts = world.scripts[-number_of_scripts:]
+    assert  scripts == world.execution['scripts']
+    res_param_value = world.execution[param]
+    if res_param_value == param_value:
+        assert True
+    else:
+        assert False, ("The execution %s is %s "
+                       "and the expected %s is %s" %
+                       (param, param_value, param, param_value))
+
 #@step(r'I create a whizzml execution from an existing script"$')
 def i_create_an_execution(step):
-    resource = world.api.create_execution(world.script)
+    resource = world.api.create_execution(world.script['resource'])
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.execution = resource['object']
+    world.executions.append(resource['resource'])
+
+
+#@step(r'I create a whizzml execution from the last two scripts$')
+def i_create_an_execution_from_list(step, number_of_scripts=2):
+    scripts = world.scripts[-number_of_scripts:]
+    resource = world.api.create_execution(scripts)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -73,7 +98,6 @@ def wait_until_execution_status_code_is(step, code1, code2, secs):
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
            i_get_the_execution(step, execution_id)
            status = get_status(world.execution)
-           print "***", status
     assert status['code'] == int(code1)
 
 

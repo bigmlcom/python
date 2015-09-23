@@ -73,7 +73,6 @@ def wait_until_library_status_code_is(step, code1, code2, secs):
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
            i_get_the_library(step, library_id)
            status = get_status(world.library)
-           print "***", status
     assert status['code'] == int(code1)
 
 

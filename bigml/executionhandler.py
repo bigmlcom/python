@@ -60,13 +60,19 @@ class ExecutionHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        if isinstance(origin_resource, basestring):
+        if (isinstance(origin_resource, basestring) or
+                isinstance(origin_resource, dict)):
             # single script
             scripts = [origin_resource]
         else:
             scripts = origin_resource
+        try:
+            script_ids = [get_script_id(script) for script in scripts]
+        except TypeError:
+            raise Exception("A script id or a list of them is needed to create"
+                            " a script execution. %s found." %
+                            get_resource_type(origin_resource))
 
-        script_ids = [get_script_id(script) for script in scripts]
         if all([get_resource_type(script_id) == SCRIPT_PATH for
                script_id in script_ids]):
             for script in scripts:

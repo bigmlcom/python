@@ -55,6 +55,8 @@ from bigml.projecthandler import ProjectHandler
 from bigml.samplehandler import SampleHandler
 from bigml.correlationhandler import CorrelationHandler
 from bigml.statisticaltesthandler import StatisticalTestHandler
+from bigml.logistichandler import LogisticRegressionHandler
+
 
 # Repeating constants and functions for backwards compatibility
 
@@ -76,7 +78,8 @@ from bigml.resourcehandler import (
     BATCH_PREDICTION_PATH, CLUSTER_PATH, CENTROID_PATH, BATCH_CENTROID_PATH,
     ANOMALY_PATH, ANOMALY_SCORE_PATH, BATCH_ANOMALY_SCORE_PATH, PROJECT_PATH,
     SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
-    STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE)
+    STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
+    LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE)
 
 
 from bigml.resourcehandler import (
@@ -86,7 +89,8 @@ from bigml.resourcehandler import (
     get_prediction_id, get_batch_prediction_id, get_batch_centroid_id,
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
-    get_correlation_id, get_statistical_test_id)
+    get_correlation_id, get_statistical_test_id, get_logistic_regression_id)
+
 
 # Map status codes to labels
 STATUSES = {
@@ -111,7 +115,9 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(StatisticalTestHandler, CorrelationHandler, SampleHandler, ProjectHandler,
+class BigML(LogisticRegressionHandler,
+            StatisticalTestHandler, CorrelationHandler,
+            SampleHandler, ProjectHandler,
             BatchAnomalyScoreHandler, BatchCentroidHandler,
             BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
             AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
@@ -175,6 +181,7 @@ class BigML(StatisticalTestHandler, CorrelationHandler, SampleHandler, ProjectHa
         SampleHandler.__init__(self)
         CorrelationHandler.__init__(self)
         StatisticalTestHandler.__init__(self)
+        LogisticRegressionHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:

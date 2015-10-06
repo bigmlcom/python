@@ -45,6 +45,8 @@ PROJECT_PATH = 'project'
 SAMPLE_PATH = 'sample'
 CORRELATION_PATH = 'correlation'
 STATISTICAL_TEST_PATH = 'statisticaltest'
+LOGISTIC_REGRESSION_PATH = 'logisticregression'
+
 
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
@@ -70,10 +72,16 @@ ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
 BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
                                                   ID_PATTERN))
 PROJECT_RE = re.compile(r'^%s/%s$' % (PROJECT_PATH, ID_PATTERN))
-SAMPLE_RE = re.compile(r'^%s/%s$' % (SAMPLE_PATH, ID_PATTERN))
-CORRELATION_RE = re.compile(r'^%s/%s$' % (CORRELATION_PATH, ID_PATTERN))
-STATISTICAL_TEST_RE = re.compile(r'^%s/%s$' % \
-    (STATISTICAL_TEST_PATH, ID_PATTERN))
+SAMPLE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    SAMPLE_PATH, ID_PATTERN, SAMPLE_PATH, SHARED_PATTERN))
+CORRELATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    CORRELATION_PATH, ID_PATTERN, CORRELATION_PATH, SHARED_PATTERN))
+STATISTICAL_TEST_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (STATISTICAL_TEST_PATH, ID_PATTERN, STATISTICAL_TEST_PATH, SHARED_PATTERN))
+LOGISTIC_REGRESSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (LOGISTIC_REGRESSION_PATH, ID_PATTERN,
+     LOGISTIC_REGRESSION_PATH, SHARED_PATTERN))
+
 
 RESOURCE_RE = {
     'source': SOURCE_RE,
@@ -92,14 +100,17 @@ RESOURCE_RE = {
     'project': PROJECT_RE,
     'sample': SAMPLE_RE,
     'correlation': CORRELATION_RE,
-    'statisticaltest': STATISTICAL_TEST_RE}
+    'statisticaltest': STATISTICAL_TEST_RE,
+    'logisticregression': LOGISTIC_REGRESSION_RE}
+
 
 RENAMED_RESOURCES = {
     'batchprediction': 'batch_prediction',
     'batchcentroid': 'batch_centroid',
     'anomalyscore': 'anomaly_score',
     'batchanomalyscore': 'batch_anomaly_score',
-    'statisticaltest': 'statistical_test'
+    'statisticaltest': 'statistical_test',
+    'logisticregression': 'logistic_regression',
 }
 
 NO_QS = [EVALUATION_RE, PREDICTION_RE, BATCH_PREDICTION_RE,
@@ -304,6 +315,13 @@ def get_statistical_test_id(statistical_test):
 
     """
     return get_resource(STATISTICAL_TEST_RE, statistical_test)
+
+
+def get_logistic_regression_id(logistic_regression):
+    """Returns a logisticregression/id.
+
+    """
+    return get_resource(LOGISTIC_REGRESSION_RE, logistic_regression)
 
 
 def get_resource_id(resource):

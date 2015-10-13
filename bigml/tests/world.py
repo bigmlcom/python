@@ -46,7 +46,8 @@ RESOURCE_TYPES = [
     'project',
     'sample',
     'correlation',
-    'statisticaltest'
+    'statisticaltest',
+    'logisticregression'
 ]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',
@@ -54,14 +55,16 @@ IRREGULAR_PLURALS = {
     'batchcentroid': 'batch_centroids',
     'anomalyscore': 'anomaly_scores',
     'batchanomalyscore': 'batch_anomaly_scores',
-    'statisticaltest': 'statistical_tests'
+    'statisticaltest': 'statistical_tests',
+    'logisticregression': 'logistic_regressions'
 }
 TRANSLATED_RESOURCES = {
     'batchprediction': 'batch_prediction',
     'batchcentroid': 'batch_centroid',
     'anomalyscore': 'anomaly_score',
     'batchanomalyscore': 'batch_anomaly_score',
-    'statisticaltest': 'statistical_test'
+    'statisticaltest': 'statistical_test',
+    'logisticregression': 'logistic_regression'
 }
 
 
@@ -164,7 +167,6 @@ def teardown_module():
     """
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
-
 
     world.delete_resources()
     project_stats = world.api.get_project( \

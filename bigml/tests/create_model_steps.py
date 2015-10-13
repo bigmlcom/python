@@ -153,3 +153,30 @@ def is_associated_to_centroid_id(step, centroid_id):
     assert "model/%s" % (
         cluster['object']['cluster_models'][
             centroid_id]) == world.model['resource']
+
+#@step(r'I create a logistic regression model$')
+def i_create_a_logistic_model(step):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_logistic_regression(dataset)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.logistic_regression = resource['object']
+    world.logistic_regressions.append(resource['resource'])
+
+#@step(r'I wait until the logistic regression model status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
+    start = datetime.utcnow()
+    read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
+    status = get_status(world.logistic_regression)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+           time.sleep(3)
+           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
+           status = get_status(world.logistic_regression)
+    assert status['code'] == int(code1)
+
+#@step(r'I wait until the logistic regression model is ready less than (\d+)')
+def the_logistic_model_is_finished_in_less_than(step, secs):
+    wait_until_logistic_model_status_code_is(step, FINISHED, FAULTY, secs)

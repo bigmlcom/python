@@ -160,3 +160,20 @@ def i_create_an_anomaly_score(step, data=None):
 
 def the_anomaly_score_is(step, score):
     check_prediction(world.anomaly_score['score'], score)
+
+
+def the_logistic_prediction_is(step, prediction):
+    check_prediction(world.prediction['output'], prediction)
+
+
+def i_create_a_logistic_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    model = world.logistic_regression['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction(model, data)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED, "Wrong status: %s" % world.status
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])

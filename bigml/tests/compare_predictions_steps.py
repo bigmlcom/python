@@ -2,6 +2,7 @@ import json
 import os
 from world import world, res_filename
 from bigml.model import Model
+from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
 from bigml.multimodel import MultiModel
@@ -191,18 +192,19 @@ def the_local_prediction_is(step, prediction):
         local_prediction = world.local_prediction['prediction']
     else:
         local_prediction = world.local_prediction
-    try:
-        local_model = world.local_model
-        if isinstance(local_model, MultiModel):
-            local_model = local_model.models[0]
-        if local_model.tree.regression:
-            local_prediction = round(float(local_prediction), 4)
-            prediction = round(float(prediction), 4)
-    except:
-        local_model = world.local_ensemble.multi_model.models[0]
-        if local_model.tree.regression:
-            local_prediction = round(float(local_prediction), 4)
-            prediction = round(float(prediction), 4)
+    if not isinstance(world.local_model, LogisticRegression):
+        try:
+            local_model = world.local_model
+            if isinstance(local_model, MultiModel):
+                local_model = local_model.models[0]
+            if local_model.tree.regression:
+                local_prediction = round(float(local_prediction), 4)
+                prediction = round(float(prediction), 4)
+        except:
+            local_model = world.local_ensemble.multi_model.models[0]
+            if local_model.tree.regression:
+                local_prediction = round(float(local_prediction), 4)
+                prediction = round(float(prediction), 4)
     if local_prediction == prediction:
         assert True
     else:
@@ -238,3 +240,7 @@ def the_confidence_weighted_prediction(step, predictions):
     for i in range(len(world.votes)):
         combined_prediction = world.votes[i].combine(1)
         assert combined_prediction == predictions[i]
+
+#@step(r'I create a local logistic regression model$')
+def i_create_a_local_logistic_model(step):
+    world.local_model = LogisticRegression(world.logistic_regression)

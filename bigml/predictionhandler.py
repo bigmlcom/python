@@ -30,9 +30,10 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, get_prediction_id,
                                    check_resource, get_ensemble_id,
-                                   get_model_id, get_resource_type)
+                                   get_model_id, get_logistic_regression_id,
+                                   get_resource_type)
 from bigml.resourcehandler import (PREDICTION_PATH, ENSEMBLE_PATH, MODEL_PATH,
-                                   TINY_RESOURCE)
+                                   LOGISTIC_REGRESSION_PATH, TINY_RESOURCE)
 
 class PredictionHandler(ResourceHandler):
     """This class is used by the BigML class as
@@ -53,11 +54,13 @@ class PredictionHandler(ResourceHandler):
                           args=None, wait_time=3, retries=10, by_name=True):
         """Creates a new prediction.
            The model parameter can be:
-            - a simple model
+            - a simple tree model
+            - a simple logistic regression model
             - an ensemble
            The by_name argument is now deprecated. It will be removed.
 
         """
+        logistic_regression_id = None
         ensemble_id = None
         model_id = None
 
@@ -75,6 +78,12 @@ class PredictionHandler(ResourceHandler):
                            query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True, api=self)
+        elif resource_type == LOGISTIC_REGRESSION_PATH:
+            logistic_regression_id = get_logistic_regression_id(model)
+            check_resource(logistic_regression_id,
+                           query_string=TINY_RESOURCE,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True, api=self)
         else:
             raise Exception("A model or ensemble id is needed to create a"
                             " prediction. %s found." % resource_type)
@@ -86,12 +95,15 @@ class PredictionHandler(ResourceHandler):
             create_args.update(args)
         create_args.update({
             "input_data": input_data})
-        if ensemble_id is None:
+        if model_id is not None:
             create_args.update({
                 "model": model_id})
-        else:
+        elif ensemble_id is not None:
             create_args.update({
                 "ensemble": ensemble_id})
+        elif logistic_regression_id is not None:
+            create_args.update({
+                "logisticregression": logistic_regression_id})
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,

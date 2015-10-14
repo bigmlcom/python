@@ -53,11 +53,11 @@ class TestStatisticalTest(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | test_name |
-                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new statistical test name |
+                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new statistical test name |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '10', 'my new statistical test name']]
+            ['data/iris.csv', '10', '10', '20', '20', 'my new statistical test name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

@@ -3,6 +3,11 @@
 History
 -------
 
+4.2.1 (2015-10-14)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Improving error handling in download_dataset method.
+
 4.2.0 (2015-07-27)
 ~~~~~~~~~~~~~~~~~~
 

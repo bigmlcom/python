@@ -57,8 +57,9 @@ DOWNLOAD_DIR = '/download'
 
 
 # Headers
-SEND_JSON = {'Content-Type': 'application/json;charset=utf-8'}
-ACCEPT_JSON = {'Accept': 'application/json;charset=utf-8'}
+JSON_TYPE = 'application/json'
+SEND_JSON = {'Content-Type': '%s;charset=utf-8' % JSON_TYPE}
+ACCEPT_JSON = {'Accept': '%s;charset=utf-8' % JSON_TYPE}
 
 # HTTP Status Codes from https://bigml.com/developers/status_codes
 HTTP_OK = 200
@@ -624,6 +625,11 @@ class BigMLConnection(object):
         code = HTTP_INTERNAL_SERVER_ERROR
         file_object = None
 
+        # if retries for the creation and download have been exhausted,
+        # return None
+        if counter > 2 * retries:
+            LOGGER.error("Retries exhausted trying to download the file.")
+            return file_object
         if GAE_ENABLED:
             try:
                 req_options = {
@@ -648,56 +654,72 @@ class BigMLConnection(object):
         try:
             code = response.status_code
             if code == HTTP_OK:
-                try:
-                    if counter < retries:
-                        download_status = json_load(response.content)
-                        if download_status and isinstance(download_status,
-                                                          dict):
-                            if download_status['status']['code'] != 5:
-                                time.sleep(get_exponential_wait(wait_time,
-                                                                counter))
-                                counter += 1
-                                return self._download(url, filename=filename,
-                                                      wait_time=wait_time,
-                                                      retries=retries,
-                                                      counter=counter)
-                            else:
-                                return self._download(url, filename=filename,
-                                                      wait_time=wait_time,
-                                                      retries=retries,
-                                                      counter=retries + 1)
-                    elif counter == retries:
-                        LOGGER.error("The maximum number of retries "
-                                     " for the download has been "
-                                     " exceeded. You can retry your "
-                                     " command again in"
-                                     " a while.")
-                        return None
-                except ValueError:
-                    # When download starts, response.content is no longer a
-                    # JSON object and we must retry the download without
-                    # testing for JSON content. This is achieved by using
-                    # counter = retries + 1 to single out this case.
-                    if counter < retries:
-                        return self._download(url, filename=filename,
-                                              wait_time=wait_time,
-                                              retries=retries,
-                                              counter=retries + 1)
-                if filename is not None and GAE_ENABLED:
-                    LOGGER.error("No support for downloading"
-                                 " to local files in Google App Engine.")
-                    filename = None
-                if filename is None:
-                    if GAE_ENABLED:
-                        file_object = StringIO.StringIO(response.content)
-                    else:
-                        file_object = response.raw
+                # starting the dataset export procedure
+                if response.headers.get("content-type") == JSON_TYPE:
+                    try:
+                        if counter < retries:
+                            download_status = json_load(response.content)
+                            if download_status and isinstance(download_status,
+                                                              dict):
+                                if download_status['status']['code'] != 5:
+                                    time.sleep(get_exponential_wait(wait_time,
+                                                                    counter))
+                                    counter += 1
+                                    return self._download(url,
+                                                          filename=filename,
+                                                          wait_time=wait_time,
+                                                          retries=retries,
+                                                          counter=counter)
+                                else:
+                                    return self._download(url,
+                                                          filename=filename,
+                                                          wait_time=wait_time,
+                                                          retries=retries,
+                                                          counter=retries + 1)
+                        elif counter == retries:
+                            LOGGER.error("The maximum number of retries "
+                                         " for the download has been "
+                                         " exceeded. You can retry your "
+                                         " command again in"
+                                         " a while.")
+                            return None
+                    except ValueError:
+                        LOGGER.error("Failed getting a valid JSON structure.")
                 else:
-                    file_size = stream_copy(response, filename)
-                    if file_size == 0:
-                        LOGGER.error("Error copying file to %s", filename)
+                    # When download starts, content-type is no longer a
+                    # JSON object.
+                    if filename is not None and GAE_ENABLED:
+                        LOGGER.error("No support for downloading"
+                                     " to local files in Google App Engine.")
+                        filename = None
+                    if filename is None:
+                        if GAE_ENABLED:
+                            file_object = StringIO.StringIO(response.content)
+                        else:
+                            file_object = response.raw
                     else:
-                        file_object = filename
+                        try:
+                            total_size = int(
+                                response.headers.get("content-length"))
+                        except ValueError:
+                            total_size = None
+                        file_size = stream_copy(response, filename)
+                        if file_size == 0:
+                            LOGGER.error("Error copying file to %s", filename)
+                        else:
+                            file_object = filename
+                        # if transient connection errors prevent the download,
+                        # retry
+                        if total_size is None or file_size < total_size:
+                            LOGGER.error("Error downloading: "
+                                         "total size=%s, %s downloaded",
+                                         total_size, file_size)
+                            time.sleep(get_exponential_wait(wait_time,
+                                                            counter))
+                            return self._download(url, filename=filename,
+                                                  wait_time=wait_time,
+                                                  retries=retries,
+                                                  counter=counter + 1)
             elif code in [HTTP_BAD_REQUEST,
                           HTTP_UNAUTHORIZED,
                           HTTP_NOT_FOUND,

@@ -53,11 +53,11 @@ class TestCorrelation(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | correlation_name |
-                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new correlation name |
+                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new correlation name |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '10', 'my new correlation name']]
+            ['data/iris.csv', '10', '10', '20', '20', 'my new correlation name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

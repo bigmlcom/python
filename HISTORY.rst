@@ -3,6 +3,12 @@
 History
 -------
 
+4.2.2 (2015-10-14)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Fields object failed to store the correct objective id when the
+  objective was in the first column.
+
 4.2.1 (2015-10-14)
 ~~~~~~~~~~~~~~~~~~
 

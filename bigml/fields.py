@@ -165,7 +165,7 @@ class Fields(object):
         self.filtered_indexes = None
         # if the objective field is not set by the user
         # use the one extracted from the resource info
-        if not objective_field and objective_column is not None:
+        if objective_field is None and objective_column is not None:
             objective_field = objective_column
             objective_field_present = True
         self.update_objective_field(objective_field, objective_field_present)

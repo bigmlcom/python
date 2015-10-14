@@ -76,36 +76,37 @@ def get_fields_structure(resource):
         raise ValueError("Unknown resource structure")
 
     if resource_type in RESOURCES_WITH_FIELDS:
+        resource = resource.get('object', resource)
         # locale and missing tokens
         if resource_type == SOURCE_TYPE:
-            resource_locale = resource['object']['source_parser']['locale']
-            missing_tokens = resource['object'][
+            resource_locale = resource['source_parser']['locale']
+            missing_tokens = resource[
                 'source_parser']['missing_tokens']
         else:
-            resource_locale = resource['object'].get('locale', DEFAULT_LOCALE)
-            missing_tokens = resource['object'].get('missing_tokens',
-                                                    DEFAULT_MISSING_TOKENS)
+            resource_locale = resource.get('locale', DEFAULT_LOCALE)
+            missing_tokens = resource.get('missing_tokens',
+                                          DEFAULT_MISSING_TOKENS)
         # fields structure
         if resource_type in [MODEL_TYPE, ANOMALY_TYPE]:
-            fields = resource['object']['model']['fields']
+            fields = resource['model']['fields']
         elif resource_type == CLUSTER_TYPE:
-            fields = resource['object']['clusters']['fields']
+            fields = resource['clusters']['fields']
         elif resource_type == CORRELATION_TYPE:
-            fields = resource['object']['correlations']['fields']
+            fields = resource['correlations']['fields']
         elif resource_type == STATISTICAL_TEST_TYPE:
-            fields = resource['object']['statistical_tests']['fields']
+            fields = resource['statistical_tests']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
-                           resource['object']['sample']['fields']])
+                           resource['sample']['fields']])
         else:
-            fields = resource['object']['fields']
+            fields = resource['fields']
         # Check whether there's an objective id
         objective_column = None
         if resource_type == DATASET_TYPE:
-            objective_column = resource['object'].get( \
+            objective_column = resource.get( \
                 'objective_field', {}).get('id')
         elif resource_type == MODEL_TYPE:
-            objective_id = resource['object'].get( \
+            objective_id = resource.get( \
                 'objective_fields', [None])[0]
             objective_column = fields.get( \
                 objective_id, {}).get('column_number')

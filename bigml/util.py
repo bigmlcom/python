@@ -349,17 +349,25 @@ def reset_console_line(out=sys.stdout, length=PROGRESS_BAR_WIDTH):
     out.flush()
 
 
-def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH):
+def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH,
+                reset=False):
     """Prints the message to the given output
 
+       out: output handler
+       length: maximum length
+       reset: whether the line has to be reused and cursor reset to
+              the beggining of it
     """
-    clear_console_line(out=out, length=length)
-    reset_console_line(out=out, length=length)
+
+    if reset:
+        clear_console_line(out=out, length=length)
+        reset_console_line(out=out, length=length)
     if (out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty()
             and not PY3):
         message = message.decode('utf8').encode('850')
     out.write(message)
-    reset_console_line(out=out, length=length)
+    if reset:
+        reset_console_line(out=out, length=length)
 
 
 def get_csv_delimiter():

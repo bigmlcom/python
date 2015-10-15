@@ -152,7 +152,7 @@ class SourceHandler(ResourceHandler):
             """
             pct = 100 - ((total - current) * 100) / (total)
             console_log("Uploaded %s out of %s bytes [%s%%]" % (
-                localize(current), localize(total), pct))
+                localize(current), localize(total), pct), reset=True)
         create_args = {}
         if args is not None:
             create_args.update(args)

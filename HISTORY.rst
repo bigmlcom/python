@@ -3,6 +3,11 @@
 History
 -------
 
+4.3.0 (2015-10-16)
+~~~~~~~~~~~~~~~~~~
+
+- Adding logistic regression as a new prediction model.
+
 4.2.2 (2015-10-14)
 ~~~~~~~~~~~~~~~~~~
 

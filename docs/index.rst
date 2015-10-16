@@ -232,8 +232,8 @@ Setting the ``storage`` argument in the api instantiation:
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
 
-Fields
-------
+Fields Structure
+----------------
 
 BigML automatically generates idenfiers for each field. To see the
 fields and the ids and types that have been assigned to a source you can
@@ -267,6 +267,9 @@ filter them. This can be done using a query string expression, for instance:
     >>> source = api.get_source(source, "limit=10&order_by=name")
 
 would include in the retrieved dictionary the first 10 fields sorted by name.
+
+To handle the field structure you can use the ``Fields`` class. See the
+`Fields`_ section.
 
 Dataset
 -------
@@ -1705,6 +1708,9 @@ You can query the status of any resource with the ``status`` method:
     api.status(batch_anomaly_score)
     api.status(project)
     api.status(sample)
+    api.status(correlation)
+    api.status(statistica_test)
+    api.status(logistic_regression)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -2258,6 +2264,11 @@ You can list resources with the appropriate api method:
     api.list_anomalies()
     api.list_anomaly_scores()
     api.list_batch_anomaly_scores()
+    api.list_projects()
+    api.list_samples()
+    api.list_correlations()
+    api.list_statistical_tests()
+    api.list_logistic_regressions()
 
 you will receive a dictionary with the following keys:
 
@@ -2386,6 +2397,10 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_anomaly(anomaly, {"name": "new name"})
     api.update_anomaly_score(anomaly_score, {"name": "new name"})
     api.update_batch_anomaly_score(batch_anomaly_score, {"name": "new name"})
+    api.update_project(project, {"name": "new name"})
+    api.update_correlation(correlation, {"name": "new name"})
+    api.update_statistical_test(statistical_test, {"name": "new name"})
+    api.update_logistic_regression(logistic_regressioin, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -2424,6 +2439,10 @@ each type of resource.
     api.delete_anomaly(anomaly)
     api.delete_anomaly_score(anomaly_score)
     api.delete_batch_anomaly_score(batch_anomaly_score)
+    api.delete_sample(sample)
+    api.delete_correlation(correlation)
+    api.delete_statistical_test(statistical_test)
+    api.delete_logistic_regression(logistic_regression)
 
 Each of the calls above will return a dictionary with the following
 keys:

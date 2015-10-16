@@ -56,10 +56,13 @@ ANOMALY_TYPE = 'anomaly'
 SAMPLE_TYPE = 'sample'
 CORRELATION_TYPE = 'correlation'
 STATISTICAL_TEST_TYPE = 'statisticaltest'
+LOGISTIC_REGRESSION_TYPE = 'logisticregression'
+
 
 RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE,
                          PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE,
-                         SAMPLE_TYPE, CORRELATION_TYPE, STATISTICAL_TEST_TYPE]
+                         SAMPLE_TYPE, CORRELATION_TYPE, STATISTICAL_TEST_TYPE,
+                         LOGISTIC_REGRESSION_TYPE]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -95,6 +98,8 @@ def get_fields_structure(resource):
             fields = resource['correlations']['fields']
         elif resource_type == STATISTICAL_TEST_TYPE:
             fields = resource['statistical_tests']['fields']
+        elif resource_type == LOGISTIC_REGRESSION_TYPE:
+            fields = resource['logistic_regression']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
                            resource['sample']['fields']])
@@ -105,7 +110,7 @@ def get_fields_structure(resource):
         if resource_type == DATASET_TYPE:
             objective_column = resource.get( \
                 'objective_field', {}).get('id')
-        elif resource_type == MODEL_TYPE:
+        elif resource_type in [MODEL_TYPE, LOGISTIC_REGRESSION_TYPE]:
             objective_id = resource.get( \
                 'objective_fields', [None])[0]
             objective_column = fields.get( \

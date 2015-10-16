@@ -1393,6 +1393,251 @@ Note that the output in the snippet above has been abbreviated. As you see, the
 and ``outliers``
 sections where the information for each field's distribution is stored.
 
+Logistic Regressions
+--------------------
+
+A logistic regression is a supervised machine learning method for
+solving classification problems. Each of the classes in the field
+you want to predict, the objective field, is assigned a probability depending
+on the values of the input fields. The probability is computed
+as the value of a logistic function,
+whose argument is a linear combination of the predictors' values.
+You can create a logistic regression selecting which fields from your
+dataset you want to use as input fields (or predictors) and which
+categorical field you want to predict, the objective field. Then the
+created logistic regression is defined by the set of coefficients in the
+linear combination of the values. Categorical
+and text fields need some prior work to be modelled using this method. They
+are expanded as a set of new fields, one per category or term (respectively)
+where the number of occurrences of the category or term is store. Thus,
+the linear combination is made on the frequency of the categories or terms.
+
+The JSON structure for a logistic regression is:
+
+.. code-block:: python
+
+    >>> api.pprint(logistic_regression['object'])
+    {   u'balance_objective': False,
+        u'category': 0,
+        u'code': 200,
+        u'columns': 5,
+        u'created': u'2015-10-09T16:11:08.444000',
+        u'credits': 0.017581939697265625,
+        u'credits_per_prediction': 0.0,
+        u'dataset': u'dataset/561304f537203f4c930001ca',
+        u'dataset_field_types': {   u'categorical': 1,
+                                    u'datetime': 0,
+                                    u'effective_fields': 5,
+                                    u'numeric': 4,
+                                    u'preferred': 5,
+                                    u'text': 0,
+                                    u'total': 5},
+        u'dataset_status': True,
+        u'description': u'',
+        u'excluded_fields': [],
+        u'fields_meta': {   u'count': 5,
+                            u'limit': 1000,
+                            u'offset': 0,
+                            u'query_total': 5,
+                            u'total': 5},
+        u'input_fields': [u'000000', u'000001', u'000002', u'000003'],
+        u'locale': u'en_US',
+        u'logistic_regression': {   u'bias': 1,
+                                    u'c': 1,
+                                    u'coefficients': [   [   u'Iris-virginica',
+                                                             [   -1.7074433493289376,
+                                                                 -1.533662474502423,
+                                                                 2.47026986670851,
+                                                                 2.5567582221085563,
+                                                                 -1.2158200612711925]],
+                                                         [   u'Iris-setosa',
+                                                             [   0.41021712519841674,
+                                                                 1.464162165246765,
+                                                                 -2.26003266131107,
+                                                                 -1.0210350909174153,
+                                                                 0.26421852991732514]],
+                                                         [   u'Iris-versicolor',
+                                                             [   0.42702327817072505,
+                                                                 -1.611817241669904,
+                                                                 0.5763832839459982,
+                                                                 -1.4069842681625884,
+                                                                 1.0946877732663143]]],
+                                    u'eps': 1e-05,
+                                    u'fields': {   u'000000': {   u'column_number': 0,
+                                                                  u'datatype': u'double',
+                                                                  u'name': u'sepal length',
+                                                                  u'optype': u'numeric',
+                                                                  u'order': 0,
+                                                                  u'preferred': True,
+                                                                  u'summary': {   u'bins': [   [   4.3,
+                                                                                                   1],
+                                                                                               [   4.425,
+                                                                                                   4],
+                                                                                               [   4.6,
+                                                                                                   4],
+    ...
+                                                                                               [   7.9,
+                                                                                                   1]],
+                                                                                  u'kurtosis': -0.57357,
+                                                                                  u'maximum': 7.9,
+                                                                                  u'mean': 5.84333,
+                                                                                  u'median': 5.8,
+                                                                                  u'minimum': 4.3,
+                                                                                  u'missing_count': 0,
+                                                                                  u'population': 150,
+                                                                                  u'skewness': 0.31175,
+                                                                                  u'splits': [   4.51526,
+                                                                                                 4.67252,
+                                                                                                 4.81113,
+    ...
+                                                                                                 6.92597,
+                                                                                                 7.20423,
+                                                                                                 7.64746],
+                                                                                  u'standard_deviation': 0.82807,
+                                                                                  u'sum': 876.5,
+                                                                                  u'sum_squares': 5223.85,
+                                                                                  u'variance': 0.68569}},
+                                                   u'000001': {   u'column_number': 1,
+                                                                  u'datatype': u'double',
+                                                                  u'name': u'sepal width',
+                                                                  u'optype': u'numeric',
+                                                                  u'order': 1,
+                                                                  u'preferred': True,
+                                                                  u'summary': {   u'counts': [   [   2,
+                                                                                                     1],
+                                                                                                 [   2.2,
+                                                                                                     3],
+    ...
+                                                                                                 [   4.2,
+                                                                                                     1],
+                                                                                                 [   4.4,
+                                                                                                     1]],
+                                                                                  u'kurtosis': 0.18098,
+                                                                                  u'maximum': 4.4,
+                                                                                  u'mean': 3.05733,
+                                                                                  u'median': 3,
+                                                                                  u'minimum': 2,
+                                                                                  u'missing_count': 0,
+                                                                                  u'population': 150,
+                                                                                  u'skewness': 0.31577,
+                                                                                  u'standard_deviation': 0.43587,
+                                                                                  u'sum': 458.6,
+                                                                                  u'sum_squares': 1430.4,
+                                                                                  u'variance': 0.18998}},
+                                                   u'000002': {   u'column_number': 2,
+                                                                  u'datatype': u'double',
+                                                                  u'name': u'petal length',
+                                                                  u'optype': u'numeric',
+                                                                  u'order': 2,
+                                                                  u'preferred': True,
+                                                                  u'summary': {   u'bins': [   [   1,
+                                                                                                   1],
+                                                                                               [   1.16667,
+                                                                                                   3],
+    ...
+                                                                                               [   6.6,
+                                                                                                   1],
+                                                                                               [   6.7,
+                                                                                                   2],
+                                                                                               [   6.9,
+                                                                                                   1]],
+                                                                                  u'kurtosis': -1.39554,
+                                                                                  u'maximum': 6.9,
+                                                                                  u'mean': 3.758,
+                                                                                  u'median': 4.35,
+                                                                                  u'minimum': 1,
+                                                                                  u'missing_count': 0,
+                                                                                  u'population': 150,
+                                                                                  u'skewness': -0.27213,
+                                                                                  u'splits': [   1.25138,
+                                                                                                 1.32426,
+                                                                                                 1.37171,
+    ...
+                                                                                                 6.02913,
+                                                                                                 6.38125],
+                                                                                  u'standard_deviation': 1.7653,
+                                                                                  u'sum': 563.7,
+                                                                                  u'sum_squares': 2582.71,
+                                                                                  u'variance': 3.11628}},
+                                                   u'000003': {   u'column_number': 3,
+                                                                  u'datatype': u'double',
+                                                                  u'name': u'petal width',
+                                                                  u'optype': u'numeric',
+                                                                  u'order': 3,
+                                                                  u'preferred': True,
+                                                                  u'summary': {   u'counts': [   [   0.1,
+                                                                                                     5],
+                                                                                                 [   0.2,
+                                                                                                     29],
+    ...
+                                                                                                 [   2.4,
+                                                                                                     3],
+                                                                                                 [   2.5,
+                                                                                                     3]],
+                                                                                  u'kurtosis': -1.33607,
+                                                                                  u'maximum': 2.5,
+                                                                                  u'mean': 1.19933,
+                                                                                  u'median': 1.3,
+                                                                                  u'minimum': 0.1,
+                                                                                  u'missing_count': 0,
+                                                                                  u'population': 150,
+                                                                                  u'skewness': -0.10193,
+                                                                                  u'standard_deviation': 0.76224,
+                                                                                  u'sum': 179.9,
+                                                                                  u'sum_squares': 302.33,
+                                                                                  u'variance': 0.58101}},
+                                                   u'000004': {   u'column_number': 4,
+                                                                  u'datatype': u'string',
+                                                                  u'name': u'species',
+                                                                  u'optype': u'categorical',
+                                                                  u'order': 4,
+                                                                  u'preferred': True,
+                                                                  u'summary': {   u'categories': [   [   u'Iris-setosa',
+                                                                                                         50],
+                                                                                                     [   u'Iris-versicolor',
+                                                                                                         50],
+                                                                                                     [   u'Iris-virginica',
+                                                                                                         50]],
+                                                                                  u'missing_count': 0},
+                                                                  u'term_analysis': {   u'enabled': True}}},
+                                    u'normalize': False,
+                                    u'regularization': u'l2'},
+        u'max_columns': 5,
+        u'max_rows': 150,
+        u'name': u"iris' dataset's logistic regression",
+        u'number_of_batchpredictions': 0,
+        u'number_of_evaluations': 0,
+        u'number_of_predictions': 1,
+        u'objective_field': u'000004',
+        u'objective_field_name': u'species',
+        u'objective_field_type': u'categorical',
+        u'objective_fields': [u'000004'],
+        u'out_of_bag': False,
+        u'private': True,
+        u'project': u'project/561304c137203f4c9300016c',
+        u'range': [1, 150],
+        u'replacement': False,
+        u'resource': u'logisticregression/5617e71c37203f506a000001',
+        u'rows': 150,
+        u'sample_rate': 1.0,
+        u'shared': False,
+        u'size': 4609,
+        u'source': u'source/561304f437203f4c930001c3',
+        u'source_status': True,
+        u'status': {   u'code': 5,
+                       u'elapsed': 86,
+                       u'message': u'The logistic regression has been created',
+                       u'progress': 1.0},
+        u'subscription': False,
+        u'tags': [u'species'],
+        u'updated': u'2015-10-09T16:14:02.336000',
+        u'white_box': False}
+
+Note that the output in the snippet above has been abbreviated. As you see,
+the ``logistic_regression`` attribute stores the coefficients used in the
+logistic function as well as the configuration parameters described in
+the `developers section <https://bigml.com/developers/logisticregressions>`_ .
+
 
 Creating Resources
 ------------------
@@ -2526,6 +2771,81 @@ associated to an input data set:
 As in the local model predictions, producing local anomaly scores can be done
 independently of BigML servers, so no cost or connection latencies are
 involved.
+
+Local Logistic Regression
+-------------------------
+
+You can also instantiate a local version of a remote logistic regression.
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    local_log_regression = LogisticRegression(
+        'logisticregression/502fdbff15526876610042435')
+
+This will retrieve the remote logistic regression information,
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a ``LogisticRegression``
+object that you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    from bigml.api import BigML
+
+    local_log_regression = LogisticRegression(
+        'logisticregression/502fdbff15526876610602435',
+        api=BigML(my_username, my_api_key))
+
+You can also reuse a remote logistic regression JSON structure
+as retrieved previously to build the
+local logistic regression object:
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    from bigml.api import BigML
+    api = BigML()
+    logistic_regression = api.get_logistic_regression(
+        'logisticregression/502fdbff15526876610002435',
+        query_string='limit=-1')
+
+    local_log_regression = LogisticRegression(logistic_regression)
+
+Note that in this example we used a ``limit=-1`` query string for the logistic
+regression retrieval. This ensures that all fields are retrieved by the get
+method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+Local Logistic Regression Predictions
+-------------------------------------
+
+Using the local logistic regression object, you can predict the prediction for
+an input data set:
+
+.. code-block:: python
+
+    local_log_regression.predict({"petal length": 2, "sepal length": 1.5,
+                                  "petal width": 0.5, "sepal width": 0.7})
+    {'distribution': [
+        {'category': u'Iris-virginica', 'probability': 0.5041444478857267},
+        {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
+        {'category': u'Iris-setosa', 'probability': 0.02659013168639014}],
+        'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}
+
+As you can see, the prediction contains the predicted category and the
+associated probability. It also shows the distribution of probabilities for
+all the possible categories in the objective field.
+
+You must keep in mind, though, that to obtain a logistic regression
+prediction, input data
+must have values for all the numeric fields. No missing values for the numeric
+fields are allowed.
+
 
 Multi Models
 ------------

@@ -115,6 +115,12 @@ class LogisticRegression(ModelFields):
         self.coefficients = {}
         self.data_field_types = {}
         self.bias = None
+        # the missing coefficient is set by default
+        self.missing_coefficients = True
+        self.c = None
+        self.eps = None
+        self.lr_normalize = None
+        self.regularization = None
         if not (isinstance(logistic_regression, dict)
                 and 'resource' in logistic_regression and
                 logistic_regression['resource'] is not None):
@@ -156,6 +162,12 @@ class LogisticRegression(ModelFields):
                 self.coefficients.update(logistic_regression_info.get( \
                     'coefficients', []))
                 self.bias = logistic_regression_info.get('bias', 0)
+                self.c = logistic_regression_info.get('c')
+                self.eps = logistic_regression_info.get('eps')
+                self.lr_normalize = logistic_regression_info.get('normalize')
+                self.regularization = logistic_regression_info.get( \
+                    'regularization')
+                objective_id=extract_objective(objective_field)
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
                         self.term_forms[field_id] = {}
@@ -172,7 +184,7 @@ class LogisticRegression(ModelFields):
                             in field['summary']['categories']]
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=extract_objective(objective_field))
+                    objective_id=objective_id)
                 self.map_coefficients()
                 if len(self.fields) < self.dataset_field_types.get( \
                         "total", float("inf")):
@@ -213,27 +225,14 @@ class LogisticRegression(ModelFields):
         unique_terms = self.get_unique_terms(input_data)
 
         probabilities = {}
-
-        if len(self.categories[self.objective_id]) == 2:
-            # binary classifications have only one set of coefficients and
-            # you can compute the complementary probability as 1-p
-            category = self.coefficients.keys()[0]
+        total = 0
+        for category in self.categories[self.objective_id]:
             coefficients = self.coefficients[category]
             probabilities[category] = self.category_probability(
                 input_data, unique_terms, coefficients)
-            category_2 = [category_2 for category_2 in
-                          self.categories[self.objective_id]
-                          if category_2 != category][0]
-            probabilities[category_2] = 1 - probabilities[category]
-        else:
-            total = 0
-            for category in self.categories[self.objective_id]:
-                coefficients = self.coefficients[category]
-                probabilities[category] = self.category_probability(
-                    input_data, unique_terms, coefficients)
-                total += probabilities[category]
-            for category in probabilities.keys():
-                probabilities[category] /= total
+            total += probabilities[category]
+        for category in probabilities.keys():
+            probabilities[category] /= total
         predictions = sorted(probabilities.items(),
                              key=lambda x: x[1], reverse=True)
         prediction, probability = predictions[0]
@@ -260,14 +259,26 @@ class LogisticRegression(ModelFields):
                 try:
                     if field_id in self.tag_clouds:
                         index = self.tag_clouds[field_id].index(term)
-                        print index
                     elif field_id in self.categories:
                         index = self.categories[field_id].index(term)
                     probability += coefficients[shift + index] * occurrences
                 except ValueError:
                     pass
-        if self.bias > 0:
-            probability += coefficients[-1]
+
+        if self.missing_coefficients:
+            for field_id in self.tag_clouds:
+                shift = self.fields[field_id]['coefficients_shift']
+                if not field_id in unique_terms:
+                    probability += coefficients[ \
+                        shift + len(self.tag_clouds[field_id])]
+                print field_id, coefficients[ \
+                    shift + len(self.tag_clouds[field_id])]
+            for field_id in self.categories:
+                if field_id != self.objective_id and \
+                        not field_id in unique_terms:
+                    probability += coefficients[ \
+                        shift + len(self.categories[field_id])]
+        probability += coefficients[-1]
         probability = 1 / (1 + math.exp(-probability))
         return probability
 
@@ -317,14 +328,21 @@ class LogisticRegression(ModelFields):
         field_ids = [ \
             field_id for field_id, field in
             sorted(self.fields.items(),
-                   key=lambda x: x[1].get("column_number"))]
+                   key=lambda x: x[1].get("column_number"))
+                   if field_id != self.objective_id]
         shift = 0
         for field_id in field_ids:
             optype = self.fields[field_id]['optype']
             if optype in EXPANSION_ATTRIBUTES.keys():
+                # text and categorical fields have one coefficient per
+                # text/class plus a missing terms coefficient plus a bias
+                # coefficient
                 length = len(self.fields[field_id]['summary'][ \
                     EXPANSION_ATTRIBUTES[optype]])
+                if self.missing_coefficients:
+                    length += 1
             else:
+                # numeric fields have one coefficient
                 length = 1
             self.fields[field_id]['coefficients_shift'] = shift
             shift += length

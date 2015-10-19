@@ -188,8 +188,6 @@ class LogisticRegression(ModelFields):
                 self.map_coefficients()
                 if len(self.fields) < self.dataset_field_types.get( \
                         "total", float("inf")):
-                    print len(self.fields), self.dataset_field_types.get( \
-                        "total", float("inf"))
                     raise Exception("Some fields are missing"
                                     " to generate a local logistic regression."
                                     " Please, provide a logistic regression"
@@ -271,8 +269,6 @@ class LogisticRegression(ModelFields):
                 if not field_id in unique_terms:
                     probability += coefficients[ \
                         shift + len(self.tag_clouds[field_id])]
-                print field_id, coefficients[ \
-                    shift + len(self.tag_clouds[field_id])]
             for field_id in self.categories:
                 if field_id != self.objective_id and \
                         not field_id in unique_terms:

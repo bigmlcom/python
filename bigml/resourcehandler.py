@@ -46,6 +46,7 @@ SAMPLE_PATH = 'sample'
 CORRELATION_PATH = 'correlation'
 STATISTICAL_TEST_PATH = 'statisticaltest'
 LOGISTIC_REGRESSION_PATH = 'logisticregression'
+ASSOCIATION_PATH = 'association'
 
 
 # Resource Ids patterns
@@ -81,6 +82,8 @@ STATISTICAL_TEST_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
 LOGISTIC_REGRESSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (LOGISTIC_REGRESSION_PATH, ID_PATTERN,
      LOGISTIC_REGRESSION_PATH, SHARED_PATTERN))
+ASSOCIATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (ASSOCIATION_PATH, ID_PATTERN, ASSOCIATION_PATH, SHARED_PATTERN))
 
 
 RESOURCE_RE = {
@@ -101,7 +104,8 @@ RESOURCE_RE = {
     'sample': SAMPLE_RE,
     'correlation': CORRELATION_RE,
     'statisticaltest': STATISTICAL_TEST_RE,
-    'logisticregression': LOGISTIC_REGRESSION_RE}
+    'logisticregression': LOGISTIC_REGRESSION_RE,
+    'association': ASSOCIATION_RE}
 
 
 RENAMED_RESOURCES = {
@@ -322,6 +326,13 @@ def get_logistic_regression_id(logistic_regression):
 
     """
     return get_resource(LOGISTIC_REGRESSION_RE, logistic_regression)
+
+
+def get_association_id(association):
+    """Returns an association/id.
+
+    """
+    return get_resource(ASSOCIATION_RE, association)
 
 
 def get_resource_id(resource):

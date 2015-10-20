@@ -47,7 +47,8 @@ RESOURCE_TYPES = [
     'sample',
     'correlation',
     'statisticaltest',
-    'logisticregression'
+    'logisticregression',
+    'association'
 ]
 IRREGULAR_PLURALS = {
     'anomaly': 'anomalies',

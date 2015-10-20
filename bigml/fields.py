@@ -100,6 +100,8 @@ def get_fields_structure(resource):
             fields = resource['statistical_tests']['fields']
         elif resource_type == LOGISTIC_REGRESSION_TYPE:
             fields = resource['logistic_regression']['fields']
+        elif resource_type == ASSOCIATION_TYPE:
+            fields = resource['associations']['fields']
         elif resource_type == SAMPLE_TYPE:
             fields = dict([(field['id'], field) for field in
                            resource['sample']['fields']])

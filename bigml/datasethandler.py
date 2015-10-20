@@ -33,8 +33,8 @@ from bigml.resourcehandler import (check_resource_type,
                                    get_resource_type, resource_is_ready,
                                    check_resource, get_source_id,
                                    get_dataset_id, get_cluster_id)
-from bigml.resourcehandler import (DATASET_PATH, SOURCE_PATH,
-                                   TINY_RESOURCE, CLUSTER_PATH)
+from bigml.constants import (DATASET_PATH, SOURCE_PATH,
+                             TINY_RESOURCE, CLUSTER_PATH)
 
 
 class DatasetHandler(ResourceHandler):

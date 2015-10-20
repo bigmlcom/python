@@ -31,8 +31,8 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_resource_type, check_resource,
                                    get_model_id, get_cluster_id)
-from bigml.resourcehandler import (MODEL_PATH, CLUSTER_PATH, DATASET_PATH,
-                                   TINY_RESOURCE)
+from bigml.constants import (MODEL_PATH, CLUSTER_PATH, DATASET_PATH,
+                             TINY_RESOURCE)
 
 
 class ModelHandler(ResourceHandler):

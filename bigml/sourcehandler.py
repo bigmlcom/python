@@ -58,8 +58,8 @@ from bigml.bigmlconnection import (
 from bigml.resourcehandler import (check_resource_type,
                                    resource_is_ready,
                                    get_source_id)
-from bigml.resourcehandler import SOURCE_PATH, UPLOADING, LOGGER
-from bigml.resourcehandler import ResourceHandler
+from bigml.constants import SOURCE_PATH, UPLOADING
+from bigml.resourcehandler import ResourceHandler, LOGGER
 
 if PYTHON_2:
     register_openers()

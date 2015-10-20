@@ -31,8 +31,8 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_sample_id, get_resource_type,
                                    get_dataset_id, check_resource)
-from bigml.resourcehandler import (SAMPLE_PATH, DATASET_PATH,
-                                   TINY_RESOURCE)
+from bigml.constants import (SAMPLE_PATH, DATASET_PATH,
+                             TINY_RESOURCE)
 
 
 class SampleHandler(ResourceHandler):

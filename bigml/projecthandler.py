@@ -29,7 +29,7 @@ except ImportError:
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import check_resource_type, get_project_id
-from bigml.resourcehandler import PROJECT_PATH
+from bigml.constants import PROJECT_PATH
 
 
 class ProjectHandler(ResourceHandler):

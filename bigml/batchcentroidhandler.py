@@ -30,7 +30,7 @@ from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_batch_centroid_id)
-from bigml.resourcehandler import BATCH_CENTROID_PATH, CLUSTER_PATH
+from bigml.constants import BATCH_CENTROID_PATH, CLUSTER_PATH
 
 
 class BatchCentroidHandler(ResourceHandler):

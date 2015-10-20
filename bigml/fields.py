@@ -46,23 +46,15 @@ import sys
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
 from bigml.api import get_resource_type
+from bigml.constants import (
+    SOURCE_PATH, DATASET_PATH, PREDICTION_PATH, MODEL_PATH, CLUSTER_PATH,
+    ANOMALY_PATH, SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
+    LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH)
 
-SOURCE_TYPE = 'source'
-DATASET_TYPE = 'dataset'
-PREDICTION_TYPE = 'prediction'
-MODEL_TYPE = 'model'
-CLUSTER_TYPE = 'cluster'
-ANOMALY_TYPE = 'anomaly'
-SAMPLE_TYPE = 'sample'
-CORRELATION_TYPE = 'correlation'
-STATISTICAL_TEST_TYPE = 'statisticaltest'
-LOGISTIC_REGRESSION_TYPE = 'logisticregression'
-
-
-RESOURCES_WITH_FIELDS = [SOURCE_TYPE, DATASET_TYPE, MODEL_TYPE,
-                         PREDICTION_TYPE, CLUSTER_TYPE, ANOMALY_TYPE,
-                         SAMPLE_TYPE, CORRELATION_TYPE, STATISTICAL_TEST_TYPE,
-                         LOGISTIC_REGRESSION_TYPE]
+RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
+                         PREDICTION_PATH, CLUSTER_PATH, ANOMALY_PATH,
+                         SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
+                         LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -81,7 +73,7 @@ def get_fields_structure(resource):
     if resource_type in RESOURCES_WITH_FIELDS:
         resource = resource.get('object', resource)
         # locale and missing tokens
-        if resource_type == SOURCE_TYPE:
+        if resource_type == SOURCE_PATH:
             resource_locale = resource['source_parser']['locale']
             missing_tokens = resource[
                 'source_parser']['missing_tokens']
@@ -90,29 +82,29 @@ def get_fields_structure(resource):
             missing_tokens = resource.get('missing_tokens',
                                           DEFAULT_MISSING_TOKENS)
         # fields structure
-        if resource_type in [MODEL_TYPE, ANOMALY_TYPE]:
+        if resource_type in [MODEL_PATH, ANOMALY_PATH]:
             fields = resource['model']['fields']
-        elif resource_type == CLUSTER_TYPE:
+        elif resource_type == CLUSTER_PATH:
             fields = resource['clusters']['fields']
-        elif resource_type == CORRELATION_TYPE:
+        elif resource_type == CORRELATION_PATH:
             fields = resource['correlations']['fields']
-        elif resource_type == STATISTICAL_TEST_TYPE:
+        elif resource_type == STATISTICAL_TEST_PATH:
             fields = resource['statistical_tests']['fields']
-        elif resource_type == LOGISTIC_REGRESSION_TYPE:
+        elif resource_type == LOGISTIC_REGRESSION_PATH:
             fields = resource['logistic_regression']['fields']
-        elif resource_type == ASSOCIATION_TYPE:
+        elif resource_type == ASSOCIATION_PATH:
             fields = resource['associations']['fields']
-        elif resource_type == SAMPLE_TYPE:
+        elif resource_type == SAMPLE_PATH:
             fields = dict([(field['id'], field) for field in
                            resource['sample']['fields']])
         else:
             fields = resource['fields']
         # Check whether there's an objective id
         objective_column = None
-        if resource_type == DATASET_TYPE:
+        if resource_type == DATASET_PATH:
             objective_column = resource.get( \
                 'objective_field', {}).get('id')
-        elif resource_type in [MODEL_TYPE, LOGISTIC_REGRESSION_TYPE]:
+        elif resource_type in [MODEL_PATH, LOGISTIC_REGRESSION_PATH]:
             objective_id = resource.get( \
                 'objective_fields', [None])[0]
             objective_column = fields.get( \

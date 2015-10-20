@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_evaluation_id)
-from bigml.resourcehandler import EVALUATION_PATH, MODEL_PATH, ENSEMBLE_PATH
+from bigml.constants import EVALUATION_PATH, MODEL_PATH, ENSEMBLE_PATH
 
 
 class EvaluationHandler(ResourceHandler):

@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_logistic_regression_id)
-from bigml.resourcehandler import LOGISTIC_REGRESSION_PATH
+from bigml.constants import LOGISTIC_REGRESSION_PATH
 
 
 class LogisticRegressionHandler(ResourceHandler):

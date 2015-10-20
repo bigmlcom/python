@@ -31,8 +31,8 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_statistical_test_id, get_resource_type,
                                    get_dataset_id, check_resource)
-from bigml.resourcehandler import (STATISTICAL_TEST_PATH, DATASET_PATH,
-                                   TINY_RESOURCE)
+from bigml.constants import (STATISTICAL_TEST_PATH, DATASET_PATH,
+                             TINY_RESOURCE)
 
 
 class StatisticalTestHandler(ResourceHandler):

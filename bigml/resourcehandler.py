@@ -22,121 +22,16 @@
 import time
 import re
 
+import bigml.constants as c
+
 from bigml.util import get_exponential_wait
 from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
 
-# Basic resources
-SOURCE_PATH = 'source'
-DATASET_PATH = 'dataset'
-MODEL_PATH = 'model'
-PREDICTION_PATH = 'prediction'
-EVALUATION_PATH = 'evaluation'
-ENSEMBLE_PATH = 'ensemble'
-BATCH_PREDICTION_PATH = 'batchprediction'
-CLUSTER_PATH = 'cluster'
-CENTROID_PATH = 'centroid'
-BATCH_CENTROID_PATH = 'batchcentroid'
-ANOMALY_PATH = 'anomaly'
-ANOMALY_SCORE_PATH = 'anomalyscore'
-BATCH_ANOMALY_SCORE_PATH = 'batchanomalyscore'
-PROJECT_PATH = 'project'
-SAMPLE_PATH = 'sample'
-CORRELATION_PATH = 'correlation'
-STATISTICAL_TEST_PATH = 'statisticaltest'
-LOGISTIC_REGRESSION_PATH = 'logisticregression'
-ASSOCIATION_PATH = 'association'
-
-
-# Resource Ids patterns
-ID_PATTERN = '[a-f0-9]{24}'
-SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'
-SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
-DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
-    DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))
-MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
-    MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
-PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
-EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
-ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
-BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
-                                               ID_PATTERN))
-CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
-    CLUSTER_PATH, ID_PATTERN, CLUSTER_PATH, SHARED_PATTERN))
-CENTROID_RE = re.compile(r'^%s/%s$' % (CENTROID_PATH, ID_PATTERN))
-BATCH_CENTROID_RE = re.compile(r'^%s/%s$' % (BATCH_CENTROID_PATH,
-                                             ID_PATTERN))
-ANOMALY_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
-    ANOMALY_PATH, ID_PATTERN, ANOMALY_PATH, SHARED_PATTERN))
-ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (ANOMALY_SCORE_PATH, ID_PATTERN))
-BATCH_ANOMALY_SCORE_RE = re.compile(r'^%s/%s$' % (BATCH_ANOMALY_SCORE_PATH,
-                                                  ID_PATTERN))
-PROJECT_RE = re.compile(r'^%s/%s$' % (PROJECT_PATH, ID_PATTERN))
-SAMPLE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
-    SAMPLE_PATH, ID_PATTERN, SAMPLE_PATH, SHARED_PATTERN))
-CORRELATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
-    CORRELATION_PATH, ID_PATTERN, CORRELATION_PATH, SHARED_PATTERN))
-STATISTICAL_TEST_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
-    (STATISTICAL_TEST_PATH, ID_PATTERN, STATISTICAL_TEST_PATH, SHARED_PATTERN))
-LOGISTIC_REGRESSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
-    (LOGISTIC_REGRESSION_PATH, ID_PATTERN,
-     LOGISTIC_REGRESSION_PATH, SHARED_PATTERN))
-ASSOCIATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
-    (ASSOCIATION_PATH, ID_PATTERN, ASSOCIATION_PATH, SHARED_PATTERN))
-
-
-RESOURCE_RE = {
-    'source': SOURCE_RE,
-    'dataset': DATASET_RE,
-    'model': MODEL_RE,
-    'prediction': PREDICTION_RE,
-    'evaluation': EVALUATION_RE,
-    'ensemble': ENSEMBLE_RE,
-    'batchprediction': BATCH_PREDICTION_RE,
-    'cluster': CLUSTER_RE,
-    'centroid': CENTROID_RE,
-    'batchcentroid': BATCH_CENTROID_RE,
-    'anomaly': ANOMALY_RE,
-    'anomalyscore': ANOMALY_SCORE_RE,
-    'batchanomalyscore': BATCH_ANOMALY_SCORE_RE,
-    'project': PROJECT_RE,
-    'sample': SAMPLE_RE,
-    'correlation': CORRELATION_RE,
-    'statisticaltest': STATISTICAL_TEST_RE,
-    'logisticregression': LOGISTIC_REGRESSION_RE,
-    'association': ASSOCIATION_RE}
-
-
-RENAMED_RESOURCES = {
-    'batchprediction': 'batch_prediction',
-    'batchcentroid': 'batch_centroid',
-    'anomalyscore': 'anomaly_score',
-    'batchanomalyscore': 'batch_anomaly_score',
-    'statisticaltest': 'statistical_test',
-    'logisticregression': 'logistic_regression',
-}
-
-NO_QS = [EVALUATION_RE, PREDICTION_RE, BATCH_PREDICTION_RE,
-         CENTROID_RE, BATCH_CENTROID_RE, ANOMALY_SCORE_RE,
-         BATCH_ANOMALY_SCORE_RE, PROJECT_RE]
-
-
-# Resource status codes
-WAITING = 0
-QUEUED = 1
-STARTED = 2
-IN_PROGRESS = 3
-SUMMARIZED = 4
-FINISHED = 5
-UPLOADING = 6
-FAULTY = -1
-UNKNOWN = -2
-RUNNABLE = -3
-
-
-# Minimum query string to get model fields
-TINY_RESOURCE = "full=false"
+NO_QS = [c.EVALUATION_RE, c.PREDICTION_RE, c.BATCH_PREDICTION_RE,
+         c.CENTROID_RE, c.BATCH_CENTROID_RE, c.ANOMALY_SCORE_RE,
+         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE]
 
 
 def get_resource_type(resource):
@@ -147,7 +42,7 @@ def get_resource_type(resource):
         resource = resource['resource']
     if not isinstance(resource, basestring):
         raise ValueError("Failed to parse a resource string or structure.")
-    for resource_type, resource_re in RESOURCE_RE.items():
+    for resource_type, resource_re in c.RESOURCE_RE.items():
         if resource_re.match(resource):
             return resource_type
     return None
@@ -173,7 +68,7 @@ def resource_is_ready(resource):
     if resource['error'] is not None:
         raise Exception(resource['error']['status']['message'])
     return (resource['code'] in [HTTP_OK, HTTP_ACCEPTED] and
-            get_status(resource)['code'] == FINISHED)
+            get_status(resource)['code'] == c.FINISHED)
 
 
 def check_resource_type(resource, expected_resource, message=None):
@@ -196,7 +91,7 @@ def get_status(resource):
             raise ValueError("The resource has no status info\n%s" % resource)
         resource = resource['object']
     if not resource.get('private', True) or resource.get('status') is None:
-        status = {'code': FINISHED}
+        status = {'code': c.FINISHED}
     else:
         status = resource['status']
     return status
@@ -206,133 +101,133 @@ def get_source_id(source):
     """Returns a source/id.
 
     """
-    return get_resource(SOURCE_RE, source)
+    return get_resource(c.SOURCE_RE, source)
 
 
 def get_dataset_id(dataset):
     """Returns a dataset/id.
 
     """
-    return get_resource(DATASET_RE, dataset)
+    return get_resource(c.DATASET_RE, dataset)
 
 
 def get_model_id(model):
     """Returns a model/id.
 
     """
-    return get_resource(MODEL_RE, model)
+    return get_resource(c.MODEL_RE, model)
 
 
 def get_prediction_id(prediction):
     """Returns a prediction/id.
 
     """
-    return get_resource(PREDICTION_RE, prediction)
+    return get_resource(c.PREDICTION_RE, prediction)
 
 
 def get_evaluation_id(evaluation):
     """Returns an evaluation/id.
 
     """
-    return get_resource(EVALUATION_RE, evaluation)
+    return get_resource(c.EVALUATION_RE, evaluation)
 
 
 def get_ensemble_id(ensemble):
     """Returns an ensemble/id.
 
     """
-    return get_resource(ENSEMBLE_RE, ensemble)
+    return get_resource(c.ENSEMBLE_RE, ensemble)
 
 
 def get_batch_prediction_id(batch_prediction):
     """Returns a batchprediction/id.
 
     """
-    return get_resource(BATCH_PREDICTION_RE, batch_prediction)
+    return get_resource(c.BATCH_PREDICTION_RE, batch_prediction)
 
 
 def get_cluster_id(cluster):
     """Returns a cluster/id.
 
     """
-    return get_resource(CLUSTER_RE, cluster)
+    return get_resource(c.CLUSTER_RE, cluster)
 
 
 def get_centroid_id(centroid):
     """Returns a centroid/id.
 
     """
-    return get_resource(CENTROID_RE, centroid)
+    return get_resource(c.CENTROID_RE, centroid)
 
 
 def get_batch_centroid_id(batch_centroid):
     """Returns a batchcentroid/id.
 
     """
-    return get_resource(BATCH_CENTROID_RE, batch_centroid)
+    return get_resource(c.BATCH_CENTROID_RE, batch_centroid)
 
 
 def get_anomaly_id(anomaly):
     """Returns an anomaly/id.
 
     """
-    return get_resource(ANOMALY_RE, anomaly)
+    return get_resource(c.ANOMALY_RE, anomaly)
 
 
 def get_anomaly_score_id(anomaly_score):
     """Returns an anomalyscore/id.
 
     """
-    return get_resource(ANOMALY_SCORE_RE, anomaly_score)
+    return get_resource(c.ANOMALY_SCORE_RE, anomaly_score)
 
 
 def get_batch_anomaly_score_id(batch_anomaly_score):
     """Returns a batchanomalyscore/id.
 
     """
-    return get_resource(BATCH_ANOMALY_SCORE_RE, batch_anomaly_score)
+    return get_resource(c.BATCH_ANOMALY_SCORE_RE, batch_anomaly_score)
 
 
 def get_project_id(project):
     """Returns a project/id.
 
     """
-    return get_resource(PROJECT_RE, project)
+    return get_resource(c.PROJECT_RE, project)
 
 
 def get_sample_id(sample):
     """Returns a sample/id.
 
     """
-    return get_resource(SAMPLE_RE, sample)
+    return get_resource(c.SAMPLE_RE, sample)
 
 
 def get_correlation_id(correlation):
     """Returns a correlation/id.
 
     """
-    return get_resource(CORRELATION_RE, correlation)
+    return get_resource(c.CORRELATION_RE, correlation)
 
 
 def get_statistical_test_id(statistical_test):
     """Returns a statisticaltest/id.
 
     """
-    return get_resource(STATISTICAL_TEST_RE, statistical_test)
+    return get_resource(c.STATISTICAL_TEST_RE, statistical_test)
 
 
 def get_logistic_regression_id(logistic_regression):
     """Returns a logisticregression/id.
 
     """
-    return get_resource(LOGISTIC_REGRESSION_RE, logistic_regression)
+    return get_resource(c.LOGISTIC_REGRESSION_RE, logistic_regression)
 
 
 def get_association_id(association):
     """Returns an association/id.
 
     """
-    return get_resource(ASSOCIATION_RE, association)
+    return get_resource(c.ASSOCIATION_RE, association)
 
 
 def get_resource_id(resource):
@@ -343,7 +238,7 @@ def get_resource_id(resource):
         return resource['resource']
     elif isinstance(resource, basestring) and any(
             resource_re.match(resource) for _, resource_re
-            in RESOURCE_RE.items()):
+            in c.RESOURCE_RE.items()):
         return resource
     else:
         return
@@ -398,20 +293,20 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         counter += 1
         status = get_status(resource)
         code = status['code']
-        if code == FINISHED:
+        if code == c.FINISHED:
             if counter > 1:
                 # final get call to retrieve complete resource
                 resource = get_method(resource, **kwargs)
             if raise_on_error:
                 exception_on_error(resource)
             return resource
-        elif code == FAULTY:
+        elif code == c.FAULTY:
             raise ValueError(status)
         time.sleep(get_exponential_wait(wait_time, counter))
         # retries for the finished status use a query string that gets the
         # minimal available resource
         if kwargs.get('query_string') is not None:
-            tiny_kwargs = {'query_string': TINY_RESOURCE}
+            tiny_kwargs = {'query_string': c.TINY_RESOURCE}
         else:
             tiny_kwargs = {}
         resource = get_method(resource, **tiny_kwargs)
@@ -497,11 +392,11 @@ class ResourceHandler(BigMLConnection):
             origin_datasets = datasets
 
         for dataset in origin_datasets:
-            check_resource_type(dataset, DATASET_PATH,
+            check_resource_type(dataset, c.DATASET_PATH,
                                 message=("A dataset id is needed to create"
                                          " the resource."))
             dataset = check_resource(dataset,
-                                     query_string=TINY_RESOURCE,
+                                     query_string=c.TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True, api=self)
             dataset_ids.append(get_dataset_id(dataset))
@@ -539,7 +434,7 @@ class ResourceHandler(BigMLConnection):
             """
             if resource_id:
                 check_resource(resource_id,
-                               query_string=TINY_RESOURCE,
+                               query_string=c.TINY_RESOURCE,
                                wait_time=wait_time, retries=retries,
                                raise_on_error=True, api=self)
                 args.update({
@@ -550,21 +445,21 @@ class ResourceHandler(BigMLConnection):
             model_types = []
 
         resource_type = get_resource_type(dataset)
-        if not DATASET_PATH == resource_type:
+        if not c.DATASET_PATH == resource_type:
             raise Exception("A dataset id is needed as second argument"
                             " to create the resource. %s found." %
                             resource_type)
         dataset_id = get_dataset_id(dataset)
         if dataset_id:
             dataset = check_resource(dataset_id,
-                                     query_string=TINY_RESOURCE,
+                                     query_string=c.TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True, api=self)
             resource_type = get_resource_type(model)
             if resource_type in model_types:
                 resource_id = get_resource_id(model)
                 args_update(resource_id)
-            elif resource_type == MODEL_PATH:
+            elif resource_type == c.MODEL_PATH:
                 resource_id = get_model_id(model)
                 args_update(resource_id)
             else:

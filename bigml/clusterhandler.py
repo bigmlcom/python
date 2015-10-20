@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_cluster_id)
-from bigml.resourcehandler import CLUSTER_PATH
+from bigml.constants import CLUSTER_PATH
 
 
 class ClusterHandler(ResourceHandler):

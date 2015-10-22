@@ -1655,6 +1655,271 @@ logistic function as well as the configuration parameters described in
 the `developers section <https://bigml.com/developers/logisticregressions>`_ .
 
 
+Associations
+------------
+
+Association Discovery is a popular method to find out relations among values
+in high-dimensional datasets.
+
+A common case where association discovery is often used is
+basket market analysis. This analysis seeks for customer shopping
+patterns across large transactional
+datasets. For instance, do customers who buy hamburgers and ketchup also
+consume bread?
+
+Businesses use those insights to make decisions on promotions and product
+placements.
+Association Discovery can also be used for other purposes such as early
+incident detection, web usage analysis, or software intrusion detection.
+
+In BigML, the Association resource object can be built from any dataset, and
+its results are a list of association rules between the items in the dataset.
+In the example case, the corresponding
+association rule would have hamburguers and ketchup as the items at the
+left hand side of the association rule and bread would be the item at the
+right hand side. Both sides in this association rule are related,
+in the sense that observing
+the items in the left hand side implies observing the items in the right hand
+side. There are some metrics to ponder the quality of these association rules:
+
+- Coverage: the number of instances which contain an itemset.
+Can also be expressed as a proportion by dividing by the total
+instances in the dataset.
+
+- Support: the number of instances in the dataset which contain the association
+rule. Can be expressed as a proportion by dividing by the total instances.
+
+- Strength: the percentage of instances which contain the association rule over
+the instances which contain the LHS itemset.
+
+- Leverage: difference between the support of the association rule and the
+expected support if all items were independent.
+
+As to the items used in association rules, each type of field is parsed to
+extract items for the rules as follows:
+
+- Categorical: each different value (class) will be considered a separate item.
+- Text: each unique term will be considered a separate item.
+- Numeric: Values will be converted into categorical by making a
+segmentation of the values.
+For example, a numeric field with values ranging from 0 to 600 split
+into 3 segments:
+segment 1 → [0, 200), segment 2 → [200, 400), segment 3 → [400, 600].
+You can refine the behavior of the transformation using
+`discretization <https://bigml.com/developers/associations#ad_create_discretization>`_
+and `field_discretizations <https://bigml.com/developers/associations#ad_create_field_discretizations>`_.
+
+The JSON structure for an association resource is:
+
+.. code-block:: python
+
+    {
+        "associations":{
+            "discretization":{
+                "pretty":true,
+                "size":5,
+                "trim":0,
+                "type":"width"
+            },
+            "fields":{
+                "000000":{
+                    "column_number":0,
+                    "datatype":"string",
+                    "name":"field1",
+                    "optype":"text",
+                    "order":0,
+                    "preferred":true,
+                    "summary":{
+                        "average_length":22.471,
+                        "missing_count":0,
+                        "tag_cloud":[
+                            [
+                                "confectionery",
+                                336
+                            ],
+                            [
+                                "potatoes",
+                                283
+                            ],
+                            [
+                                "tomatoes",
+                                263
+                            ],
+    ...
+                            [
+                                "celery",
+                                43
+                            ]
+                        ],
+                        "term_forms":{
+
+                        }
+                    },
+                    "term_analysis":{
+                        "case_sensitive":false,
+                        "enabled":true,
+                        "language":"none",
+                        "token_mode":"tokens_only"
+                    }
+                }
+            },
+            "items":[
+                {
+                    "complement":false,
+                    "count":217,
+                    "description":"field1 includes lettuce",
+                    "field_id":"000000",
+                    "name":"lettuce"
+                },
+                {
+                    "complement":false,
+                    "count":263,
+                    "description":"field1 includes tomatoes",
+                    "field_id":"000000",
+                    "name":"tomatoes"
+                },
+                {
+                    "complement":false,
+                    "count":127,
+                    "description":"field1 includes bananas",
+                    "field_id":"000000",
+                    "name":"bananas"
+                },
+                {
+                    "complement":false,
+                    "count":130,
+                    "description":"field1 includes peaches",
+                    "field_id":"000000",
+                    "name":"peaches"
+                },
+                {
+                    "complement":false,
+                    "count":283,
+                    "description":"field1 includes potatoes",
+                    "field_id":"000000",
+                    "name":"potatoes"
+                },
+                {
+                    "complement":false,
+                    "count":175,
+                    "description":"field1 includes carrots",
+                    "field_id":"000000",
+                    "name":"carrots"
+                },
+                {
+                    "complement":false,
+                    "count":189,
+                    "description":"field1 includes onions",
+                    "field_id":"000000",
+                    "name":"onions"
+                }
+            ],
+            "k":100,
+            "rules":[
+                {
+                    "leverage":0.05393,
+                    "lhs":[
+                        0
+                    ],
+                    "lhs_cover":217,
+                    "lhs_desc":[
+                        "field1 includes lettuce"
+                    ],
+                    "p_value":0.0000000000000000002,
+                    "rhs":[
+                        1
+                    ],
+                    "rhs_cover":263,
+                    "rhs_desc":[
+                        "field1 includes tomatoes"
+                    ],
+                    "strength":0.51152,
+                    "support":111
+                },
+    ...
+                {
+                    "leverage":0.02349,
+                    "lhs":[
+                        2
+                    ],
+                    "lhs_cover":127,
+                    "lhs_desc":[
+                        "field1 includes bananas"
+                    ],
+                    "p_value":0.0000000027439311968,
+                    "rhs":[
+                        3
+                    ],
+                    "rhs_cover":130,
+                    "rhs_desc":[
+                        "field1 includes peaches"
+                    ],
+                    "strength":0.31496,
+                    "support":40
+                }
+            ],
+            "significance_level":0.05
+        },
+        "category":0,
+        "clones":0,
+        "code":200,
+        "columns":1,
+        "created":"2015-10-17T04:53:21.977000",
+        "credits":0.10097885131835938,
+        "dataset":"dataset/56200791425f353849000007",
+        "dataset_status":true,
+        "dataset_type":0,
+        "description":"",
+        "excluded_fields":[],
+        "fields_meta":{
+            "count":1,
+            "limit":1000,
+            "offset":0,
+            "query_total":1,
+            "total":1
+        },
+        "input_fields":[
+            "000000"
+        ],
+        "locale":"en-us",
+        "max_columns":1,
+        "max_rows":1000,
+        "name":"items-quoted's dataset's association",
+        "out_of_bag":false,
+        "price":0,
+        "private":true,
+        "project":null,
+        "range":[
+            1,
+            1000
+        ],
+        "replacement":false,
+        "resource":"{{ page.resource.sample_full_id }}",
+        "rows":1000,
+        "sample_rate":1,
+        "shared":false,
+        "size":26471,
+        "source":"source/561fe471425f35568c00000a",
+        "source_status":true,
+        "status":{
+            "code":5,
+            "elapsed":486,
+            "message":"The association has been created",
+            "progress":1
+        },
+        "subscription":true,
+        "tags":[],
+        "updated":"2015-10-17T04:53:35.141000",
+        "white_box":false
+    }
+
+
+Note that the output in the snippet above has been abbreviated. As you see,
+the ``associations`` attribute stores items, rules and metrics extracted
+from the datasets as well as the configuration parameters described in
+the `developers section <https://bigml.com/developers/associations>`_ .
+
+
 Creating Resources
 ------------------
 
@@ -1724,6 +1989,7 @@ You can query the status of any resource with the ``status`` method:
     api.status(correlation)
     api.status(statistical_test)
     api.status(logistic_regression)
+    api.status(associations)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -2282,6 +2548,7 @@ You can list resources with the appropriate api method:
     api.list_correlations()
     api.list_statistical_tests()
     api.list_logistic_regressions()
+    api.list_associations()
 
 you will receive a dictionary with the following keys:
 
@@ -2413,7 +2680,8 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_project(project, {"name": "new name"})
     api.update_correlation(correlation, {"name": "new name"})
     api.update_statistical_test(statistical_test, {"name": "new name"})
-    api.update_logistic_regression(logistic_regressioin, {"name": "new name"})
+    api.update_logistic_regression(logistic_regression, {"name": "new name"})
+    api.update_association(association, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -2456,6 +2724,7 @@ each type of resource.
     api.delete_correlation(correlation)
     api.delete_statistical_test(statistical_test)
     api.delete_logistic_regression(logistic_regression)
+    api.delete_association(association)
 
 Each of the calls above will return a dictionary with the following
 keys:

@@ -6,7 +6,7 @@ History
 4.4.0 (2015-11-26)
 ~~~~~~~~~~~~~~~~~~
 
-- Adding REST API calls for association rules
+- Adding REST API calls for association rules and local Association object.
 
 4.3.4 (2015-12-10)
 ~~~~~~~~~~~~~~~~~~

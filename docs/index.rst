@@ -3147,6 +3147,97 @@ prediction, input data
 must have values for all the numeric fields. No missing values for the numeric
 fields are allowed.
 
+Local Association
+-----------------
+
+You can also instantiate a local version of a remote association resource.
+
+.. code-block:: python
+
+    from bigml.association import Association
+    local_association = Association('association/502fdcff15526876610002435')
+
+This will retrieve the remote association information, using an implicitly
+built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return an ``Association`` object
+that you can use to extract the rules found in the original dataset.
+If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.association import Association
+    from bigml.api import BigML
+
+    local_association = Association('association/502fdcff15526876610002435',
+                                    api=BigML(my_username,
+                                              my_api_key))
+
+or even use the remote association information retrieved previously
+to build the
+local association object:
+
+.. code-block:: python
+
+    from bigml.association import Association
+    from bigml.api import BigML
+    api = BigML()
+    association = api.get_association('association/502fdcff15526876610002435',
+                                      query_string='limit=-1')
+
+    local_association = Association(association)
+
+Note that in this example we used a ``limit=-1`` query string for the
+association retrieval. This ensures that all fields are retrieved by the get
+method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+The created ``Association`` object has some methods to help retrieving the
+association rules found in the original data. The ``get_rules`` method will
+return the association rules. Arguments can be set to filter the rules
+returned according to its ``leverage``, ``strength``, ``support``, ``p_value``,
+a list of items involved in the rule or a user-given filter function.
+
+.. code-block:: python
+
+    from bigml.association import Association
+    local_association = Association('association/502fdcff15526876610002435')
+    local_association.get_rules(item_list=["Edible"], min_p_value=0.3)
+
+In this example, the only rules that will be returned by the ``get_rules``
+method will be the ones that mention ``Edible`` and their ``p_value``
+is greater or equal to ``0.3``.
+
+The rules can also be stored in a CSV file using ``rules_CSV``:
+
+
+.. code-block:: python
+
+    from bigml.association import Association
+    local_association = Association('association/502fdcff15526876610002435')
+    local_association.rules_CSV(file_name='/tmp/my_rules.csv',
+                                min_strength=0.1)
+
+this example will store the rules whose strength is bigger or equal to 0.1 in
+the ``/tmp/my_rules.csv`` file.
+
+You can also obtain the list of ``items`` parsed in the dataset using the
+``get_items`` method. You can filter the results too by field name, by
+item names and by a user-given function:
+
+.. code-block:: python
+
+    from bigml.association import Association
+    local_association = Association('association/502fdcff15526876610002435')
+    local_association.get_items(field="Cap Color",
+                                names=["Brown cap", "White cap", "Yellow cap"])
+
+this will recover the ``Item`` objects found in the ``Cap Color`` field for
+the names in the list, with their properties as described in the
+`developers section <https://bigml.com/developers/associations#ad_retrieving_an_association>`_
 
 Multi Models
 ------------

@@ -9,6 +9,7 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.association import Association
 
 from read_association_steps import i_get_the_association
 
@@ -63,3 +64,23 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the association is ready less than (\d+)')
 def the_association_is_finished_in_less_than(step, secs):
     wait_until_association_status_code_is(step, FINISHED, FAULTY, secs)
+
+
+#@step(r'I create a local association')
+def i_create_a_local_association(step):
+    world.local_association = Association(world.association)
+
+
+#@step(r'I get the rules for "(.*?)"$')
+def i_get_rules_for_item_list(step, item_list):
+    world.association_rules = world.local_association.get_rules(
+        item_list=item_list)
+
+
+#@step(r'the first rule is "(.*?)"$')
+def the_first_rule_is(step, rule):
+    found_rules = [a_rule.to_JSON() for a_rule in world.association_rules]
+    if found_rules[0] == rule:
+        assert True
+    else:
+        assert False, "found: %s, expected: %s" % (found_rules[0], rule)

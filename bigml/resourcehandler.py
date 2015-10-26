@@ -48,15 +48,23 @@ def get_resource_type(resource):
     return None
 
 
-def get_resource(regex, resource):
+def get_resource(resource_type, resource):
     """Returns a resource/id.
 
     """
     if isinstance(resource, dict) and 'resource' in resource:
         resource = resource['resource']
-    if isinstance(resource, basestring) and regex.match(resource):
-        return resource
-    raise ValueError("Cannot find resource id for %s" % resource)
+    if isinstance(resource, basestring):
+        if c.RESOURCE_RE[resource_type].match(resource):
+            return resource
+        found_type = get_resource_type(resource)
+        if found_type is not None and \
+                resource_type != get_resource_type(resource):
+            raise ValueError(
+                "The resource %s has not the expected type:"
+                " %s" % (
+                    resource, resource_type))
+    raise ValueError("%s is not a valid resource ID." % resource)
 
 
 def resource_is_ready(resource):
@@ -101,133 +109,133 @@ def get_source_id(source):
     """Returns a source/id.
 
     """
-    return get_resource(c.SOURCE_RE, source)
+    return get_resource(c.SOURCE_PATH, source)
 
 
 def get_dataset_id(dataset):
     """Returns a dataset/id.
 
     """
-    return get_resource(c.DATASET_RE, dataset)
+    return get_resource(c.DATASET_PATH, dataset)
 
 
 def get_model_id(model):
     """Returns a model/id.
 
     """
-    return get_resource(c.MODEL_RE, model)
+    return get_resource(c.MODEL_PATH, model)
 
 
 def get_prediction_id(prediction):
     """Returns a prediction/id.
 
     """
-    return get_resource(c.PREDICTION_RE, prediction)
+    return get_resource(c.PREDICTION_PATH, prediction)
 
 
 def get_evaluation_id(evaluation):
     """Returns an evaluation/id.
 
     """
-    return get_resource(c.EVALUATION_RE, evaluation)
+    return get_resource(c.EVALUATION_PATH, evaluation)
 
 
 def get_ensemble_id(ensemble):
     """Returns an ensemble/id.
 
     """
-    return get_resource(c.ENSEMBLE_RE, ensemble)
+    return get_resource(c.ENSEMBLE_PATH, ensemble)
 
 
 def get_batch_prediction_id(batch_prediction):
     """Returns a batchprediction/id.
 
     """
-    return get_resource(c.BATCH_PREDICTION_RE, batch_prediction)
+    return get_resource(c.BATCH_PREDICTION_PATH, batch_prediction)
 
 
 def get_cluster_id(cluster):
     """Returns a cluster/id.
 
     """
-    return get_resource(c.CLUSTER_RE, cluster)
+    return get_resource(c.CLUSTER_PATH, cluster)
 
 
 def get_centroid_id(centroid):
     """Returns a centroid/id.
 
     """
-    return get_resource(c.CENTROID_RE, centroid)
+    return get_resource(c.CENTROID_PATH, centroid)
 
 
 def get_batch_centroid_id(batch_centroid):
     """Returns a batchcentroid/id.
 
     """
-    return get_resource(c.BATCH_CENTROID_RE, batch_centroid)
+    return get_resource(c.BATCH_CENTROID_PATH, batch_centroid)
 
 
 def get_anomaly_id(anomaly):
     """Returns an anomaly/id.
 
     """
-    return get_resource(c.ANOMALY_RE, anomaly)
+    return get_resource(c.ANOMALY_PATH, anomaly)
 
 
 def get_anomaly_score_id(anomaly_score):
     """Returns an anomalyscore/id.
 
     """
-    return get_resource(c.ANOMALY_SCORE_RE, anomaly_score)
+    return get_resource(c.ANOMALY_SCORE_PATH, anomaly_score)
 
 
 def get_batch_anomaly_score_id(batch_anomaly_score):
     """Returns a batchanomalyscore/id.
 
     """
-    return get_resource(c.BATCH_ANOMALY_SCORE_RE, batch_anomaly_score)
+    return get_resource(c.BATCH_ANOMALY_SCORE_PATH, batch_anomaly_score)
 
 
 def get_project_id(project):
     """Returns a project/id.
 
     """
-    return get_resource(c.PROJECT_RE, project)
+    return get_resource(c.PROJECT_PATH, project)
 
 
 def get_sample_id(sample):
     """Returns a sample/id.
 
     """
-    return get_resource(c.SAMPLE_RE, sample)
+    return get_resource(c.SAMPLE_PATH, sample)
 
 
 def get_correlation_id(correlation):
     """Returns a correlation/id.
 
     """
-    return get_resource(c.CORRELATION_RE, correlation)
+    return get_resource(c.CORRELATION_PATH, correlation)
 
 
 def get_statistical_test_id(statistical_test):
     """Returns a statisticaltest/id.
 
     """
-    return get_resource(c.STATISTICAL_TEST_RE, statistical_test)
+    return get_resource(c.STATISTICAL_TEST_PATH, statistical_test)
 
 
 def get_logistic_regression_id(logistic_regression):
     """Returns a logisticregression/id.
 
     """
-    return get_resource(c.LOGISTIC_REGRESSION_RE, logistic_regression)
+    return get_resource(c.LOGISTIC_REGRESSION_PATH, logistic_regression)
 
 
 def get_association_id(association):
     """Returns an association/id.
 
     """
-    return get_resource(c.ASSOCIATION_RE, association)
+    return get_resource(c.ASSOCIATION_PATH, association)
 
 
 def get_resource_id(resource):

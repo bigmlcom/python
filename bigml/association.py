@@ -110,7 +110,7 @@ class Association(ModelFields):
                 self.discretization = associations.get('discretization', {})
                 self.field_discretizations = associations.get(
                     'field_discretizations', {})
-                self.items = [Item(index, item) for index, item in
+                self.items = [Item(index, item, fields) for index, item in
                               enumerate(associations['items'])]
                 self.k = associations.get('k', 100)
                 self.max_lhs = associations.get('max_lhs', 4)
@@ -130,8 +130,7 @@ class Association(ModelFields):
                             "resource:\n\n%s" %
                             association)
 
-    def get_items(self, field=None, names=None, filter_function=None,
-                  out_format=None):
+    def get_items(self, field=None, names=None, filter_function=None):
         """Returns the items array, previously selected by the field
            corresponding to the given field name or a user-defined function
            (if set)
@@ -172,18 +171,15 @@ class Association(ModelFields):
             return item.name in names
 
         for item in self.items:
-            new_item = item.out_format(
-                language=out_format, fields=self.fields) \
-                if out_format else item
             if all([field_filter(item), names_filter(item),
                     filter_function_set(item)]):
-                items.append(new_item)
+                items.append(item)
 
         return items
 
     def get_rules(self, min_leverage=None, min_strength=None,
                   min_support=None, min_p_value=None, item_list=None,
-                  filter_function=None, out_format="JSON"):
+                  filter_function=None):
         """Returns the rules array, previously selected by the leverage,
            strength, support or a user-defined filter function (if set)
 
@@ -194,7 +190,6 @@ class Association(ModelFields):
            @param List item_list   List of Item objects. Any of them should be
                                    in the rules
            @param function filter_function   Function used as filter
-           @param string out_format   Output format for the rules: JSON or CSV
         """
         def leverage(rule):
             """Check minimum leverage
@@ -258,12 +253,10 @@ class Association(ModelFields):
 
         rules = []
         for rule in self.rules:
-            new_rule = rule.out_format(language=out_format) if out_format \
-                else rule
             if all([leverage(rule), strength(rule), support(rule),
                     p_value(rule), item_list_set(rule),
                     filter_function_set(rule)]):
-                rules.append(new_rule)
+                rules.append(rule)
 
         return rules
 
@@ -272,8 +265,8 @@ class Association(ModelFields):
            can be previously selected using the arguments in get_rules
 
         """
-        kwargs.update({"out_format": "CSV"})
         rules = self.get_rules(**kwargs)
+        rules = [rule.to_CSV() for rule in rules]
         if file_name is None:
             raise ValueError("A valid file name is required to store the "
                              "rules.")

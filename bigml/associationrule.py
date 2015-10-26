@@ -20,6 +20,8 @@
    This module defines each Rule in an Association Rule.
 """
 
+SUPPORTED_LANGUAGES = ["JSON", "CSV"]
+
 class AssociationRule(object):
     """ Object encapsulating an association rules as described in
         https://bigml.com/developers/associations
@@ -42,15 +44,24 @@ class AssociationRule(object):
         """Transforming the rule structure to a string in the required format
 
         """
-        if language == "JSON":
-            rule_dict = {}
-            rule_dict.update(self.__dict__)
-            return rule_dict
-
-        if language == "CSV":
-            output = [self.leverage, self.lhs_cover,
-                      " and ".join(self.lhs_desc), self.p_value,
-                      self.rhs_cover, "and".join(self.rhs_desc), self.strength,
-                      self.support]
-            return output
+        if language in SUPPORTED_LANGUAGES:
+            return self.getattr("to_%s" % language)()
         return self
+
+    def to_CSV(self):
+        """Transforming the rule to CSV formats
+
+        """
+        output = [self.leverage, self.lhs_cover,
+                  " and ".join(self.lhs_desc), self.p_value,
+                  self.rhs_cover, "and".join(self.rhs_desc), self.strength,
+                  self.support]
+        return output
+
+    def to_JSON(self):
+        """Transforming the rule to JSON
+
+        """
+        rule_dict = {}
+        rule_dict.update(self.__dict__)
+        return rule_dict

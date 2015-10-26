@@ -20,6 +20,7 @@
    This module defines each item in an Association resource.
 """
 
+from bigml.associationrule import SUPPORTED_LANGUAGES
 
 class Item(object):
     """ Object encapsulating an Association resource item as described in
@@ -27,36 +28,39 @@ class Item(object):
 
     """
 
-    def __init__(self, index, item_info):
+    def __init__(self, index, item_info, fields):
         self.index = index
         self.complement = item_info.get('complement', False)
         self.complement_id = item_info.get('complement_id')
         self.count = item_info.get('count')
         self.description = item_info.get('description')
         self.field_id = item_info.get('field_id')
+        self.field_name = fields[self.field_id]["name"]
         self.name = item_info.get('name')
         self.segment_end = item_info.get('segment_end')
         self.segment_start = item_info.get('segment_start')
 
-    def out_format(self, language="JSON", fields=None):
-        """Transforming the item structure to a string in the required format
+    def out_format(self, language="JSON"):
+        """Transforming the rule structure to a string in the required format
 
         """
-        if fields:
-            field_name = fields[self.field_id]['name']
-        else:
-            field_name = self.field
-        if language=="JSON":
-            item_dict = {}
-            item_dict.update(self.__dict__)
-            if fields:
-                item_dict["field_name"] = field_name
-                del item_dict["field_id"]
-            return item_dict
-
-        if language=="CSV":
-            output = [self.complement, self.complement_id, self.count,
-                      self.description, field_name, self.name,
-                      self.segment_end, self.segment_start]
-            return output
+        if language in SUPPORTED_LANGUAGES:
+            return self.getattr("to_%s" % language)()
         return self
+
+    def to_CSV(self):
+        """Transforming the rule to CSV formats
+
+        """
+        output = [self.complement, self.complement_id, self.count,
+                  self.description, self.field_name, self.name,
+                  self.segment_end, self.segment_start]
+        return output
+
+    def to_JSON(self):
+        """Transforming the item to JSON
+
+        """
+        item_dict = {}
+        item_dict.update(self.__dict__)
+        return item_dict

@@ -69,3 +69,37 @@ class TestAssociation(object):
             association_create.i_update_association_name(self, example[5])
             association_create.the_association_is_finished_in_less_than(self, example[4])
             association_create.i_check_association_name(self, example[5])
+
+    def test_scenario2(self):
+        """
+            Scenario: Successfully creating local association object:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an association from a dataset
+                And I wait until the association is ready less than <time_3> secs
+                And I create a local association
+                When I get the rules for <"item_list">
+                Then the first rule is "<JSON_rule>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | item_list                              | JSON_rule  |
+                | ../data/tiny_mushrooms.csv | 10      | 20     | 20     | ["Edible"]                   | {'p_value': 1.99981e-26, 'strength': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs_desc': [u'Stalk root = Club base'], 'rhs': [19], 'lhs_desc': [u'Edible? = Edible', u'Stalk surface below ring = Smooth below ring', u'Gill spacing = Close gills', u'Bruises? = Bruises'], 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122} |
+
+
+        """
+        print self.test_scenario2.__doc__
+        examples = [
+            ['data/tiny_mushrooms.csv', '10', '20', '20', ["Edible"], {'p_value': 1.99981e-26, 'strength': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs_desc': [u'Stalk root = Club base'], 'rhs': [19], 'lhs_desc': [u'Edible? = Edible', u'Stalk surface below ring = Smooth below ring', u'Gill spacing = Close gills', u'Bruises? = Bruises'], 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122}]]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            association_create.i_create_an_association_from_dataset(self)
+            association_create.the_association_is_finished_in_less_than(self, example[3])
+            association_create.i_create_a_local_association(self)
+            association_create.i_get_rules_for_item_list(self, example[4])
+            association_create.the_first_rule_is(self, example[5])

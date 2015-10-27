@@ -1709,7 +1709,7 @@ You can query the status of any resource with the ``status`` method:
     api.status(project)
     api.status(sample)
     api.status(correlation)
-    api.status(statistica_test)
+    api.status(statistical_test)
     api.status(logistic_regression)
 
 Before invoking the creation of a new resource, the library checks that

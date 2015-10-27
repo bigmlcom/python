@@ -22,8 +22,8 @@ embedded into your application without needing to send requests to
 BigML.io.
 
 This module cannot only save you a few credits, but also enormously
-reduce the latency for each prediction and let you use your clusters
-offline.
+reduce the latency for each prediction and let you use your logistic
+regressions offline.
 
 Example usage (assuming that you have previously set up the BIGML_USERNAME
 and BIGML_API_KEY environment variables and that you own the

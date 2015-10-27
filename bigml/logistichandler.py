@@ -51,7 +51,7 @@ class LogisticRegressionHandler(ResourceHandler):
     def create_logistic_regression(self, datasets,
                                    args=None, wait_time=3, retries=10):
         """Creates a logistic regression from a `dataset`
-           or a list o `datasets`.
+           of a list o `datasets`.
 
         """
         create_args = self._set_create_from_datasets_args(

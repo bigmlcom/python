@@ -43,20 +43,17 @@ logistic_regression.predict({"petal length": 3, "petal width": 1,
 import logging
 LOGGER = logging.getLogger('BigML')
 
-import sys
 import math
 import re
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_logistic_regression_id, get_status)
-from bigml.util import cast, utf8
+from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
-from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
-from bigml.io import UnicodeWriter
 
 EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud"}
 OPTIONAL_FIELDS = ['categorical', 'text']
@@ -167,7 +164,7 @@ class LogisticRegression(ModelFields):
                 self.lr_normalize = logistic_regression_info.get('normalize')
                 self.regularization = logistic_regression_info.get( \
                     'regularization')
-                objective_id=extract_objective(objective_field)
+                objective_id = extract_objective(objective_field)
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
                         self.term_forms[field_id] = {}
@@ -180,8 +177,8 @@ class LogisticRegression(ModelFields):
                         self.term_analysis[field_id].update(
                             field['term_analysis'])
                     if field['optype'] == 'categorical':
-                        self.categories[field_id] = [category for [category, _]
-                            in field['summary']['categories']]
+                        self.categories[field_id] = [category for \
+                            [category, _] in field['summary']['categories']]
                 ModelFields.__init__(
                     self, fields,
                     objective_id=objective_id)
@@ -310,9 +307,6 @@ class LogisticRegression(ModelFields):
         for field_id in self.categories:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
-                if input_data_field in self.categories[field_id]:
-                    position = self.categories[field_id].index(
-                        input_data_field)
                 unique_terms[field_id] = [(input_data_field, 1)]
                 del input_data[field_id]
         return unique_terms
@@ -322,10 +316,10 @@ class LogisticRegression(ModelFields):
 
         """
         field_ids = [ \
-            field_id for field_id, field in
+            field_id for field_id, _ in
             sorted(self.fields.items(),
                    key=lambda x: x[1].get("column_number"))
-                   if field_id != self.objective_id]
+            if field_id != self.objective_id]
         shift = 0
         for field_id in field_ids:
             optype = self.fields[field_id]['optype']

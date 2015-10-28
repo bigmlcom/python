@@ -41,29 +41,31 @@ def reverse(operator):
     return "%s%s" % (REVERSE_OP[operator[0]], operator[1:])
 
 
-def merge_rules(list_of_predicates, field_info, fields, label='name'):
+def merge_rules(list_of_predicates, fields, label='name'):
     """Summarizes the predicates referring to the same field
 
     """
-    field_type = field_info['optype']
-    if field_type == NUMERIC:
-        return merge_numeric_rules( \
-            list_of_predicates, field_info, fields, label=label)
+    if list_of_predicates:
+        field_id = list_of_predicates[0].field
+        field_type = fields[field_id]['optype']
+        if field_type == NUMERIC:
+            return merge_numeric_rules( \
+                list_of_predicates, fields, label=label)
 
-    if field_type == TEXT:
-        return merge_text_rules( \
-            list_of_predicates, field_info, fields, label=label)
+        if field_type == TEXT:
+            return merge_text_rules( \
+                list_of_predicates, fields, label=label)
 
-    if field_type == CATEGORICAL:
-        return merge_categorical_rules( \
-            list_of_predicates, field_info, fields, label=label)
+        if field_type == CATEGORICAL:
+            return merge_categorical_rules( \
+                list_of_predicates, fields, label=label)
 
-    return " and ".join(
-        [predicate.to_rule(fields, label=label).strip() for
-         predicate in list_of_predicates])
+        return " and ".join(
+            [predicate.to_rule(fields, label=label).strip() for
+             predicate in list_of_predicates])
 
 
-def  merge_numeric_rules(list_of_predicates, field_info, fields, label='name'):
+def merge_numeric_rules(list_of_predicates, fields, label='name'):
     """ Summarizes the numeric predicates for the same field
 
     """
@@ -85,7 +87,8 @@ def  merge_numeric_rules(list_of_predicates, field_info, fields, label='name'):
     if equal is not None:
         return equal.to_rule(fields, label=label)
     rule = u''
-    name = field_info[label]
+    field_id = list_of_predicates[0].field
+    name = fields[field_id][label]
 
     if minor[0] is not None and major[0] is not None:
         predicate, value, missing = minor
@@ -101,7 +104,7 @@ def  merge_numeric_rules(list_of_predicates, field_info, fields, label='name'):
     return rule
 
 
-def  merge_text_rules(list_of_predicates, field_info, fields, label='name'):
+def merge_text_rules(list_of_predicates, fields, label='name'):
     """ Summarizes the text predicates for the same field
 
     """
@@ -128,7 +131,7 @@ def  merge_text_rules(list_of_predicates, field_info, fields, label='name'):
         else:
             rules_not.append(
                 " and %s" % \
-                not_contains[0].to_rule(fields, label=None).strip())
+                not_contains[0].to_rule(fields, label=label).strip())
         for predicate in not_contains[1:]:
             if not predicate.term in rules_not:
                 rules_not.append(predicate.term)
@@ -136,7 +139,7 @@ def  merge_text_rules(list_of_predicates, field_info, fields, label='name'):
     return rule
 
 
-def  merge_categorical_rules(list_of_predicates, field_info,
+def  merge_categorical_rules(list_of_predicates,
                              fields, label='name'):
     """ Summarizes the categorical predicates for the same field
 
@@ -222,7 +225,7 @@ class Path(object):
         lines = []
         for field in list_of_fields:
             lines.append(
-                merge_rules(groups_of_rules[field], fields[field],
+                merge_rules(groups_of_rules[field],
                             fields, label=label))
         return " and ".join(lines)
 

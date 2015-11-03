@@ -30,6 +30,7 @@ import create_batch_prediction_steps as batch_pred_create
 import create_prediction_steps as prediction_create
 
 
+
 class TestBatchPrediction(object):
 
     def setup(self):
@@ -221,4 +222,39 @@ class TestBatchPrediction(object):
             batch_pred_create.i_create_a_batch_prediction_with_anomaly(self)
             batch_pred_create.the_batch_anomaly_score_is_finished_in_less_than(self, example[4])
             batch_pred_create.i_download_anomaly_score_file(self, example[5])
+            batch_pred_create.i_check_predictions(self, example[6])
+
+    def test_scenario6(self):
+        """
+            Scenario: Successfully creating a batch prediction for a logistic regression:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a logistic regression
+                And I wait until the logistic regression is ready less than <time_3> secs
+                When I create a batch prediction for the dataset with the logistic regression
+                And I wait until the batch prediction is ready less than <time_4> secs
+                And I download the created predictions file to "<local_file>"
+                Then the batch prediction file is like "<predictions_file>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
+                | ../data/iris.csv | 30      | 30     | 80     | 50     | ./tmp/batch_predictions.csv | ./data/batch_predictions_lr.csv |
+
+        """
+        print self.test_scenario6.__doc__
+        examples = [
+            ['data/iris.csv', '30', '30', '80', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions_lr.csv']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_logistic_model(self)
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            batch_pred_create.i_create_a_batch_prediction_logistic_model(self)
+            batch_pred_create.the_batch_prediction_is_finished_in_less_than(self, example[4])
+            batch_pred_create.i_download_predictions_file(self, example[5])
             batch_pred_create.i_check_predictions(self, example[6])

@@ -171,6 +171,7 @@ def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
     status = get_status(world.logistic_regression)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
+           print "***", status
            time.sleep(3)
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
            read.i_get_the_logistic_model(step, world.logistic_regression['resource'])

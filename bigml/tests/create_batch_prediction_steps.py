@@ -203,3 +203,15 @@ def i_create_a_source_from_batch_prediction(step):
     world.location = resource['location']
     world.source = resource['object']
     world.sources.append(resource['resource'])
+
+
+#@step(r'I create a batch prediction for the dataset with the logistic regression$')
+def i_create_a_batch_prediction_logistic_model(step):
+    dataset = world.dataset.get('resource')
+    logistic = world.logistic_regression.get('resource')
+    resource = world.api.create_batch_prediction(logistic, dataset)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.batch_prediction = resource['object']
+    world.batch_predictions.append(resource['resource'])

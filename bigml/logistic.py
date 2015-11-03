@@ -269,6 +269,7 @@ class LogisticRegression(ModelFields):
             for field_id in self.categories:
                 if field_id != self.objective_id and \
                         not field_id in unique_terms:
+                    shift = self.fields[field_id]['coefficients_shift']
                     probability += coefficients[ \
                         shift + len(self.categories[field_id])]
         probability += coefficients[-1]

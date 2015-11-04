@@ -29,15 +29,14 @@ class AssociationRule(object):
     """
 
     def __init__(self, rule_info):
+        self.confidence = rule_info.get('confidence')
         self.leverage = rule_info.get('leverage')
         self.lhs = rule_info.get('lhs', [])
         self.lhs_cover = rule_info.get('lhs_cover')
-        self.lhs_desc = rule_info.get('lhs_desc', [])
         self.p_value = rule_info.get('p_value')
         self.rhs = rule_info.get('rhs', [])
         self.rhs_cover = rule_info.get('rhs_cover')
-        self.rhs_desc = rule_info.get('rhs_desc', [])
-        self.strength = rule_info.get('strength')
+        self.lift = rule_info.get('lift')
         self.support = rule_info.get('support')
 
     def out_format(self, language="JSON"):
@@ -52,9 +51,8 @@ class AssociationRule(object):
         """Transforming the rule to CSV formats
 
         """
-        output = [self.leverage, self.lhs_cover,
-                  " and ".join(self.lhs_desc), self.p_value,
-                  self.rhs_cover, "and".join(self.rhs_desc), self.strength,
+        output = [self.lhs, self.rhs, self.confidence, self.leverage,
+                  self.p_value, self.lhs_cover, self.rhs_cover, self.lift,
                   self.support]
         return output
 

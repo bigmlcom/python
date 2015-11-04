@@ -54,8 +54,9 @@ from bigml.item import Item
 from bigml.io import UnicodeWriter
 
 
-RULE_HEADERS = ["leverage", "lhs_cover", "lhs_desc", "p_value", "rhs_cover",
-                "rhs_desc", "strength", "support"]
+RULE_HEADERS = ["Antecedents", "Consequent", "Confidence", "Leverage",
+                "P_value", "Antecedents coverage",
+                "Consequent coverage", "Lift", "Support"]
 
 
 class Association(ModelFields):
@@ -266,7 +267,7 @@ class Association(ModelFields):
 
         """
         rules = self.get_rules(**kwargs)
-        rules = [rule.to_CSV() for rule in rules]
+        rules = [self.describe(rule.to_CSV()) for rule in rules]
         if file_name is None:
             raise ValueError("A valid file name is required to store the "
                              "rules.")
@@ -276,3 +277,18 @@ class Association(ModelFields):
                 writer.writerow([item if not isinstance(item, basestring)
                                  else item.encode("utf-8")
                                  for item in rule])
+
+    def describe(self, rule_row):
+        """Transforms the lhs and rhs index information to a human-readable
+           rule text.
+
+        """
+        # lhs items  and rhs items substitution by description
+        for index in range(2):
+            description = []
+            for item_index in rule_row[index]:
+                item = self.items[item_index]
+                description.append(item.describe())
+            description = " and ".join(description)
+            rule_row[index] = description
+        return rule_row

@@ -30,8 +30,8 @@ from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_batch_prediction_id)
-from bigml.resourcehandler import (BATCH_PREDICTION_PATH, ENSEMBLE_PATH,
-                                   MODEL_PATH, LOGISTIC_REGRESSION_PATH)
+from bigml.constants import (BATCH_PREDICTION_PATH, ENSEMBLE_PATH,
+                             MODEL_PATH, LOGISTIC_REGRESSION_PATH)
 
 
 class BatchPredictionHandler(ResourceHandler):

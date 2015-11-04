@@ -36,6 +36,7 @@ class Item(object):
         self.description = item_info.get('description')
         self.field_id = item_info.get('field_id')
         self.field_name = fields[self.field_id]["name"]
+        self.field_type = fields[self.field_id]["optype"]
         self.name = item_info.get('name')
         self.segment_end = item_info.get('segment_end')
         self.segment_start = item_info.get('segment_start')
@@ -64,3 +65,36 @@ class Item(object):
         item_dict = {}
         item_dict.update(self.__dict__)
         return item_dict
+
+    def describe(self):
+        """Human-readable description of a item_dict
+
+        """
+        description = ""
+
+        if self.field_type == "numeric":
+            previous = self.segment_end if self.complement else \
+                self.segment_start
+            next = self.segment_start if self.complement else \
+                self.segment_end
+            if previous and next:
+                if previous < next:
+                    description = "%s < %s <= %s" % (previous, self.field_name,
+                                                     next)
+                else:
+                    description = "%s > %s or <= %s" % (self.field_name,
+                                                        previous,
+                                                        next)
+            elif previous:
+                description = "%s > %s" % (self.field_name, previous)
+            else:
+                description = "%s <= %s" % (self.field_name, next)
+        elif self.field_type == "categorical":
+            operator = "!=" if self.complement else "="
+            description = "%s %s %s" % (self.field_name, operator, self.name)
+        elif self.field_type == text:
+            operator = "excludes" if self.complement else "includes"
+            description = "%s %s %s" % (self.field_name, operator, self.name)
+        else:
+            description = self.name
+        return description

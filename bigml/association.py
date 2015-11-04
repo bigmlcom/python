@@ -288,7 +288,11 @@ class Association(ModelFields):
             description = []
             for item_index in rule_row[index]:
                 item = self.items[item_index]
-                description.append(item.describe())
+                # if there's just one field, we don't use the item description
+                # to avoid repeating the field name constantly.
+                item_description = item.name if self.fields.length == 1 and \
+                    not item.complement else item.describe()
+                description.append(item_description)
             description = " and ".join(description)
             rule_row[index] = description
         return rule_row

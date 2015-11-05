@@ -58,6 +58,10 @@ RULE_HEADERS = ["Antecedents", "Consequent", "Confidence", "Leverage",
                 "P_value", "Antecedents coverage",
                 "Consequent coverage", "Lift", "Support"]
 
+ASSOCIATION_METRICS = ["confidence", "support", "leverage", "lhs_cover",
+                       "rhs_cover", "p_value", "lift"]
+INDENT = " " * 4
+
 
 class Association(ModelFields):
     """ A lightweight wrapper around an Association rules object.
@@ -290,9 +294,161 @@ class Association(ModelFields):
                 item = self.items[item_index]
                 # if there's just one field, we don't use the item description
                 # to avoid repeating the field name constantly.
-                item_description = item.name if self.fields.length == 1 and \
-                    not item.complement else item.describe()
+                item_description = item.name if len(self.fields.keys()) == 1 \
+                    and not item.complement else item.describe()
                 description.append(item_description)
-            description = " and ".join(description)
+            description = " & ".join(description)
             rule_row[index] = description
         return rule_row
+
+    def summarize(self, out=sys.stdout, **kwargs):
+        """Prints a summary of the obtained rules
+
+        """
+        # groups the rules by its rhs items:
+        rules = self.get_rules(**kwargs)
+        groups = {}
+
+        for rule in rules:
+            consequent = tuple(rule.rhs)
+            if not consequent in groups:
+                groups[consequent] = {"rules": []}
+            groups[consequent]["rules"].append(rule)
+        # aggregators
+        for consequent, info in groups.items():
+            number_of_rules = len(info['rules'])
+            groups[consequent]["number_of_rules"] = number_of_rules
+            for metric in ASSOCIATION_METRICS:
+                groups[consequent]["max_%s" % metric] = float('-Inf')
+                groups[consequent]["min_%s" % metric] = float('Inf')
+                groups[consequent]["mean_%s" % metric] = 0
+            for rule in info["rules"]:
+                for metric in ASSOCIATION_METRICS:
+                    metric_value = getattr(rule, metric)
+                    if metric_value > groups[consequent]["max_%s" % metric]:
+                        groups[consequent]["max_%s" % metric] = metric_value
+                    if metric_value < groups[consequent]["min_%s" % metric]:
+                        groups[consequent]["min_%s" % metric] = metric_value
+                    groups[consequent]["mean_%s" % metric] += metric_value
+            for metric in ASSOCIATION_METRICS:
+                groups[consequent]["mean_%s" % metric] = \
+                    groups[consequent]["mean_%s" % metric] / \
+                    float(number_of_rules)
+        number_of_consequents = len(groups.keys())
+
+        total = {"rules": rules, "number_of_rules": len(rules)}
+        for metric in ASSOCIATION_METRICS:
+            total["max_%s" % metric] = float('-Inf')
+            total["min_%s" % metric] = float('Inf')
+            total["mean_%s" % metric] = 0
+            for consequent, info in groups.items():
+                if groups[consequent]["max_%s" % metric] > \
+                        total["max_%s" % metric]:
+                    total["max_%s" % metric] = \
+                        groups[consequent]["max_%s" % metric]
+                if groups[consequent]["min_%s" % metric] < \
+                        total["min_%s" % metric]:
+                    total["min_%s" % metric] = \
+                        groups[consequent]["min_%s" % metric]
+                total["mean_%s" % metric] += \
+                    groups[consequent]["mean_%s" % metric]
+        for metric in ASSOCIATION_METRICS:
+            total["mean_%s" % metric] = total["mean_%s" % metric] / \
+                float(number_of_consequents)
+
+        print "Total number of rules: %s\n" % total["number_of_rules"]
+        for metric in ASSOCIATION_METRICS:
+            print "%s%s <= %s <= %s (mean: %s)" % (
+                INDENT, total["max_%s" % metric], metric,
+                total["min_%s" % metric], total["mean_%s" % metric])
+        print "\n\nPer consequent:\n"
+
+        for consequent, info in sorted(groups.items(),
+                                       key=lambda x: x[1]["max_confidence"]):
+            print "%s%s: %s rules\n" % \
+                (INDENT, self.items[consequent[0]].describe(),
+                 info["number_of_rules"])
+            for metric in ASSOCIATION_METRICS:
+                if info["max_%s" % metric] > info["min_%s" % metric]:
+                    print "%s%s <= %s <= %s (mean: %s)" % (
+                        INDENT * 2, info["max_%s" % metric], metric,
+                        info["min_%s" % metric], info["mean_%s" % metric])
+                else:
+                    print "%s%s = %s (mean: %s)" % (
+                        INDENT * 2, metric,
+                        info["min_%s" % metric], info["mean_%s" % metric])
+
+            print "\n\n"
+
+    def summarize_items(self, out=sys.stdout, **kwargs):
+        """Prints a summary of the obtained rules
+
+        """
+        # groups the rules by its rhs items:
+        rules = self.get_rules(**kwargs)
+        groups = {}
+
+        for rule in rules:
+            consequent = set(rule.rhs)
+            antecedent = set(rule.lhs)
+            items = antecedent.union(consequent)
+            for item_index in items:
+                if not (item_index,) in groups:
+                    groups[(item_index,)] = {"rules": []}
+                groups[(item_index,)]["rules"].append(rule)
+        """
+        # aggregators
+        for consequent, info in groups.items():
+            number_of_rules = len(info['rules'])
+            groups[consequent]["number_of_rules"] = number_of_rules
+            for metric in ASSOCIATION_METRICS:
+                groups[consequent]["max_%s" % metric] = float('-Inf')
+                groups[consequent]["min_%s" % metric] = float('Inf')
+                groups[consequent]["mean_%s" % metric] = 0
+            for rule in info["rules"]:
+                for metric in ASSOCIATION_METRICS:
+                    metric_value = getattr(rule, metric)
+                    if metric_value > groups[consequent]["max_%s" % metric]:
+                        groups[consequent]["max_%s" % metric] = metric_value
+                    if metric_value < groups[consequent]["min_%s" % metric]:
+                        groups[consequent]["min_%s" % metric] = metric_value
+                    groups[consequent]["mean_%s" % metric] += metric_value
+            for metric in ASSOCIATION_METRICS:
+                groups[consequent]["mean_%s" % metric] = \
+                    groups[consequent]["mean_%s" % metric] / \
+                    float(number_of_rules)
+        number_of_consequents = len(groups.keys())
+        """
+        total = {"rules": rules, "number_of_rules": len(rules)}
+        """
+        for metric in ASSOCIATION_METRICS:
+            total["max_%s" % metric] = float('-Inf')
+            total["min_%s" % metric] = float('Inf')
+            total["mean_%s" % metric] = 0
+            for consequent, info in groups.items():
+                if groups[consequent]["max_%s" % metric] > \
+                        total["max_%s" % metric]:
+                    total["max_%s" % metric] = \
+                        groups[consequent]["max_%s" % metric]
+                if groups[consequent]["min_%s" % metric] < \
+                        total["min_%s" % metric]:
+                    total["min_%s" % metric] = \
+                        groups[consequent]["min_%s" % metric]
+                total["mean_%s" % metric] += \
+                    groups[consequent]["mean_%s" % metric]
+        for metric in ASSOCIATION_METRICS:
+            total["mean_%s" % metric] = total["mean_%s" % metric] / \
+                float(number_of_consequents)
+        """
+        print "Total number of rules: %s\n" % total["number_of_rules"]
+
+        print "\n\nPer item:\n"
+
+        for (item_index,), info in groups.items():
+            print "%s%s: %s rules\n" % \
+                (INDENT, self.items[item_index].describe(),
+                 len(info["rules"]))
+            for rule in info["rules"]:
+                rule_row = self.describe(rule.to_CSV())
+                print "%s%s -> %s" % (INDENT * 2, rule_row[0], rule_row[1])
+            print "\n\n"

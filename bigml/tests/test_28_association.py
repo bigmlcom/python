@@ -85,13 +85,13 @@ class TestAssociation(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | item_list                              | JSON_rule  |
-                | ../data/tiny_mushrooms.csv | 10      | 20     | 20     | ["Edible"]                   | {'p_value': 1.99981e-26, 'strength': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs_desc': [u'Stalk root = Club base'], 'rhs': [19], 'lhs_desc': [u'Edible? = Edible', u'Stalk surface below ring = Smooth below ring', u'Gill spacing = Close gills', u'Bruises? = Bruises'], 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122} |
+                | ../data/tiny_mushrooms.csv | 10      | 20     | 20     | ["Edible"]                   | {'p_value': 1.99981e-26, 'confidence': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs': [19], 'lift': 2.04918, 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122} |
 
 
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/tiny_mushrooms.csv', '10', '20', '20', ["Edible"], {'p_value': 1.99981e-26, 'strength': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs_desc': [u'Stalk root = Club base'], 'rhs': [19], 'lhs_desc': [u'Edible? = Edible', u'Stalk surface below ring = Smooth below ring', u'Gill spacing = Close gills', u'Bruises? = Bruises'], 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122}]]
+            ['data/tiny_mushrooms.csv', '10', '20', '20', ["Edible"], {'p_value': 1.99981e-26, 'confidence': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs': [19], 'lift': 2.04918, 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122}]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

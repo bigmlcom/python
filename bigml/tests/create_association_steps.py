@@ -1,9 +1,11 @@
 import time
 import json
 import os
+import StringIO
 from datetime import datetime, timedelta
 from world import world
 
+from bigml.api import BigML
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -79,7 +81,11 @@ def i_get_rules_for_item_list(step, item_list):
 
 #@step(r'the first rule is "(.*?)"$')
 def the_first_rule_is(step, rule):
-    found_rules = [a_rule.to_JSON() for a_rule in world.association_rules]
+    rule_str = StringIO.StringIO()
+    found_rules = []
+    for a_rule in world.association_rules:
+        api.pprint(a_rule, rule_str)
+        found_rules.append(rule_str.getvalue())
     if found_rules[0] == rule:
         assert True
     else:

@@ -263,7 +263,7 @@ class LogisticRegression(ModelFields):
         if self.missing_coefficients:
             for field_id in self.tag_clouds:
                 shift = self.fields[field_id]['coefficients_shift']
-                if not field_id in unique_terms:
+                if not field_id in unique_terms or not unique_terms[field_id]:
                     probability += coefficients[ \
                         shift + len(self.tag_clouds[field_id])]
             for field_id in self.categories:

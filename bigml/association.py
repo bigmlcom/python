@@ -81,8 +81,12 @@ def get_metric_string(rule, reverse=False):
             metric_key = metric
         metric_value = getattr(rule, metric)
         if isinstance(metric_value, list):
-            metric_values.append("%s=%s%% (%s)" % (
-                METRIC_LITERALS[metric], metric_value[0], metric_value[1]))
+            metric_values.append("%s=%.2f%% (%s)" % (
+                METRIC_LITERALS[metric], ((round(metric_value[0], 4) * 100)),
+                                          metric_value[1]))
+        elif metric == 'confidence':
+            metric_values.append("%s=%.2f%%" % (
+                METRIC_LITERALS[metric], ((round(metric_value, 4) * 100))))
         else:
             metric_values.append("%s=%s" % (
                 METRIC_LITERALS[metric], metric_value))

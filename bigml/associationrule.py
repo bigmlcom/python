@@ -29,15 +29,16 @@ class AssociationRule(object):
     """
 
     def __init__(self, rule_info):
+        self.rule_id = rule_info.get('id')
         self.confidence = rule_info.get('confidence')
         self.leverage = rule_info.get('leverage')
         self.lhs = rule_info.get('lhs', [])
-        self.lhs_cover = rule_info.get('lhs_cover')
+        self.lhs_cover = rule_info.get('lhs_cover', [])
         self.p_value = rule_info.get('p_value')
         self.rhs = rule_info.get('rhs', [])
-        self.rhs_cover = rule_info.get('rhs_cover')
+        self.rhs_cover = rule_info.get('rhs_cover', [])
         self.lift = rule_info.get('lift')
-        self.support = rule_info.get('support')
+        self.support = rule_info.get('support', [])
 
     def out_format(self, language="JSON"):
         """Transforming the rule structure to a string in the required format
@@ -49,11 +50,21 @@ class AssociationRule(object):
 
     def to_CSV(self):
         """Transforming the rule to CSV formats
+           Metrics ordered as in ASSOCIATION_METRICS in association.py
 
         """
-        output = [self.lhs, self.rhs, self.confidence, self.leverage,
-                  self.p_value, self.lhs_cover, self.rhs_cover, self.lift,
-                  self.support]
+        output = [self.rule_id, self.lhs, self.rhs,
+                  self.lhs_cover[0] if self.lhs_cover else None,
+                  self.lhs_cover[1] if self.lhs_cover else None,
+                  self.support[0] if self.support else None,
+                  self.support[1] if self.support else None,
+                  self.confidence,
+                  self.leverage,
+                  self.lift,
+                  self.p_value,
+                  self.rhs_cover[0] if self.rhs_cover else None,
+                  self.rhs_cover[1] if self.rhs_cover else None
+                  ]
         return output
 
     def to_JSON(self):

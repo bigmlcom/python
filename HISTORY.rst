@@ -6,7 +6,7 @@ History
 4.3.1 (2015-11-07)
 ~~~~~~~~~~~~~~~~~~
 
-- Fixing bug: Local logistic regression predictions differ in when input data
+- Fixing bug: Local logistic regression predictions differ when input data
   has contents in a text field but the terms involved do not appear in the
   bag of words.
 

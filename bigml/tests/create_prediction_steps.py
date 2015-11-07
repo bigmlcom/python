@@ -177,3 +177,9 @@ def i_create_a_logistic_prediction(step, data=None):
     world.location = resource['location']
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
+
+def the_logistic_probability_is(step, probability):
+    for [prediction, remote_probability] in world.prediction['probabilities']:
+        if prediction == world.prediction['output']:
+            break
+    assert round(float(remote_probability), 4) == round(float(probability), 4)

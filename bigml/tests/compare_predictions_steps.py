@@ -210,6 +210,10 @@ def the_local_prediction_is(step, prediction):
     else:
         assert False, "found: %s, expected %s" % (local_prediction, prediction)
 
+#@step(r'the local probability is "(.*)"')
+def the_local_probability_is(step, probability):
+    probability =  round(float(probability), 4)
+    local_probability = world.local_prediction["probability"]
 
 #@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):

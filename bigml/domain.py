@@ -73,15 +73,31 @@ class Domain(object):
     """
 
     def __init__(self, domain=None, prediction_domain=None,
-                 prediction_protocol=None):
-        # Base domain for remote resources
-        self.general_domain = BIGML_DOMAIN if domain is None else domain
+                 prediction_protocol=None, protocol=None, verify=None,
+                 prediction_verify=None):
+        """Domain object constructor.
 
+            @param: domain string Domain name
+            @param: prediction_domain string Domain for the prediction server
+                    (when different from the general domain)
+            @param: prediction_protocol string Protocol for prediction server
+                    (when different from the general protocol)
+            @param: protocol string Protocol for the service
+                    (when different from HTTPS)
+            @param: verify boolean Sets on/off the SSL verification
+            @param: prediction_verify boolean Sets on/off the SSL verification
+                    for the prediction server (when different from the general
+                    SSL verification)
+
+        """
+        # Base domain for remote resources
+        self.general_domain = domain or BIGML_DOMAIN
+        self.general_protocol = protocol or BIGML_PROTOCOL
         # Usually, predictions are served from the same domain
         if prediction_domain is None:
             if domain is not None:
                 self.prediction_domain = domain
-                self.prediction_protocol = BIGML_PROTOCOL
+                self.prediction_protocol = protocol or BIGML_PROTOCOL
             else:
                 self.prediction_domain = BIGML_PREDICTION_DOMAIN
                 self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
@@ -89,25 +105,29 @@ class Domain(object):
         # for instance in high-availability prediction servers
         else:
             self.prediction_domain = prediction_domain
-            if prediction_protocol is None:
-                self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
-            else:
-                self.prediction_protocol = prediction_protocol
+            self.prediction_protocol = prediction_protocol or \
+                BIGML_PREDICTION_PROTOCOL
 
         # Check SSL when comming from `bigml.io` subdomains or when forced
-        # by the external BIGML_SSL_VERIFY environment variable
+        # by the external BIGML_SSL_VERIFY environment variable or verify
+        # arguments
         self.verify = None
         self.verify_prediction = None
-        if BIGML_SSL_VERIFY is not None:
+        if self.general_protocol == BIGML_PROTOCOL and \
+                (verify is not None or BIGML_SSL_VERIFY is not None):
             try:
-                self.verify = bool(int(BIGML_SSL_VERIFY))
+                self.verify = verify if verify is not None \
+                    else bool(int(BIGML_SSL_VERIFY))
             except ValueError:
                 pass
         if self.verify is None:
             self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
-        if BIGML_PREDICTION_SSL_VERIFY is not None:
+        if  self.prediction_protocol == BIGML_PROTOCOL and \
+                (prediction_verify or BIGML_PREDICTION_SSL_VERIFY is not None):
             try:
-                self.verify_prediction = bool(int(BIGML_PREDICTION_SSL_VERIFY))
+                self.verify_prediction = prediction_verify \
+                    if prediction_verify is not None else \
+                    bool(int(BIGML_PREDICTION_SSL_VERIFY))
             except ValueError:
                 pass
         if self.verify_prediction is None:

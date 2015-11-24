@@ -121,7 +121,10 @@ environment by passing the parameter ``dev_mode``:
 
     api = BigML(dev_mode=True)
 
-For Virtual Private Cloud setups, you can change the remote server domain
+The main domain for the API service is ``bigml.io``, but there are some
+alternative domains, either for Virtual Private Cloud setups or
+the australian subdomain (``au.bigml.io``). You can change the remote
+server domain
 to the VPC particular one by either setting the ``BIGML_DOMAIN`` environment
 variable to your VPC subdomain:
 
@@ -165,6 +168,16 @@ server, and the prediction domain server.
                          prediction_protocol="https")
 
     api = BigML(domain=domain_info)
+
+Some arguments for the Domain constructor are more unsual, but they can also
+be used to set your special service endpoints:
+
+- protocol (string) Protocol for the service
+  (when different from HTTPS)
+- verify (boolean) Sets on/off the SSL verification
+- prediction_verify (boolean) Sets on/off the SSL verification
+  for the prediction server (when different from the general
+  SSL verification)
 
 Quick Start
 -----------

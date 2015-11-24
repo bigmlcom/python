@@ -37,6 +37,7 @@ import pprint
 
 
 from bigml.bigmlconnection import BigMLConnection
+from bigml.domain import BIGML_PROTOCOL
 from bigml.resourcehandler import ResourceHandler
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
@@ -210,8 +211,16 @@ class BigML(LogisticRegressionHandler,
         """
         info = u"Connecting to:\n"
         info += u"    %s\n" % self.general_domain
+        if self.general_protocol != BIGML_PROTOCOL:
+            info += u"    using %s protocol\n" % self.general_protocol
+        info += u"    SSL verification %s\n" % (
+            "on" if self.verify else "off")
         if self.general_domain != self.prediction_domain:
             info += u"    %s (predictions only)\n" % self.prediction_domain
+            if self.prediction_protocol != BIGML_PROTOCOL:
+                info += u"    using %s protocol\n" % self.prediction_protocol
+            info += u"    SSL verification %s\n" % (
+                "on" if self.verify_prediction else "off")
 
         info += u"\nAuthentication string:\n"
         info += u"    %s\n" % self.auth[1:]

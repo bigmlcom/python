@@ -199,6 +199,7 @@ class BigMLConnection(object):
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
         self.general_domain = None
+        self.genearl_protocol = None
         self.prediction_domain = None
         self.prediction_protocol = None
         self.verify = None
@@ -227,15 +228,19 @@ class BigMLConnection(object):
             raise ValueError("The domain must be set using a Domain object.")
         # Setting the general and prediction domain options
         self.general_domain = domain.general_domain
+        self.general_protocol = domain.general_protocol
         self.prediction_domain = domain.prediction_domain
         self.prediction_protocol = domain.prediction_protocol
         self.verify = domain.verify
         self.verify_prediction = domain.verify_prediction
         if dev_mode:
-            self.url = BIGML_DEV_URL % (BIGML_PROTOCOL, self.general_domain)
-            self.prediction_url = BIGML_DEV_URL % (BIGML_PROTOCOL,
+            self.url = BIGML_DEV_URL % (self.general_protocol,
+                                        self.general_domain)
+            self.prediction_url = BIGML_DEV_URL % (self.general_protocol,
                                                    self.general_domain)
         else:
+            # Using a different prediction domain and protocol only in
+            # production mode. Dev-mode uses the general values.
             self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
             self.prediction_url = BIGML_URL % (
                 self.prediction_protocol, self.prediction_domain)

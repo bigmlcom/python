@@ -192,19 +192,20 @@ def the_local_prediction_is(step, prediction):
         local_prediction = world.local_prediction['prediction']
     else:
         local_prediction = world.local_prediction
-    if not isinstance(world.local_model, LogisticRegression):
-        try:
-            local_model = world.local_model
+    try:
+        local_model = world.local_model
+        if not isinstance(world.local_model, LogisticRegression):
             if isinstance(local_model, MultiModel):
                 local_model = local_model.models[0]
             if local_model.tree.regression:
                 local_prediction = round(float(local_prediction), 4)
                 prediction = round(float(prediction), 4)
-        except:
-            local_model = world.local_ensemble.multi_model.models[0]
-            if local_model.tree.regression:
-                local_prediction = round(float(local_prediction), 4)
-                prediction = round(float(prediction), 4)
+    except AttributeError:
+        local_model = world.local_ensemble.multi_model.models[0]
+        if local_model.tree.regression:
+            local_prediction = round(float(local_prediction), 4)
+            prediction = round(float(prediction), 4)
+
     if local_prediction == prediction:
         assert True
     else:

@@ -3,6 +3,12 @@
 History
 -------
 
+4.3.2 (2015-11-24)
+~~~~~~~~~~~~~~~~~~
+
+- Adding verify and protocol options to the existing Domain class constructor
+  to handle special installs.
+
 4.3.1 (2015-11-07)
 ~~~~~~~~~~~~~~~~~~
 

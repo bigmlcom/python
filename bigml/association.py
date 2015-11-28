@@ -68,6 +68,23 @@ METRIC_LITERALS = {"confidence": "Confidence", "support": "Support",
 
 INDENT = " " * 4
 
+DEFAULT_K = 100
+DEFAULT_SEARCH_STRATEGY = 0
+
+SEARCH_STRATEGY_CODES = {
+    "leverage": 0,
+    "confidence": 1,
+    "support": 2,
+    "coverage": 3,
+    "lift": 4}
+
+SEARCH_STRATEGY_ATTRIBUTES = {
+    0: "leverage",
+    1: "confidence",
+    2: "support",
+    3: "lhs_coverage",
+    4: "lift"}
+
 
 def get_metric_string(rule, reverse=False):
     """Returns the string that describes the values of metrics for a rule.
@@ -114,6 +131,9 @@ class Association(ModelFields):
         self.min_leverage = None
         self.min_strength = None
         self.min_support = None
+        self.min_lift = None
+        self.prune = None
+        self.search_strategy = DEFAULT_SEARCH_STRATEGY
         self.rules = []
         self.significance_level = None
 
@@ -153,6 +173,11 @@ class Association(ModelFields):
                 self.min_leverage = associations.get('min_leverage', -1)
                 self.min_strength = associations.get('min_strength', 0)
                 self.min_support = associations.get('min_support', 0)
+                self.min_lift = associations.get('min_lift', 0)
+                self.prune = associations.get('prune', True)
+                self.search_strategy = SEARCH_STRATEGY_CODES[ \
+                    associations.get('search_strategy',
+                                     DEFAULT_SEARCH_STRATEGY)]
                 self.rules = [AssociationRule(rule) for rule in
                               associations['rules']]
                 self.significance_level = associations.get(
@@ -165,7 +190,61 @@ class Association(ModelFields):
                             "resource:\n\n%s" %
                             association)
 
-    def get_items(self, field=None, names=None, filter_function=None):
+    def predict(self, input_data,
+                k=DEFAULT_K, max_rules=None, score_by=None, by_name=True):
+        """Returns the Consequents for the rules whose LHS best match
+           the provided items. Cosine similarity is used to score the match.
+
+            @param inputs dict map of input data: e.g.
+                               {"petal length": 4.4,
+                                "sepal length": 5.1,
+                                "petal width": 1.3,
+                                "sepal width": 2.1,
+                                "species": "Iris-versicolor"}
+            @param k integer Maximum number of item predictions to return
+                             (Default 100)
+            @param max_rules integer Maximum number of rules to return per item
+            @param score_by [0-4] Code for the metric used in scoring
+                                  (default search_strategy)
+                0 - Leverage
+                1 - Confidence
+                2 - Support
+                3 - Coverage
+                4 - Lift
+
+            @param by_name boolean If True, input_data is keyed by field
+                                   name, field_id is used otherwise.
+        """
+        predictions = {}
+        input_data = self.filter_input_data(input_data, by_name=by_name)
+        items_indexes = [item.index for item in
+                         self.get_items(input_map=input_data)]
+        if score_by is None:
+            score_by = self.search_strategy
+        for rule in self.rules:
+            cosine = sum([1 for index in items_indexes if index in rule.lhs])
+            if cosine > 0:
+                cosine = cosine / float(math.sqrt(len(items_indexes)) * \
+                                        math.sqrt(len(rule.lhs)))
+                rhs = tuple(rule.rhs)
+                if not rhs in predictions:
+                    predictions[rhs] = {"score": 0, "matching_rules": []}
+                if max_rules is None or \
+                        len(predictions[rhs]["matching_rules"]) <= max_rules:
+                    predictions[rhs]["score"] += cosine * getattr(
+                        rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
+                    predictions[rhs]["matching_rules"].append(rule.rule_id)
+        k = len(predictions.keys()) if k is None else k
+        predictions = sorted(predictions.items(),
+                              key=lambda x: x[1]["score"], reverse=True)[:k]
+        final_predictions = []
+        for rhs, prediction in predictions:
+            prediction["prediction"] = self.items[rhs[0]].describe()
+            final_predictions.append(prediction)
+        return final_predictions
+
+    def get_items(self, field=None,
+                  names=None, input_map=None, filter_function=None):
         """Returns the items array, previously selected by the field
            corresponding to the given field name or a user-defined function
            (if set)
@@ -205,8 +284,18 @@ class Association(ModelFields):
                 return True
             return item.name in names
 
+        def input_map_filter(item):
+            """ Checking if an item is in the input map
+
+            """
+            if input_map is None:
+                return True
+            value = input_map.get(item.field_id)
+            return item.matches(value)
+
         for item in self.items:
             if all([field_filter(item), names_filter(item),
+                    input_map_filter(item),
                     filter_function_set(item)]):
                 items.append(item)
 

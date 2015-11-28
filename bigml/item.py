@@ -98,3 +98,20 @@ class Item(object):
         else:
             description = self.name
         return description
+
+    def matches(self, value):
+        """ Checks whether the value is in a range for numeric fields or
+            matches a category for categorical fields.
+
+        """
+        if value is None:
+            return False
+        if self.segment_end is not None or self.segment_start is not None:
+            if self.segment_start is not None and self.segment_end is not None:
+                return self.segment_start <= value <= self.segment_end
+            elif self.segment_end is not None:
+                return value <= self.segment_end
+            else:
+                return value >= self.segment_start
+        else:
+            return self.name == value

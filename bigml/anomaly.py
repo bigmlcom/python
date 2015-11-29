@@ -172,7 +172,7 @@ class Anomaly(ModelFields):
                 if field_id in self.id_fields:
                     continue
                 value = row[index]
-                if value is None:
+                if value is None or value is "":
                     filter_rules.append('(missing? "%s")' % field_id)
                 else:
                     if (self.fields[field_id]["optype"]

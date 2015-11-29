@@ -3,6 +3,12 @@
 History
 -------
 
+4.3.2 (2015-11-30)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Anomaly object failed to generate the filter for new datasets
+  when text empty values were found.
+
 4.3.2 (2015-11-24)
 ~~~~~~~~~~~~~~~~~~
 

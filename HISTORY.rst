@@ -3,7 +3,7 @@
 History
 -------
 
-4.3.2 (2015-11-30)
+4.3.3 (2015-11-30)
 ~~~~~~~~~~~~~~~~~~
 
 - Fixing bug: Anomaly object failed to generate the filter for new datasets

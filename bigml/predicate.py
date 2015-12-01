@@ -102,25 +102,25 @@ def term_matches_tokens(text, forms_list, case_sensitive):
     return len(matches)
 
 
-def item_matches(text, items, options):
-    """ Counts the number of occurences of the items in items list in the text
+def item_matches(text, item, options):
+    """ Counts the number of occurences of the item in the text
 
-    The items in forms_list can either. The matching considers the separator or
+    The matching considers the separator or
     the separating regular expression.
     """
     separator = options.get('separator', ' ')
-    regexp = options.get('case_sensitive', False)
-    if not regexp:
+    regexp = options.get('separator_regexp')
+    if regexp is None:
         regexp = ur"%s" % separator
-    return count_items_matches(text, items, regexp)
+    return count_items_matches(text, item, regexp)
 
 
-def count_items_matches(text, items, regexp):
-    """ Counts the number of occurences of the words in items in the text
+def count_items_matches(text, item, regexp):
+    """ Counts the number of occurences of the item in the text
 
     """
-    connector = ur'(%s)|(%s)' % (regexp, regexp)
-    pattern = re.compile(connector.join(items), flags=re.U)
+    expression = ur'(^|%s)%s($|%s)' % (regexp, item, regexp)
+    pattern = re.compile(expression, flags=re.U)
     matches = re.findall(pattern, text)
     return len(matches)
 
@@ -228,7 +228,6 @@ class Predicate(object):
             return True
 
         if self.term is not None:
-            # TODO: items have different attributes and separator
             if fields[self.field]['optype'] == 'text':
                 all_forms = fields[self.field]['summary'].get('term_forms', {})
                 term_forms = all_forms.get(self.term, [])

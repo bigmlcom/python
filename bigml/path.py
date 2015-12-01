@@ -30,6 +30,7 @@ NUMERIC = 'numeric'
 CATEGORICAL = 'categorical'
 TEXT = 'text'
 DATETIME = 'datetime'
+ITEMS = 'items'
 
 REVERSE_OP = {'<': '>', '>': '<'}
 

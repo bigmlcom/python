@@ -54,8 +54,8 @@ RELATIONS = {
 def term_matches(text, forms_list, options):
     """ Counts the number of occurences of the words in forms_list in the text
 
-        The terms in forms_list can either be tokens or full terms. The
-        matching for tokens is contains and for full terms is equals.
+    The terms in forms_list can either be tokens or full terms. The
+    matching for tokens is contains and for full terms is equals.
     """
     token_mode = options.get('token_mode', TM_TOKENS)
     case_sensitive = options.get('case_sensitive', False)
@@ -82,7 +82,7 @@ def full_term_match(text, full_term, case_sensitive):
 
 def get_tokens_flags(case_sensitive):
     """Returns flags for regular expression matching depending on text analysis
-       options
+    options
 
     """
     flags = re.U
@@ -92,7 +92,7 @@ def get_tokens_flags(case_sensitive):
 
 
 def term_matches_tokens(text, forms_list, case_sensitive):
-    """ Counts the number of occurences of the words in forms_list in the text
+    """Counts the number of occurences of the words in forms_list in the text
 
     """
     flags = get_tokens_flags(case_sensitive)
@@ -100,6 +100,30 @@ def term_matches_tokens(text, forms_list, case_sensitive):
     pattern = re.compile(expression, flags=flags)
     matches = re.findall(pattern, text)
     return len(matches)
+
+
+def item_matches(text, items, options):
+    """ Counts the number of occurences of the items in items list in the text
+
+    The items in forms_list can either. The matching considers the separator or
+    the separating regular expression.
+    """
+    separator = options.get('separator', ' ')
+    regexp = options.get('case_sensitive', False)
+    if not regexp:
+        regexp = ur"%s" % separator
+    return count_items_matches(text, items, regexp)
+
+
+def count_items_matches(text, items, regexp):
+    """ Counts the number of occurences of the words in items in the text
+
+    """
+    connector = ur'(%s)|(%s)' % (regexp, regexp)
+    pattern = re.compile(connector.join(items), flags=re.U)
+    matches = re.findall(pattern, text)
+    return len(matches)
+
 
 
 class Predicate(object):
@@ -121,6 +145,9 @@ class Predicate(object):
 
         """
         if self.term is not None:
+            # new optype has to be handled in tokens
+            if fields[self.field]['optype'] == 'items':
+                return False
             options = fields[self.field]['term_analysis']
             token_mode = options.get('token_mode', TM_TOKENS)
             if token_mode == TM_FULL_TERM:
@@ -130,7 +157,7 @@ class Predicate(object):
         return False
 
     def to_rule(self, fields, label='name'):
-        """ Builds rule string from a predicate
+        """Builds rule string from a predicate
 
         """
         if label is not None:
@@ -165,7 +192,7 @@ class Predicate(object):
                                 relation_missing)
 
     def to_LISP_rule(self, fields):
-        """ Builds rule string in LISP from a predicate
+        """Builds rule string in LISP from a predicate
 
         """
         if self.term is not None:
@@ -188,8 +215,8 @@ class Predicate(object):
         return rule
 
     def apply(self, input_data, fields):
-        """ Applies the operators defined in the predicate as strings to
-            the provided input data
+        """Applies the operators defined in the predicate as strings to
+        the provided input data
 
         """
 
@@ -201,14 +228,24 @@ class Predicate(object):
             return True
 
         if self.term is not None:
-            all_forms = fields[self.field]['summary'].get('term_forms', {})
-            term_forms = all_forms.get(self.term, [])
-            terms = [self.term]
-            terms.extend(term_forms)
-            options = fields[self.field]['term_analysis']
-            return apply(OPERATOR[self.operator],
-                         [term_matches(input_data[self.field], terms, options),
-                          self.value])
+            # TODO: items have different attributes and separator
+            if fields[self.field]['optype'] == 'text':
+                all_forms = fields[self.field]['summary'].get('term_forms', {})
+                term_forms = all_forms.get(self.term, [])
+                terms = [self.term]
+                terms.extend(term_forms)
+                options = fields[self.field]['term_analysis']
+                return apply(OPERATOR[self.operator],
+                             [term_matches(input_data[self.field],
+                                           terms, options),
+                              self.value])
+            else:
+                # new items optype
+                options = fields[self.field]['item_analysis']
+                return apply(OPERATOR[self.operator],
+                             [item_matches(input_data[self.field],
+                                           self.term, options),
+                              self.value])
         if self.operator == "in":
             return apply(OPERATOR[self.operator],
                          [self.value,

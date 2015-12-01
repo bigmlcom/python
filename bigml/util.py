@@ -76,13 +76,15 @@ LINKS_REGEX = re.compile((r'''(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()'''
 TYPE_MAP = {
     "categorical": str,
     "numeric": locale.atof,
-    "text": str
+    "text": str,
+    "items": str
 }
 
 PYTHON_TYPE_MAP = {
     "categorical": [unicode, str],
     "numeric": [int, float],
-    "text": [unicode, str]
+    "text": [unicode, str],
+    "items": [unicode, str]
 }
 
 PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
@@ -353,9 +355,9 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH,
                 reset=False):
     """Prints the message to the given output
 
-       out: output handler
-       length: maximum length
-       reset: whether the line has to be reused and cursor reset to
+       :param out: output handler
+       :param length: maximum length
+       :param reset: whether the line has to be reused and cursor reset to
               the beggining of it
     """
 
@@ -456,9 +458,9 @@ def empty_resource():
 def maybe_save(resource_id, path,
                code=None, location=None,
                resource=None, error=None):
-    """ Builds the resource dict response and saves it if a path is provided.
+    """Builds the resource dict response and saves it if a path is provided.
 
-        The resource is saved in a local repo json file in the given path.
+    The resource is saved in a local repo json file in the given path.
 
     """
     resource = resource_structure(code, resource_id, location, resource, error)
@@ -487,7 +489,7 @@ def plural(text, num):
 
 def get_exponential_wait(wait_time, retry_count):
     """Computes the exponential wait time used in next request using the
-       base values provided by the user:
+    base values provided by the user:
         - wait_time: starting wait time
         - retries: total number of retries
         - retries_left: retries left

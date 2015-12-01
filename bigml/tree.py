@@ -66,6 +66,7 @@ MAX_ARGS_LENGTH = 10
 INDENT = u'    '
 
 TERM_OPTIONS = ["case_sensitive", "token_mode"]
+ITEM_OPTIONS = ["separator", "separator_regexp"]
 
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
@@ -555,6 +556,7 @@ class Tree(object):
             cmv = []
         body = u""
         term_analysis_fields = []
+        item_analysis_fields = []
         children = filter_nodes(self.children, ids=ids_path,
                                 subtree=subtree)
         if children:
@@ -592,15 +594,25 @@ class Tree(object):
                         cmv.append(self.fields[field]['slug'])
                 optype = self.fields[field]['optype']
                 if (optype == 'numeric' or optype == 'text' or
-                        child.predicate.value is None):
+                        optype == 'items'
+                        or child.predicate.value is None):
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
-                if optype == 'text':
+                if optype == 'text' or optype == 'items':
+                    if optype == 'text':
+                        term_analysis_fields.append((field,
+                                                     child.predicate.term))
+                        matching_function = "term_matches"
+                    else:
+                        item_analysis_fields.append((field,
+                                                     child.predicate.term))
+                        matching_function = "item_matches"
+
                     body += (
-                        u"%sif (%sterm_matches(%s, \"%s\", %s\"%s\") %s %s):"
+                        u"%sif (%s%s(%s, \"%s\", %s\"%s\") %s %s):"
                         u"\n" %
-                        (INDENT * depth, pre_condition,
+                        (INDENT * depth, pre_condition, matching_function,
                          map_data(self.fields[field]['slug'],
                                   False),
                          self.fields[field]['slug'],
@@ -609,8 +621,6 @@ class Tree(object):
                          child.predicate.term.replace("\"", "\\\""),
                          PYTHON_OPERATOR[child.predicate.operator],
                          value))
-                    term_analysis_fields.append((field,
-                                                 child.predicate.term))
                 else:
                     operator = (MISSING_OPERATOR[child.predicate.operator] if
                                 child.predicate.value is None else
@@ -630,6 +640,7 @@ class Tree(object):
                                                subtree=subtree)
                 body += next_level[0]
                 term_analysis_fields.extend(next_level[1])
+                item_analysis_fields.extend(next_level[2])
         else:
             if self.fields[self.objective_id]['optype'] == 'numeric':
                 value = self.output
@@ -637,7 +648,7 @@ class Tree(object):
                 value = repr(self.output)
             body = u"%sreturn %s\n" % (INDENT * depth, value)
 
-        return body, term_analysis_fields
+        return body, term_analysis_fields, item_analysis_fields
 
     def python(self, out, docstring, input_map=False,
                ids_path=None, subtree=True):
@@ -667,18 +678,22 @@ class Tree(object):
             (",\n" + " " * depth).join(args))
         predictor_doc = (INDENT + u"\"\"\" " + docstring +
                          u"\n" + INDENT + u"\"\"\"\n")
-        body, term_analysis_predicates = self.python_body(input_map=input_map,
-                                                          ids_path=ids_path,
-                                                          subtree=subtree)
+        body, term_analysis_predicates, item_analysis_predicates = \
+            self.python_body(input_map=input_map,
+                             ids_path=ids_path,
+                             subtree=subtree)
         terms_body = ""
-        if term_analysis_predicates:
-            terms_body = self.term_analysis_body(term_analysis_predicates)
+        if term_analysis_predicates or item_analysis_predicates:
+            terms_body = self.term_analysis_body(term_analysis_predicates,
+                                                 item_analysis_predicates)
         predictor += predictor_doc + terms_body + body
         out.write(utf8(predictor))
         out.flush()
 
-    def term_analysis_body(self, term_analysis_predicates):
-        """ Writes auxiliary functions to handle the term analysis fields
+    def term_analysis_body(self, term_analysis_predicates,
+                           item_analysis_predicates):
+        """ Writes auxiliary functions to handle the term and item
+        analysis fields
 
         """
         body = u""
@@ -690,7 +705,9 @@ class Tree(object):
     tm_full_term = '%s'
     tm_all = '%s'
 
-
+"""
+        if term_analysis_predicates:
+            body += """
     def term_matches(text, field_name, term):
         \"\"\" Counts the number of occurences of term and its variants in text
 
@@ -743,26 +760,26 @@ class Tree(object):
         pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
         return len(matches)
+
 """ % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
 
-        term_analysis_options = set(map(lambda x: x[0],
-                                        term_analysis_predicates))
-        term_analysis_predicates = set(term_analysis_predicates)
-        body += """
+            term_analysis_options = set(map(lambda x: x[0],
+                                           term_analysis_predicates))
+            term_analysis_predicates = set(term_analysis_predicates)
+            body += """
     term_analysis = {"""
-        for field_id in term_analysis_options:
-            field = self.fields[field_id]
-            body += """
+            for field_id in term_analysis_options:
+                field = self.fields[field_id]
+                body += """
         \"%s\": {""" % field['slug']
-            for option in field['term_analysis']:
-                if option in TERM_OPTIONS:
-                    body += """
+                for option in field['term_analysis']:
+                    if option in TERM_OPTIONS:
+                        body += """
                 \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
-            body += """
+                body += """
         },"""
-        body += """
+                body += """
     }"""
-        if term_analysis_predicates:
             term_forms = {}
             fields = self.fields
             for field_id, term in term_analysis_predicates:
@@ -777,17 +794,59 @@ class Tree(object):
                         terms = [term]
                         terms.extend(all_forms.get(term, []))
                         term_forms[field['slug']][term] = terms
-            body += """
+                body += """
     term_forms = {"""
-            for field in term_forms:
-                body += """
-        \"%s\": {""" % field
-                for term in term_forms[field]:
+                for field in term_forms:
                     body += """
+        \"%s\": {""" % field
+                    for term in term_forms[field]:
+                        body += """
             u\"%s\": %s,""" % (term, term_forms[field][term])
-                body += """
+                    body += """
         },
                 """
+                body += """
+    }
+"""
+        if item_analysis_predicates:
+            body += """
+    def item_matches(text, field_name, item):
+        \"\"\" Counts the number of occurences of item in text
+
+        \"\"\"
+        options = item_analysis[field_name]
+        separator = options.get('separator', ' ')
+        regexp = options.get('separator_regexp')
+        if regexp is None:
+            regexp = r\"%s\" % separator
+        return count_items_matches(text, item, regexp)
+
+
+    def count_items_matches(text, item, regexp):
+        \"\"\" Counts the number of occurences of the item in the text
+
+        \"\"\"
+        expression = r'(^|%s)%s($|%s)' % (regexp, item, regexp)
+        pattern = re.compile(expression, flags=re.U)
+        matches = re.findall(pattern, text)
+        return len(matches)
+"""
+
+            item_analysis_options = set(map(lambda x: x[0],
+                                        item_analysis_predicates))
+            item_analysis_predicates = set(item_analysis_predicates)
+            body += """
+    item_analysis = {"""
+            for field_id in item_analysis_options:
+                field = self.fields[field_id]
+                body += """
+        \"%s\": {""" % field['slug']
+                for option in field['item_analysis']:
+                    if option in ITEM_OPTIONS:
+                        body += """
+                \"%s\": %s,""" % (option, repr(field['item_analysis'][option]))
+                body += """
+        },"""
             body += """
     }
 """
@@ -849,7 +908,7 @@ class Tree(object):
                 optype = self.fields[child.predicate.field]['optype']
                 if child.predicate.value is None:
                     value = ""
-                elif optype == 'text':
+                elif optype == 'text' or optype == 'items':
                     return u""
                 elif optype == 'numeric':
                     value = child.predicate.value

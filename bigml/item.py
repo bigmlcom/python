@@ -92,7 +92,7 @@ class Item(object):
         elif self.field_type == "categorical":
             operator = "!=" if self.complement else "="
             description = "%s %s %s" % (self.field_name, operator, self.name)
-        elif self.field_type == text:
+        elif self.field_type == "text":
             operator = "excludes" if self.complement else "includes"
             description = "%s %s %s" % (self.field_name, operator, self.name)
         else:

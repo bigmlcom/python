@@ -69,7 +69,7 @@ METRIC_LITERALS = {"confidence": "Confidence", "support": "Support",
 INDENT = " " * 4
 
 DEFAULT_K = 100
-DEFAULT_SEARCH_STRATEGY = 0
+DEFAULT_SEARCH_STRATEGY = "leverage"
 
 SEARCH_STRATEGY_CODES = {
     "leverage": 0,
@@ -191,7 +191,7 @@ class Association(ModelFields):
                             association)
 
     def predict(self, input_data,
-                k=DEFAULT_K, max_rules=None, score_by=None, by_name=True):
+                k=DEFAULT_K, score_by=None, by_name=True):
         """Returns the Consequents for the rules whose LHS best match
            the provided items. Cosine similarity is used to score the match.
 
@@ -217,29 +217,33 @@ class Association(ModelFields):
         """
         predictions = {}
         input_data = self.filter_input_data(input_data, by_name=by_name)
+        # retrieving the items in input_data
         items_indexes = [item.index for item in
                          self.get_items(input_map=input_data)]
         if score_by is None:
             score_by = self.search_strategy
+
         for rule in self.rules:
-            cosine = sum([1 for index in items_indexes if index in rule.lhs])
-            if cosine > 0:
-                cosine = cosine / float(math.sqrt(len(items_indexes)) * \
-                                        math.sqrt(len(rule.lhs)))
-                rhs = tuple(rule.rhs)
-                if not rhs in predictions:
-                    predictions[rhs] = {"score": 0, "matching_rules": []}
-                if max_rules is None or \
-                        len(predictions[rhs]["matching_rules"]) <= max_rules:
+            # checking that the item in the rhs is not in the input data
+            if not rule.rhs[0] in items_indexes:
+                cosine = sum([1 for index in items_indexes \
+                    if index in rule.lhs])
+                if cosine > 0:
+                    cosine = cosine / float(math.sqrt(len(items_indexes)) * \
+                                            math.sqrt(len(rule.lhs)))
+
+                    rhs = tuple(rule.rhs)
+                    if not rhs in predictions:
+                        predictions[rhs] = {"score": 0}
                     predictions[rhs]["score"] += cosine * getattr(
                         rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
-                    predictions[rhs]["matching_rules"].append(rule.rule_id)
+        # choose the best k predictions
         k = len(predictions.keys()) if k is None else k
         predictions = sorted(predictions.items(),
                               key=lambda x: x[1]["score"], reverse=True)[:k]
         final_predictions = []
         for rhs, prediction in predictions:
-            prediction["prediction"] = self.items[rhs[0]].describe()
+            prediction["item"] = self.items[rhs[0]].to_JSON()
             final_predictions.append(prediction)
         return final_predictions
 

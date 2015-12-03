@@ -31,15 +31,15 @@ class Item(object):
     def __init__(self, index, item_info, fields):
         self.index = index
         self.complement = item_info.get('complement', False)
-        self.complement_id = item_info.get('complement_id')
+        self.complement_index = item_info.get('complement_index')
         self.count = item_info.get('count')
         self.description = item_info.get('description')
         self.field_id = item_info.get('field_id')
         self.field_name = fields[self.field_id]["name"]
         self.field_type = fields[self.field_id]["optype"]
         self.name = item_info.get('name')
-        self.segment_end = item_info.get('segment_end')
-        self.segment_start = item_info.get('segment_start')
+        self.bin_end = item_info.get('bin_end')
+        self.bin_start = item_info.get('bin_start')
 
     def out_format(self, language="JSON"):
         """Transforming the rule structure to a string in the required format
@@ -53,17 +53,21 @@ class Item(object):
         """Transforming the rule to CSV formats
 
         """
-        output = [self.complement, self.complement_id, self.count,
+        output = [self.complement, self.complement_index, self.count,
                   self.description, self.field_name, self.name,
-                  self.segment_end, self.segment_start]
+                  self.bin_end, self.bin_start]
         return output
 
     def to_JSON(self):
-        """Transforming the item to JSON
+        """Transforming the item relevant information to JSON
 
         """
         item_dict = {}
         item_dict.update(self.__dict__)
+        del item_dict["field_name"]
+        del item_dict["field_type"]
+        del item_dict["complement_index"]
+        del item_dict["index"]
         return item_dict
 
     def describe(self):
@@ -73,10 +77,10 @@ class Item(object):
         description = ""
 
         if self.field_type == "numeric":
-            previous = self.segment_end if self.complement else \
-                self.segment_start
-            next = self.segment_start if self.complement else \
-                self.segment_end
+            previous = self.bin_end if self.complement else \
+                self.bin_start
+            next = self.bin_start if self.complement else \
+                self.bin_end
             if previous and next:
                 if previous < next:
                     description = "%s < %s <= %s" % (previous, self.field_name,
@@ -106,12 +110,15 @@ class Item(object):
         """
         if value is None:
             return False
-        if self.segment_end is not None or self.segment_start is not None:
-            if self.segment_start is not None and self.segment_end is not None:
-                return self.segment_start <= value <= self.segment_end
-            elif self.segment_end is not None:
-                return value <= self.segment_end
+        if self.bin_end is not None or self.bin_start is not None:
+            if self.bin_start is not None and self.bin_end is not None:
+                result = self.bin_start <= value <= self.bin_end
+            elif self.bin_end is not None:
+                result = value <= self.bin_end
             else:
-                return value >= self.segment_start
+                result = value >= self.bin_start
         else:
-            return self.name == value
+            result = self.name == value
+        if self.complement:
+            result = not result
+        return result

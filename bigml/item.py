@@ -21,6 +21,7 @@
 """
 
 from bigml.associationrule import SUPPORTED_LANGUAGES
+from bigml.predicate import term_matches, item_matches
 
 class Item(object):
     """ Object encapsulating an Association resource item as described in
@@ -35,8 +36,7 @@ class Item(object):
         self.count = item_info.get('count')
         self.description = item_info.get('description')
         self.field_id = item_info.get('field_id')
-        self.field_name = fields[self.field_id]["name"]
-        self.field_type = fields[self.field_id]["optype"]
+        self.field_info = fields[self.field_id]
         self.name = item_info.get('name')
         self.bin_end = item_info.get('bin_end')
         self.bin_start = item_info.get('bin_start')
@@ -54,7 +54,7 @@ class Item(object):
 
         """
         output = [self.complement, self.complement_index, self.count,
-                  self.description, self.field_name, self.name,
+                  self.description, self.field_info['name'], self.name,
                   self.bin_end, self.bin_start]
         return output
 
@@ -64,41 +64,78 @@ class Item(object):
         """
         item_dict = {}
         item_dict.update(self.__dict__)
-        del item_dict["field_name"]
-        del item_dict["field_type"]
+        del item_dict["field_info"]
         del item_dict["complement_index"]
         del item_dict["index"]
         return item_dict
 
-    def describe(self):
-        """Human-readable description of a item_dict
+    def to_flatline(self):
+        """Returns the flatline expression to filter this item_analysis
 
         """
-        description = ""
-
-        if self.field_type == "numeric":
+        flatline = ""
+        field_type = self.field_info['type']
+        if field_type == "numeric":
             previous = self.bin_end if self.complement else \
                 self.bin_start
             next = self.bin_start if self.complement else \
                 self.bin_end
             if previous and next:
                 if previous < next:
-                    description = "%s < %s <= %s" % (previous, self.field_name,
+                    flatline = "(and (< %s (f %s)) (<= (f %s) %s))" % \
+                        (previous, self.field_id, self.field_id, next)
+                else:
+                    flatline = "(or (> (f %s) %s) (<= (f %s) %s))" % \
+                        (self.field_id, previous, self.field_id, next)
+            elif previous:
+                flatline = "(> (f %s) %s)" % (self.field_info['name'],
+                                              previous)
+            else:
+                flatline = "(<= (f %s) %s)" % (self.field_info['name'], next)
+        elif field_type == "categorical":
+            operator = "!=" if self.complement else "="
+            flatline = "(%s (f %s) %s)" % (
+                self.field_name, operator, self.name)
+        # TODO: change this
+        elif field_type in ["text", "items"]:
+            operator = "excludes" if self.complement else "includes"
+            description = "%s %s %s" % (self.field_info['name'],
+                                        operator, self.name)
+        else:
+            description = self.name
+        return description
+
+    def describe(self):
+        """Human-readable description of a item_dict
+
+        """
+        description = ""
+        field_name = self.field_info['name']
+        field_type = self.field_info['type']
+        if field_type == "numeric":
+            previous = self.bin_end if self.complement else \
+                self.bin_start
+            next = self.bin_start if self.complement else \
+                self.bin_end
+            if previous and next:
+                if previous < next:
+                    description = "%s < %s <= %s" % (previous,
+                                                     field_name,
                                                      next)
                 else:
-                    description = "%s > %s or <= %s" % (self.field_name,
+                    description = "%s > %s or <= %s" % (field_name,
                                                         previous,
                                                         next)
             elif previous:
-                description = "%s > %s" % (self.field_name, previous)
+                description = "%s > %s" % (field_name, previous)
             else:
-                description = "%s <= %s" % (self.field_name, next)
-        elif self.field_type == "categorical":
+                description = "%s <= %s" % (field_name, next)
+        elif field_type == "categorical":
             operator = "!=" if self.complement else "="
-            description = "%s %s %s" % (self.field_name, operator, self.name)
-        elif self.field_type == "text":
+            description = "%s %s %s" % (field_name, operator, self.name)
+        elif field_type in ["text", "items"]:
             operator = "excludes" if self.complement else "includes"
-            description = "%s %s %s" % (self.field_name, operator, self.name)
+            description = "%s %s %s" % (field_name, operator, self.name)
         else:
             description = self.name
         return description
@@ -108,17 +145,33 @@ class Item(object):
             matches a category for categorical fields.
 
         """
+        field_type = self.field_info['type']
         if value is None:
             return False
-        if self.bin_end is not None or self.bin_start is not None:
+        if field_type == "numeric" and (
+                self.bin_end is not None or self.bin_start is not None):
             if self.bin_start is not None and self.bin_end is not None:
                 result = self.bin_start <= value <= self.bin_end
             elif self.bin_end is not None:
                 result = value <= self.bin_end
             else:
                 result = value >= self.bin_start
-        else:
+        elif field_type ['categorical']:
             result = self.name == value
+        elif field_type == 'text':
+            # for text fields, the item.name or the related term_forms should
+            # be in the considered value
+            all_forms = self.field_info['summary'].get('term_forms', {})
+            term_forms = all_forms.get(self.name, [])
+            terms = [self.name]
+            terms.extend(term_forms)
+            options = self.field_info['term_analysis']
+            result = term_matches(value, terms, options) > 0
+        elif field_type == 'items':
+            # for item fields, the item.name should be in the considered value
+            # surrounded by separators or regexp
+            options = self.field_info['item_analysis']
+            result = item_matches(value, self.name, options) > 0
         if self.complement:
             result = not result
         return result

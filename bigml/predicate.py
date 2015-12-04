@@ -196,14 +196,19 @@ class Predicate(object):
 
         """
         if self.term is not None:
-            options = fields[self.field]['term_analysis']
-            case_insensitive = not options.get('case_sensitive', False)
-            case_insensitive = u'true' if case_insensitive else u'false'
-            language = options.get('language')
-            language = u"" if language is None else u" %s" % language
-            return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
-                self.operator, self.field, self.term,
-                case_insensitive, language, self.value)
+            if fields[self.field]['optype'] == 'text':
+                options = fields[self.field]['term_analysis']
+                case_insensitive = not options.get('case_sensitive', False)
+                case_insensitive = u'true' if case_insensitive else u'false'
+                language = options.get('language')
+                language = u"" if language is None else u" %s" % language
+                return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
+                    self.operator, self.field, self.term,
+                    case_insensitive, language, self.value)
+            elif fields[self.field]['optype'] == 'items':
+                return u"(%s (if (contains-items? %s %s) 1 0) %s)" % (
+                    self.operator, self.field, self.term,
+                    self.value)
         if self.value is None:
             negation = u"" if self.operator == "=" else u"not "
             return u"(%s missing? %s)" % (negation, self.field)

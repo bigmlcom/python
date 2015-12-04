@@ -59,7 +59,7 @@ from bigml.modelfields import ModelFields
 from bigml.io import UnicodeWriter
 
 
-OPTIONAL_FIELDS = ['categorical', 'text']
+OPTIONAL_FIELDS = ['categorical', 'text', 'items']
 CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
                   'sum', 'sum_squares', 'variance']
 INDENT = " " * 4
@@ -78,6 +78,16 @@ def parse_terms(text, case_sensitive=True):
     pattern = re.compile(expression)
     return map(lambda x: x[1] if case_sensitive else x[1].lower(),
                re.findall(pattern, text))
+
+
+def parse_items(text, regexp):
+    """Returns the list of parsed items
+
+    """
+    if text is None:
+        return []
+    pattern = re.compile(regexp, flags=re.U)
+    return pattern.split(text)
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):
@@ -116,6 +126,8 @@ class Cluster(ModelFields):
         self.term_forms = {}
         self.tag_clouds = {}
         self.term_analysis = {}
+        self.item_analysis = {}
+        self.items = {}
         if not (isinstance(cluster, dict) and 'resource' in cluster and
                 cluster['resource'] is not None):
             if api is None:
@@ -149,7 +161,6 @@ class Cluster(ModelFields):
                     del fields[field_id]
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
-
                         self.term_forms[field_id] = {}
                         self.term_forms[field_id].update(field[
                             'summary']['term_forms'])
@@ -159,6 +170,14 @@ class Cluster(ModelFields):
                         self.term_analysis[field_id] = {}
                         self.term_analysis[field_id].update(
                             field['term_analysis'])
+                    if field['optype'] == 'items':
+                        self.items[field_id] = {}
+                        self.items[field_id].update(dict(field['summary']['items']))
+                        self.item_analysis[field_id] = {}
+                        self.item_analysis[field_id].update(
+                            field['item_analysis'])
+                        print "*** items", self.items
+
                 ModelFields.__init__(self, fields)
                 if not all([field_id in self.fields for
                             field_id in self.scales]):
@@ -233,6 +252,26 @@ class Cluster(ModelFields):
                 else:
                     unique_terms[field_id] = input_data_field
                 del input_data[field_id]
+        # the same for items fields
+        for field_id in self.item_analysis:
+            if field_id in input_data:
+                input_data_field = input_data.get(field_id, '')
+                if isinstance(input_data_field, basestring):
+                    # parsing the items in input_data
+                    separator = self.item_analysis[field_id].get(
+                        'separator', ' ')
+                    regexp = self.item_analysis[field_id].get(
+                        'separator_regexp')
+                    if regexp is None:
+                        regexp = ur'%s' % separator
+                    terms = parse_items(input_data_field, regexp)
+                    unique_terms[field_id] = get_unique_terms(
+                        terms, {},
+                        self.items.get(field_id, []))
+                else:
+                    unique_terms[field_id] = input_data_field
+                del input_data[field_id]
+
         return unique_terms
 
     def centroids_distance(self, to_centroid):

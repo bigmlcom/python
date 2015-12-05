@@ -74,7 +74,7 @@ class Item(object):
 
         """
         flatline = ""
-        field_type = self.field_info['type']
+        field_type = self.field_info['optype']
         if field_type == "numeric":
             previous = self.bin_end if self.complement else \
                 self.bin_start
@@ -88,14 +88,13 @@ class Item(object):
                     flatline = u"(or (> (f %s) %s) (<= (f %s) %s))" % \
                         (self.field_id, previous, self.field_id, next)
             elif previous:
-                flatline = u"(> (f %s) %s)" % (self.field_info['name'],
-                                              previous)
+                flatline = u"(> (f %s) %s)" % (self.field_id, previous)
             else:
-                flatline = u"(<= (f %s) %s)" % (self.field_info['name'], next)
+                flatline = u"(<= (f %s) %s)" % (self.field_id, next)
         elif field_type == "categorical":
             operator = u"!=" if self.complement else u"="
             flatline = u"(%s (f %s) %s)" % (
-                self.field_name, operator, self.name)
+                operator, self.field_id, self.name)
         elif field_type == "text":
             operator = u"=" if self.complement else u">"
             options = self.field_info['term_analysis']
@@ -118,7 +117,7 @@ class Item(object):
         """
         description = ""
         field_name = self.field_info['name']
-        field_type = self.field_info['type']
+        field_type = self.field_info['optype']
         if field_type == "numeric":
             previous = self.bin_end if self.complement else \
                 self.bin_start
@@ -152,7 +151,7 @@ class Item(object):
         matches a category for categorical fields.
 
         """
-        field_type = self.field_info['type']
+        field_type = self.field_info['optype']
         if value is None:
             return False
         if field_type == "numeric" and (

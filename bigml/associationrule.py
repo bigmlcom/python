@@ -74,3 +74,15 @@ class AssociationRule(object):
         rule_dict = {}
         rule_dict.update(self.__dict__)
         return rule_dict
+
+    def to_LISP_rule(self):
+        """Transforming the rule in a LISP flatline filter to select the
+        rows in the dataset that fulfill the rule
+
+        """
+
+        flatline = ""
+        items = [self.items[index].to_LISP_rule() for index in self.lhs]
+        rhs_items = [self.items[index].to_LISP_rule() for index in self.rhs]
+        items.extend(rhs_items)
+        return "(and %s)" % "".join(items)

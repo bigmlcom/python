@@ -166,7 +166,7 @@ class Association(ModelFields):
                 self.field_discretizations = associations.get(
                     'field_discretizations', {})
                 self.items = [Item(index, item, fields) for index, item in
-                              enumerate(associations['items'])]
+                              enumerate(associations.get('items', []))]
                 self.k = associations.get('k', 100)
                 self.max_lhs = associations.get('max_lhs', 4)
                 self.min_coverage = associations.get('min_coverage', 0)
@@ -179,7 +179,7 @@ class Association(ModelFields):
                     associations.get('search_strategy',
                                      DEFAULT_SEARCH_STRATEGY)]
                 self.rules = [AssociationRule(rule) for rule in
-                              associations['rules']]
+                              associations.get('rules', [])]
                 self.significance_level = associations.get(
                     'significance_level', 0.05)
             else:

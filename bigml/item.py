@@ -25,7 +25,7 @@ from bigml.predicate import term_matches, item_matches
 
 class Item(object):
     """ Object encapsulating an Association resource item as described in
-        https://bigml.com/developers/associations
+    https://bigml.com/developers/associations
 
     """
 
@@ -69,8 +69,8 @@ class Item(object):
         del item_dict["index"]
         return item_dict
 
-    def to_flatline(self):
-        """Returns the flatline expression to filter this item_analysis
+    def to_LISP_rule(self):
+        """Returns the LISP flatline expression to filter this item
 
         """
         flatline = ""
@@ -82,28 +82,35 @@ class Item(object):
                 self.bin_end
             if previous and next:
                 if previous < next:
-                    flatline = "(and (< %s (f %s)) (<= (f %s) %s))" % \
+                    flatline = u"(and (< %s (f %s)) (<= (f %s) %s))" % \
                         (previous, self.field_id, self.field_id, next)
                 else:
-                    flatline = "(or (> (f %s) %s) (<= (f %s) %s))" % \
+                    flatline = u"(or (> (f %s) %s) (<= (f %s) %s))" % \
                         (self.field_id, previous, self.field_id, next)
             elif previous:
-                flatline = "(> (f %s) %s)" % (self.field_info['name'],
+                flatline = u"(> (f %s) %s)" % (self.field_info['name'],
                                               previous)
             else:
-                flatline = "(<= (f %s) %s)" % (self.field_info['name'], next)
+                flatline = u"(<= (f %s) %s)" % (self.field_info['name'], next)
         elif field_type == "categorical":
-            operator = "!=" if self.complement else "="
-            flatline = "(%s (f %s) %s)" % (
+            operator = u"!=" if self.complement else u"="
+            flatline = u"(%s (f %s) %s)" % (
                 self.field_name, operator, self.name)
-        # TODO: change this
-        elif field_type in ["text", "items"]:
-            operator = "excludes" if self.complement else "includes"
-            description = "%s %s %s" % (self.field_info['name'],
-                                        operator, self.name)
-        else:
-            description = self.name
-        return description
+        elif field_type == "text":
+            operator = u"=" if self.complement else u">"
+            options = self.field_info['term_analysis']
+            case_insensitive = not options.get('case_sensitive', False)
+            case_insensitive = u'true' if case_insensitive else u'false'
+            language = options.get('language')
+            language = u"" if language is None else u" %s" % language
+            flatline = u"(%s (occurrences (f %s) %s %s%s) 0)" % (
+                operator, self.field_id, self.name,
+                case_insensitive, language)
+        elif field_type == 'items':
+            operator = u"!" if self.complement else u""
+            flatline = u"(% (contains-items? %s %s))" % (
+                self.operator, self.field_id, self.name)
+        return flatline
 
     def describe(self):
         """Human-readable description of a item_dict
@@ -142,7 +149,7 @@ class Item(object):
 
     def matches(self, value):
         """ Checks whether the value is in a range for numeric fields or
-            matches a category for categorical fields.
+        matches a category for categorical fields.
 
         """
         field_type = self.field_info['type']

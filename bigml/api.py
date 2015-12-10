@@ -58,6 +58,7 @@ from bigml.correlationhandler import CorrelationHandler
 from bigml.statisticaltesthandler import StatisticalTestHandler
 from bigml.logistichandler import LogisticRegressionHandler
 from bigml.associationhandler import AssociationHandler
+from bigml.associationsethandler import AssociationSetHandler
 
 
 # Repeating constants and functions for backwards compatibility
@@ -82,7 +83,7 @@ from bigml.constants import (
     SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
     STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
-    ASSOCIATION_RE)
+    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE)
 
 
 from bigml.resourcehandler import (
@@ -93,7 +94,7 @@ from bigml.resourcehandler import (
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
     get_correlation_id, get_statistical_test_id, get_logistic_regression_id,
-    get_association_id)
+    get_association_id, get_association_set_id)
 
 
 # Map status codes to labels
@@ -119,7 +120,8 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(AssociationHandler, LogisticRegressionHandler,
+class BigML(AssociationSetHandler, AssociationHandler,
+            LogisticRegressionHandler,
             StatisticalTestHandler, CorrelationHandler,
             SampleHandler, ProjectHandler,
             BatchAnomalyScoreHandler, BatchCentroidHandler,
@@ -187,6 +189,7 @@ class BigML(AssociationHandler, LogisticRegressionHandler,
         StatisticalTestHandler.__init__(self)
         LogisticRegressionHandler.__init__(self)
         AssociationHandler.__init__(self)
+        AssociationSetHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:

@@ -190,8 +190,8 @@ class Association(ModelFields):
                             "resource:\n\n%s" %
                             association)
 
-    def predict(self, input_data,
-                k=DEFAULT_K, score_by=None, by_name=True):
+    def association_set(self, input_data,
+                        k=DEFAULT_K, score_by=None, by_name=True):
         """Returns the Consequents for the rules whose LHS best match
            the provided items. Cosine similarity is used to score the match.
 
@@ -224,8 +224,8 @@ class Association(ModelFields):
             score_by = self.search_strategy
 
         for rule in self.rules:
-            # checking that the item in the rhs is not in the input data
-            if not rule.rhs[0] in items_indexes:
+            # checking that the field in the rhs is not in the input data
+            if not self.items[rule.rhs[0]].field_id in input_data:
                 cosine = sum([1 for index in items_indexes \
                     if index in rule.lhs])
                 if cosine > 0:

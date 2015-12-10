@@ -162,7 +162,7 @@ class Item(object):
                 result = value <= self.bin_end
             else:
                 result = value >= self.bin_start
-        elif field_type ['categorical']:
+        elif field_type == 'categorical':
             result = self.name == value
         elif field_type == 'text':
             # for text fields, the item.name or the related term_forms should

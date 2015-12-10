@@ -31,7 +31,7 @@ from bigml.bigmlconnection import BigMLConnection
 
 NO_QS = [c.EVALUATION_RE, c.PREDICTION_RE, c.BATCH_PREDICTION_RE,
          c.CENTROID_RE, c.BATCH_CENTROID_RE, c.ANOMALY_SCORE_RE,
-         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE]
+         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE, c.ASSOCIATION_SET_RE]
 
 
 def get_resource_type(resource):
@@ -236,6 +236,13 @@ def get_association_id(association):
 
     """
     return get_resource(c.ASSOCIATION_PATH, association)
+
+
+def get_association_set_id(association_set):
+    """Returns an associationset/id.
+
+    """
+    return get_resource(c.ASSOCIATION_SET_PATH, association_set)
 
 
 def get_resource_id(resource):

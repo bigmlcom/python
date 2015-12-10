@@ -85,6 +85,8 @@ SEARCH_STRATEGY_ATTRIBUTES = {
     3: "lhs_coverage",
     4: "lift"}
 
+NO_ITEMS = ['numeric', 'categorical']
+
 
 def get_metric_string(rule, reverse=False):
     """Returns the string that describes the values of metrics for a rule.
@@ -225,18 +227,28 @@ class Association(ModelFields):
 
         for rule in self.rules:
             # checking that the field in the rhs is not in the input data
-            if not self.items[rule.rhs[0]].field_id in input_data:
-                cosine = sum([1 for index in items_indexes \
-                    if index in rule.lhs])
-                if cosine > 0:
-                    cosine = cosine / float(math.sqrt(len(items_indexes)) * \
-                                            math.sqrt(len(rule.lhs)))
+            field_type = self.fields[self.items[rule.rhs[0]].field_id][ \
+                'optype']
+            # if the rhs corresponds to a non-itemized field and this field
+            # is already in input_data, don't add rhs
+            if field_type in NO_ITEMS and self.items[rule.rhs[0]].field_id in \
+                    input_data:
+                continue
+            # if an itemized content is in input_data, don't add it to the
+            # prediction
+            if not field_type in NO_ITEMS and rule.rhs[0] in items_indexes:
+                continue
+            cosine = sum([1 for index in items_indexes \
+                if index in rule.lhs])
+            if cosine > 0:
+                cosine = cosine / float(math.sqrt(len(items_indexes)) * \
+                                        math.sqrt(len(rule.lhs)))
 
-                    rhs = tuple(rule.rhs)
-                    if not rhs in predictions:
-                        predictions[rhs] = {"score": 0}
-                    predictions[rhs]["score"] += cosine * getattr(
-                        rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
+                rhs = tuple(rule.rhs)
+                if not rhs in predictions:
+                    predictions[rhs] = {"score": 0}
+                predictions[rhs]["score"] += cosine * getattr(
+                    rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
         # choose the best k predictions
         k = len(predictions.keys()) if k is None else k
         predictions = sorted(predictions.items(),

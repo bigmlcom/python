@@ -183,12 +183,6 @@ class LogisticRegression(ModelFields):
                     self, fields,
                     objective_id=objective_id)
                 self.map_coefficients()
-                if len(self.fields) < self.dataset_field_types.get( \
-                        "total", float("inf")):
-                    raise Exception("Some fields are missing"
-                                    " to generate a local logistic regression."
-                                    " Please, provide a logistic regression"
-                                    " with the complete list of fields.")
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:

@@ -3,6 +3,12 @@
 History
 -------
 
+4.3.4 (2015-12-10)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Logistic regression object failed to build when using input
+  fields or non-preferred fields in dataset.
+
 4.3.3 (2015-11-30)
 ~~~~~~~~~~~~~~~~~~
 

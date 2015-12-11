@@ -97,7 +97,7 @@ def merge_numeric_rules(list_of_predicates, fields, label='name'):
         rule += name
         predicate, value, missing = major
         rule += u" %s %s " % (predicate.operator, value)
-        if missing and minor[3]:
+        if missing and minor[2]:
             rule += u" or missing"
     else:
         predicate = minor[0] if minor[0] is not None else major[0]

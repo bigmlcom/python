@@ -111,7 +111,7 @@ def item_matches(text, item, options):
     separator = options.get('separator', ' ')
     regexp = options.get('separator_regexp')
     if regexp is None:
-        regexp = ur"%s" % separator
+        regexp = ur"%s" % re.escape(separator)
     return count_items_matches(text, item, regexp)
 
 

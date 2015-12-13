@@ -179,6 +179,7 @@ def teardown_module():
     world.api.delete_project(world.project_id)
     world.project_id = None
 
+
 def teardown_class():
     """Operations to be performed after each class
 

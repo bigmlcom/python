@@ -54,20 +54,11 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
+from bigml.cluster import parse_terms, parse_items
 
-EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud"}
-OPTIONAL_FIELDS = ['categorical', 'text']
-
-def parse_terms(text, case_sensitive=True):
-    """Returns the list of parsed terms
-
-    """
-    if text is None:
-        return []
-    expression = ur'(\b|_)([^\b_\s]+?)(\b|_)'
-    pattern = re.compile(expression)
-    return map(lambda x: x[1] if case_sensitive else x[1].lower(),
-               re.findall(pattern, text))
+EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
+                        "items": "items"}
+OPTIONAL_FIELDS = ['categorical', 'text', 'items']
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):
@@ -108,6 +99,8 @@ class LogisticRegression(ModelFields):
         self.term_forms = {}
         self.tag_clouds = {}
         self.term_analysis = {}
+        self.items = {}
+        self.item_analysis = {}
         self.categories = {}
         self.coefficients = {}
         self.data_field_types = {}
@@ -151,9 +144,6 @@ class LogisticRegression(ModelFields):
             if 'code' in status and status['code'] == FINISHED:
                 logistic_regression_info = logistic_regression[ \
                     'logistic_regression']
-                self.term_forms = {}
-                self.tag_clouds = {}
-                self.term_analysis = {}
                 fields = logistic_regression_info.get('fields', {})
 
                 self.coefficients.update(logistic_regression_info.get( \
@@ -170,12 +160,19 @@ class LogisticRegression(ModelFields):
                         self.term_forms[field_id] = {}
                         self.term_forms[field_id].update(
                             field['summary']['term_forms'])
-                        self.tag_clouds[field_id] = {}
+                        self.tag_clouds[field_id] = []
                         self.tag_clouds[field_id] = [tag for [tag, _] in field[
                             'summary']['tag_cloud']]
                         self.term_analysis[field_id] = {}
                         self.term_analysis[field_id].update(
                             field['term_analysis'])
+                    if field['optype'] == 'items':
+                        self.items[field_id] = []
+                        self.items[field_id] = [item for item, _ in \
+                            field['summary']['items']]
+                        self.item_analysis[field_id] = {}
+                        self.item_analysis[field_id].update(
+                            field['item_analysis'])
                     if field['optype'] == 'categorical':
                         self.categories[field_id] = [category for \
                             [category, _] in field['summary']['categories']]
@@ -248,6 +245,8 @@ class LogisticRegression(ModelFields):
                 try:
                     if field_id in self.tag_clouds:
                         index = self.tag_clouds[field_id].index(term)
+                    elif field_id in self.items:
+                        index = self.items[field_id].index(term)
                     elif field_id in self.categories:
                         index = self.categories[field_id].index(term)
                     probability += coefficients[shift + index] * occurrences
@@ -260,6 +259,11 @@ class LogisticRegression(ModelFields):
                 if not field_id in unique_terms or not unique_terms[field_id]:
                     probability += coefficients[ \
                         shift + len(self.tag_clouds[field_id])]
+            for field_id in self.items:
+                shift = self.fields[field_id]['coefficients_shift']
+                if not field_id in unique_terms or not unique_terms[field_id]:
+                    probability += coefficients[ \
+                        shift + len(self.items[field_id])]
             for field_id in self.categories:
                 if field_id != self.objective_id and \
                         not field_id in unique_terms:
@@ -299,6 +303,25 @@ class LogisticRegression(ModelFields):
                 else:
                     unique_terms[field_id] = [(input_data_field, 1)]
                 del input_data[field_id]
+        # the same for items fields
+        for field_id in self.item_analysis:
+            if field_id in input_data:
+                input_data_field = input_data.get(field_id, '')
+                if isinstance(input_data_field, basestring):
+                    # parsing the items in input_data
+                    separator = self.item_analysis[field_id].get(
+                        'separator', ' ')
+                    regexp = self.item_analysis[field_id].get(
+                        'separator_regexp')
+                    if regexp is None:
+                        regexp = ur'%s' % re.escape(separator)
+                    terms = parse_items(input_data_field, regexp)
+                    unique_terms[field_id] = get_unique_terms(
+                        terms, {},
+                        self.items.get(field_id, []))
+                else:
+                    unique_terms[field_id] = [(input_data_field, 1)]
+                del input_data[field_id]
         for field_id in self.categories:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
@@ -319,7 +342,7 @@ class LogisticRegression(ModelFields):
         for field_id in field_ids:
             optype = self.fields[field_id]['optype']
             if optype in EXPANSION_ATTRIBUTES.keys():
-                # text and categorical fields have one coefficient per
+                # text, items and categorical fields have one coefficient per
                 # text/class plus a missing terms coefficient plus a bias
                 # coefficient
                 length = len(self.fields[field_id]['summary'][ \

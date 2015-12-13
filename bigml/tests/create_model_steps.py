@@ -164,6 +164,18 @@ def i_create_a_logistic_model(step):
     world.logistic_regression = resource['object']
     world.logistic_regressions.append(resource['resource'])
 
+
+#@step(r'I create a logistic regression model with objective "(.*?)"$')
+def i_create_a_logistic_model_with_objective(step, objective):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_logistic_regression( \
+        dataset, {"objective_field": objective})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.logistic_regression = resource['object']
+    world.logistic_regressions.append(resource['resource'])
+
 #@step(r'I wait until the logistic regression model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()

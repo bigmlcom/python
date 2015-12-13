@@ -172,11 +172,11 @@ class Cluster(ModelFields):
                             field['term_analysis'])
                     if field['optype'] == 'items':
                         self.items[field_id] = {}
-                        self.items[field_id].update(dict(field['summary']['items']))
+                        self.items[field_id].update(
+                            dict(field['summary']['items']))
                         self.item_analysis[field_id] = {}
                         self.item_analysis[field_id].update(
                             field['item_analysis'])
-                        print "*** items", self.items
 
                 ModelFields.__init__(self, fields)
                 if not all([field_id in self.fields for
@@ -263,7 +263,7 @@ class Cluster(ModelFields):
                     regexp = self.item_analysis[field_id].get(
                         'separator_regexp')
                     if regexp is None:
-                        regexp = ur'%s' % separator
+                        regexp = ur'%s' % re.escape(separator)
                     terms = parse_items(input_data_field, regexp)
                     unique_terms[field_id] = get_unique_terms(
                         terms, {},

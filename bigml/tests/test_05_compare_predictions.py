@@ -112,6 +112,7 @@ class TestComparePrediction(object):
                 | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}} |{"Message": "A normal message"}       | 000000    | ham     |
                 | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}} |{"Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}       | 000000    | spam     |
                 | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}} |{"Message": "Ok"}       | 000000    | ham     |
+                | ../data/movies.csv | 20      | 20     | 30     | {"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}} |{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}'| 000009| 3.93064
 
         """
         print self.test_scenario2.__doc__
@@ -123,7 +124,8 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "Mobile call"}', '000000', 'spam'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "A normal message"}', '000000', 'ham'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}', '000000', 'spam'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "Ok"}', '000000', 'ham']]
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "Ok"}', '000000', 'ham'],
+            ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}', '000009', '3.93064']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -218,7 +220,8 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Type": "ham", "Message": "Ok"}', 'Cluster 0', '0.478833312167'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "", "Message": ""}', 'Cluster 0', '0.707106781187'],
             ['data/diabetes.csv', '20', '20', '30', '{"fields": {}}', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 5', '0.4006712471727391'],
-            ['data/iris_sp_chars.csv', '20', '20', '30', '{"fields": {}}', '{"pétal.length":1, "pétal&width\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}', 'Cluster 0', '0.811744494026442']]
+            ['data/iris_sp_chars.csv', '20', '20', '30', '{"fields": {}}', '{"pétal.length":1, "pétal&width\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}', 'Cluster 0', '0.811744494026442'],
+            ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "age_range": "18-24", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Cluster 5', '0.7268455032528511']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -455,7 +458,7 @@ class TestComparePrediction(object):
                 And I update the source with params "<options>"
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a logistic regression model
+                And I create a logistic regression model with objective "<objective>"
                 And I wait until the logistic regression model is ready less than <time_3> secs
                 And I create a local logistic regression model
                 When I create a logistic regression prediction for "<data_input>"
@@ -466,13 +469,14 @@ class TestComparePrediction(object):
                 And the local logistic regression probability for the prediction is "<probability>"
 
                 Examples:
-                | data             | time_1  | time_2 | time_3 | options | data_input                             | prediction  | probability
-                | ../data/spam.csv | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}} |{"Message": "A normal message"}       | ham     | 0.5
+                | data             | time_1  | time_2 | objective | time_3 | options | data_input                             | prediction  | probability
+                | ../data/spam.csv | 20      | 20     | 000002 | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}} |{"Message": "A normal message"}       | ham     | 0.9169
 
         """
         print self.test_scenario10.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169]]
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169, "000000"],
+            ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', '25-34', '0.41686', '000002']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -480,7 +484,7 @@ class TestComparePrediction(object):
             source_create.i_update_source_with(self, example[4])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_logistic_model(self)
+            model_create.i_create_a_logistic_model_with_objective(self, example[8])
             model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_logistic_model(self)
             prediction_create.i_create_a_logistic_prediction(self, example[5])

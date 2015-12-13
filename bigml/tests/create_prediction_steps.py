@@ -182,4 +182,5 @@ def the_logistic_probability_is(step, probability):
     for [prediction, remote_probability] in world.prediction['probabilities']:
         if prediction == world.prediction['output']:
             break
-    assert round(float(remote_probability), 4) == round(float(probability), 4)
+    nose.tools.assert_almost_equals(round(float(remote_probability), 4),
+                                    round(float(probability), 4))

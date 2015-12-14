@@ -291,7 +291,7 @@ class Tree(object):
             return None
         for _, instances in self.distribution:
             purity += math.pow(instances / float(self.count), 2)
-        return (1.0 - purity) / 2
+        return (1.0 - purity)
 
     def list_fields(self, out):
         """Lists a description of the model's fields.

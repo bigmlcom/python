@@ -83,9 +83,11 @@ def i_get_rules_for_item_list(step, item_list):
 def the_first_rule_is(step, rule):
     rule_str = StringIO.StringIO()
     found_rules = []
+    rule = rule.strip().replace("\n", "")
     for a_rule in world.association_rules:
-        api.pprint(a_rule, rule_str)
-        found_rules.append(rule_str.getvalue())
+        api = BigML()
+        api.pprint(a_rule.to_JSON(), rule_str)
+        found_rules.append(rule_str.getvalue().strip().replace("\n", ""))
     if found_rules[0] == rule:
         assert True
     else:

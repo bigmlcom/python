@@ -1,0 +1,291 @@
+user_id;gender;age_range;occupation;zipcode;movie_id;title;genres;timestamp;rating
+1;Female;Under 18;K-12 student;48067;1193;One Flew Over the Cuckoo's Nest (1975);Drama;978300760;5
+1;Female;Under 18;K-12 student;48067;661;James and the Giant Peach (1996);Animation$Children's$Musical;978302109;3
+1;Female;Under 18;K-12 student;48067;914;My Fair Lady (1964);Musical$Romance;978301968;3
+1;Female;Under 18;K-12 student;48067;3408;Erin Brockovich (2000);Drama;978300275;4
+1;Female;Under 18;K-12 student;48067;2355;Bug's Life, A (1998);Animation$Children's$Comedy;978824291;5
+1;Female;Under 18;K-12 student;48067;1197;Princess Bride, The (1987);Action$Adventure$Comedy$Romance;978302268;3
+1;Female;Under 18;K-12 student;48067;1287;Ben-Hur (1959);Action$Adventure$Drama;978302039;5
+1;Female;Under 18;K-12 student;48067;2804;Christmas Story, A (1983);Comedy$Drama;978300719;5
+1;Female;Under 18;K-12 student;48067;594;Snow White and the Seven Dwarfs (1937);Animation$Children's$Musical;978302268;4
+1;Female;Under 18;K-12 student;48067;919;Wizard of Oz, The (1939);Adventure$Children's$Drama$Musical;978301368;4
+1;Female;Under 18;K-12 student;48067;595;Beauty and the Beast (1991);Animation$Children's$Musical;978824268;5
+1;Female;Under 18;K-12 student;48067;938;Gigi (1958);Musical;978301752;4
+1;Female;Under 18;K-12 student;48067;2398;Miracle on 34th Street (1947);Drama;978302281;4
+1;Female;Under 18;K-12 student;48067;2918;Ferris Bueller's Day Off (1986);Comedy;978302124;4
+1;Female;Under 18;K-12 student;48067;1035;Sound of Music, The (1965);Musical;978301753;5
+1;Female;Under 18;K-12 student;48067;2791;Airplane! (1980);Comedy;978302188;4
+1;Female;Under 18;K-12 student;48067;1097;E.T. the Extra-Terrestrial (1982);Children's$Drama$Fantasy$Sci-Fi;978301953;4
+1;Female;Under 18;K-12 student;48067;1721;Titanic (1997);Drama$Romance;978300055;4
+1;Female;Under 18;K-12 student;48067;1545;Ponette (1996);Drama;978824139;4
+1;Female;Under 18;K-12 student;48067;745;Close Shave, A (1995);Animation$Comedy$Thriller;978824268;3
+1;Female;Under 18;K-12 student;48067;2294;Antz (1998);Animation$Children's;978824291;4
+1;Female;Under 18;K-12 student;48067;3186;Girl, Interrupted (1999);Drama;978300019;4
+2;Male;56+;self-employed;70072;3451;Guess Who's Coming to Dinner (1967);Comedy$Drama;978298924;4
+2;Male;56+;self-employed;70072;3095;Grapes of Wrath, The (1940);Drama;978298517;4
+2;Male;56+;self-employed;70072;780;Independence Day (ID4) (1996);Action$Sci-Fi$War;978299966;3
+2;Male;56+;self-employed;70072;498;Mr. Jones (1993);Drama$Romance;978299418;3
+2;Male;56+;self-employed;70072;2728;Spartacus (1960);Drama;978298881;3
+2;Male;56+;self-employed;70072;2002;Lethal Weapon 3 (1992);Action$Comedy$Crime$Drama;978300100;5
+2;Male;56+;self-employed;70072;1962;Driving Miss Daisy (1989);Drama;978298813;5
+2;Male;56+;self-employed;70072;1784;As Good As It Gets (1997);Comedy$Drama;978298841;5
+2;Male;56+;self-employed;70072;2943;Indochine (1992);Drama$Romance;978298372;4
+2;Male;56+;self-employed;70072;2006;Mask of Zorro, The (1998);Action$Adventure$Romance;978299861;3
+2;Male;56+;self-employed;70072;318;Shawshank Redemption, The (1994);Drama;978298413;5
+2;Male;56+;self-employed;70072;1207;To Kill a Mockingbird (1962);Drama;978298478;4
+2;Male;56+;self-employed;70072;1968;Breakfast Club, The (1985);Comedy$Drama;978298881;2
+2;Male;56+;self-employed;70072;3678;Man with the Golden Arm, The (1955);Drama;978299250;3
+2;Male;56+;self-employed;70072;1244;Manhattan (1979);Comedy$Drama$Romance;978299143;3
+2;Male;56+;self-employed;70072;356;Forrest Gump (1994);Comedy$Romance$War;978299686;5
+2;Male;56+;self-employed;70072;1245;Miller's Crossing (1990);Drama;978299200;2
+2;Male;56+;self-employed;70072;1246;Dead Poets Society (1989);Drama;978299418;5
+2;Male;56+;self-employed;70072;3893;Nurse Betty (2000);Comedy$Thriller;978299535;1
+2;Male;56+;self-employed;70072;1247;Graduate, The (1967);Drama$Romance;978298652;5
+3;Male;25-34;scientist;55117;3421;Animal House (1978);Comedy;978298147;4
+3;Male;25-34;scientist;55117;1641;Full Monty, The (1997);Comedy;978298430;2
+3;Male;25-34;scientist;55117;648;Mission: Impossible (1996);Action$Adventure$Mystery;978297867;3
+3;Male;25-34;scientist;55117;1394;Raising Arizona (1987);Comedy;978298147;4
+3;Male;25-34;scientist;55117;3534;28 Days (2000);Comedy;978297068;3
+3;Male;25-34;scientist;55117;104;Happy Gilmore (1996);Comedy;978298486;4
+3;Male;25-34;scientist;55117;2735;Golden Child, The (1986);Action$Adventure$Comedy;978297867;4
+3;Male;25-34;scientist;55117;1210;Star Wars: Episode VI - Return of the Jedi (1983);Action$Adventure$Romance$Sci-Fi$War;978297600;4
+3;Male;25-34;scientist;55117;1431;Beverly Hills Ninja (1997);Action$Comedy;978297095;3
+3;Male;25-34;scientist;55117;3868;Naked Gun: From the Files of Police Squad!, The (1988);Comedy;978298486;3
+3;Male;25-34;scientist;55117;1079;Fish Called Wanda, A (1988);Comedy;978298296;5
+3;Male;25-34;scientist;55117;2997;Being John Malkovich (1999);Comedy;978298147;3
+3;Male;25-34;scientist;55117;1615;Edge, The (1997);Adventure$Thriller;978297710;5
+3;Male;25-34;scientist;55117;1291;Indiana Jones and the Last Crusade (1989);Action$Adventure;978297600;4
+3;Male;25-34;scientist;55117;1259;Stand by Me (1986);Adventure$Comedy$Drama;978298296;5
+3;Male;25-34;scientist;55117;653;Dragonheart (1996);Action$Adventure$Fantasy;978297757;4
+3;Male;25-34;scientist;55117;2167;Blade (1998);Action$Adventure$Horror;978297600;5
+3;Male;25-34;scientist;55117;1580;Men in Black (1997);Action$Adventure$Comedy$Sci-Fi;978297663;3
+3;Male;25-34;scientist;55117;3619;Hollywood Knights, The (1980);Comedy;978298201;2
+3;Male;25-34;scientist;55117;260;Star Wars: Episode IV - A New Hope (1977);Action$Adventure$Fantasy$Sci-Fi;978297512;5
+3;Male;25-34;scientist;55117;2858;American Beauty (1999);Comedy$Drama;978297039;4
+3;Male;25-34;scientist;55117;3114;Toy Story 2 (1999);Animation$Children's$Comedy;978298103;3
+3;Male;25-34;scientist;55117;1049;Ghost and the Darkness, The (1996);Action$Adventure;978297805;4
+3;Male;25-34;scientist;55117;1261;Evil Dead II (Dead By Dawn) (1987);Action$Adventure$Comedy$Horror;978297663;1
+3;Male;25-34;scientist;55117;552;Three Musketeers, The (1993);Action$Adventure$Comedy;978297837;4
+3;Male;25-34;scientist;55117;480;Jurassic Park (1993);Action$Adventure$Sci-Fi;978297690;4
+3;Male;25-34;scientist;55117;1265;Groundhog Day (1993);Comedy$Romance;978298316;2
+3;Male;25-34;scientist;55117;1266;Unforgiven (1992);Western;978297396;5
+3;Male;25-34;scientist;55117;733;Rock, The (1996);Action$Adventure$Thriller;978297757;5
+3;Male;25-34;scientist;55117;1196;Star Wars: Episode V - The Empire Strikes Back (1980);Action$Adventure$Drama$Sci-Fi$War;978297539;4
+4;Male;45-49;executive/managerial;2460;1210;Star Wars: Episode VI - Return of the Jedi (1983);Action$Adventure$Romance$Sci-Fi$War;978293924;3
+4;Male;45-49;executive/managerial;2460;2951;Fistful of Dollars, A (1964);Action$Western;978294282;4
+4;Male;45-49;executive/managerial;2460;1214;Alien (1979);Action$Horror$Sci-Fi$Thriller;978294260;4
+4;Male;45-49;executive/managerial;2460;1036;Die Hard (1988);Action$Thriller;978294282;4
+4;Male;45-49;executive/managerial;2460;260;Star Wars: Episode IV - A New Hope (1977);Action$Adventure$Fantasy$Sci-Fi;978294199;5
+4;Male;45-49;executive/managerial;2460;2028;Saving Private Ryan (1998);Action$Drama$War;978294230;5
+4;Male;45-49;executive/managerial;2460;480;Jurassic Park (1993);Action$Adventure$Sci-Fi;978294008;4
+4;Male;45-49;executive/managerial;2460;1196;Star Wars: Episode V - The Empire Strikes Back (1980);Action$Adventure$Drama$Sci-Fi$War;978294199;2
+4;Male;45-49;executive/managerial;2460;1198;Raiders of the Lost Ark (1981);Action$Adventure;978294199;5
+4;Male;45-49;executive/managerial;2460;1954;Rocky (1976);Action$Drama;978294282;5
+4;Male;45-49;executive/managerial;2460;1097;E.T. the Extra-Terrestrial (1982);Children's$Drama$Fantasy$Sci-Fi;978293964;4
+4;Male;45-49;executive/managerial;2460;3418;Thelma & Louise (1991);Action$Drama;978294260;4
+4;Male;45-49;executive/managerial;2460;3702;Mad Max (1979);Action$Sci-Fi;978294260;4
+4;Male;45-49;executive/managerial;2460;2366;King Kong (1933);Action$Adventure$Horror;978294230;4
+4;Male;45-49;executive/managerial;2460;1387;Jaws (1975);Action$Horror;978294199;5
+4;Male;45-49;executive/managerial;2460;3527;Predator (1987);Action$Sci-Fi$Thriller;978294008;1
+4;Male;45-49;executive/managerial;2460;1201;Good, The Bad and The Ugly, The (1966);Action$Western;978294230;5
+4;Male;45-49;executive/managerial;2460;2692;Run Lola Run (Lola rennt) (1998);Action$Crime$Romance;978294230;5
+4;Male;45-49;executive/managerial;2460;2947;Goldfinger (1964);Action;978294230;5
+4;Male;45-49;executive/managerial;2460;1240;Terminator, The (1984);Action$Sci-Fi$Thriller;978294260;5
+5;Male;25-34;writer;55455;2987;Who Framed Roger Rabbit? (1988);Adventure$Animation$Film-Noir;978243170;4
+5;Male;25-34;writer;55455;2333;Gods and Monsters (1998);Drama;978242607;4
+5;Male;25-34;writer;55455;1175;Delicatessen (1991);Comedy$Sci-Fi;978244759;5
+5;Male;25-34;writer;55455;39;Clueless (1995);Comedy$Romance;978245037;3
+5;Male;25-34;writer;55455;288;Natural Born Killers (1994);Action$Thriller;978246585;2
+5;Male;25-34;writer;55455;2337;Velvet Goldmine (1998);Drama;978243121;5
+5;Male;25-34;writer;55455;1535;Love! Valour! Compassion! (1997);Drama$Romance;978245513;4
+5;Male;25-34;writer;55455;299;Priest (1994);Drama;978242934;3
+5;Male;25-34;writer;55455;3079;Mansfield Park (1999);Drama;978246162;2
+5;Male;25-34;writer;55455;2560;Ravenous (1999);Drama$Horror;978242977;4
+5;Male;25-34;writer;55455;1909;X-Files: Fight the Future, The (1998);Mystery$Sci-Fi$Thriller;978246479;3
+5;Male;25-34;writer;55455;150;Apollo 13 (1995);Drama;978245763;2
+5;Male;25-34;writer;55455;224;Don Juan DeMarco (1995);Comedy$Drama$Romance;978245829;3
+5;Male;25-34;writer;55455;3728;One False Move (1991);Thriller;978244568;2
+5;Male;25-34;writer;55455;229;Death and the Maiden (1994);Drama$Thriller;978246528;3
+6;Female;50-55;homemaker;55117;914;My Fair Lady (1964);Musical$Romance;978237767;5
+6;Female;50-55;homemaker;55117;3408;Erin Brockovich (2000);Drama;978238230;5
+6;Female;50-55;homemaker;55117;1806;Paulie (1998);Adventure$Children's$Comedy;978236876;3
+6;Female;50-55;homemaker;55117;3624;Shanghai Noon (2000);Action;978238256;4
+6;Female;50-55;homemaker;55117;2469;Peggy Sue Got Married (1986);Comedy$Romance;978236670;3
+6;Female;50-55;homemaker;55117;2396;Shakespeare in Love (1998);Comedy$Romance;978236809;4
+6;Female;50-55;homemaker;55117;2100;Splash (1984);Comedy$Fantasy$Romance;978236567;3
+6;Female;50-55;homemaker;55117;1959;Out of Africa (1985);Drama$Romance;978236612;3
+6;Female;50-55;homemaker;55117;2321;Pleasantville (1998);Comedy;978237034;3
+6;Female;50-55;homemaker;55117;1380;Grease (1978);Comedy$Musical$Romance;978237691;5
+6;Female;50-55;homemaker;55117;920;Gone with the Wind (1939);Drama$Romance$War;978238851;4
+6;Female;50-55;homemaker;55117;569;Little Big League (1994);Children's$Comedy;978236876;4
+6;Female;50-55;homemaker;55117;1674;Witness (1985);Drama$Romance$Thriller;978236567;4
+6;Female;50-55;homemaker;55117;3565;Where the Heart Is (2000);Comedy$Drama;978238288;4
+6;Female;50-55;homemaker;55117;1028;Mary Poppins (1964);Children's$Comedy$Musical;978237767;4
+6;Female;50-55;homemaker;55117;34;Babe (1995);Children's$Comedy$Drama;978237444;4
+7;Male;35-44;academic/educator;6810;648;Mission: Impossible (1996);Action$Adventure$Mystery;978234737;4
+7;Male;35-44;academic/educator;6810;861;Supercop (1992);Action$Thriller;978234874;4
+7;Male;35-44;academic/educator;6810;2916;Total Recall (1990);Action$Adventure$Sci-Fi$Thriller;978234842;5
+7;Male;35-44;academic/educator;6810;3578;Gladiator (2000);Action$Drama;978234737;3
+7;Male;35-44;academic/educator;6810;3793;X-Men (2000);Action$Sci-Fi;978234737;3
+7;Male;35-44;academic/educator;6810;480;Jurassic Park (1993);Action$Adventure$Sci-Fi;978234607;4
+7;Male;35-44;academic/educator;6810;349;Clear and Present Danger (1994);Action$Adventure$Thriller;978234874;5
+7;Male;35-44;academic/educator;6810;3418;Thelma & Louise (1991);Action$Drama;978234810;3
+8;Male;25-34;programmer;11413;39;Clueless (1995);Comedy$Romance;978229571;3
+8;Male;25-34;programmer;11413;2336;Elizabeth (1998);Drama;978230120;3
+8;Male;25-34;programmer;11413;288;Natural Born Killers (1994);Action$Thriller;978229391;5
+8;Male;25-34;programmer;11413;3425;Mo' Better Blues (1990);Drama;978231982;3
+8;Male;25-34;programmer;11413;2268;Few Good Men, A (1992);Crime$Drama;978230852;3
+8;Male;25-34;programmer;11413;1466;Donnie Brasco (1997);Crime$Drama;978230052;4
+8;Male;25-34;programmer;11413;1393;Jerry Maguire (1996);Drama$Romance;978229702;5
+8;Male;25-34;programmer;11413;1682;Truman Show, The (1998);Drama;978230852;4
+8;Male;25-34;programmer;11413;2916;Total Recall (1990);Action$Adventure$Sci-Fi$Thriller;978229172;5
+8;Male;25-34;programmer;11413;506;Orlando (1993);Drama;978230483;3
+8;Male;25-34;programmer;11413;508;Philadelphia (1993);Drama;978230435;3
+8;Male;25-34;programmer;11413;3213;Batman: Mask of the Phantasm (1993);Animation$Children's;978233462;3
+8;Male;25-34;programmer;11413;42;Dead Presidents (1995);Action$Crime$Drama;978232754;3
+8;Male;25-34;programmer;11413;650;Moll Flanders (1996);Drama;978230943;5
+9;Male;25-34;technician/engineer;61614;1307;When Harry Met Sally... (1989);Comedy$Romance;978225429;4
+9;Male;25-34;technician/engineer;61614;25;Leaving Las Vegas (1995);Drama$Romance;978226041;4
+9;Male;25-34;technician/engineer;61614;2324;Life Is Beautiful (La Vita Õ bella) (1997);Comedy$Drama;978226066;5
+9;Male;25-34;technician/engineer;61614;349;Clear and Present Danger (1994);Action$Adventure$Thriller;978226564;4
+9;Male;25-34;technician/engineer;61614;920;Gone with the Wind (1939);Drama$Romance$War;978225401;3
+9;Male;25-34;technician/engineer;61614;3270;Cutting Edge, The (1992);Drama;978226448;3
+9;Male;25-34;technician/engineer;61614;2762;Sixth Sense, The (1999);Thriller;978225984;4
+9;Male;25-34;technician/engineer;61614;1961;Rain Man (1988);Drama;978224859;5
+9;Male;25-34;technician/engineer;61614;2692;Run Lola Run (Lola rennt) (1998);Action$Crime$Romance;978225429;4
+9;Male;25-34;technician/engineer;61614;1310;Hype! (1996);Documentary;978226006;3
+9;Male;25-34;technician/engineer;61614;428;Bronx Tale, A (1993);Drama;978226580;3
+10;Female;35-44;academic/educator;95370;2622;Midsummer Night's Dream, A (1999);Comedy$Fantasy;978228212;5
+10;Female;35-44;academic/educator;95370;648;Mission: Impossible (1996);Action$Adventure$Mystery;978224925;4
+10;Female;35-44;academic/educator;95370;2628;Star Wars: Episode I - The Phantom Menace (1999);Action$Adventure$Fantasy$Sci-Fi;978228408;3
+10;Female;35-44;academic/educator;95370;3358;Defending Your Life (1991);Comedy$Romance;978226378;5
+10;Female;35-44;academic/educator;95370;3359;Breaking Away (1979);Drama;978227125;3
+10;Female;35-44;academic/educator;95370;1682;Truman Show, The (1998);Drama;978226319;5
+10;Female;35-44;academic/educator;95370;1756;Prophecy II, The (1998);Horror;978228655;4
+10;Female;35-44;academic/educator;95370;1320;Alienë_ (1992);Action$Horror$Sci-Fi$Thriller;978230837;3
+10;Female;35-44;academic/educator;95370;2124;Addams Family, The (1991);Comedy;978229208;3
+11;Female;25-34;academic/educator;4093;2325;Orgazmo (1997);Comedy;978904615;3
+11;Female;25-34;academic/educator;4093;3129;Sweet and Lowdown (1999);Comedy$Drama;978903701;4
+11;Female;25-34;academic/educator;4093;2329;American History X (1998);Drama;978220030;5
+11;Female;25-34;academic/educator;4093;784;Cable Guy, The (1996);Comedy;978904376;2
+11;Female;25-34;academic/educator;4093;2907;Superstar (1999);Comedy;978904916;2
+11;Female;25-34;academic/educator;4093;2762;Sixth Sense, The (1999);Thriller;978219815;5
+11;Female;25-34;academic/educator;4093;788;Nutty Professor, The (1996);Comedy$Fantasy$Romance$Sci-Fi;978904053;1
+11;Female;25-34;academic/educator;4093;2766;Adventures of Sebastian Cole, The (1998);Comedy$Drama;978903209;4
+11;Female;25-34;academic/educator;4093;3499;Misery (1990);Horror;978902477;2
+11;Female;25-34;academic/educator;4093;356;Forrest Gump (1994);Comedy$Romance$War;978903209;5
+11;Female;25-34;academic/educator;4093;357;Four Weddings and a Funeral (1994);Comedy$Romance;978903395;1
+11;Female;25-34;academic/educator;4093;36;Dead Man Walking (1995);Drama;978902405;3
+12;Male;25-34;programmer;32793;3897;Almost Famous (2000);Comedy$Drama;978218949;4
+12;Male;25-34;programmer;32793;2804;Christmas Story, A (1983);Comedy$Drama;978220237;5
+12;Male;25-34;programmer;32793;919;Wizard of Oz, The (1939);Adventure$Children's$Drama$Musical;978220120;5
+12;Male;25-34;programmer;32793;923;Citizen Kane (1941);Drama;978220237;5
+12;Male;25-34;programmer;32793;858;Godfather, The (1972);Action$Crime$Drama;978218949;5
+12;Male;25-34;programmer;32793;934;Father of the Bride (1950);Comedy;978218568;2
+12;Male;25-34;programmer;32793;3658;Quatermass and the Pit (1967);Sci-Fi;978220216;4
+12;Male;25-34;programmer;32793;1641;Full Monty, The (1997);Comedy;978218568;3
+12;Male;25-34;programmer;32793;111;Taxi Driver (1976);Drama$Thriller;978220179;5
+12;Male;25-34;programmer;32793;1221;Godfather: Part II, The (1974);Action$Crime$Drama;978218949;5
+12;Male;25-34;programmer;32793;3265;Hard-Boiled (Lashou shentan) (1992);Action$Crime;978218916;4
+12;Male;25-34;programmer;32793;1303;Man Who Would Be King, The (1975);Adventure;978218916;4
+12;Male;25-34;programmer;32793;1233;Boat, The (Das Boot) (1981);Action$Drama$War;978220120;3
+12;Male;25-34;programmer;32793;999;2 Days in the Valley (1996);Crime;978218568;4
+12;Male;25-34;programmer;32793;2616;Dick Tracy (1990);Action$Crime;978218568;1
+12;Male;25-34;programmer;32793;3785;Scary Movie (2000);Comedy$Horror;978218568;3
+12;Male;25-34;programmer;32793;1247;Graduate, The (1967);Drama$Romance;978220216;3
+13;Male;45-49;academic/educator;93304;2987;Who Framed Roger Rabbit? (1988);Adventure$Animation$Film-Noir;978202328;3
+13;Male;45-49;academic/educator;93304;648;Mission: Impossible (1996);Action$Adventure$Mystery;978201927;3
+13;Male;45-49;academic/educator;93304;2628;Star Wars: Episode I - The Phantom Menace (1999);Action$Adventure$Fantasy$Sci-Fi;978201987;3
+13;Male;45-49;academic/educator;93304;2054;Honey, I Shrunk the Kids (1989);Adventure$Children's$Comedy$Fantasy$Sci-Fi;978202563;3
+13;Male;45-49;academic/educator;93304;1259;Stand by Me (1986);Adventure$Comedy$Drama;978202246;4
+13;Male;45-49;academic/educator;93304;589;Terminator 2: Judgment Day (1991);Action$Sci-Fi$Thriller;978201811;5
+13;Male;45-49;academic/educator;93304;1690;Alien: Resurrection (1997);Action$Horror$Sci-Fi;978202057;3
+13;Male;45-49;academic/educator;93304;2;Jumanji (1995);Adventure$Children's$Fantasy;978202563;3
+13;Male;45-49;academic/educator;93304;153;Batman Forever (1995);Action$Adventure$Comedy$Crime;978202125;3
+13;Male;45-49;academic/educator;93304;1331;Audrey Rose (1977);Horror;978201342;4
+13;Male;45-49;academic/educator;93304;2135;Doctor Dolittle (1967);Adventure$Musical;978202543;3
+13;Male;45-49;academic/educator;93304;1262;Great Escape, The (1963);Adventure$War;978202201;4
+13;Male;45-49;academic/educator;93304;1196;Star Wars: Episode V - The Empire Strikes Back (1980);Action$Adventure$Drama$Sci-Fi$War;978201342;5
+14;Male;35-44;other;60126;2243;Broadcast News (1987);Comedy$Drama$Romance;978200300;3
+14;Male;35-44;other;60126;3623;Mission: Impossible 2 (2000);Action$Thriller;978200924;3
+14;Male;35-44;other;60126;2826;13th Warrior, The (1999);Action$Horror$Thriller;978200645;2
+14;Male;35-44;other;60126;2686;Red Violin, The (Le Violon rouge) (1998);Drama$Mystery;978200975;5
+14;Male;35-44;other;60126;2762;Sixth Sense, The (1999);Thriller;978201003;5
+14;Male;35-44;other;60126;2692;Run Lola Run (Lola rennt) (1998);Action$Crime$Romance;978200975;4
+14;Male;35-44;other;60126;2694;Big Daddy (1999);Comedy;978200689;1
+14;Male;35-44;other;60126;1968;Breakfast Club, The (1985);Comedy$Drama;978200300;2
+14;Male;35-44;other;60126;3578;Gladiator (2000);Action$Drama;978200828;4
+14;Male;35-44;other;60126;296;Pulp Fiction (1994);Crime$Drama;978201244;5
+14;Male;35-44;other;60126;2920;Children of Paradise (Les enfants du paradis) (1945);Drama$Romance;978200528;5
+14;Male;35-44;other;60126;1982;Halloween (1978);Horror;978200340;1
+14;Male;35-44;other;60126;2858;American Beauty (1999);Comedy$Drama;978200645;3
+14;Male;35-44;other;60126;3081;Sleepy Hollow (1999);Horror$Romance;978201003;4
+14;Male;35-44;other;60126;608;Fargo (1996);Crime$Drama$Thriller;978201244;1
+14;Male;35-44;other;60126;2959;Fight Club (1999);Drama;978200800;2
+14;Male;35-44;other;60126;1225;Amadeus (1984);Drama;978201317;4
+14;Male;35-44;other;60126;2396;Shakespeare in Love (1998);Comedy$Romance;978201003;4
+14;Male;35-44;other;60126;2976;Bringing Out the Dead (1999);Drama$Horror;978200300;3
+15;Male;25-34;executive/managerial;22903;3421;Animal House (1978);Comedy;978196170;4
+15;Male;25-34;executive/managerial;22903;648;Mission: Impossible (1996);Action$Adventure$Mystery;978212463;4
+15;Male;25-34;executive/managerial;22903;3354;Mission to Mars (2000);Sci-Fi;978196692;2
+15;Male;25-34;executive/managerial;22903;2485;She's All That (1999);Comedy$Romance;978196817;3
+15;Male;25-34;executive/managerial;22903;141;Birdcage, The (1996);Comedy;978198350;4
+15;Male;25-34;executive/managerial;22903;2126;Snake Eyes (1998);Action$Crime$Mystery$Thriller;978212274;3
+15;Male;25-34;executive/managerial;22903;2058;Negotiator, The (1998);Action$Thriller;978198516;3
+15;Male;25-34;executive/managerial;22903;3798;What Lies Beneath (2000);Thriller;978196866;4
+15;Male;25-34;executive/managerial;22903;2997;Being John Malkovich (1999);Comedy;978196418;2
+15;Male;25-34;executive/managerial;22903;653;Dragonheart (1996);Action$Adventure$Fantasy;978212570;2
+16;Female;35-44;other;20670;2369;Desperately Seeking Susan (1985);Comedy$Romance;978174535;5
+16;Female;35-44;other;20670;3175;Galaxy Quest (1999);Adventure$Comedy$Sci-Fi;978174568;4
+16;Female;35-44;other;20670;2888;Drive Me Crazy (1999);Comedy$Romance;978174535;3
+16;Female;35-44;other;20670;2392;Jack Frost (1998);Comedy$Drama;978174639;2
+16;Female;35-44;other;20670;2394;Prince of Egypt, The (1998);Animation$Musical;978174720;5
+16;Female;35-44;other;20670;2975;Best Man, The (1999);Drama;978174443;5
+17;Male;50-55;academic/educator;95350;1179;Grifters, The (1990);Crime$Drama$Film-Noir;978160157;5
+17;Male;50-55;academic/educator;95350;2553;Village of the Damned (1960);Horror$Sci-Fi$Thriller;978160616;4
+17;Male;50-55;academic/educator;95350;2554;Children of the Damned (1963);Horror$Sci-Fi$Thriller;978160739;3
+17;Male;50-55;academic/educator;95350;3932;Invisible Man, The (1933);Horror$Sci-Fi;978160437;3
+17;Male;50-55;academic/educator;95350;3863;Cell, The (2000);Sci-Fi$Thriller;978158779;3
+17;Male;50-55;academic/educator;95350;3793;X-Men (2000);Action$Sci-Fi;978158689;4
+17;Male;50-55;academic/educator;95350;1253;Day the Earth Stood Still, The (1951);Drama$Sci-Fi;978160616;5
+17;Male;50-55;academic/educator;95350;720;Wallace & Gromit: The Best of Aardman Animation (1996);Animation;978159210;5
+17;Male;50-55;academic/educator;95350;2058;Negotiator, The (1998);Action$Thriller;978160129;3
+17;Male;50-55;academic/educator;95350;1185;My Left Foot (1989);Drama;978158471;5
+17;Male;50-55;academic/educator;95350;3503;Solaris (Solyaris) (1972);Drama$Sci-Fi;978160490;5
+18;Female;18-24;clerical/admin;95825;2616;Dick Tracy (1990);Action$Crime;978152203;4
+18;Female;18-24;clerical/admin;95825;2470;Crocodile Dundee (1986);Adventure$Comedy;978154505;3
+18;Female;18-24;clerical/admin;95825;2617;Mummy, The (1999);Action$Adventure$Horror$Thriller;978153540;1
+18;Female;18-24;clerical/admin;95825;1676;Starship Troopers (1997);Action$Adventure$Sci-Fi$War;978153683;3
+18;Female;18-24;clerical/admin;95825;1678;Joy Luck Club, The (1993);Drama;978156714;5
+18;Female;18-24;clerical/admin;95825;208;Waterworld (1995);Action$Adventure;978153771;1
+18;Female;18-24;clerical/admin;95825;2115;Indiana Jones and the Temple of Doom (1984);Action$Adventure;978153303;5
+18;Female;18-24;clerical/admin;95825;2042;D2: The Mighty Ducks (1994);Children's$Comedy;978155392;1
+18;Female;18-24;clerical/admin;95825;1240;Terminator, The (1984);Action$Sci-Fi$Thriller;978153104;5
+18;Female;18-24;clerical/admin;95825;2116;Lord of the Rings, The (1978);Adventure$Animation$Children's$Sci-Fi;978154452;4
+18;Female;18-24;clerical/admin;95825;1242;Glory (1989);Action$Drama$War;978152999;5
+18;Female;18-24;clerical/admin;95825;1246;Dead Poets Society (1989);Drama;978156549;5
+19;Male;Under 18;K-12 student;48073;2987;Who Framed Roger Rabbit? (1988);Adventure$Animation$Film-Noir;978555881;4
+19;Male;Under 18;K-12 student;48073;2989;For Your Eyes Only (1981);Action;978147099;4
+19;Male;Under 18;K-12 student;48073;3421;Animal House (1978);Comedy;983074250;3
+19;Male;Under 18;K-12 student;48073;1301;Forbidden Planet (1956);Sci-Fi;978557301;3
+19;Male;Under 18;K-12 student;48073;1307;When Harry Met Sally... (1989);Comedy$Romance;978554335;4
+19;Male;Under 18;K-12 student;48073;1234;Sting, The (1973);Comedy$Crime;994556636;5
+19;Male;Under 18;K-12 student;48073;1090;Platoon (1986);Drama$War;978300207;3
+19;Male;Under 18;K-12 student;48073;2976;Bringing Out the Dead (1999);Drama$Horror;978850058;5
+19;Male;Under 18;K-12 student;48073;1097;E.T. the Extra-Terrestrial (1982);Children's$Drama$Fantasy$Sci-Fi;978557204;3
+19;Male;Under 18;K-12 student;48073;3273;Scream 3 (2000);Horror$Mystery$Thriller;978300170;3
+19;Male;Under 18;K-12 student;48073;2115;Indiana Jones and the Temple of Doom (1984);Action$Adventure;978146747;3
+19;Male;Under 18;K-12 student;48073;1240;Terminator, The (1984);Action$Sci-Fi$Thriller;978146863;3
+19;Male;Under 18;K-12 student;48073;3928;Abbott and Costello Meet Frankenstein (1948);Comedy$Horror;978555222;2
+20;Male;25-34;sales/marketing;55113;648;Mission: Impossible (1996);Action$Adventure$Mystery;978143369;4
+20;Male;25-34;sales/marketing;55113;3863;Cell, The (2000);Sci-Fi$Thriller;978143355;3
+20;Male;25-34;sales/marketing;55113;589;Terminator 2: Judgment Day (1991);Action$Sci-Fi$Thriller;978143508;4
+20;Male;25-34;sales/marketing;55113;1694;Apostle, The (1997);Drama;1009669071;3
+20;Male;25-34;sales/marketing;55113;2641;Superman II (1980);Action$Adventure$Sci-Fi;1009669115;4
+20;Male;25-34;sales/marketing;55113;1912;Out of Sight (1998);Action$Crime$Romance;978143508;5
+20;Male;25-34;sales/marketing;55113;2571;Matrix, The (1999);Action$Sci-Fi$Thriller;978143508;5
+20;Male;25-34;sales/marketing;55113;3527;Predator (1987);Action$Sci-Fi$Thriller;1009669181;4
+20;Male;25-34;sales/marketing;55113;1923;There's Something About Mary (1998);Comedy;978143576;4
+20;Male;25-34;sales/marketing;55113;1371;Star Trek: The Motion Picture (1979);Action$Adventure$Sci-Fi;1009669227;4
+20;Male;25-34;sales/marketing;55113;1375;Star Trek III: The Search for Spock (1984);Action$Adventure$Sci-Fi;1009669115;3
+20;Male;25-34;sales/marketing;55113;1527;Fifth Element, The (1997);Action$Sci-Fi;1009669181;5

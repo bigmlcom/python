@@ -53,11 +53,11 @@ class TestAssociation(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | association_name |
-                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new association name |
+                | ../data/iris.csv | 10      | 10     | 20     | 50 | my new association name |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '20', '20', 'my new association name']]
+            ['data/iris.csv', '10', '10', '20', '50', 'my new association name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -85,13 +85,22 @@ class TestAssociation(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | item_list                              | JSON_rule  |
-                | ../data/tiny_mushrooms.csv | 10      | 20     | 20     | ["Edible"]                   | {'p_value': 1.99981e-26, 'confidence': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs': [19], 'lift': 2.04918, 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122} |
+                | ../data/tiny_mushrooms.csv | 10      | 20     | 50     | ["Edible"]                   | {   'confidence': 1,
+    'leverage': 0.07885,
+    'lhs': [14],
+    'lhs_cover': [0.704, 176],
+    'lift': 1.12613,
+    'p_value': 2.08358e-17,
+    'rhs': [1],
+    'rhs_cover': [0.888, 222],
+    'rule_id': u'000038',
+    'support': [0.704, 176]} |
 
 
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/tiny_mushrooms.csv', '10', '20', '20', ["Edible"], {'p_value': 1.99981e-26, 'confidence': 1, 'rhs_cover': 122, 'leverage': 0.24986, 'rhs': [19], 'lift': 2.04918, 'lhs': [0, 21, 12, 7], 'lhs_cover': 122, 'support': 122}]]
+            ['data/tiny_mushrooms.csv', '10', '20', '50', ["Edible"], "{   'confidence': 1,\n    'leverage': 0.07885,\n    'lhs': [14],\n    'lhs_cover': [0.704, 176],\n    'lift': 1.12613,\n    'p_value': 2.08358e-17,\n    'rhs': [1],\n    'rhs_cover': [0.888, 222],\n    'rule_id': u'000038',\n    'support': [0.704, 176]}"]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

@@ -1682,24 +1682,50 @@ in the sense that observing
 the items in the left hand side implies observing the items in the right hand
 side. There are some metrics to ponder the quality of these association rules:
 
-- Coverage: the number of instances which contain an itemset.
-Can also be expressed as a proportion by dividing by the total
-instances in the dataset.
+- Support: the proportion of instances which contain an itemset.
 
-- Support: the number of instances in the dataset which contain the association
-rule. Can be expressed as a proportion by dividing by the total instances.
+For an association rule, it means the number of instances in the dataset which
+contain the rule's antecedent and rule's consequent together
+over the total number of instances (N) in the dataset:
 
-- Strength: the percentage of instances which contain the association rule over
-the instances which contain the LHS itemset.
+It gives a measure of the importance of the rule. Association rules have
+to satisfy a minimum support constraint (i.e., min_support).
 
-- Leverage: difference between the support of the association rule and the
-expected support if all items were independent.
+- Coverage: the support of the antedecent of an association rule.
+It measures how often a rule can be applied:
+
+- Confidence or (strength): The probability of seeing the rule's consequent
+under the condition that the instances also contain the rule's antecedent.
+Confidence is computed using the support of the association rule over the
+coverage. That is, the percentage of instances which contain the consequent
+and antecedent together over the number of instances which only contain
+the antecedent:
+
+Confidence is directed and gives different values for the association
+rules Antecedent → Consequent and Consequent → Antecedent. Association
+rules also need to satisfy a minimum confidence constraint
+(i.e., min_confidence).
+
+- Leverage: the difference of the support of the association
+rule (i.e., the antecedent and consequent appearing together) and what would
+be expected if antecedent and consequent where statistically independent.
+This is a value between -1 and 1. A positive value suggests a positive
+relationship and a negative value suggests a negative relationship.
+0 indicates independence:
+
+Lift: how many times more often antecedent and consequent occur together
+than expected if they where statistically independent.
+A value of 1 suggests that there is no relationship between the antecedent
+and the consequent. Higher values suggest stronger positive relationships.
+Lower values suggest stronger negative relationships (the presence of the
+antecedent reduces the likelihood of the consequent):
 
 As to the items used in association rules, each type of field is parsed to
 extract items for the rules as follows:
 
 - Categorical: each different value (class) will be considered a separate item.
 - Text: each unique term will be considered a separate item.
+- Items: each different item in the items summary will be considered.
 - Numeric: Values will be converted into categorical by making a
 segmentation of the values.
 For example, a numeric field with values ranging from 0 to 600 split
@@ -1713,207 +1739,532 @@ The JSON structure for an association resource is:
 
 .. code-block:: python
 
+
+    >>> api.pprint(association['object'])
     {
         "associations":{
+            "complement":false,
             "discretization":{
                 "pretty":true,
                 "size":5,
                 "trim":0,
                 "type":"width"
             },
-            "fields":{
-                "000000":{
-                    "column_number":0,
-                    "datatype":"string",
-                    "name":"field1",
-                    "optype":"text",
-                    "order":0,
-                    "preferred":true,
-                    "summary":{
-                        "average_length":22.471,
-                        "missing_count":0,
-                        "tag_cloud":[
-                            [
-                                "confectionery",
-                                336
-                            ],
-                            [
-                                "potatoes",
-                                283
-                            ],
-                            [
-                                "tomatoes",
-                                263
-                            ],
-    ...
-                            [
-                                "celery",
-                                43
-                            ]
-                        ],
-                        "term_forms":{
-
-                        }
-                    },
-                    "term_analysis":{
-                        "case_sensitive":false,
-                        "enabled":true,
-                        "language":"none",
-                        "token_mode":"tokens_only"
-                    }
-                }
-            },
             "items":[
                 {
                     "complement":false,
-                    "count":217,
-                    "description":"field1 includes lettuce",
+                    "count":32,
                     "field_id":"000000",
-                    "name":"lettuce"
+                    "name":"Segment 1",
+                    "bin_end":5,
+                    "bin_start":null
                 },
                 {
                     "complement":false,
-                    "count":263,
-                    "description":"field1 includes tomatoes",
+                    "count":49,
                     "field_id":"000000",
-                    "name":"tomatoes"
+                    "name":"Segment 3",
+                    "bin_end":7,
+                    "bin_start":6
                 },
                 {
                     "complement":false,
-                    "count":127,
-                    "description":"field1 includes bananas",
+                    "count":12,
                     "field_id":"000000",
-                    "name":"bananas"
+                    "name":"Segment 4",
+                    "bin_end":null,
+                    "bin_start":7
                 },
                 {
                     "complement":false,
-                    "count":130,
-                    "description":"field1 includes peaches",
-                    "field_id":"000000",
-                    "name":"peaches"
+                    "count":19,
+                    "field_id":"000001",
+                    "name":"Segment 1",
+                    "bin_end":2.5,
+                    "bin_start":null
+                },
+                ...
+                {
+                    "complement":false,
+                    "count":50,
+                    "field_id":"000004",
+                    "name":"Iris-versicolor"
                 },
                 {
                     "complement":false,
-                    "count":283,
-                    "description":"field1 includes potatoes",
-                    "field_id":"000000",
-                    "name":"potatoes"
-                },
-                {
-                    "complement":false,
-                    "count":175,
-                    "description":"field1 includes carrots",
-                    "field_id":"000000",
-                    "name":"carrots"
-                },
-                {
-                    "complement":false,
-                    "count":189,
-                    "description":"field1 includes onions",
-                    "field_id":"000000",
-                    "name":"onions"
+                    "count":50,
+                    "field_id":"000004",
+                    "name":"Iris-virginica"
                 }
             ],
-            "k":100,
+            "max_k": 100,
+            "min_confidence":0,
+            "min_leverage":0,
+            "min_lift":1,
+            "min_support":0,
             "rules":[
                 {
-                    "leverage":0.05393,
+                    "confidence":1,
+                    "id":"000000",
+                    "leverage":0.22222,
                     "lhs":[
-                        0
+                        13
                     ],
-                    "lhs_cover":217,
-                    "lhs_desc":[
-                        "field1 includes lettuce"
+                    "lhs_cover":[
+                        0.33333,
+                        50
                     ],
-                    "p_value":0.0000000000000000002,
+                    "lift":3,
+                    "p_value":0.000000000,
                     "rhs":[
-                        1
+                        6
                     ],
-                    "rhs_cover":263,
-                    "rhs_desc":[
-                        "field1 includes tomatoes"
+                    "rhs_cover":[
+                        0.33333,
+                        50
                     ],
-                    "strength":0.51152,
-                    "support":111
+                    "support":[
+                        0.33333,
+                        50
+                    ]
                 },
-    ...
                 {
-                    "leverage":0.02349,
+                    "confidence":1,
+                    "id":"000001",
+                    "leverage":0.22222,
                     "lhs":[
-                        2
+                        6
                     ],
-                    "lhs_cover":127,
-                    "lhs_desc":[
-                        "field1 includes bananas"
+                    "lhs_cover":[
+                        0.33333,
+                        50
                     ],
-                    "p_value":0.0000000027439311968,
+                    "lift":3,
+                    "p_value":0.000000000,
                     "rhs":[
-                        3
+                        13
                     ],
-                    "rhs_cover":130,
-                    "rhs_desc":[
-                        "field1 includes peaches"
+                    "rhs_cover":[
+                        0.33333,
+                        50
                     ],
-                    "strength":0.31496,
-                    "support":40
+                    "support":[
+                        0.33333,
+                        50
+                    ]
+                },
+                ...
+                {
+                    "confidence":0.26,
+                    "id":"000029",
+                    "leverage":0.05111,
+                    "lhs":[
+                        13
+                    ],
+                    "lhs_cover":[
+                        0.33333,
+                        50
+                    ],
+                    "lift":2.4375,
+                    "p_value":0.0000454342,
+                    "rhs":[
+                        5
+                    ],
+                    "rhs_cover":[
+                        0.10667,
+                        16
+                    ],
+                    "support":[
+                        0.08667,
+                        13
+                    ]
+                },
+                {
+                    "confidence":0.18,
+                    "id":"00002a",
+                    "leverage":0.04,
+                    "lhs":[
+                        15
+                    ],
+                    "lhs_cover":[
+                        0.33333,
+                        50
+                    ],
+                    "lift":3,
+                    "p_value":0.0000302052,
+                    "rhs":[
+                        9
+                    ],
+                    "rhs_cover":[
+                        0.06,
+                        9
+                    ],
+                    "support":[
+                        0.06,
+                        9
+                    ]
+                },
+                {
+                    "confidence":1,
+                    "id":"00002b",
+                    "leverage":0.04,
+                    "lhs":[
+                        9
+                    ],
+                    "lhs_cover":[
+                        0.06,
+                        9
+                    ],
+                    "lift":3,
+                    "p_value":0.0000302052,
+                    "rhs":[
+                        15
+                    ],
+                    "rhs_cover":[
+                        0.33333,
+                        50
+                    ],
+                    "support":[
+                        0.06,
+                        9
+                    ]
                 }
             ],
+            "rules_summary":{
+                "confidence":{
+                    "counts":[
+                        [
+                            0.18,
+                            1
+                        ],
+                        [
+                            0.24,
+                            1
+                        ],
+                        [
+                            0.26,
+                            2
+                        ],
+                        ...
+                        [
+                            0.97959,
+                            1
+                        ],
+                        [
+                            1,
+                            9
+                        ]
+                    ],
+                    "maximum":1,
+                    "mean":0.70986,
+                    "median":0.72864,
+                    "minimum":0.18,
+                    "population":44,
+                    "standard_deviation":0.24324,
+                    "sum":31.23367,
+                    "sum_squares":24.71548,
+                    "variance":0.05916
+                },
+                "k":44,
+                "leverage":{
+                    "counts":[
+                        [
+                            0.04,
+                            2
+                        ],
+                        [
+                            0.05111,
+                            4
+                        ],
+                        [
+                            0.05316,
+                            2
+                        ],
+                        ...
+                        [
+                            0.22222,
+                            2
+                        ]
+                    ],
+                    "maximum":0.22222,
+                    "mean":0.10603,
+                    "median":0.10156,
+                    "minimum":0.04,
+                    "population":44,
+                    "standard_deviation":0.0536,
+                    "sum":4.6651,
+                    "sum_squares":0.61815,
+                    "variance":0.00287
+                },
+                "lhs_cover":{
+                    "counts":[
+                        [
+                            0.06,
+                            2
+                        ],
+                        [
+                            0.08,
+                            2
+                        ],
+                        [
+                            0.10667,
+                            4
+                        ],
+                        [
+                            0.12667,
+                            1
+                        ],
+                        ...
+                        [
+                            0.5,
+                            4
+                        ]
+                    ],
+                    "maximum":0.5,
+                    "mean":0.29894,
+                    "median":0.33213,
+                    "minimum":0.06,
+                    "population":44,
+                    "standard_deviation":0.13386,
+                    "sum":13.15331,
+                    "sum_squares":4.70252,
+                    "variance":0.01792
+                },
+                "lift":{
+                    "counts":[
+                        [
+                            1.40625,
+                            2
+                        ],
+                        [
+                            1.5067,
+                            2
+                        ],
+                        ...
+                        [
+                            2.63158,
+                            4
+                        ],
+                        [
+                            3,
+                            10
+                        ],
+                        [
+                            4.93421,
+                            2
+                        ],
+                        [
+                            12.5,
+                            2
+                        ]
+                    ],
+                    "maximum":12.5,
+                    "mean":2.91963,
+                    "median":2.58068,
+                    "minimum":1.40625,
+                    "population":44,
+                    "standard_deviation":2.24641,
+                    "sum":128.46352,
+                    "sum_squares":592.05855,
+                    "variance":5.04635
+                },
+                "p_value":{
+                    "counts":[
+                        [
+                            0.000000000,
+                            2
+                        ],
+                        [
+                            0.000000000,
+                            4
+                        ],
+                        [
+                            0.000000000,
+                            2
+                        ],
+                        ...
+                        [
+                            0.0000910873,
+                            2
+                        ]
+                    ],
+                    "maximum":0.0000910873,
+                    "mean":0.0000106114,
+                    "median":0.00000000,
+                    "minimum":0.000000000,
+                    "population":44,
+                    "standard_deviation":0.0000227364,
+                    "sum":0.000466903,
+                    "sum_squares":0.0000000,
+                    "variance":0.000000001
+                },
+                "rhs_cover":{
+                    "counts":[
+                        [
+                            0.06,
+                            2
+                        ],
+                        [
+                            0.08,
+                            2
+                        ],
+                        ...
+                        [
+                            0.42667,
+                            2
+                        ],
+                        [
+                            0.46667,
+                            3
+                        ],
+                        [
+                            0.5,
+                            4
+                        ]
+                    ],
+                    "maximum":0.5,
+                    "mean":0.29894,
+                    "median":0.33213,
+                    "minimum":0.06,
+                    "population":44,
+                    "standard_deviation":0.13386,
+                    "sum":13.15331,
+                    "sum_squares":4.70252,
+                    "variance":0.01792
+                },
+                "support":{
+                    "counts":[
+                        [
+                            0.06,
+                            4
+                        ],
+                        [
+                            0.06667,
+                            2
+                        ],
+                        [
+                            0.08,
+                            2
+                        ],
+                        [
+                            0.08667,
+                            4
+                        ],
+                        [
+                            0.10667,
+                            4
+                        ],
+                        [
+                            0.15333,
+                            2
+                        ],
+                        [
+                            0.18667,
+                            4
+                        ],
+                        [
+                            0.19333,
+                            2
+                        ],
+                        [
+                            0.20667,
+                            2
+                        ],
+                        [
+                            0.27333,
+                            2
+                        ],
+                        [
+                            0.28667,
+                            2
+                        ],
+                        [
+                            0.3,
+                            4
+                        ],
+                        [
+                            0.32,
+                            2
+                        ],
+                        [
+                            0.33333,
+                            6
+                        ],
+                        [
+                            0.37333,
+                            2
+                        ]
+                    ],
+                    "maximum":0.37333,
+                    "mean":0.20152,
+                    "median":0.19057,
+                    "minimum":0.06,
+                    "population":44,
+                    "standard_deviation":0.10734,
+                    "sum":8.86668,
+                    "sum_squares":2.28221,
+                    "variance":0.01152
+                }
+            },
+            "search_strategy":"leverage",
             "significance_level":0.05
         },
         "category":0,
         "clones":0,
         "code":200,
-        "columns":1,
-        "created":"2015-10-17T04:53:21.977000",
-        "credits":0.10097885131835938,
-        "dataset":"dataset/56200791425f353849000007",
+        "columns":5,
+        "created":"2015-11-05T08:06:08.184000",
+        "credits":0.017581939697265625,
+        "dataset":"dataset/562fae3f4e1727141d00004e",
         "dataset_status":true,
         "dataset_type":0,
         "description":"",
-        "excluded_fields":[],
+        "excluded_fields":[ ],
         "fields_meta":{
-            "count":1,
+            "count":5,
             "limit":1000,
             "offset":0,
-            "query_total":1,
-            "total":1
+            "query_total":5,
+            "total":5
         },
         "input_fields":[
-            "000000"
+            "000000",
+            "000001",
+            "000002",
+            "000003",
+            "000004"
         ],
-        "locale":"en-us",
-        "max_columns":1,
-        "max_rows":1000,
-        "name":"items-quoted's dataset's association",
+        "locale":"en_US",
+        "max_columns":5,
+        "max_rows":150,
+        "name":"iris' dataset's association",
         "out_of_bag":false,
         "price":0,
         "private":true,
         "project":null,
         "range":[
             1,
-            1000
+            150
         ],
         "replacement":false,
-        "resource":"{{ page.resource.sample_full_id }}",
-        "rows":1000,
+        "resource":"association/5621b70910cb86ae4c000000",
+        "rows":150,
         "sample_rate":1,
         "shared":false,
-        "size":26471,
-        "source":"source/561fe471425f35568c00000a",
+        "size":4609,
+        "source":"source/562fae3a4e1727141d000048",
         "source_status":true,
         "status":{
             "code":5,
-            "elapsed":486,
+            "elapsed":1072,
             "message":"The association has been created",
             "progress":1
         },
-        "subscription":true,
-        "tags":[],
-        "updated":"2015-10-17T04:53:35.141000",
+        "subscription":false,
+        "tags":[ ],
+        "updated":"2015-11-05T08:06:20.403000",
         "white_box":false
     }
-
-
 Note that the output in the snippet above has been abbreviated. As you see,
 the ``associations`` attribute stores items, rules and metrics extracted
 from the datasets as well as the configuration parameters described in
@@ -1989,7 +2340,8 @@ You can query the status of any resource with the ``status`` method:
     api.status(correlation)
     api.status(statistical_test)
     api.status(logistic_regression)
-    api.status(associations)
+    api.status(association)
+    api.status(association_set)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -2315,6 +2667,40 @@ Let's create an anomaly detector from a given dataset:
 that will create an anomaly resource with a `top_anomalies` block of the
 most anomalous points.
 
+Creating associations
+~~~~~~~~~~~~~~~~~~~~~
+
+To find relations between the field values you can create an association
+discovery resource. If you don't select one, the association will use
+the last field of the dataset as objective
+field. The only required argument to create an association is a dataset id.
+You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Association section of the Developer's
+documentation <https://bigml.com/developers/associations>`_.
+
+For example, to create an association only including the first two fields and
+the first 10 instances in the dataset, you can use the following
+invocation:
+
+.. code-block:: python
+
+    model = api.create_association(dataset, {
+        "name": "my association", "input_fields": ["000000", "000001"],
+        "range": [1, 10]})
+
+Again, the association is scheduled for creation, and you can retrieve its
+status at any time by means of ``api.status(association)``.
+
+Associations can also be created from lists of datasets. Just use the
+list of ids as the first argument in the api call
+
+.. code-block:: python
+
+    model = api.create_association([dataset1, dataset2], {
+        "name": "my association", "input_fields": ["000000", "000001"],
+        "range": [1, 10]})
+
 Creating predictions
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -2368,6 +2754,20 @@ detector identifier and the input data to obtain the score:
 
     anomaly_score = api.create_anomaly_score(anomaly, {"src_bytes": 350},
                                              args={"name": "my score"})
+
+Creating association sets
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using the association resource, you can obtain the consequent items associated
+by its rules to you input data. This association sets can be obtained calling
+the ``create_association_set`` method. The first argument is the association
+ID or object and the next is the input data.
+
+.. code-block:: python
+
+    association_set = api.create_association_set( \
+        association, {"genres": "Action$Adventure"}, \
+        args={"name": "my association set"})
 
 
 Creating evaluations
@@ -2549,6 +2949,7 @@ You can list resources with the appropriate api method:
     api.list_statistical_tests()
     api.list_logistic_regressions()
     api.list_associations()
+    api.list_association_sets()
 
 you will receive a dictionary with the following keys:
 
@@ -2682,6 +3083,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_statistical_test(statistical_test, {"name": "new name"})
     api.update_logistic_regression(logistic_regression, {"name": "new name"})
     api.update_association(association, {"name": "new name"})
+    api.update_association_set(association_set, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -2725,6 +3127,7 @@ each type of resource.
     api.delete_statistical_test(statistical_test)
     api.delete_logistic_regression(logistic_regression)
     api.delete_association(association)
+    api.delete_association_set(association_set)
 
 Each of the calls above will return a dictionary with the following
 keys:
@@ -3238,6 +3641,65 @@ item names and by a user-given function:
 this will recover the ``Item`` objects found in the ``Cap Color`` field for
 the names in the list, with their properties as described in the
 `developers section <https://bigml.com/developers/associations#ad_retrieving_an_association>`_
+
+
+Local Association Sets
+----------------------
+
+Using the local association object, you can predict the association sets
+related to an input data set:
+
+.. code-block:: python
+
+    local_association.association_set( \
+        {"gender": "Female", "genres": "Adventure$Action", \
+         "timestamp": 993906291, "occupation": "K-12 student",
+         "zipcode": 59583, "rating": 3})
+    [{'item': {'bin_end': None,
+               'bin_start': None,
+               'complement': False,
+               'count': 70,
+               'description': None,
+               'field_id': u'000002',
+               'name': u'Under 18'},
+      'score': 0.0969181441561211},
+     {'item': {'bin_end': None,
+               'bin_start': None,
+               'complement': False,
+               'count': 216,
+               'description': None,
+               'field_id': u'000007',
+               'name': u'Drama'},
+      'score': 0.025050115102862636},
+     {'item': {'bin_end': None,
+               'bin_start': None,
+               'complement': False,
+               'count': 108,
+               'description': None,
+               'field_id': u'000007',
+               'name': u'Sci-Fi'},
+      'score': 0.02384578264599424},
+     {'item': {'bin_end': None,
+               'bin_start': None,
+               'complement': False,
+               'count': 40,
+               'description': None,
+               'field_id': u'000002',
+               'name': u'56+'},
+      'score': 0.021845366022721312},
+     {'item': {'bin_end': None,
+               'bin_start': None,
+               'complement': False,
+               'count': 66,
+               'description': None,
+               'field_id': u'000002',
+               'name': u'45-49'},
+      'score': 0.019657155185835006}]
+
+As in the local model predictions, producing local association sets can be done
+independently of BigML servers, so no cost or connection latencies are
+involved.
+
 
 Multi Models
 ------------

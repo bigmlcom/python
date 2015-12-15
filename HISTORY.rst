@@ -3,10 +3,16 @@
 History
 -------
 
-4.4.0 (2015-11-26)
+4.4.0 (2015-12-15)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding REST API calls for association rules and local Association object.
+- Adapting local model, cluster, anomaly and logistic regression objects
+  to new field type: items.
+- Fixing bug: wrong value of giny impurity
+- Fixing bug: local model summary failed occasionally when missings were used
+  in a numeric predicate.
+- Fixing bug: wrong syntax in flatline filter method of the tree object.
 
 4.3.4 (2015-12-10)
 ~~~~~~~~~~~~~~~~~~

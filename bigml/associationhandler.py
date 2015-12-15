@@ -50,27 +50,12 @@ class AssociationHandler(ResourceHandler):
         """
         self.association_url = self.url + ASSOCIATION_PATH
 
-    def create_association(self, dataset, args=None, wait_time=3, retries=10):
+    def create_association(self, datasets, args=None, wait_time=3, retries=10):
         """Creates an association from a `dataset`.
 
         """
-        dataset_id = None
-        resource_type = get_resource_type(dataset)
-        if resource_type == DATASET_PATH:
-            dataset_id = get_dataset_id(dataset)
-            check_resource(dataset_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
-            raise Exception("A dataset id is needed to create an"
-                            " association. %s found." % resource_type)
-
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-        create_args.update({
-            "dataset": dataset_id})
+        create_args = self._set_create_from_datasets_args(
+            datasets, args=args, wait_time=wait_time, retries=retries)
 
         body = json.dumps(create_args)
         return self._create(self.association_url, body)

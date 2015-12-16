@@ -21,6 +21,7 @@
 
 import sys
 import os
+import urllib2
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -29,14 +30,14 @@ except ImportError:
     GAE_ENABLED = False
     import ssl
 
-import urllib2
-
-from threading import Thread
-
 try:
     import simplejson as json
 except ImportError:
     import json
+
+
+from threading import Thread
+
 
 PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
 PYTHON_2 = sys.version_info < (3, 0)

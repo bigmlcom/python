@@ -40,8 +40,6 @@ cluster.predict({"petal length": 3, "petal width": 1,
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import sys
 import math
 import re
@@ -58,6 +56,8 @@ from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
 from bigml.io import UnicodeWriter
 
+
+LOGGER = logging.getLogger('BigML')
 
 OPTIONAL_FIELDS = ['categorical', 'text', 'items']
 CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
@@ -76,8 +76,8 @@ def parse_terms(text, case_sensitive=True):
         return []
     expression = ur'(\b|_)([^\b_\s]+?)(\b|_)'
     pattern = re.compile(expression)
-    return map(lambda x: x[1] if case_sensitive else x[1].lower(),
-               re.findall(pattern, text))
+    return [match[1] if case_sensitive else match[1].lower()
+            for match in re.findall(pattern, text)]
 
 
 def parse_items(text, regexp):
@@ -201,8 +201,8 @@ class Cluster(ModelFields):
 
         # Checks that all numeric fields are present in input data
         for field_id, field in self.fields.items():
-            if (not field['optype'] in OPTIONAL_FIELDS and
-                    not field_id in input_data):
+            if (field['optype'] not in OPTIONAL_FIELDS and
+                    field_id not in input_data):
                 raise Exception("Failed to predict a centroid. Input"
                                 " data must contain values for all "
                                 "numeric fields to find a centroid.")
@@ -315,6 +315,12 @@ class Cluster(ModelFields):
         return sorted(distribution, key=lambda x: x[0])
 
     def statistics_CSV(self, file_name=None):
+        """To be deprecated. See statistics_csv
+
+        """
+        self.statistics_csv(file_name=file_name)
+
+    def statistics_csv(self, file_name=None):
         """Clusters statistic information in CSV format
 
         """

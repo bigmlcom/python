@@ -45,10 +45,10 @@ class AssociationRule(object):
 
         """
         if language in SUPPORTED_LANGUAGES:
-            return self.getattr("to_%s" % language)()
+            return getattr(self, "to_%s" % language.lower())()
         return self
 
-    def to_CSV(self):
+    def to_csv(self):
         """Transforming the rule to CSV formats
            Metrics ordered as in ASSOCIATION_METRICS in association.py
 
@@ -64,10 +64,10 @@ class AssociationRule(object):
                   self.p_value,
                   self.rhs_cover[0] if self.rhs_cover else None,
                   self.rhs_cover[1] if self.rhs_cover else None
-                  ]
+                 ]
         return output
 
-    def to_JSON(self):
+    def to_json(self):
         """Transforming the rule to JSON
 
         """
@@ -75,13 +75,12 @@ class AssociationRule(object):
         rule_dict.update(self.__dict__)
         return rule_dict
 
-    def to_LISP_rule(self, item_list):
+    def to_lisp_rule(self, item_list):
         """Transforming the rule in a LISP flatline filter to select the
         rows in the dataset that fulfill the rule
 
         """
 
-        flatline = ""
         items = [item_list[index].to_LISP_rule() for index in self.lhs]
         rhs_items = [item_list[index].to_LISP_rule() for index in self.rhs]
         items.extend(rhs_items)

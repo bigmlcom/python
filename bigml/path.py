@@ -122,7 +122,7 @@ def merge_text_rules(list_of_predicates, fields, label='name'):
     if contains:
         rules.append(contains[0].to_rule(fields, label=label).strip())
         for predicate in contains[1:]:
-            if not predicate.term in rules:
+            if predicate.term not in rules:
                 rules.append(predicate.term)
     rule = u" and ".join(rules)
     if not_contains:
@@ -134,7 +134,7 @@ def merge_text_rules(list_of_predicates, fields, label='name'):
                 " and %s" % \
                 not_contains[0].to_rule(fields, label=label).strip())
         for predicate in not_contains[1:]:
-            if not predicate.term in rules_not:
+            if predicate.term not in rules_not:
                 rules_not.append(predicate.term)
     rule += u" or ".join(rules_not)
     return rule
@@ -163,7 +163,7 @@ def  merge_categorical_rules(list_of_predicates,
     if not_equal and not rules:
         rules_not.append(not_equal[0].to_rule(fields, label=label).strip())
         for predicate in not_equal[1:]:
-            if not predicate.value in rules_not:
+            if predicate.value not in rules_not:
                 rules_not.append(predicate.value)
     rule += u" or ".join(rules_not)
     return rule
@@ -218,7 +218,7 @@ class Path(object):
         groups_of_rules = {}
         list_of_fields = []
         for predicate in self.predicates:
-            if not predicate.field in groups_of_rules:
+            if predicate.field not in groups_of_rules:
                 groups_of_rules[predicate.field] = []
                 list_of_fields.append(predicate.field)
             groups_of_rules[predicate.field].append(predicate)

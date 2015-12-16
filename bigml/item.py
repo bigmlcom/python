@@ -46,10 +46,10 @@ class Item(object):
 
         """
         if language in SUPPORTED_LANGUAGES:
-            return self.getattr("to_%s" % language)()
+            return getattr(self, "to_%s" % language)()
         return self
 
-    def to_CSV(self):
+    def to_csv(self):
         """Transforming the rule to CSV formats
 
         """
@@ -58,7 +58,7 @@ class Item(object):
                   self.bin_end, self.bin_start]
         return output
 
-    def to_JSON(self):
+    def to_json(self):
         """Transforming the item relevant information to JSON
 
         """
@@ -69,28 +69,28 @@ class Item(object):
         del item_dict["index"]
         return item_dict
 
-    def to_LISP_rule(self):
+    def to_lisp_rule(self):
         """Returns the LISP flatline expression to filter this item
 
         """
         flatline = ""
         field_type = self.field_info['optype']
         if field_type == "numeric":
-            previous = self.bin_end if self.complement else \
+            start = self.bin_end if self.complement else \
                 self.bin_start
-            next = self.bin_start if self.complement else \
+            end = self.bin_start if self.complement else \
                 self.bin_end
-            if previous and next:
-                if previous < next:
+            if start and end:
+                if start < end:
                     flatline = u"(and (< %s (f %s)) (<= (f %s) %s))" % \
-                        (previous, self.field_id, self.field_id, next)
+                        (start, self.field_id, self.field_id, end)
                 else:
                     flatline = u"(or (> (f %s) %s) (<= (f %s) %s))" % \
-                        (self.field_id, previous, self.field_id, next)
-            elif previous:
-                flatline = u"(> (f %s) %s)" % (self.field_id, previous)
+                        (self.field_id, start, self.field_id, end)
+            elif start:
+                flatline = u"(> (f %s) %s)" % (self.field_id, start)
             else:
-                flatline = u"(<= (f %s) %s)" % (self.field_id, next)
+                flatline = u"(<= (f %s) %s)" % (self.field_id, end)
         elif field_type == "categorical":
             operator = u"!=" if self.complement else u"="
             flatline = u"(%s (f %s) %s)" % (
@@ -107,8 +107,8 @@ class Item(object):
                 case_insensitive, language)
         elif field_type == 'items':
             operator = u"!" if self.complement else u""
-            flatline = u"(% (contains-items? %s %s))" % (
-                self.operator, self.field_id, self.name)
+            flatline = u"(%s (contains-items? %s %s))" % (
+                operator, self.field_id, self.name)
         return flatline
 
     def describe(self):
@@ -119,23 +119,23 @@ class Item(object):
         field_name = self.field_info['name']
         field_type = self.field_info['optype']
         if field_type == "numeric":
-            previous = self.bin_end if self.complement else \
+            start = self.bin_end if self.complement else \
                 self.bin_start
-            next = self.bin_start if self.complement else \
+            end = self.bin_start if self.complement else \
                 self.bin_end
-            if previous and next:
-                if previous < next:
-                    description = "%s < %s <= %s" % (previous,
+            if start and end:
+                if start < end:
+                    description = "%s < %s <= %s" % (start,
                                                      field_name,
-                                                     next)
+                                                     end)
                 else:
                     description = "%s > %s or <= %s" % (field_name,
-                                                        previous,
-                                                        next)
-            elif previous:
-                description = "%s > %s" % (field_name, previous)
+                                                        start,
+                                                        end)
+            elif start:
+                description = "%s > %s" % (field_name, start)
             else:
-                description = "%s <= %s" % (field_name, next)
+                description = "%s <= %s" % (field_name, end)
         elif field_type == "categorical":
             operator = "!=" if self.complement else "="
             description = "%s %s %s" % (field_name, operator, self.name)

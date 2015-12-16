@@ -201,7 +201,7 @@ class Fields(object):
             self.headers = self.row_ids
         else:
             # The row is supposed to contain the fields as sorted in headers
-            self.row_ids = map(self.field_id, headers)
+            self.row_ids = [self.field_id(header) for header in headers]
             self.headers = headers
         # Mapping each included field to its correspondent index in the row.
         # The result is stored in filtered_indexes.
@@ -301,7 +301,7 @@ class Fields(object):
             self.update_objective_field(objective_field,
                                         objective_field_present, headers)
 
-        row = map(self.normalize, row)
+        row = [self.normalize(info) for info in row]
         return self.to_input_data(row)
 
     def list_fields(self, out=sys.stdout):
@@ -322,7 +322,7 @@ class Fields(object):
 
         """
         return {key: field for key, field in self.fields.iteritems()
-                if (not 'preferred' in field) or field['preferred']}
+                if ('preferred' not in field) or field['preferred']}
 
     def validate_input_data(self, input_data, out=sys.stdout):
         """Validates whether types for input data match types in the

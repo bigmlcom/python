@@ -192,6 +192,12 @@ class Predicate(object):
                                 relation_missing)
 
     def to_LISP_rule(self, fields):
+        """To be deprecated. See to_lisp_rule
+
+        """
+        self.to_lisp_rule(fields)
+
+    def to_lisp_rule(self, fields):
         """Builds rule string in LISP from a predicate
 
         """

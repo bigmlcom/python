@@ -259,7 +259,7 @@ class BigML(AssociationSetHandler, AssociationHandler,
                     return resource['object']['statistical_tests']['fields']
                 elif LOGISTIC_REGRESSION_RE.match(resource_id):
                     return resource['object']['logistic_regression']['fields']
-                elif ASSOCIATIONS_RE.match(resource_id):
+                elif ASSOCIATION_RE.match(resource_id):
                     return resource['object']['associations']['fields']
                 elif SAMPLE_RE.match(resource_id):
                     return dict([(field['id'], field) for field in

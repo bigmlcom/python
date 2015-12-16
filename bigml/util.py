@@ -21,14 +21,16 @@
 
 
 import re
-import unidecode
-from urlparse import urlparse
 import locale
 import sys
 import os
 import json
 import math
 import random
+from urlparse import urlparse
+
+import unidecode
+
 
 PY3 = sys.version > '3'
 DEFAULT_LOCALE = 'en_US.UTF-8'
@@ -196,7 +198,7 @@ def sort_fields(fields):
     """
     fathers = [(key, val) for key, val in
                sorted(fields.items(), key=lambda k: k[1]['column_number'])
-               if not 'auto_generated' in val]
+               if 'auto_generated' not in val]
     children = [(key, val) for key, val in
                 sorted(fields.items(), key=lambda k: k[1]['column_number'])
                 if 'auto_generated' in val]
@@ -237,7 +239,7 @@ def locale_synonyms(main_locale, locale_alias):
 
     """
     language_code = main_locale[0:2]
-    if not language_code in LOCALE_SYNONYMS:
+    if language_code not in LOCALE_SYNONYMS:
         return False
     alternatives = LOCALE_SYNONYMS[language_code]
     if isinstance(alternatives[0], basestring):
@@ -258,7 +260,7 @@ def bigml_locale(locale_alias):
        the locale user code has been correctly mapped. None otherwise.
     """
     language_code = locale_alias.lower()[0:2]
-    if not language_code in LOCALE_SYNONYMS:
+    if language_code not in LOCALE_SYNONYMS:
         return None
     alternatives = LOCALE_SYNONYMS[language_code]
     if isinstance(alternatives[0], basestring):
@@ -295,7 +297,7 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
                         break
                     except locale.Error:
                         pass
-                if not new_locale is None:
+                if new_locale is not None:
                     break
             else:
                 try:

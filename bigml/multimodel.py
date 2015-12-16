@@ -37,16 +37,19 @@ model.predict({"petal length": 3, "petal width": 1})
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
-
 import ast
+
+
 from bigml.model import Model
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.io import UnicodeWriter, UnicodeReader
+
+
+LOGGER = logging.getLogger('BigML')
+
 
 def read_votes(votes_files, to_prediction, data_locale=None):
     """Reads the votes found in the votes' files.
@@ -82,7 +85,7 @@ def read_votes(votes_files, to_prediction, data_locale=None):
                     try:
                         confidence = float(row[1])
                     except ValueError:
-                        confidence = 0
+                        confidence = 0.0
                 prediction_row = [prediction, confidence, order,
                                   distribution, instances]
                 votes[index].append_row(prediction_row)

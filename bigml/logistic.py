@@ -41,8 +41,6 @@ logistic_regression.predict({"petal length": 3, "petal width": 1,
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import math
 import re
 
@@ -55,6 +53,9 @@ from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
 from bigml.cluster import parse_terms, parse_items
+
+
+LOGGER = logging.getLogger('BigML')
 
 EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
                         "items": "items"}
@@ -74,12 +75,12 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     terms_set = {}
     for term in terms:
         if term in tag_cloud:
-            if not term in terms_set:
+            if term not in terms_set:
                 terms_set[term] = 0
             terms_set[term] += 1
         elif term in extend_forms:
             term = extend_forms[term]
-            if not term in terms_set:
+            if term not in terms_set:
                 terms_set[term] = 0
             terms_set[term] += 1
     return terms_set.items()
@@ -197,8 +198,8 @@ class LogisticRegression(ModelFields):
 
         # Checks that all numeric fields are present in input data
         for field_id, field in self.fields.items():
-            if (not field['optype'] in OPTIONAL_FIELDS and
-                    not field_id in input_data):
+            if (field['optype'] not in OPTIONAL_FIELDS and
+                    field_id not in input_data):
                 raise Exception("Failed to predict. Input"
                                 " data must contain values for all numeric "
                                 "fields to get a logistic regression"
@@ -256,17 +257,17 @@ class LogisticRegression(ModelFields):
         if self.missing_coefficients:
             for field_id in self.tag_clouds:
                 shift = self.fields[field_id]['coefficients_shift']
-                if not field_id in unique_terms or not unique_terms[field_id]:
+                if field_id not in unique_terms or not unique_terms[field_id]:
                     probability += coefficients[ \
                         shift + len(self.tag_clouds[field_id])]
             for field_id in self.items:
                 shift = self.fields[field_id]['coefficients_shift']
-                if not field_id in unique_terms or not unique_terms[field_id]:
+                if field_id not in unique_terms or not unique_terms[field_id]:
                     probability += coefficients[ \
                         shift + len(self.items[field_id])]
             for field_id in self.categories:
                 if field_id != self.objective_id and \
-                        not field_id in unique_terms:
+                        field_id not in unique_terms:
                     shift = self.fields[field_id]['coefficients_shift']
                     probability += coefficients[ \
                         shift + len(self.categories[field_id])]

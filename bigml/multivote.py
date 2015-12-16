@@ -18,11 +18,10 @@
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import numbers
 import math
 
+LOGGER = logging.getLogger('BigML')
 
 PLURALITY = 'plurality'
 CONFIDENCE = 'confidence weighted'
@@ -76,7 +75,7 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
     if ws_p < 0:
         raise ValueError("The distribution weight must be a positive value")
     ws_norm = float(sum(distribution.values()))
-    if not ws_norm == 1.0:
+    if ws_norm != 1.0:
         ws_p = ws_p / ws_norm
     if ws_n is None:
         ws_n = ws_norm
@@ -97,7 +96,7 @@ def merge_distributions(distribution, new_distribution):
 
     """
     for value, instances in new_distribution.items():
-        if not value in distribution:
+        if value not in distribution:
             distribution[value] = 0
         distribution[value] += instances
     return distribution
@@ -193,12 +192,12 @@ class MultiVote(object):
             if add_max and d_max < prediction['max']:
                 d_max = prediction['max']
         if with_confidence:
-            return ((result / total, confidence / total) if total > 0 else \
-                    (float('nan'), 0))
+            return (result / total, confidence / total) if total > 0 else \
+                (float('nan'), 0)
         if (add_confidence or add_distribution or add_count or
                 add_median or add_min or add_max):
             output = {'prediction': result / total if total > 0 else \
-                      float('nan')}
+                float('nan')}
             if add_confidence:
                 output.update(
                     {'confidence': confidence / total if total > 0 else 0})
@@ -209,7 +208,7 @@ class MultiVote(object):
             if add_median:
                 output.update(
                     {'median': median_result / total if total > 0 else \
-                     float('nan')})
+                    float('nan')})
             if add_min:
                 output.update(
                     {'min': d_min})
@@ -378,7 +377,7 @@ class MultiVote(object):
         method = COMBINER_MAP.get(method, COMBINER_MAP[DEFAULT_METHOD])
         keys = WEIGHT_KEYS.get(method, None)
         # and all predictions should have the weight-related keys
-        if not keys is None:
+        if keys is not None:
             for key in keys:
                 if not all([key in prediction for prediction
                             in self.predictions]):
@@ -421,7 +420,7 @@ class MultiVote(object):
         """
         predictions = []
         for prediction in self.predictions:
-            if not 'distribution' in prediction or not 'count' in prediction:
+            if 'distribution' not in prediction or 'count' not in prediction:
                 raise Exception("Probability weighting is not available "
                                 "because distribution information is missing.")
             total = prediction['count']
@@ -452,7 +451,7 @@ class MultiVote(object):
         distribution = {}
         total = 0
         for prediction in self.predictions:
-            if not prediction['prediction'] in distribution:
+            if prediction['prediction'] not in distribution:
                 distribution[prediction['prediction']] = 0.0
             distribution[prediction['prediction']] += prediction[weight_label]
             total += prediction['count']
@@ -482,10 +481,10 @@ class MultiVote(object):
         if weight_label is None:
             weight = 1
         for prediction in self.predictions:
-            if not weight_label is None:
-                if not weight_label in COMBINATION_WEIGHTS.values():
+            if weight_label is not None:
+                if weight_label not in COMBINATION_WEIGHTS.values():
                     raise Exception("Wrong weight_label value.")
-                if not weight_label in prediction:
+                if weight_label not in prediction:
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
                                     " model anew.")
@@ -531,11 +530,11 @@ class MultiVote(object):
         """Compute the combined weighted confidence from a list of predictions
 
         """
-        predictions = filter(lambda x: x['prediction'] == combined_prediction,
-                             self.predictions)
+        predictions = [prediction for prediction in self.predictions \
+            if prediction['prediction'] == combined_prediction]
         if (weight_label is not None and
                 (not isinstance(weight_label, basestring) or
-                 any([not 'confidence' or not weight_label in prediction
+                 any([not 'confidence' or weight_label not in prediction
                       for prediction in predictions]))):
             raise ValueError("Not enough data to use the selected "
                              "prediction method. Lacks %s information." %
@@ -584,7 +583,7 @@ class MultiVote(object):
            threshold.
 
         """
-        if options is None or any(not option in options for option in
+        if options is None or any(option not in options for option in
                                   ["threshold", "category"]):
             raise Exception("No category and threshold information was"
                             " found. Add threshold and category info."

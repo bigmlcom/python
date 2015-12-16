@@ -49,8 +49,6 @@ model.python()
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import sys
 import locale
 import json
@@ -70,6 +68,9 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
+
+
+LOGGER = logging.getLogger('BigML')
 
 # we use the atof conversion for integers to include integers written as
 # 10.0
@@ -388,7 +389,7 @@ class Model(BaseModel):
         """
         ids_path = None
         if filter_id is not None and self.tree.id is not None:
-            if not filter_id in self.ids_map:
+            if filter_id not in self.ids_map:
                 raise ValueError("The given id does not exist.")
             else:
                 ids_path = [filter_id]
@@ -474,7 +475,7 @@ class Model(BaseModel):
 
             """
             group = output
-            if not output in groups:
+            if output not in groups:
                 groups[group] = {'total': [[], 0, 0],
                                  'details': []}
             groups[group]['details'].append([path, count, confidence,
@@ -489,9 +490,9 @@ class Model(BaseModel):
                 path.append(tree.predicate)
                 if tree.predicate.term:
                     term = tree.predicate.term
-                    if not tree.predicate.field in self.terms:
+                    if tree.predicate.field not in self.terms:
                         self.terms[tree.predicate.field] = []
-                    if not term in self.terms[tree.predicate.field]:
+                    if term not in self.terms[tree.predicate.field]:
                         self.terms[tree.predicate.field].append(term)
 
             if len(tree.children) == 0:
@@ -533,7 +534,8 @@ class Model(BaseModel):
 
         predictions = [[group, groups[group]['total'][2]] for group in groups]
         # remove groups that are not predicted
-        predictions = filter(lambda x: x[1] > 0, predictions)
+        predictions = [prediction for prediction in predictions \
+            if prediction[1] > 0]
 
         return sorted(predictions, key=lambda x: x[0])
 
@@ -694,7 +696,7 @@ class CSVInput(object):
         fields = self.fields
         for key in [key[0] for key in input_fields
                     if key != self.tree.objective_id]:
-            input_type = ('None' if not fields[key]['datatype'] in
+            input_type = ('None' if fields[key]['datatype'] not in
                           PYTHON_CONV
                           else PYTHON_CONV[fields[key]['datatype']])
             input_types.append(input_type)
@@ -878,6 +880,12 @@ if count > 0:
         return self.tree.get_nodes_info(headers, leaves_only=leaves_only)
 
     def tree_CSV(self, file_name=None, leaves_only=False):
+        """To be deprecated. See tree_csv
+
+        """
+        self.tree_csv(file_name=file_name, leaves_only=leaves_only)
+
+    def tree_csv(self, file_name=None, leaves_only=False):
         """Outputs the node structure to a CSV file or array
 
         """

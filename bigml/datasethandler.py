@@ -105,7 +105,7 @@ class DatasetHandler(ResourceHandler):
                                          wait_time=wait_time,
                                          retries=retries,
                                          raise_on_error=True, api=self)
-                if not 'centroid' in create_args:
+                if 'centroid' not in create_args:
                     try:
                         centroid = cluster['object'][
                             'cluster_datasets_ids'].keys()[0]
@@ -187,7 +187,7 @@ class DatasetHandler(ResourceHandler):
 
         """
         errors_dict = {}
-        if not isinstance(dataset, dict) or not 'object' in dataset:
+        if not isinstance(dataset, dict) or 'object' not in dataset:
             check_resource_type(dataset, DATASET_PATH,
                                 message="A dataset id is needed.")
             dataset_id = get_dataset_id(dataset)

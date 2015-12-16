@@ -83,7 +83,7 @@ class ModelHandler(ResourceHandler):
                                          wait_time=wait_time,
                                          retries=retries,
                                          raise_on_error=True, api=self)
-                if not 'centroid' in create_args:
+                if 'centroid' not in create_args:
                     try:
                         centroid = cluster['object'][
                             'cluster_models'].keys()[0]

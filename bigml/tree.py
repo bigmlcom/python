@@ -291,7 +291,7 @@ class Tree(object):
             return None
         for _, instances in self.distribution:
             purity += math.pow(instances / float(self.count), 2)
-        return (1.0 - purity)
+        return 1.0 - purity
 
     def list_fields(self, out):
         """Lists a description of the model's fields.
@@ -336,7 +336,7 @@ class Tree(object):
         if path is None:
             path = []
         if not isinstance(self.predicate, bool):
-            path.append(self.predicate.to_LISP_rule(self.fields))
+            path.append(self.predicate.to_lisp_rule(self.fields))
 
         if self.children:
             for child in self.children:
@@ -475,7 +475,7 @@ class Tree(object):
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
                     new_rule = child.predicate.to_rule(self.fields)
-                    if not new_rule in path and not missing_found:
+                    if new_rule not in path and not missing_found:
                         path.append(new_rule)
                     return child.predict_proportional(input_data, path,
                                                       missing_found, median)
@@ -566,7 +566,7 @@ class Tree(object):
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
             if (not has_missing_branch and
-                    not self.fields[field]['slug'] in cmv):
+                    self.fields[field]['slug'] not in cmv):
                 body += (u"%sif (%s is None):\n" %
                          (INDENT * depth,
                           map_data(self.fields[field]['slug'], True)))
@@ -682,7 +682,7 @@ class Tree(object):
             self.python_body(input_map=input_map,
                              ids_path=ids_path,
                              subtree=subtree)
-        terms_body = ""
+        terms_body = u""
         if term_analysis_predicates or item_analysis_predicates:
             terms_body = self.term_analysis_body(term_analysis_predicates,
                                                  item_analysis_predicates)
@@ -763,8 +763,8 @@ class Tree(object):
 
 """ % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
 
-            term_analysis_options = set(map(lambda x: x[0],
-                                           term_analysis_predicates))
+            term_analysis_options = set([predicate[0] for predicate in
+                                         term_analysis_predicates])
             term_analysis_predicates = set(term_analysis_predicates)
             body += """
     term_analysis = {"""
@@ -832,8 +832,8 @@ class Tree(object):
         return len(matches)
 """
 
-            item_analysis_options = set(map(lambda x: x[0],
-                                        item_analysis_predicates))
+            item_analysis_options = set([predicate[0] for predicate in
+                                         item_analysis_predicates])
             item_analysis_predicates = set(item_analysis_predicates)
             body += """
     item_analysis = {"""
@@ -880,7 +880,7 @@ class Tree(object):
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
             if (not has_missing_branch and
-                    not self.fields[field]['name'] in cmv):
+                    self.fields[field]['name'] not in cmv):
                 conditions.append("ISNULL([%s])" % self.fields[field]['name'])
                 body += (u"%s %s THEN " %
                          (alternate, " AND ".join(conditions)))
@@ -915,12 +915,12 @@ class Tree(object):
                 else:
                     value = repr(child.predicate.value)
 
-                operator = ("" if child.predicate.value is None else
+                operator = (u"" if child.predicate.value is None else
                             PYTHON_OPERATOR[child.predicate.operator])
                 if child.predicate.value is None:
                     pre_condition = (
                         T_MISSING_OPERATOR[child.predicate.operator])
-                    post_condition = ")"
+                    post_condition = u")"
 
                 conditions.append("%s[%s]%s%s%s" % (
                     pre_condition,

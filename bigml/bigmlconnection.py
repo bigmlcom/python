@@ -23,6 +23,12 @@ import os
 import time
 import locale
 import StringIO
+import logging
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 try:
     #added to allow GAE to work
@@ -32,20 +38,17 @@ except ImportError:
     GAE_ENABLED = False
     import requests
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-import logging
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
 
 from bigml.util import (check_dir,
                         maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE
 from bigml.domain import Domain
 from bigml.domain import DEFAULT_DOMAIN, BIGML_PROTOCOL
+
+
+LOG_FORMAT = '%(asctime)-15s: %(message)s'
+LOGGER = logging.getLogger('BigML')
+
 
 
 # Base URL

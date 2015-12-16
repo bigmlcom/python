@@ -86,7 +86,7 @@ def the_first_rule_is(step, rule):
     rule = rule.strip().replace("\n", "")
     for a_rule in world.association_rules:
         api = BigML()
-        api.pprint(a_rule.to_JSON(), rule_str)
+        api.pprint(a_rule.to_json(), rule_str)
         found_rules.append(rule_str.getvalue().strip().replace("\n", ""))
     if found_rules[0] == rule:
         assert True

@@ -20,7 +20,6 @@
 """
 
 import time
-import re
 
 import bigml.constants as c
 
@@ -71,7 +70,7 @@ def resource_is_ready(resource):
     """Checks a fully fledged resource structure and returns True if finished.
 
     """
-    if not isinstance(resource, dict) or not 'error' in resource:
+    if not isinstance(resource, dict) or 'error' not in resource:
         raise Exception("No valid resource structure found")
     if resource['error'] is not None:
         raise Exception(resource['error']['status']['message'])
@@ -84,7 +83,7 @@ def check_resource_type(resource, expected_resource, message=None):
 
     """
     resource_type = get_resource_type(resource)
-    if not expected_resource == resource_type:
+    if expected_resource != resource_type:
         raise Exception("%s\nFound %s." % (message, resource_type))
 
 
@@ -460,7 +459,7 @@ class ResourceHandler(BigMLConnection):
             model_types = []
 
         resource_type = get_resource_type(dataset)
-        if not c.DATASET_PATH == resource_type:
+        if c.DATASET_PATH != resource_type:
             raise Exception("A dataset id is needed as second argument"
                             " to create the resource. %s found." %
                             resource_type)

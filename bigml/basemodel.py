@@ -23,8 +23,6 @@ is used for local predictions.
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import sys
 import locale
 import os
@@ -36,6 +34,8 @@ from bigml.api import (get_status, BigML, get_model_id,
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
 from bigml.modelfields import ModelFields, check_model_structure
+
+LOGGER = logging.getLogger('BigML')
 
 # Query string to ask for fields: only the ones in the model, with summary
 # (needed for the list of terms in text fields) and

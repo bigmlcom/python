@@ -30,7 +30,7 @@ class Predicates(object):
     def __init__(self, predicates_list):
         self.predicates = []
         for predicate in predicates_list:
-            if predicate == True:
+            if predicate is True:
                 self.predicates.append(True)
             else:
                 self.predicates.append(

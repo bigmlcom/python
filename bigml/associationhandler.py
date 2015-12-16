@@ -29,10 +29,8 @@ except ImportError:
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
-                                   get_association_id, get_resource_type,
-                                   get_dataset_id, check_resource)
-from bigml.constants import (ASSOCIATION_PATH, DATASET_PATH,
-                             TINY_RESOURCE)
+                                   get_association_id)
+from bigml.constants import ASSOCIATION_PATH
 
 
 class AssociationHandler(ResourceHandler):

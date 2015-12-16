@@ -70,11 +70,11 @@ class Centroid(object):
         for field_id, value in self.center.items():
             if isinstance(value, list):
                 # text field
-                terms = ([] if not field_id in term_sets else
+                terms = ([] if field_id not in term_sets else
                          term_sets[field_id])
                 distance2 += cosine_distance2(terms, value, scales[field_id])
             elif isinstance(value, basestring):
-                if not field_id in input_data or input_data[field_id] != value:
+                if field_id not in input_data or input_data[field_id] != value:
                     distance2 += 1 * scales[field_id] ** 2
             else:
                 distance2 += ((input_data[field_id] - value) *

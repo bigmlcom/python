@@ -42,7 +42,6 @@ import sys
 import logging
 import gc
 import json
-LOGGER = logging.getLogger('BigML')
 
 from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
@@ -51,6 +50,9 @@ from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
+
+
+LOGGER = logging.getLogger('BigML')
 
 
 def use_cache(cache_get):
@@ -296,7 +298,7 @@ class Ensemble(object):
                 model_info = importances[index]
                 for field_info in model_info:
                     field_id = field_info[0]
-                    if not field_id in field_importance:
+                    if field_id not in field_importance:
                         field_importance[field_id] = 0.0
                         name = self.fields[field_id]['name']
                         field_names[field_id] = {'name': name}
@@ -307,7 +309,7 @@ class Ensemble(object):
                 local_model = BaseModel(model_id, api=self.api)
                 for field_info in local_model.field_importance:
                     field_id = field_info[0]
-                    if not field_info[0] in field_importance:
+                    if field_info[0] not in field_importance:
                         field_importance[field_id] = 0.0
                         name = self.fields[field_id]['name']
                         field_names[field_id] = {'name': name}
@@ -316,8 +318,9 @@ class Ensemble(object):
         number_of_models = len(self.model_ids)
         for field_id in field_importance.keys():
             field_importance[field_id] /= number_of_models
-        return map(list, sorted(field_importance.items(), key=lambda x: x[1],
-                                reverse=True)), field_names
+        return [list(importance) for importance in \
+            sorted(field_importance.items(), key=lambda x: x[1],
+                   reverse=True)], field_names
 
     def print_importance(self, out=sys.stdout):
         """Prints ensemble field importance

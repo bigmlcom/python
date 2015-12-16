@@ -38,8 +38,6 @@ anomaly.anomaly_score({"src_bytes": 350})
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
-
 import math
 import json
 
@@ -52,6 +50,8 @@ from bigml.model import STORAGE
 from bigml.modelfields import ModelFields
 from bigml.anomalytree import AnomalyTree
 
+
+LOGGER = logging.getLogger('BigML')
 
 DEPTH_FACTOR = 0.5772156649
 
@@ -167,11 +167,10 @@ class Anomaly(ModelFields):
         for anomaly in self.top_anomalies:
             filter_rules = []
             row = anomaly.get('row', [])
-            for index in range(len(row)):
+            for index, value in enumerate(row):
                 field_id = self.input_fields[index]
                 if field_id in self.id_fields:
                     continue
-                value = row[index]
                 if value is None or value is "":
                     filter_rules.append('(missing? "%s")' % field_id)
                 else:

@@ -34,25 +34,24 @@ association = Association('association/5026966515526876630001b2')
 association.rules()
 
 """
-import logging
-LOGGER = logging.getLogger('BigML')
 
 import sys
 import math
-import re
+import logging
+
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_association_id, get_status)
-from bigml.util import cast, utf8
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
-from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.modelfields import ModelFields
 from bigml.associationrule import AssociationRule
 from bigml.item import Item
 from bigml.io import UnicodeWriter
 
+
+LOGGER = logging.getLogger('BigML')
 
 RULE_HEADERS = ["Rule ID", "Antecedent", "Consequent", "Antecedent Coverage %",
                 "Antecedent Coverage", "Support %", "Support", "Confidence",
@@ -98,11 +97,11 @@ def get_metric_string(rule, reverse=False):
             metric_key = 'rhs_cover'
         else:
             metric_key = metric
-        metric_value = getattr(rule, metric)
+        metric_value = getattr(rule, metric_key)
         if isinstance(metric_value, list):
             metric_values.append("%s=%.2f%% (%s)" % (
-                METRIC_LITERALS[metric], ((round(metric_value[0], 4) * 100)),
-                                          metric_value[1]))
+                METRIC_LITERALS[metric], ((round(metric_value[0], 4) * 100)), \
+                metric_value[1]))
         elif metric == 'confidence':
             metric_values.append("%s=%.2f%%" % (
                 METRIC_LITERALS[metric], ((round(metric_value, 4) * 100))))
@@ -236,7 +235,7 @@ class Association(ModelFields):
                 continue
             # if an itemized content is in input_data, don't add it to the
             # prediction
-            if not field_type in NO_ITEMS and rule.rhs[0] in items_indexes:
+            if field_type not in NO_ITEMS and rule.rhs[0] in items_indexes:
                 continue
             cosine = sum([1 for index in items_indexes \
                 if index in rule.lhs])
@@ -245,17 +244,17 @@ class Association(ModelFields):
                                         math.sqrt(len(rule.lhs)))
 
                 rhs = tuple(rule.rhs)
-                if not rhs in predictions:
+                if rhs not in predictions:
                     predictions[rhs] = {"score": 0}
                 predictions[rhs]["score"] += cosine * getattr(
                     rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
         # choose the best k predictions
         k = len(predictions.keys()) if k is None else k
         predictions = sorted(predictions.items(),
-                              key=lambda x: x[1]["score"], reverse=True)[:k]
+                             key=lambda x: x[1]["score"], reverse=True)[:k]
         final_predictions = []
         for rhs, prediction in predictions:
-            prediction["item"] = self.items[rhs[0]].to_JSON()
+            prediction["item"] = self.items[rhs[0]].to_json()
             final_predictions.append(prediction)
         return final_predictions
 
@@ -400,13 +399,13 @@ class Association(ModelFields):
 
         return rules
 
-    def rules_CSV(self, file_name, **kwargs):
+    def rules_csv(self, file_name, **kwargs):
         """Stores the rules in CSV format in the user-given file. The rules
            can be previously selected using the arguments in get_rules
 
         """
         rules = self.get_rules(**kwargs)
-        rules = [self.describe(rule.to_CSV()) for rule in rules]
+        rules = [self.describe(rule.to_csv()) for rule in rules]
         if file_name is None:
             raise ValueError("A valid file name is required to store the "
                              "rules.")
@@ -433,8 +432,8 @@ class Association(ModelFields):
                 item_description = item.name if len(self.fields.keys()) == 1 \
                     and not item.complement else item.describe()
                 description.append(item_description)
-            description = " & ".join(description)
-            rule_row[index] = description
+            description_str = " & ".join(description)
+            rule_row[index] = description_str
         return rule_row
 
     def summarize(self, out=sys.stdout, limit=10, **kwargs):
@@ -443,7 +442,6 @@ class Association(ModelFields):
         """
         # groups the rules by its metrics
         rules = self.get_rules(**kwargs)
-        groups = {}
         out.write("Total number of rules: %s\n" % len(rules))
         for metric in ASSOCIATION_METRICS:
             out.write("\n\nTop %s by %s:\n\n" % (
@@ -453,16 +451,15 @@ class Association(ModelFields):
             out_rules = []
             ref_rules = []
             counter = 0
-            for index, rule in enumerate(top_rules):
-                second_id = None
-                rule_row = self.describe(rule.to_CSV())
+            for rule in top_rules:
+                rule_row = self.describe(rule.to_csv())
                 metric_string = get_metric_string(rule)
                 operator = "->"
                 rule_id_string = "Rule %s: " % rule.rule_id
                 for item in top_rules:
                     if rule.rhs == item.lhs and rule.lhs == item.rhs and \
                             metric_string == get_metric_string(
-                                item, reverse=True):
+                                    item, reverse=True):
                         rule_id_string = "Rules %s, %s: " % (rule.rule_id,
                                                              item.rule_id)
                         operator = "<->"
@@ -472,7 +469,7 @@ class Association(ModelFields):
                 reverse_rule = "%s %s %s [%s]" % (
                     rule_row[2], operator, rule_row[1],
                     metric_string)
-                if operator == "->" or not reverse_rule in ref_rules:
+                if operator == "->" or reverse_rule not in ref_rules:
                     ref_rules.append(out_rule)
                     out_rule = "%s%s%s" % (INDENT * 2,
                                            rule_id_string, out_rule)

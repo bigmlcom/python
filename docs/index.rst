@@ -1662,7 +1662,7 @@ Association Discovery is a popular method to find out relations among values
 in high-dimensional datasets.
 
 A common case where association discovery is often used is
-basket market analysis. This analysis seeks for customer shopping
+market basket analysis. This analysis seeks for customer shopping
 patterns across large transactional
 datasets. For instance, do customers who buy hamburgers and ketchup also
 consume bread?
@@ -1686,20 +1686,20 @@ side. There are some metrics to ponder the quality of these association rules:
 
 For an association rule, it means the number of instances in the dataset which
 contain the rule's antecedent and rule's consequent together
-over the total number of instances (N) in the dataset:
+over the total number of instances (N) in the dataset.
 
 It gives a measure of the importance of the rule. Association rules have
 to satisfy a minimum support constraint (i.e., min_support).
 
 - Coverage: the support of the antedecent of an association rule.
-It measures how often a rule can be applied:
+It measures how often a rule can be applied.
 
 - Confidence or (strength): The probability of seeing the rule's consequent
 under the condition that the instances also contain the rule's antecedent.
 Confidence is computed using the support of the association rule over the
 coverage. That is, the percentage of instances which contain the consequent
 and antecedent together over the number of instances which only contain
-the antecedent:
+the antecedent.
 
 Confidence is directed and gives different values for the association
 rules Antecedent → Consequent and Consequent → Antecedent. Association
@@ -1711,14 +1711,14 @@ rule (i.e., the antecedent and consequent appearing together) and what would
 be expected if antecedent and consequent where statistically independent.
 This is a value between -1 and 1. A positive value suggests a positive
 relationship and a negative value suggests a negative relationship.
-0 indicates independence:
+0 indicates independence.
 
 Lift: how many times more often antecedent and consequent occur together
 than expected if they where statistically independent.
 A value of 1 suggests that there is no relationship between the antecedent
 and the consequent. Higher values suggest stronger positive relationships.
 Lower values suggest stronger negative relationships (the presence of the
-antecedent reduces the likelihood of the consequent):
+antecedent reduces the likelihood of the consequent)
 
 As to the items used in association rules, each type of field is parsed to
 extract items for the rules as follows:
@@ -2671,9 +2671,8 @@ Creating associations
 ~~~~~~~~~~~~~~~~~~~~~
 
 To find relations between the field values you can create an association
-discovery resource. If you don't select one, the association will use
-the last field of the dataset as objective
-field. The only required argument to create an association is a dataset id.
+discovery resource. The only required argument to create an association
+is a dataset id.
 You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Association section of the Developer's
@@ -2759,9 +2758,9 @@ Creating association sets
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using the association resource, you can obtain the consequent items associated
-by its rules to you input data. This association sets can be obtained calling
+by its rules to your input data. These association sets can be obtained calling
 the ``create_association_set`` method. The first argument is the association
-ID or object and the next is the input data.
+ID or object and the next one is the input data.
 
 .. code-block:: python
 
@@ -3624,11 +3623,11 @@ The rules can also be stored in a CSV file using ``rules_CSV``:
     local_association.rules_CSV(file_name='/tmp/my_rules.csv',
                                 min_strength=0.1)
 
-this example will store the rules whose strength is bigger or equal to 0.1 in
+This example will store the rules whose strength is bigger or equal to 0.1 in
 the ``/tmp/my_rules.csv`` file.
 
 You can also obtain the list of ``items`` parsed in the dataset using the
-``get_items`` method. You can filter the results too by field name, by
+``get_items`` method. You can also filter the results by field name, by
 item names and by a user-given function:
 
 .. code-block:: python
@@ -3638,7 +3637,7 @@ item names and by a user-given function:
     local_association.get_items(field="Cap Color",
                                 names=["Brown cap", "White cap", "Yellow cap"])
 
-this will recover the ``Item`` objects found in the ``Cap Color`` field for
+This will recover the ``Item`` objects found in the ``Cap Color`` field for
 the names in the list, with their properties as described in the
 `developers section <https://bigml.com/developers/associations#ad_retrieving_an_association>`_
 

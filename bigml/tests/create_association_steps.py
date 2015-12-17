@@ -4,6 +4,7 @@ import os
 import StringIO
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import eq_
 
 from bigml.api import BigML
 from bigml.api import HTTP_CREATED
@@ -81,14 +82,7 @@ def i_get_rules_for_item_list(step, item_list):
 
 #@step(r'the first rule is "(.*?)"$')
 def the_first_rule_is(step, rule):
-    rule_str = StringIO.StringIO()
     found_rules = []
-    rule = rule.strip().replace("\n", "")
     for a_rule in world.association_rules:
-        api = BigML()
-        api.pprint(a_rule.to_json(), rule_str)
-        found_rules.append(rule_str.getvalue().strip().replace("\n", ""))
-    if found_rules[0] == rule:
-        assert True
-    else:
-        assert False, "found: %s, expected: %s" % (found_rules[0], rule)
+        found_rules.append(a_rule.to_json())
+    eq_(rule, found_rules[0])

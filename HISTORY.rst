@@ -3,6 +3,11 @@
 History
 -------
 
+4.4.1 (2015-12-18)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: summarized path output failed when adding missing operators.
+
 4.4.0 (2015-12-15)
 ~~~~~~~~~~~~~~~~~~
 

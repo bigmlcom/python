@@ -156,16 +156,19 @@ class Predicate(object):
                 return re.match(FULL_TERM_PATTERN, self.term)
         return False
 
-    def to_rule(self, fields, label='name'):
+    def to_rule(self, fields, label='name', missing=None):
         """Builds rule string from a predicate
 
         """
+        # externally forcing missing to True or False depending on the path
+        if missing is None:
+            missing = self.missing
         if label is not None:
             name = fields[self.field][label]
         else:
             name = u""
         full_term = self.is_full_term(fields)
-        relation_missing = u" or missing" if self.missing else u""
+        relation_missing = u" or missing" if missing else u""
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
@@ -184,8 +187,8 @@ class Predicate(object):
                                        relation_missing)
         if self.value is None:
             return u"%s %s" % (name,
-                               u"is None" if self.operator == '='
-                               else u"is not None")
+                               u"is missing" if self.operator == '='
+                               else u"is not missing")
         return u"%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,

@@ -49,9 +49,27 @@ def merge_rules(list_of_predicates, fields, label='name'):
     if list_of_predicates:
         field_id = list_of_predicates[0].field
         field_type = fields[field_id]['optype']
+        missing_flag = None
+        name = fields[field_id][label]
+        last_predicate = list_of_predicates[-1]
+        # if the last predicate is "is missing" forget about the rest
+        if last_predicate.operator == "=" and last_predicate.value is None:
+            return u"%s is missing" % name
+        # if the last predicate is "is not missing"
+        if last_predicate.operator[0] in ["!", "/"] and \
+            last_predicate.value is None:
+            if len(list_of_predicates) == 1:
+                # if there's only one predicate, then write "is not missing"
+                return u"%s is not missing" % name
+            list_of_predicates = list_of_predicates[0: -1]
+            missing_flag = False
+        if last_predicate.missing:
+            missing_flag = True
+
         if field_type == NUMERIC:
             return merge_numeric_rules( \
-                list_of_predicates, fields, label=label)
+                list_of_predicates, fields, label=label,
+                missing_flag=missing_flag)
 
         if field_type == TEXT:
             return merge_text_rules( \
@@ -59,49 +77,50 @@ def merge_rules(list_of_predicates, fields, label='name'):
 
         if field_type == CATEGORICAL:
             return merge_categorical_rules( \
-                list_of_predicates, fields, label=label)
+                list_of_predicates, fields, label=label,
+                missing_flag=missing_flag)
 
         return " and ".join(
             [predicate.to_rule(fields, label=label).strip() for
              predicate in list_of_predicates])
 
 
-def merge_numeric_rules(list_of_predicates, fields, label='name'):
+def merge_numeric_rules(list_of_predicates, fields, label='name',
+                        missing_flag=None):
     """ Summarizes the numeric predicates for the same field
 
     """
-    minor = (None, float('-inf'), True)
-    major = (None, float('inf'), True)
+    minor = (None, float('-inf'))
+    major = (None, float('inf'))
     equal = None
+
     for predicate in list_of_predicates:
         if (predicate.operator.startswith('>') and
                 predicate.value > minor[1]):
-            minor = (predicate, predicate.value,
-                     minor[2] and predicate.missing)
+            minor = (predicate, predicate.value)
         if (predicate.operator.startswith('<') and
                 predicate.value < major[1]):
-            major = (predicate, predicate.value,
-                     major[2] and predicate.missing)
+            major = (predicate, predicate.value)
         if predicate.operator[0] in ['!', '=', '/', 'i']:
             equal = predicate
             break
     if equal is not None:
-        return equal.to_rule(fields, label=label)
+        return equal.to_rule(fields, label=label, missing=missing_flag)
     rule = u''
     field_id = list_of_predicates[0].field
     name = fields[field_id][label]
 
     if minor[0] is not None and major[0] is not None:
-        predicate, value, missing = minor
+        predicate, value = minor
         rule = u"%s %s " % (value, reverse(predicate.operator))
         rule += name
-        predicate, value, missing = major
+        predicate, value = major
         rule += u" %s %s " % (predicate.operator, value)
-        if missing and minor[2]:
+        if missing_flag:
             rule += u" or missing"
     else:
         predicate = minor[0] if minor[0] is not None else major[0]
-        rule = predicate.to_rule(fields, label=label)
+        rule = predicate.to_rule(fields, label=label, missing=missing_flag)
     return rule
 
 
@@ -141,12 +160,13 @@ def merge_text_rules(list_of_predicates, fields, label='name'):
 
 
 def  merge_categorical_rules(list_of_predicates,
-                             fields, label='name'):
+                             fields, label='name', missing_flag=None):
     """ Summarizes the categorical predicates for the same field
 
     """
     equal = []
     not_equal = []
+
     for predicate in list_of_predicates:
         if predicate.operator.startswith("!"):
             not_equal.append(predicate)
@@ -155,17 +175,23 @@ def  merge_categorical_rules(list_of_predicates,
     rules = []
     rules_not = []
     if equal:
-        rules.append(equal[0].to_rule(fields, label=label).strip())
+        rules.append(equal[0].to_rule( \
+            fields, label=label, missing=False).strip())
         for predicate in equal[1:]:
             if not predicate.value in rules:
                 rules.append(predicate.value)
     rule = u" and ".join(rules)
     if not_equal and not rules:
-        rules_not.append(not_equal[0].to_rule(fields, label=label).strip())
+        rules_not.append(not_equal[0].to_rule( \
+            fields, label=label, missing=False).strip())
         for predicate in not_equal[1:]:
             if predicate.value not in rules_not:
                 rules_not.append(predicate.value)
-    rule += u" or ".join(rules_not)
+    if rules_not:
+        connector = u" and " if rule else u""
+        rule += connector + u" or ".join(rules_not)
+    if missing_flag:
+        rule += u" or missing"
     return rule
 
 

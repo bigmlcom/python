@@ -1,7 +1,7 @@
  IF petal_length > 4.75 THEN
      species = Iris-virginica
  IF petal_length <= 4.75 or missing AND
-     IF petal_length is None THEN
+     IF petal_length is missing THEN
          species = Iris-setosa
-     IF petal_length is not None THEN
+     IF petal_length is not missing THEN
          species = Iris-versicolor

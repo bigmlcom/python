@@ -73,6 +73,7 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 #@step(r'I create a local Ensemble$')
 def create_local_ensemble(step):
     world.local_ensemble = Ensemble(world.ensemble_id, world.api)
+    world.local_model = Model(world.local_ensemble.model_ids[0])
 
 #@step(r'I create a local Ensemble with the last (\d+) models$')
 def create_local_ensemble_with_list(step, number_of_models):

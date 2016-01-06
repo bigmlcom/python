@@ -3,6 +3,12 @@
 History
 -------
 
+4.4.2 (2016-01-06)
+~~~~~~~~~~~~~~~~~~
+
+- Adapting logistic regression local object to the new missing_numeric
+  parameter.
+
 4.4.1 (2015-12-18)
 ~~~~~~~~~~~~~~~~~~
 

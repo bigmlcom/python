@@ -59,7 +59,6 @@ LOGGER = logging.getLogger('BigML')
 
 EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
                         "items": "items"}
-OPTIONAL_FIELDS = ['categorical', 'text', 'items']
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):
@@ -105,9 +104,9 @@ class LogisticRegression(ModelFields):
         self.categories = {}
         self.coefficients = {}
         self.data_field_types = {}
+        self.numeric_fields = {}
         self.bias = None
-        # the missing coefficient is set by default
-        self.missing_coefficients = True
+        self.missing_numerics = True
         self.c = None
         self.eps = None
         self.lr_normalize = None
@@ -155,6 +154,8 @@ class LogisticRegression(ModelFields):
                 self.lr_normalize = logistic_regression_info.get('normalize')
                 self.regularization = logistic_regression_info.get( \
                     'regularization')
+                self.missing_numerics = logistic_regression_info.get( \
+                    'missing_numerics')
                 objective_id = extract_objective(objective_field)
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
@@ -177,6 +178,8 @@ class LogisticRegression(ModelFields):
                     if field['optype'] == 'categorical':
                         self.categories[field_id] = [category for \
                             [category, _] in field['summary']['categories']]
+                    if self.missing_numerics and field['optype'] == 'numeric':
+                        self.numeric_fields[field_id] = True
                 ModelFields.__init__(
                     self, fields,
                     objective_id=objective_id)
@@ -195,15 +198,6 @@ class LogisticRegression(ModelFields):
         """
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
-
-        # Checks that all numeric fields are present in input data
-        for field_id, field in self.fields.items():
-            if (field['optype'] not in OPTIONAL_FIELDS and
-                    field_id not in input_data):
-                raise Exception("Failed to predict. Input"
-                                " data must contain values for all numeric "
-                                "fields to get a logistic regression"
-                                " prediction.")
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
@@ -240,7 +234,6 @@ class LogisticRegression(ModelFields):
             probability += coefficients[shift] * input_data[field_id]
 
         for field_id in unique_terms:
-
             shift = self.fields[field_id]['coefficients_shift']
             for term, occurrences in unique_terms[field_id]:
                 try:
@@ -254,23 +247,26 @@ class LogisticRegression(ModelFields):
                 except ValueError:
                     pass
 
-        if self.missing_coefficients:
-            for field_id in self.tag_clouds:
+        for field_id in self.numeric_fields:
+            if field_id not in input_data:
+                shift = self.fields[field_id]['coefficients_shift'] + 1
+                probability += coefficients[shift]
+        for field_id in self.tag_clouds:
+            shift = self.fields[field_id]['coefficients_shift']
+            if field_id not in unique_terms or not unique_terms[field_id]:
+                probability += coefficients[ \
+                    shift + len(self.tag_clouds[field_id])]
+        for field_id in self.items:
+            shift = self.fields[field_id]['coefficients_shift']
+            if field_id not in unique_terms or not unique_terms[field_id]:
+                probability += coefficients[ \
+                    shift + len(self.items[field_id])]
+        for field_id in self.categories:
+            if field_id != self.objective_id and \
+                    field_id not in unique_terms:
                 shift = self.fields[field_id]['coefficients_shift']
-                if field_id not in unique_terms or not unique_terms[field_id]:
-                    probability += coefficients[ \
-                        shift + len(self.tag_clouds[field_id])]
-            for field_id in self.items:
-                shift = self.fields[field_id]['coefficients_shift']
-                if field_id not in unique_terms or not unique_terms[field_id]:
-                    probability += coefficients[ \
-                        shift + len(self.items[field_id])]
-            for field_id in self.categories:
-                if field_id != self.objective_id and \
-                        field_id not in unique_terms:
-                    shift = self.fields[field_id]['coefficients_shift']
-                    probability += coefficients[ \
-                        shift + len(self.categories[field_id])]
+                probability += coefficients[ \
+                    shift + len(self.categories[field_id])]
         probability += coefficients[-1]
         probability = 1 / (1 + math.exp(-probability))
         return probability
@@ -348,10 +344,11 @@ class LogisticRegression(ModelFields):
                 # coefficient
                 length = len(self.fields[field_id]['summary'][ \
                     EXPANSION_ATTRIBUTES[optype]])
-                if self.missing_coefficients:
-                    length += 1
+                # missing coefficient
+                length += 1
             else:
-                # numeric fields have one coefficient
-                length = 1
+                # numeric fields have one coefficient and an additional one
+                # if self.missing_numerics is True
+                length = 2 if self.missing_numerics else 1
             self.fields[field_id]['coefficients_shift'] = shift
             shift += length

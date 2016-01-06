@@ -106,7 +106,7 @@ class LogisticRegression(ModelFields):
         self.data_field_types = {}
         self.numeric_fields = {}
         self.bias = None
-        self.missing_numerics = True
+        self.missing_numerics = None
         self.c = None
         self.eps = None
         self.lr_normalize = None
@@ -154,8 +154,10 @@ class LogisticRegression(ModelFields):
                 self.lr_normalize = logistic_regression_info.get('normalize')
                 self.regularization = logistic_regression_info.get( \
                     'regularization')
+                # old models have no such attribute, so we set it to False in
+                # this case
                 self.missing_numerics = logistic_regression_info.get( \
-                    'missing_numerics')
+                    'missing_numerics', False)
                 objective_id = extract_objective(objective_field)
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':

@@ -201,6 +201,16 @@ class LogisticRegression(ModelFields):
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
 
+        # In case that missing_numerics is False, checks that all numeric
+        # fields are present in input data.
+        if not self.missing_numerics:
+            for field_id, field in self.fields.items():
+                if (not field['optype'] in OPTIONAL_FIELDS and
+                        not field_id in input_data):
+                    raise Exception("Failed to predict. Input"
+                                    " data must contain values for all numeric"
+                                    " fields to get a logistic regression"
+                                    " prediction.")
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 

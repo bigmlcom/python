@@ -39,6 +39,18 @@ def i_create_an_association_from_dataset(step):
     world.associations.append(resource['resource'])
 
 
+#@step(r'I create an association with search strategy "(.*)" from a dataset$')
+def i_create_an_association_with_strategy_from_dataset(step, strategy):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_association(
+        dataset, {'name': 'new association', 'search_strategy': strategy})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.association = resource['object']
+    world.associations.append(resource['resource'])
+
+
 #@step(r'I update the association name to "(.*)"$')
 def i_update_association_name(step, name):
     resource = world.api.update_association(world.association['resource'],

@@ -103,3 +103,37 @@ class TestAssociation(object):
             association_create.i_create_a_local_association(self)
             association_create.i_get_rules_for_item_list(self, example[4])
             association_create.the_first_rule_is(self, example[5])
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully creating local association object:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an association with search strategy "<strategy>" from a dataset
+                And I wait until the association is ready less than <time_3> secs
+                And I create a local association
+                When I get the rules for <"item_list">
+                Then the first rule is "<JSON_rule>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | item_list                              | JSON_rule  | seach strategy
+                | ../data/tiny_mushrooms.csv | 10      | 20     | 50     | ["Edible"]                   | {'confidence': 1, 'leverage': 0.07885, 'lhs': [14], 'lhs_cover': [0.704, 176], 'lift': 1.12613, 'p_value': 2.08358e-17, 'rhs': [1], 'rhs_cover': [0.888, 222], 'rule_id': u'000038', 'support': [0.704, 176]}| lhs_cover
+
+
+        """
+        print self.test_scenario3.__doc__
+        examples = [
+            ['data/tiny_mushrooms.csv', '10', '20', '50', ["Edible"], {'p_value': 2.08358e-17, 'confidence': 0.79279, 'rhs_cover': [0.704, 176], 'leverage': 0.07885, 'rhs': [11], 'rule_id': u'000007', 'lift': 1.12613, 'lhs': [0], 'lhs_cover': [0.888, 222], 'support': [0.704, 176]}, 'lhs_cover']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            association_create.i_create_an_association_with_strategy_from_dataset(self, example[6])
+            association_create.the_association_is_finished_in_less_than(self, example[3])
+            association_create.i_create_a_local_association(self)
+            association_create.i_get_rules_for_item_list(self, example[4])
+            association_create.the_first_rule_is(self, example[5])

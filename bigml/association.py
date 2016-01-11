@@ -61,6 +61,8 @@ RULE_HEADERS = ["Rule ID", "Antecedent", "Consequent", "Antecedent Coverage %",
 ASSOCIATION_METRICS = ["lhs_cover", "support", "confidence",
                        "leverage", "lift", "p_value"]
 
+SCORES = ASSOCIATION_METRICS[:-1]
+
 METRIC_LITERALS = {"confidence": "Confidence", "support": "Support",
                    "leverage": "Leverage", "lhs_cover": "Coverage",
                    "p_value": "p-value", "lift": "Lift"}
@@ -70,19 +72,6 @@ INDENT = " " * 4
 DEFAULT_K = 100
 DEFAULT_SEARCH_STRATEGY = "leverage"
 
-SEARCH_STRATEGY_CODES = {
-    "leverage": 0,
-    "confidence": 1,
-    "support": 2,
-    "coverage": 3,
-    "lift": 4}
-
-SEARCH_STRATEGY_ATTRIBUTES = {
-    0: "leverage",
-    1: "confidence",
-    2: "support",
-    3: "lhs_coverage",
-    4: "lift"}
 
 NO_ITEMS = ['numeric', 'categorical']
 
@@ -176,9 +165,8 @@ class Association(ModelFields):
                 self.min_support = associations.get('min_support', 0)
                 self.min_lift = associations.get('min_lift', 0)
                 self.prune = associations.get('prune', True)
-                self.search_strategy = SEARCH_STRATEGY_CODES[ \
-                    associations.get('search_strategy',
-                                     DEFAULT_SEARCH_STRATEGY)]
+                self.search_strategy = associations.get('search_strategy',
+                                     DEFAULT_SEARCH_STRATEGY)
                 self.rules = [AssociationRule(rule) for rule in
                               associations.get('rules', [])]
                 self.significance_level = associations.get(
@@ -205,18 +193,21 @@ class Association(ModelFields):
             @param k integer Maximum number of item predictions to return
                              (Default 100)
             @param max_rules integer Maximum number of rules to return per item
-            @param score_by [0-4] Code for the metric used in scoring
-                                  (default search_strategy)
-                0 - Leverage
-                1 - Confidence
-                2 - Support
-                3 - Coverage
-                4 - Lift
+            @param score_by Code for the metric used in scoring
+                            (default search_strategy)
+                leverage
+                confidence
+                support
+                lhs-cover
+                lift
 
             @param by_name boolean If True, input_data is keyed by field
                                    name, field_id is used otherwise.
         """
         predictions = {}
+        if score_by and score_by not in SCORES:
+            raise ValueError("The available values of score_by are: %s" %
+                             ", ".join(SCORES))
         input_data = self.filter_input_data(input_data, by_name=by_name)
         # retrieving the items in input_data
         items_indexes = [item.index for item in
@@ -247,7 +238,7 @@ class Association(ModelFields):
                 if rhs not in predictions:
                     predictions[rhs] = {"score": 0}
                 predictions[rhs]["score"] += cosine * getattr(
-                    rule, SEARCH_STRATEGY_ATTRIBUTES[score_by])
+                    rule, score_by)
         # choose the best k predictions
         k = len(predictions.keys()) if k is None else k
         predictions = sorted(predictions.items(),

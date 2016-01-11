@@ -74,6 +74,8 @@ class Item(object):
 
         """
         flatline = ""
+        if self.name is None:
+            return u"(missing? (f %s))" % self.field_id
         field_type = self.field_info['optype']
         if field_type == "numeric":
             start = self.bin_end if self.complement else \
@@ -116,6 +118,9 @@ class Item(object):
 
         """
         description = ""
+        if self.name is None:
+            return "%s is %smissing" % (
+                self.field_info['name'], "not " if self.complement else "")
         field_name = self.field_info['name']
         field_type = self.field_info['optype']
         if field_type == "numeric":
@@ -153,7 +158,7 @@ class Item(object):
         """
         field_type = self.field_info['optype']
         if value is None:
-            return False
+            return self.name is None
         if field_type == "numeric" and (
                 self.bin_end is not None or self.bin_start is not None):
             if self.bin_start is not None and self.bin_end is not None:

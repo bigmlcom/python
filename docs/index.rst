@@ -3338,6 +3338,33 @@ will result in
 The argument can be set to ``all`` to obtain the complete
 list or to the maximum length that you want the list to have.
 
+When your test data has missing values, you can choose between
+``last prediction``
+or ``proportional`` strategy to compute the prediction. The `last prediction`
+strategy is the one used by default. To compute a prediction, the algorithm
+goes down the model's decision tree and checks the condition it finds at
+each node (e.g.: 'sepal length' > 2). If the field checked is missing in your
+input data you have two options: by default (``last prediction`` strategy)
+the algorithm will stop and issue the last prediction
+it computed in the previous node. If you chose ``proportional`` strategy
+instead, the algorithm will continue to go down the tree considering both
+branches from that node on. Thus, it will store a list of possible predictions
+from then on,
+one per valid node. In this case, the final prediction will be the majority
+(for categorical models) or the average (for regressions) of values predicted
+by the list of predicted values.
+
+You can set this strategy by using the ``missing_strategy``
+argument with code ``0`` to use ``last prediction`` and ``1`` for
+``proportional``.
+
+.. code-block:: python
+
+    from bigml.model import LAST_PREDICTION, PROPORTIONAL
+    # LAST_PREDICTION = 0; PROPORTIONAL = 1
+    local_model.predict({"petal length": 3, "petal width": 1},
+                        missing_strategy=PROPORTIONAL)
+
 
 Local Clusters
 --------------

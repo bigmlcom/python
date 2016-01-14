@@ -42,7 +42,7 @@ class Item(object):
         self.bin_start = item_info.get('bin_start')
 
     def out_format(self, language="JSON"):
-        """Transforming the rule structure to a string in the required format
+        """Transforming the item structure to a string in the required format
 
         """
         if language in SUPPORTED_LANGUAGES:
@@ -50,7 +50,7 @@ class Item(object):
         return self
 
     def to_csv(self):
-        """Transforming the rule to CSV formats
+        """Transforming the item to CSV formats
 
         """
         output = [self.complement, self.complement_index, self.count,

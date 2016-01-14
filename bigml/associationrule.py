@@ -23,7 +23,7 @@
 SUPPORTED_LANGUAGES = ["JSON", "CSV"]
 
 class AssociationRule(object):
-    """ Object encapsulating an association rules as described in
+    """ Object encapsulating an association rule as described in
         https://bigml.com/developers/associations
 
     """

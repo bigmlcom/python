@@ -59,7 +59,7 @@ from bigml.io import UnicodeWriter
 
 LOGGER = logging.getLogger('BigML')
 
-OPTIONAL_FIELDS = ['categorical', 'text', 'items']
+OPTIONAL_FIELDS = ['categorical', 'text', 'items', 'datetime']
 CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
                   'sum', 'sum_squares', 'variance']
 INDENT = " " * 4

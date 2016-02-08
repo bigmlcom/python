@@ -3,6 +3,13 @@
 History
 -------
 
+4.5.0 (2016-02-08)
+~~~~~~~~~~~~~~~~~~
+
+- Adapting association object to the new syntax of missing values.
+- Improving docs and comments for the proportional strategy in predictions.
+- Fixing bug: centroid input data datetime fields are optional.
+
 4.4.2 (2016-01-06)
 ~~~~~~~~~~~~~~~~~~
 

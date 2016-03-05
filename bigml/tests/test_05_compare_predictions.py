@@ -370,7 +370,7 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                                                                                 | prediction  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}         | 'Iris-versicolor' |
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}         | 'Iris-virginica' |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}             | Iris-virginica |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}           | Iris-virginica |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 1}                                                                         | Iris-versicolor |
@@ -379,11 +379,11 @@ class TestComparePrediction(object):
         """
         print self.test_scenario8.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
-            ['data/iris.csv', '10', '10', '10', '{"petal length": 1}', 'Iris-versicolor'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-virginica']]
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
+            ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-virginica'],
+            ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-virginica']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

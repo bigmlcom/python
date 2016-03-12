@@ -31,7 +31,7 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_library_id, get_resource_type,
                                    check_resource)
-from bigml.resourcehandler import (LIBRARY_PATH, TINY_RESOURCE)
+from bigml.constants import LIBRARY_PATH, TINY_RESOURCE
 
 
 class LibraryHandler(ResourceHandler):

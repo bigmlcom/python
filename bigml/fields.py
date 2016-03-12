@@ -44,6 +44,7 @@ fields =  Fields(prediction['object']['fields'])
 import sys
 import json
 
+
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
 from bigml.api import get_resource_type
@@ -70,8 +71,12 @@ SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
 UPDATABLE_HEADERS = {"field name": "name",
                      "field label": "label",
                      "field description": "description",
+<<<<<<< HEAD
                      "field type": "optype",
                      "preferred": "preferred"}
+=======
+                     "field type": "optype"}
+>>>>>>> Updating the code to adapt to changes in backend
 
 ITEM_SINGULAR = {u"categories": u"category"}
 
@@ -131,16 +136,34 @@ def get_fields_structure(resource, errors=False):
             result = result + (field_errors,)
         return result
     else:
+<<<<<<< HEAD
         return (None, None, None, None, None) if errors else \
             (None, None, None, None)
+=======
+
+        return None, None, None, None, None if errors else \
+            None, None, None, None
+
+
+def text_encode(text):
+    """Encoding text to be written in a utf-8 file
+
+    """
+    if isinstance(text, basestring):
+        return text.encode("utf-8")
+    return text
+>>>>>>> Updating the code to adapt to changes in backend
 
 
 def attribute_summary(attribute_value, item_type, limit=None):
     """Summarizes the information in fields attributes where content is
        written as an array of arrays like tag_cloud, items, etc.
     """
+<<<<<<< HEAD
     if attribute_value is None:
         return None
+=======
+>>>>>>> Updating the code to adapt to changes in backend
     items = [u"%s (%s)" % (item, instances) for
              item, instances in attribute_value]
     items_length = len(items)
@@ -588,7 +611,6 @@ class Fields(object):
                         self.field_id(int(field_attributes[0]))
                     new_fields_structure[field_id] = \
                         dict(zip(headers, field_attributes[1: 6]))
-
             except ValueError:
                 raise ValueError("The first column should contain either the"
                                  " column or ID of the fields. Failed to find"

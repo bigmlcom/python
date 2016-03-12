@@ -134,7 +134,9 @@ class LogisticRegression(ModelFields):
         try:
             self.dataset_field_types = logistic_regression.get(
                 "dataset_field_types", {})
-            objective_field = logistic_regression['objective_fields']
+            objective_field = logistic_regression['objective_fields'] if \
+                logistic_regression['objective_fields'] else \
+                logistic_regression['objective_field']
         except KeyError:
             raise ValueError("Failed to find the logistic regression expected "
                              "JSON structure. Check your arguments.")

@@ -50,11 +50,11 @@ class TestExecution(object):
 
                 Examples:
                 | source_code      | time_1  | time_2  | time_3  | param | param_value
-                | (+ 1 1)          | 10      | 10      | 10      | name  | my execution
+                | (+ 1 1)          | 10      | 10      | 50      | name  | my execution
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution']]
+            ['(+ 1 1)', '10', '10', '50', 'name', 'my execution']]
         for example in examples:
             print "\nTesting with:\n", example
             script_create.i_create_a_script(self, example[0])
@@ -80,11 +80,11 @@ class TestExecution(object):
 
                 Examples:
                 | source_code      | time_1  | time_2  | time_3  | param | param_value
-                | (+ 1 1)          | 10      | 10      | 10      | name  | my execution
+                | (+ 1 1)          | 10      | 10      | 50      | name  | my execution
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution']]
+            ['(+ 1 1)', '10', '10', '50', 'name', 'my execution']]
         for example in examples:
             print "\nTesting with:\n", example
             script_create.i_create_a_script(self, example[0])

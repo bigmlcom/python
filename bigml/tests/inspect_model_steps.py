@@ -65,6 +65,12 @@ def i_check_the_model_summary_with(step, file):
     output = io.BytesIO()
     world.local_model.summarize(out=output)
     world.output = output.getvalue()
+    if not os.path.exists('./tmp'):
+        os.mkdir('./tmp')
+    with open('./tmp/summary.txt', "w") as rules_file:
+        rules_file.write(world.output)
+
+
     i_check_if_the_output_is_like_expected_file(step, file)
 
 

@@ -3,6 +3,13 @@
 History
 -------
 
+4.5.1 (2016-03-12)
+~~~~~~~~~~~~~~~~~~
+
+- Adding method to Fields object to produce CSV summary files.
+- Adding method to Fields object to import changes in updatable attributes
+  from CSV files or strings.
+
 4.5.0 (2016-02-08)
 ~~~~~~~~~~~~~~~~~~
 

@@ -42,6 +42,8 @@ fields =  Fields(prediction['object']['fields'])
 
 """
 import sys
+import csv
+import json
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
@@ -59,8 +61,20 @@ DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
 
+LIST_LIMIT = 10
+SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
+                   "field description","field type", "preferred",
+                   "missing count", "errors", "contents summary",
+                   "errors summary"]
 
-def get_fields_structure(resource):
+UPDATABLE_HEADERS = {"field name": "name",
+                     "field label": "label",
+                     "field description": "description",
+                     "field type": "optype"}
+
+ITEM_SINGULAR = {u"categories": u"category"}
+
+def get_fields_structure(resource, errors=False):
     """Returns the field structure for a resource, its locale and
        missing_tokens
 
@@ -69,7 +83,7 @@ def get_fields_structure(resource):
         resource_type = get_resource_type(resource)
     except ValueError:
         raise ValueError("Unknown resource structure")
-
+    field_errors = None
     if resource_type in RESOURCES_WITH_FIELDS:
         resource = resource.get('object', resource)
         # locale and missing tokens
@@ -104,14 +118,52 @@ def get_fields_structure(resource):
         if resource_type == DATASET_PATH:
             objective_column = resource.get( \
                 'objective_field', {}).get('id')
+            if errors:
+                field_errors = resource.get("status", {}).get("field_errors")
         elif resource_type in [MODEL_PATH, LOGISTIC_REGRESSION_PATH]:
             objective_id = resource.get( \
                 'objective_fields', [None])[0]
             objective_column = fields.get( \
                 objective_id, {}).get('column_number')
-        return fields, resource_locale, missing_tokens, objective_column
+        result = fields, resource_locale, missing_tokens, objective_column
+        if errors:
+            result = result + (field_errors,)
+        return result
     else:
-        return None, None, None, None
+
+        return None, None, None, None, None if errors else \
+            None, None, None, None
+
+
+def text_encode(text):
+    """Encoding text to be written in a utf-8 file
+
+    """
+    if isinstance(text, basestring):
+        return text.encode("utf-8")
+    return text
+
+
+def attribute_summary(attribute_value, item_type, limit=None):
+    """Summarizes the information in fields attributes where content is
+       written as an array of arrays like tag_cloud, items, etc.
+    """
+    items = [u"%s (%s)" % (item, instances) for
+             item, instances in attribute_value]
+    items_length = len(items)
+    if limit is None or limit > items_length:
+        limit = items_length
+    return u"%s %s: %s" % (items_length, type_singular(item_type,
+                                                       items_length == 1),
+                           u", ".join(items[0: limit]))
+
+def type_singular(item_type, singular=False):
+    """Singularizes item types if needed
+
+    """
+    if singular:
+        return ITEM_SINGULAR.get(item_type, item_type[:-1])
+    return item_type
 
 
 class Fields(object):
@@ -121,22 +173,25 @@ class Fields(object):
     def __init__(self, resource_or_fields, missing_tokens=None,
                  data_locale=None, verbose=False,
                  objective_field=None, objective_field_present=False,
-                 include=None):
+                 include=None, errors=None):
 
         # The constructor can be instantiated with resources or a fields
         # structure. The structure is checked and fields structure is returned
         # if a resource type is matched.
         try:
-            resource_info = get_fields_structure(resource_or_fields)
+            resource_info = get_fields_structure(resource_or_fields, True)
             (self.fields,
              resource_locale,
              resource_missing_tokens,
-             objective_column) = resource_info
+             objective_column,
+             resource_errors) = resource_info
             if data_locale is None:
                 data_locale = resource_locale
             if missing_tokens is None:
                 if resource_missing_tokens:
                     missing_tokens = resource_missing_tokens
+            if errors is None:
+                errors = resource_errors
         except ValueError:
             # If the resource structure is not in the expected set, fields
             # structure is assumed
@@ -163,6 +218,7 @@ class Fields(object):
         self.objective_field = None
         self.objective_field_present = None
         self.filtered_indexes = None
+        self.field_errors = errors
         # if the objective field is not set by the user
         # use the one extracted from the resource info
         if objective_field is None and objective_column is not None:
@@ -181,7 +237,13 @@ class Fields(object):
         if objective_field is None:
             self.objective_field = self.fields_columns[-1]
         elif isinstance(objective_field, basestring):
-            self.objective_field = self.field_column_number(objective_field)
+            try:
+                self.objective_field = self.field_column_number( \
+                    objective_field)
+            except KeyError:
+                # if the name of the objective field is not found, use the last
+                # field as objective
+                self.objective_field = self.fields_columns[-1]
         else:
             self.objective_field = objective_field
 
@@ -387,3 +449,148 @@ class Fields(object):
         field_id = self.field_id(field_name)
         summary = self.fields[field_id].get('summary', {})
         return summary
+
+    def summary_csv(self, filename=None):
+        """Summary of the contents of the fields
+
+        """
+
+        summary = []
+        writer = None
+        if filename is not None:
+            writer = csv.writer(open(filename, "w"))
+            writer.writerow(SUMMARY_HEADERS)
+        else:
+            summary.append(SUMMARY_HEADERS)
+
+        for field_column in self.fields_columns:
+            field_id = self.field_id(field_column)
+            field = self.fields.get(field_id)
+            field_summary = []
+            field_summary.append(field.get('column_number'))
+            field_summary.append(field_id)
+            field_summary.append(field.get('name'))
+            field_summary.append(field.get('label'))
+            field_summary.append(field.get('description'))
+            field_summary.append(field.get('optype'))
+            field_summary.append(field.get('preferred'))
+            field_summary_value = field.get('summary')
+            field_summary.append(field_summary_value.get("missing_count"))
+            if self.field_errors and field_id in self.field_errors.keys():
+                errors = self.field_errors.get(field_id)
+                field_summary.append(errors.get("total"))
+            else:
+                field_summary.append("0")
+            if field['optype'] == 'numeric':
+                field_summary.append("[%s, %s], mean: %s" % \
+                    (field_summary_value.get("minimum"),
+                     field_summary_value.get("maximum"),
+                     field_summary_value.get("mean")))
+            elif field['optype'] == 'categorical':
+                categories = field_summary_value.get("categories")
+                field_summary.append( \
+                    attribute_summary(categories, u"categorìes",
+                                      limit=LIST_LIMIT))
+            elif field['optype'] == "text":
+                terms = field_summary_value.get("tag_cloud")
+                field_summary.append( \
+                    attribute_summary(terms, u"terms",
+                                      limit=LIST_LIMIT))
+            elif field['optype'] == "items":
+                items = field_summary_value.get("items")
+                field_summary.append( \
+                    attribute_summary(items, u"items", limit=LIST_LIMIT))
+            else:
+                field_summary.append("")
+            if self.field_errors and field_id in self.field_errors.keys():
+                field_summary.append( \
+                    attribute_summary(errors.get("sample"), u"errors",
+                                      limit=None))
+            else:
+                field_summary.append("")
+            if writer:
+                writer.writerow([text_encode(text)
+                                 for text in field_summary])
+            else:
+                summary.append(field_summary)
+        if writer is None:
+            return summary
+
+    def new_fields_structure(self, csv_attributes_file=None,
+                             attributes=None, out_file=None):
+        """Builds the field structure needed to update a fields dictionary
+        in a BigML resource.
+
+        :param csv_attributes_file: (string) Path to a CSV file like the one
+                                             generated by summary_csv.
+        :param attributes: (list) list of rows containing the
+                                  attributes information ordered
+                                  as in the summary_csv output.
+        :param out_file: (string) Path to a JSON file that will be used
+                                  to store the new fields structure. If None,
+                                  the output is returned as a dict.
+        """
+        if csv_attributes_file is not None:
+            reader = csv.reader(open(csv_attributes_file))
+            attributes = [row for row in reader]
+        new_fields_structure = {}
+        if "field ID" in attributes[0] or "field column" in attributes[0]:
+            # headers are used
+            for index in range(1, len(attributes)):
+                new_attributes = dict(zip(attributes[0], attributes[index]))
+                if new_attributes.get("field ID"):
+                    field_id = new_attributes.get("field ID")
+                    if not field_id in self.fields.keys():
+                        raise ValueError("Field ID %s not found"
+                                         " in this resource" % field_id)
+                    del new_attributes["field ID"]
+                else:
+                    field_column = int(new_attributes.get("field column"))
+                    if not field_column in self.field_columns:
+                        raise ValueError("Field column %s not found"
+                                         " in this resource" % field_column)
+                    field_id = self.field_id(field_column)
+                    del new_attributes["field column"]
+                for attribute, value in new_attributes.items():
+                    if not attribute in UPDATABLE_HEADERS.keys():
+                        del new_attributes[attribute]
+                    else:
+                        new_attributes[UPDATABLE_HEADERS[attribute]] = \
+                            new_attributes[attribute]
+                        del new_attributes[attribute]
+                new_fields_structure[field_id] = new_attributes
+        else:
+            # assume the order given in the summary_csv method
+            first_attribute = attributes[0][0]
+            first_column_is_id = False
+            try:
+                field_id = self.field_id(int(first_attribute))
+            except ValueError:
+                field_id = first_attribute
+                first_column_is_id = True
+            if not field_id in self.fields:
+                raise ValueError("The first column should contain either the"
+                                 " column or ID of the fields. Failed to find"
+                                 " %s as either of them." % field_id)
+            headers = SUMMARY_HEADERS[2: 7]
+            headers = [UPDATABLE_HEADERS[header] for header in headers]
+            try:
+                for field_attributes in attributes:
+                    field_id = field_attributes[0] if first_column_is_id else \
+                        self.field_id(int(field_attributes[0]))
+                    new_fields_structure[field_id] = \
+                        dict(zip(headers, field_attributes[1: 6]))
+            except ValueError:
+                raise ValueError("The first column should contain either the"
+                                 " column or ID of the fields. Failed to find"
+                                 " %s as either of them." % field_id)
+        if out_file is None:
+            return {"fields": new_fields_structure}
+        else:
+            try:
+                with open(out_file, "w") as out:
+                    json.dump({"fields": new_fields_structure}, out)
+            except IOError, exc:
+                raise IOError("Failed writing the fields structure file in"
+                              " %s- Please, check your arguments." %
+                              out_file)

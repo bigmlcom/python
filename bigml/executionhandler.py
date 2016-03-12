@@ -31,8 +31,8 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_execution_id, get_resource_type,
                                    get_script_id, check_resource)
-from bigml.resourcehandler import (EXECUTION_PATH, SCRIPT_PATH,
-                                   TINY_RESOURCE)
+from bigml.constants import (EXECUTION_PATH, SCRIPT_PATH,
+                             TINY_RESOURCE)
 
 
 class ExecutionHandler(ResourceHandler):

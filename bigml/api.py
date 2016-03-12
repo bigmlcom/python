@@ -86,7 +86,7 @@ from bigml.constants import (
     SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
     STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
-    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE
+    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE,
     SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE)
 
@@ -99,7 +99,7 @@ from bigml.resourcehandler import (
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
     get_correlation_id, get_statistical_test_id, get_logistic_regression_id,
     get_association_id, get_association_set_id, get_script_id,
-    get_execution_id, get_library_id))
+    get_execution_id, get_library_id)
 
 
 # Map status codes to labels

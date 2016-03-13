@@ -59,7 +59,7 @@ class TestEvaluation(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', '30', '30', 'average_phi', '1']]
+            ['data/iris.csv', '50', '50', '50', '50', 'average_phi', '1']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -92,7 +92,7 @@ class TestEvaluation(object):
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', '5', '1', '50', '30', 'average_phi', '0.98029']]
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

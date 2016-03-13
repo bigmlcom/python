@@ -187,11 +187,11 @@ class TestPrediction(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | data_input    | centroid  |
-                | ../data/diabetes.csv | 10      | 20     | 20     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 6 |
+                | ../data/diabetes.csv | 10      | 20     | 20     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 7 |
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 5']]
+            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 7']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -220,10 +220,10 @@ class TestPrediction(object):
                 | ../data/tiny_kdd.csv | 10      | 10     | 100     | {"src_bytes": 350} | 0.92618 |
                 | ../data/iris_sp_chars.csv | 10      | 10     | 100     | {"pétal&width\u0000": 300} | 0.90198 |
         """
-        print self.test_scenario5.__doc__
+        print self.test_scenario6.__doc__
         examples = [
-            ['data/tiny_kdd.csv', '10', '10', '100', '{"src_bytes": 350}', '0.92618', 'data/iris_sp_chars.csv', '10', '10', '100', '{"pétal&width\u0000": 300}', '0.90198'],
-            ['data/iris_sp_chars.csv', '10', '10', '100', '{"pétal&width\u0000": 300}', '0.90198']]
+            ['data/tiny_kdd.csv', '10', '10', '100', '{"src_bytes": 350}', '0.92846'],
+            ['data/iris_sp_chars.csv', '10', '10', '100', '{"pétal&width\u0000": 300}', '0.89313']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

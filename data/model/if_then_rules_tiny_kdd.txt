@@ -1,28 +1,28 @@
- IF src_bytes > 312 AND
-     IF dst_host_count > 1 AND
-         IF dst_host_srv_diff_host_rate > 0.035 AND
-             IF dst_host_same_src_port_rate > 0.03 AND
-                 IF dst_host_same_src_port_rate > 0.095 THEN
-                     dst_host_srv_serror_rate = 0
-                 IF dst_host_same_src_port_rate <= 0.095 THEN
-                     dst_host_srv_serror_rate = 0.01
-             IF dst_host_same_src_port_rate <= 0.03 THEN
-                 dst_host_srv_serror_rate = 0
-         IF dst_host_srv_diff_host_rate <= 0.035 THEN
-             dst_host_srv_serror_rate = 0
-     IF dst_host_count <= 1 THEN
+ IF src_bytes > 315 AND
+     IF dst_host_same_src_port_rate > 0.75 THEN
          dst_host_srv_serror_rate = 0.01
- IF src_bytes <= 312 AND
+     IF dst_host_same_src_port_rate <= 0.75 AND
+         IF src_bytes > 325 THEN
+             dst_host_srv_serror_rate = 0
+         IF src_bytes <= 325 AND
+             IF count > 10 THEN
+                 dst_host_srv_serror_rate = 0.01
+             IF count <= 10 AND
+                 IF src_bytes > 323 THEN
+                     dst_host_srv_serror_rate = 0.01
+                 IF src_bytes <= 323 THEN
+                     dst_host_srv_serror_rate = 0
+ IF src_bytes <= 315 AND
      IF dst_bytes > 25045 AND
          IF dst_host_count > 8 THEN
              dst_host_srv_serror_rate = 0
          IF dst_host_count <= 8 THEN
              dst_host_srv_serror_rate = 0.01
      IF dst_bytes <= 25045 AND
-         IF src_bytes > 166 AND
-             IF dst_host_count > 48 THEN
+         IF src_bytes > 167 AND
+             IF dst_host_count > 47 THEN
                  dst_host_srv_serror_rate = 0
-             IF dst_host_count <= 48 AND
+             IF dst_host_count <= 47 AND
                  IF dst_host_count > 43 AND
                      IF count > 9 THEN
                          dst_host_srv_serror_rate = 0
@@ -33,7 +33,7 @@
                              dst_host_srv_serror_rate = 0.01
                  IF dst_host_count <= 43 THEN
                      dst_host_srv_serror_rate = 0
-         IF src_bytes <= 166 AND
+         IF src_bytes <= 167 AND
              IF src_bytes > 161 AND
                  IF dst_host_count > 97 THEN
                      dst_host_srv_serror_rate = 0

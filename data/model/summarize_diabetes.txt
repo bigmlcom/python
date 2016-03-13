@@ -9,57 +9,63 @@ Predicted distribution:
 
 
 Field importance:
-    1. plasma glucose: 32.50%
-    2. bmi: 23.40%
-    3. age: 15.55%
-    4. blood pressure: 9.74%
-    5. insulin: 9.16%
-    6. diabetes pedigree: 8.23%
-    7. triceps skin thickness: 1.43%
+    1. plasma glucose: 27.58%
+    2. diabetes pedigree: 22.39%
+    3. bmi: 17.37%
+    4. age: 15.75%
+    5. blood pressure: 12.52%
+    6. pregnancies: 2.01%
+    7. insulin: 1.72%
+    8. triceps skin thickness: 0.67%
 
 
 Rules summary:
 
 false : (data 59.50% / prediction 59.50%) 
-    · 27.73%: plasma glucose <= 142 and 9.7 < bmi <= 26.92  [Confidence: 89.57%]
-    · 19.33%: 94 < plasma glucose <= 142  and bmi > 26.92 and age <= 30 and insulin > 92 [Confidence: 85.69%]
-    · 10.92%: plasma glucose <= 118 and bmi > 26.92 and age <= 30 and insulin <= 82 and diabetes pedigree <= 1.043 and triceps skin thickness <= 39 [Confidence: 77.19%]
-    · 5.88%: 94 < plasma glucose <= 142  and bmi > 26.92 and 30 < age <= 53  and blood pressure > 81 and insulin <= 120 and diabetes pedigree <= 0.5385 [Confidence: 64.57%]
-    · 5.04%: plasma glucose <= 94 and bmi > 26.92 and age > 30 [Confidence: 60.97%]
-    · 3.36%: 118 < plasma glucose <= 142  and bmi > 30.7 and age <= 30 and insulin <= 82 and diabetes pedigree <= 1.043 and triceps skin thickness > 13 [Confidence: 51.01%]
-    · 3.36%: 94 < plasma glucose <= 142  and bmi > 26.92 and age > 53 and blood pressure > 73 [Confidence: 51.01%]
-    · 3.36%: 142 < plasma glucose <= 165  and bmi <= 31.4 and age <= 41 [Confidence: 51.01%]
-    · 2.52%: plasma glucose <= 142 and bmi <= 9.7 and diabetes pedigree > 0.2825 [Confidence: 43.85%]
-    · 2.52%: 94 < plasma glucose <= 142  and bmi > 26.92 and age > 30 and blood pressure <= 59 and diabetes pedigree <= 0.457 [Confidence: 43.85%]
-    · 2.52%: 94 < plasma glucose <= 142  and bmi > 26.92 and 30 < age <= 53  and 73 < blood pressure <= 81  and insulin <= 120 and diabetes pedigree <= 0.245 [Confidence: 43.85%]
-    · 2.52%: 94 < plasma glucose <= 142  and bmi > 26.92 and 30 < age <= 53  and 73 < blood pressure <= 81  and insulin <= 120 and 0.399 < diabetes pedigree <= 0.5385  [Confidence: 43.85%]
-    · 2.52%: 142 < plasma glucose <= 165  and bmi <= 31.4 and age > 41 and 73 < blood pressure <= 85  [Confidence: 43.85%]
-    · 1.68%: 94 < plasma glucose <= 142  and bmi > 38.35 and 30 < age <= 53  and 73 < blood pressure <= 89  and insulin <= 120 and diabetes pedigree > 0.5385 [Confidence: 34.24%]
-    · 1.68%: 142 < plasma glucose <= 165  and 31.4 < bmi <= 39.95  and blood pressure <= 75 and diabetes pedigree > 0.629 [Confidence: 34.24%]
-    · 1.68%: 142 < plasma glucose <= 165  and 39.95 < bmi <= 41.45  [Confidence: 34.24%]
-    · 1.68%: plasma glucose > 165 and age <= 28 and bmi <= 35.9 [Confidence: 34.24%]
-    · 0.84%: plasma glucose <= 94 and 26.92 < bmi <= 33.05  and age <= 30 and insulin > 92 [Confidence: 20.65%]
-    · 0.84%: 142 < plasma glucose <= 165  and 39.05 < bmi <= 39.95  and blood pressure <= 75 and diabetes pedigree <= 0.629 [Confidence: 20.65%]
+    · 25.21%: plasma glucose <= 123 and bmi <= 27.075 and pregnancies <= 9 [Confidence: 88.65%]
+    · 10.92%: plasma glucose <= 123 and bmi > 27.075 and age <= 22 and pregnancies <= 5 [Confidence: 77.19%]
+    · 8.40%: 91 < plasma glucose <= 123  and bmi > 27.075 and 22 < age <= 30  and blood pressure <= 74 and 0.1305 < diabetes pedigree <= 0.6325  [Confidence: 72.25%]
+    · 7.56%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age <= 24 and diabetes pedigree <= 0.8395 [Confidence: 70.08%]
+    · 6.72%: plasma glucose <= 123 and 35.75 < bmi <= 42.8  and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 [Confidence: 67.56%]
+    · 4.20%: plasma glucose <= 123 and 27.075 < bmi <= 35.75  and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 and triceps skin thickness <= 23 [Confidence: 56.55%]
+    · 4.20%: plasma glucose <= 123 and bmi > 27.075 and age > 22 and blood pressure > 90 [Confidence: 56.55%]
+    · 4.20%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and 24 < age <= 40  and 0.367 < diabetes pedigree <= 0.8395  and blood pressure <= 79 [Confidence: 56.55%]
+    · 4.20%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and 24 < age <= 40  and diabetes pedigree <= 0.8395 and blood pressure > 82 [Confidence: 56.55%]
+    · 4.20%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 40 and diabetes pedigree > 0.629 and blood pressure <= 88 [Confidence: 56.55%]
+    · 3.36%: plasma glucose <= 123 and bmi > 27.075 and age > 22 and blood pressure <= 90 and 0.8765 < diabetes pedigree <= 1.194  [Confidence: 51.01%]
+    · 2.52%: plasma glucose <= 99 and bmi > 27.075 and age > 30 and blood pressure <= 74 and diabetes pedigree <= 0.6325 [Confidence: 43.85%]
+    · 2.52%: plasma glucose <= 123 and 27.075 < bmi <= 35.75  and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 and triceps skin thickness > 23 and insulin > 52 [Confidence: 43.85%]
+    · 2.52%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 40 and diabetes pedigree <= 0.3265 and insulin <= 112 and pregnancies > 9 [Confidence: 43.85%]
+    · 1.68%: 99 < plasma glucose <= 123  and bmi > 28.5 and age > 30 and blood pressure <= 74 and diabetes pedigree <= 0.214 [Confidence: 34.24%]
+    · 1.68%: 156 < plasma glucose <= 166  and bmi <= 40.81667 and 24 < age <= 40  and diabetes pedigree <= 0.367 and blood pressure <= 79 [Confidence: 34.24%]
+    · 0.84%: plasma glucose <= 123 and 11.55 < bmi <= 27.075  and pregnancies > 9 [Confidence: 20.65%]
+    · 0.84%: plasma glucose <= 123 and 27.075 < bmi <= 28.3  and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 and triceps skin thickness > 23 and insulin <= 52 [Confidence: 20.65%]
+    · 0.84%: 123 < plasma glucose <= 166  and 38.55 < bmi <= 40.81667  and age <= 40 and diabetes pedigree > 0.8395 [Confidence: 20.65%]
+    · 0.84%: 123 < plasma glucose <= 166  and bmi <= 31.85 and 40 < age <= 47  and diabetes pedigree <= 0.3265 and insulin <= 112 and pregnancies <= 9 [Confidence: 20.65%]
+    · 0.84%: 123 < plasma glucose <= 166  and 31.85 < bmi <= 40.81667  and 40 < age <= 47  and diabetes pedigree <= 0.3265 and insulin <= 112 and pregnancies <= 9 and blood pressure <= 38 [Confidence: 20.65%]
+    · 0.84%: plasma glucose > 166 and bmi <= 23.1 [Confidence: 20.65%]
+    · 0.84%: plasma glucose > 166 and bmi > 23.1 and blood pressure <= 65 and diabetes pedigree <= 0.3345 [Confidence: 20.65%]
 
 
 true : (data 40.50% / prediction 40.50%) 
-    · 23.46%: plasma glucose > 165 and age > 28 [Confidence: 83.18%]
-    · 14.81%: 94 < plasma glucose <= 142  and bmi > 26.92 and age > 30 and 59 < blood pressure <= 73  [Confidence: 75.75%]
-    · 8.64%: 142 < plasma glucose <= 165  and 31.4 < bmi <= 39.95  and blood pressure > 75 [Confidence: 64.57%]
-    · 6.17%: 94 < plasma glucose <= 142  and 26.92 < bmi <= 38.35  and 30 < age <= 53  and blood pressure > 73 and insulin <= 120 and diabetes pedigree > 0.5385 [Confidence: 56.55%]
-    · 6.17%: plasma glucose > 165 and age <= 28 and bmi > 35.9 [Confidence: 56.55%]
-    · 4.94%: 118 < plasma glucose <= 142  and bmi > 26.92 and age <= 30 and insulin <= 82 and diabetes pedigree <= 1.043 and triceps skin thickness <= 13 [Confidence: 51.01%]
-    · 4.94%: 94 < plasma glucose <= 142  and bmi > 26.92 and 30 < age <= 53  and 73 < blood pressure <= 81  and insulin <= 120 and 0.245 < diabetes pedigree <= 0.399  [Confidence: 51.01%]
-    · 4.94%: 94 < plasma glucose <= 142  and bmi > 26.92 and 30 < age <= 53  and blood pressure > 73 and insulin > 120 [Confidence: 51.01%]
-    · 4.94%: 142 < plasma glucose <= 165  and bmi > 41.45 [Confidence: 51.01%]
-    · 2.47%: plasma glucose <= 142 and bmi <= 9.7 and diabetes pedigree <= 0.2825 [Confidence: 34.24%]
-    · 2.47%: plasma glucose <= 142 and bmi > 26.92 and age <= 30 and 82 < insulin <= 92  and diabetes pedigree <= 1.043 [Confidence: 34.24%]
-    · 2.47%: plasma glucose <= 142 and bmi > 26.92 and age <= 30 and insulin <= 92 and diabetes pedigree > 1.043 [Confidence: 34.24%]
-    · 2.47%: 94 < plasma glucose <= 142  and bmi > 26.92 and age > 30 and blood pressure <= 59 and diabetes pedigree > 0.457 [Confidence: 34.24%]
-    · 2.47%: 142 < plasma glucose <= 165  and bmi <= 31.4 and age > 41 and blood pressure <= 73 [Confidence: 34.24%]
-    · 2.47%: 142 < plasma glucose <= 165  and 31.4 < bmi <= 39.05  and blood pressure <= 75 and diabetes pedigree <= 0.629 [Confidence: 34.24%]
-    · 1.23%: plasma glucose <= 118 and bmi > 26.92 and age <= 30 and insulin <= 82 and diabetes pedigree <= 1.043 and triceps skin thickness > 39 [Confidence: 20.65%]
-    · 1.23%: 118 < plasma glucose <= 142  and 26.92 < bmi <= 30.7  and age <= 30 and insulin <= 82 and diabetes pedigree <= 1.043 and triceps skin thickness > 13 [Confidence: 20.65%]
-    · 1.23%: plasma glucose <= 94 and bmi > 33.05 and age <= 30 and insulin > 92 [Confidence: 20.65%]
-    · 1.23%: 94 < plasma glucose <= 142  and bmi > 38.35 and 30 < age <= 53  and blood pressure > 89 and insulin <= 120 and diabetes pedigree > 0.5385 [Confidence: 20.65%]
-    · 1.23%: 142 < plasma glucose <= 165  and bmi <= 31.4 and age > 41 and blood pressure > 85 [Confidence: 20.65%]
+    · 23.46%: plasma glucose > 166 and bmi > 23.1 and blood pressure > 65 [Confidence: 83.18%]
+    · 9.88%: 99 < plasma glucose <= 123  and bmi > 27.075 and age > 30 and blood pressure <= 74 and 0.214 < diabetes pedigree <= 0.6325  [Confidence: 67.56%]
+    · 9.88%: 123 < plasma glucose <= 166  and bmi > 40.81667 [Confidence: 67.56%]
+    · 8.64%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 40 and 0.3265 < diabetes pedigree <= 0.629  [Confidence: 64.57%]
+    · 6.17%: plasma glucose <= 123 and bmi > 27.075 and age > 22 and blood pressure <= 90 and 0.6325 < diabetes pedigree <= 0.8765  [Confidence: 56.55%]
+    · 4.94%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 47 and diabetes pedigree <= 0.3265 and insulin <= 112 and pregnancies <= 9 [Confidence: 51.01%]
+    · 4.94%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 40 and diabetes pedigree <= 0.3265 and insulin > 112 [Confidence: 51.01%]
+    · 4.94%: plasma glucose > 166 and bmi > 23.1 and blood pressure <= 65 and diabetes pedigree > 0.3345 [Confidence: 51.01%]
+    · 3.70%: 123 < plasma glucose <= 156  and bmi <= 40.81667 and 24 < age <= 40  and diabetes pedigree <= 0.367 and blood pressure <= 79 [Confidence: 43.85%]
+    · 3.70%: 123 < plasma glucose <= 166  and bmi <= 38.55 and age <= 40 and diabetes pedigree > 0.8395 [Confidence: 43.85%]
+    · 2.47%: plasma glucose <= 91 and bmi > 27.075 and 22 < age <= 30  and blood pressure <= 74 and diabetes pedigree <= 0.6325 [Confidence: 34.24%]
+    · 2.47%: plasma glucose <= 123 and 28.3 < bmi <= 35.75  and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 and triceps skin thickness > 23 and insulin <= 52 [Confidence: 34.24%]
+    · 2.47%: plasma glucose <= 123 and bmi > 27.075 and age > 22 and blood pressure <= 90 and diabetes pedigree > 1.194 [Confidence: 34.24%]
+    · 2.47%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and 24 < age <= 40  and diabetes pedigree <= 0.8395 and 79 < blood pressure <= 82  [Confidence: 34.24%]
+    · 2.47%: 123 < plasma glucose <= 166  and 31.85 < bmi <= 40.81667  and 40 < age <= 47  and diabetes pedigree <= 0.3265 and insulin <= 112 and pregnancies <= 9 and blood pressure > 38 [Confidence: 34.24%]
+    · 1.23%: plasma glucose <= 123 and bmi <= 11.55 and pregnancies > 9 [Confidence: 20.65%]
+    · 1.23%: plasma glucose <= 123 and bmi > 27.075 and age <= 22 and pregnancies > 5 [Confidence: 20.65%]
+    · 1.23%: 91 < plasma glucose <= 123  and bmi > 27.075 and 22 < age <= 30  and blood pressure <= 74 and diabetes pedigree <= 0.1305 [Confidence: 20.65%]
+    · 1.23%: 99 < plasma glucose <= 123  and 27.075 < bmi <= 28.5  and age > 30 and blood pressure <= 74 and diabetes pedigree <= 0.214 [Confidence: 20.65%]
+    · 1.23%: plasma glucose <= 123 and bmi > 42.8 and age > 22 and 74 < blood pressure <= 90  and diabetes pedigree <= 0.6325 [Confidence: 20.65%]
+    · 1.23%: 123 < plasma glucose <= 166  and bmi <= 40.81667 and age > 40 and diabetes pedigree > 0.629 and blood pressure > 88 [Confidence: 20.65%]

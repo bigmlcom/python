@@ -85,13 +85,12 @@ class TestAssociation(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | item_list                              | JSON_rule  |
-                | ../data/tiny_mushrooms.csv | 10      | 20     | 50     | ["Edible"]                   | {'confidence': 1, 'leverage': 0.07885, 'lhs': [14], 'lhs_cover': [0.704, 176], 'lift': 1.12613, 'p_value': 2.08358e-17, 'rhs': [1], 'rhs_cover': [0.888, 222], 'rule_id': u'000038', 'support': [0.704, 176]}
-
+                | ../data/tiny_mushrooms.csv | 10      | 20     | 50     | ["Edible"]                   | {'p_value': 2.08358e-17, 'confidence': 1, 'lift': 1.12613, 'lhs': [14], 'leverage': 0.07885, 'lhs_cover': [0.704, 176], 'rhs_cover': [0.888, 222], 'rhs': [1], 'support': [0.704, 176], 'rule_id': u'000038'}
 
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/tiny_mushrooms.csv', '10', '20', '50', ["Edible"], {'confidence': 1, 'leverage': 0.07885, 'lhs': [14], 'lhs_cover': [0.704, 176], 'lift': 1.12613, 'p_value': 2.08358e-17, 'rhs': [1], 'rhs_cover': [0.888, 222], 'rule_id': u'000038', 'support': [0.704, 176]}]]
+            ['data/tiny_mushrooms.csv', '10', '20', '50', ["Edible"], {'p_value': 5.26971e-31, 'confidence': 1, 'rhs_cover': [0.488, 122], 'leverage': 0.24986, 'rhs': [19], 'rule_id': u'000002', 'lift': 2.04918, 'lhs': [0, 21, 16, 7], 'lhs_cover': [0.488, 122], 'support': [0.488, 122]}]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

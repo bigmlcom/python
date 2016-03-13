@@ -148,6 +148,8 @@ def attribute_summary(attribute_value, item_type, limit=None):
     """Summarizes the information in fields attributes where content is
        written as an array of arrays like tag_cloud, items, etc.
     """
+    if attribute_value is None:
+        return None
     items = [u"%s (%s)" % (item, instances) for
              item, instances in attribute_value]
     items_length = len(items)
@@ -473,41 +475,49 @@ class Fields(object):
             field_summary.append(field.get('label'))
             field_summary.append(field.get('description'))
             field_summary.append(field.get('optype'))
-            field_summary.append(field.get('preferred'))
-            field_summary_value = field.get('summary')
-            field_summary.append(field_summary_value.get("missing_count"))
-            if self.field_errors and field_id in self.field_errors.keys():
-                errors = self.field_errors.get(field_id)
-                field_summary.append(errors.get("total"))
+            field_summary_value = field.get('summary', {})
+
+            if not field_summary_value:
+                field_summary.append("") # no preferred info
+                field_summary.append("") # no missing info
+                field_summary.append("") # no error info
+                field_summary.append("") # no content summary
+                field_summary.append("") # no error summary
             else:
-                field_summary.append("0")
-            if field['optype'] == 'numeric':
-                field_summary.append("[%s, %s], mean: %s" % \
-                    (field_summary_value.get("minimum"),
-                     field_summary_value.get("maximum"),
-                     field_summary_value.get("mean")))
-            elif field['optype'] == 'categorical':
-                categories = field_summary_value.get("categories")
-                field_summary.append( \
-                    attribute_summary(categories, u"categorìes",
-                                      limit=LIST_LIMIT))
-            elif field['optype'] == "text":
-                terms = field_summary_value.get("tag_cloud")
-                field_summary.append( \
-                    attribute_summary(terms, u"terms",
-                                      limit=LIST_LIMIT))
-            elif field['optype'] == "items":
-                items = field_summary_value.get("items")
-                field_summary.append( \
-                    attribute_summary(items, u"items", limit=LIST_LIMIT))
-            else:
-                field_summary.append("")
-            if self.field_errors and field_id in self.field_errors.keys():
-                field_summary.append( \
-                    attribute_summary(errors.get("sample"), u"errors",
-                                      limit=None))
-            else:
-                field_summary.append("")
+                field_summary.append(field.get('preferred'))
+                field_summary.append(field_summary_value.get("missing_count"))
+                if self.field_errors and field_id in self.field_errors.keys():
+                    errors = self.field_errors.get(field_id)
+                    field_summary.append(errors.get("total"))
+                else:
+                    field_summary.append("0")
+                if field['optype'] == 'numeric':
+                    field_summary.append("[%s, %s], mean: %s" % \
+                        (field_summary_value.get("minimum"),
+                         field_summary_value.get("maximum"),
+                         field_summary_value.get("mean")))
+                elif field['optype'] == 'categorical':
+                    categories = field_summary_value.get("categories")
+                    field_summary.append( \
+                        attribute_summary(categories, u"categorìes",
+                                          limit=LIST_LIMIT))
+                elif field['optype'] == "text":
+                    terms = field_summary_value.get("tag_cloud")
+                    field_summary.append( \
+                        attribute_summary(terms, u"terms",
+                                          limit=LIST_LIMIT))
+                elif field['optype'] == "items":
+                    items = field_summary_value.get("items")
+                    field_summary.append( \
+                        attribute_summary(items, u"items", limit=LIST_LIMIT))
+                else:
+                    field_summary.append("")
+                if self.field_errors and field_id in self.field_errors.keys():
+                    field_summary.append( \
+                        attribute_summary(errors.get("sample"), u"errors",
+                                          limit=None))
+                else:
+                    field_summary.append("")
             if writer:
                 writer.writerow([text_encode(text)
                                  for text in field_summary])

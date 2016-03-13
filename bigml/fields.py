@@ -70,7 +70,8 @@ SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
 UPDATABLE_HEADERS = {"field name": "name",
                      "field label": "label",
                      "field description": "description",
-                     "field type": "optype"}
+                     "field type": "optype",
+                     "preferred": "preferred"}
 
 ITEM_SINGULAR = {u"categories": u"category"}
 
@@ -484,7 +485,7 @@ class Fields(object):
                 field_summary.append("") # no content summary
                 field_summary.append("") # no error summary
             else:
-                field_summary.append(field.get('preferred'))
+                field_summary.append(json.dumps(field.get('preferred')))
                 field_summary.append(field_summary_value.get("missing_count"))
                 if self.field_errors and field_id in self.field_errors.keys():
                     errors = self.field_errors.get(field_id)
@@ -567,7 +568,11 @@ class Fields(object):
                     else:
                         new_attributes[UPDATABLE_HEADERS[attribute]] = \
                             new_attributes[attribute]
-                        del new_attributes[attribute]
+                        if attribute != UPDATABLE_HEADERS[attribute]:
+                            del new_attributes[attribute]
+                if "preferred" in new_attributes:
+                    new_attributes['preferred'] = json.loads( \
+                        new_attributes['preferred'])
                 new_fields_structure[field_id] = new_attributes
         else:
             # assume the order given in the summary_csv method
@@ -586,10 +591,13 @@ class Fields(object):
             headers = [UPDATABLE_HEADERS[header] for header in headers]
             try:
                 for field_attributes in attributes:
+                    if field_attributes[6] is not None:
+                        field_attributes[6] = json.loads(field_attributes[6])
                     field_id = field_attributes[0] if first_column_is_id else \
                         self.field_id(int(field_attributes[0]))
                     new_fields_structure[field_id] = \
                         dict(zip(headers, field_attributes[1: 6]))
+
             except ValueError:
                 raise ValueError("The first column should contain either the"
                                  " column or ID of the fields. Failed to find"

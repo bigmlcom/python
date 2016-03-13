@@ -4056,11 +4056,69 @@ different fields properties:
     # Statistics of values in field name 'petal length')
     fields.stats('petal length')
 
-You can also easily ``pair`` a list of values with fields ids what is very
+Depending on the resource type, Fields information will vary. ``Sources`` will
+have only the name, label, description, type of field (``optype``) while
+``dataset`` resources will have also the ``preferred`` (whether a field will is
+selectable as predictor), ``missing_count``, ``errors`` and a summary of
+the values found in each field. This is due to the fact that the ``source``
+object is built by inspecting the contents of a sample of the uploaded file,
+while the ``dataset`` resource really reads all the uploaded information. Thus,
+dataset's fields structure will always be more complete that source's.
+
+In both cases, you can extract the summarized information available using
+the ``summarize_csv`` method:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    from bigml.fields import Fields
+    api = BigML()
+    dataset = api.get_dataset("dataset/5143a51a37203f2cf7300974")
+
+    fields = Fields(dataset)
+    fields.summarize_csv("my_fields_summary.csv")
+
+In this example, the information will be stored in the
+``my_fields_summary.csv`` file. For the typical ``iris.csv`` data file, the
+summary will read:
+
+..code-block: csv
+
+field column,field ID,field name,field label,field description,field type,preferred,missing count,errors,contents summary,errors summary
+0,000000,sepal length,,,numeric,true,0,0,"[4.3, 7.9], mean: 5.84333",
+1,000001,sepal width,,,numeric,false,0,0,"[2, 4.4], mean: 3.05733",
+2,000002,petal length,,,numeric,true,0,0,"[1, 6.9], mean: 3.758",
+3,000003,petal width,,,numeric,true,0,0,"[0.1, 2.5], mean: 1.19933",
+4,000004,species,,,categorical,true,0,0,"3 categorìes: Iris-setosa (50), Iris-versicolor (50), Iris-virginica (50)",
+
+Another utility in the ``Fields`` object will help you update the updatable
+attributes of your source or dataset fields. For instance, if you
+need to update the type associated to one field in your dataset,
+you can change the ``field type``
+values in the previous file and use it to obtain the fields structure
+needed to update your source:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    from bigml.fields import Fields
+    api = BigML()
+    source = api.get_source("source/5143a51a37203f2cf7000974")
+
+    fields = Fields(source)
+    fields_update_info = fields.new_fields_structure("my_fields_summary.csv")
+    source = api.update_source(source, fields_update_info)
+
+For both sources and datasets, the updatable attributes are name, label and
+description. In ``sources`` you can also update the type of the field, and
+in ``datasets`` you can update the ``preferred`` attribute.
+
+In addition to that, you can also easily ``pair`` a list of values with fields
+ids what is very
 useful to make predictions.
 
-For example, the following snippet may be useful to create local predictions using
-a csv file as input:
+For example, the following snippet may be useful to create local predictions
+using a csv file as input:
 
 .. code-block:: python
 

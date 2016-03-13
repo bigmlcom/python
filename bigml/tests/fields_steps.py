@@ -15,8 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from world import world
+from world import world, res_filename
 from bigml.fields import Fields
+from nose.tools import eq_
 
 #@step(r'I create a Fields object from the source with objective column "(.*)"')
 def create_fields(step, objective_column):
@@ -24,10 +25,42 @@ def create_fields(step, objective_column):
                            objective_field_present=True)
 
 
+
+#@step(r'I create a Fields object from the dataset with objective column "(.*)"')
+def create_fields_from_dataset(step, objective_column):
+     world.fields = Fields(world.dataset, objective_field=int(objective_column),
+                           objective_field_present=True)
+
+
+
 #@step(r'the object id is "(.*)"')
 def check_objective(step, objective_id):
     found_id = world.fields.field_id(world.fields.objective_field)
-    if found_id != objective_id:
-        print "found: %s, expected: %s" % (found_id,
-                                           objective_id)
-    assert found_id == objective_id
+    eq_(found_id, objective_id)
+
+
+#@step(r'I import a summary fields file "(.*)" as a fields structure')
+def import_summary_file(step, summary_file):
+    world.fields_struct = world.fields.new_fields_structure( \
+        csv_attributes_file=res_filename(summary_file))
+
+
+#@step(r'I check the new field structure has field "(.*)" as "(.*)"')
+def check_field_type(step, field_id, field_type):
+    assert field_id in world.fields_struct['fields'].keys()
+    eq_(world.fields_struct['fields'][field_id]["optype"], field_type)
+
+
+#@step(r'I export a summary fields file "(.*)"')
+def generate_summary(step, summary_file):
+    world.fields.summary_csv(res_filename(summary_file))
+
+
+#@step(r'I check that the fields summary file is like "(.*)"')
+def check_summary_like_expected(step, summary_file, expected_file):
+    with open(res_filename(summary_file)) as file_handler:
+        summary_contents = file_handler.read()
+
+    with open(res_filename(expected_file)) as file_handler:
+        expected_contents = file_handler.read()
+    eq_(summary_contents, expected_contents)

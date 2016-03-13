@@ -1,0 +1,6 @@
+field column,field ID,field name,field label,field description,field type,preferred,missing count,errors,contents summary,errors summary
+0,000000,sepal length,,,categorical,true,0,0,"[4.3, 7.9], mean: 5.84333",
+1,000001,sepal width,,,numeric,true,0,0,"[2, 4.4], mean: 3.05733",
+2,000002,petal length,,,numeric,true,0,0,"[1, 6.9], mean: 3.758",
+3,000003,petal width,,,numeric,true,0,0,"[0.1, 2.5], mean: 1.19933",
+4,000004,species,,,categorical,true,0,0,"3 categorìes: Iris-setosa (50), Iris-versicolor (50), Iris-virginica (50)",

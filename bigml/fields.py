@@ -131,9 +131,8 @@ def get_fields_structure(resource, errors=False):
             result = result + (field_errors,)
         return result
     else:
-
-        return None, None, None, None, None if errors else \
-            None, None, None, None
+        return (None, None, None, None, None) if errors else \
+            (None, None, None, None)
 
 
 def text_encode(text):

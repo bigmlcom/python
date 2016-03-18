@@ -42,7 +42,6 @@ fields =  Fields(prediction['object']['fields'])
 
 """
 import sys
-import csv
 import json
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
@@ -52,6 +51,7 @@ from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, PREDICTION_PATH, MODEL_PATH, CLUSTER_PATH,
     ANOMALY_PATH, SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
     LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH)
+from bigml.io import UnicodeReader, UnicodeWriter
 
 RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
                          PREDICTION_PATH, CLUSTER_PATH, ANOMALY_PATH,
@@ -133,15 +133,6 @@ def get_fields_structure(resource, errors=False):
     else:
         return (None, None, None, None, None) if errors else \
             (None, None, None, None)
-
-
-def text_encode(text):
-    """Encoding text to be written in a utf-8 file
-
-    """
-    if isinstance(text, basestring):
-        return text.encode("utf-8")
-    return text
 
 
 def attribute_summary(attribute_value, item_type, limit=None):
@@ -460,7 +451,7 @@ class Fields(object):
         summary = []
         writer = None
         if filename is not None:
-            writer = csv.writer(open(filename, "w"))
+            writer = UnicodeWriter(filename).open_writer()
             writer.writerow(SUMMARY_HEADERS)
         else:
             summary.append(SUMMARY_HEADERS)
@@ -519,12 +510,13 @@ class Fields(object):
                 else:
                     field_summary.append("")
             if writer:
-                writer.writerow([text_encode(text)
-                                 for text in field_summary])
+                writer.writerow(field_summary)
             else:
                 summary.append(field_summary)
         if writer is None:
             return summary
+        else:
+            writer.close_writer()
 
     def new_fields_structure(self, csv_attributes_file=None,
                              attributes=None, out_file=None):
@@ -541,7 +533,7 @@ class Fields(object):
                                   the output is returned as a dict.
         """
         if csv_attributes_file is not None:
-            reader = csv.reader(open(csv_attributes_file))
+            reader = UnicodeReader(csv_attributes_file).open_reader()
             attributes = [row for row in reader]
         new_fields_structure = {}
         if "field ID" in attributes[0] or "field column" in attributes[0]:

@@ -17,6 +17,8 @@
 
 from world import world, res_filename
 from bigml.fields import Fields
+from bigml.io import UnicodeReader
+
 from nose.tools import eq_
 
 #@step(r'I create a Fields object from the source with objective column "(.*)"')
@@ -58,9 +60,12 @@ def generate_summary(step, summary_file):
 
 #@step(r'I check that the fields summary file is like "(.*)"')
 def check_summary_like_expected(step, summary_file, expected_file):
-    with open(res_filename(summary_file)) as file_handler:
-        summary_contents = file_handler.read()
-
-    with open(res_filename(expected_file)) as file_handler:
-        expected_contents = file_handler.read()
+    summary_contents = []
+    expected_contents = []
+    with UnicodeReader(res_filename(summary_file)) as summary_handler:
+        for line in summary_handler:
+            summary_contents.append(line)
+    with UnicodeReader(res_filename(expected_file)) as expected_handler:
+        for line in expected_handler:
+            expected_contents.append(line)
     eq_(summary_contents, expected_contents)

@@ -236,8 +236,11 @@ class Predicate(object):
 
         # for missing operators
         if input_data.get(self.field) is None:
-            return self.missing or (
-                self.operator == '=' and self.value is None)
+            # text and item fields will treat missing values by following the
+            # doesn't contain branch
+            if self.term is None:
+                return self.missing or (
+                    self.operator == '=' and self.value is None)
         elif self.operator == '!=' and self.value is None:
             return True
 
@@ -249,14 +252,14 @@ class Predicate(object):
                 terms.extend(term_forms)
                 options = fields[self.field]['term_analysis']
                 return apply(OPERATOR[self.operator],
-                             [term_matches(input_data[self.field],
+                             [term_matches(input_data.get(self.field, ""),
                                            terms, options),
                               self.value])
             else:
                 # new items optype
                 options = fields[self.field]['item_analysis']
                 return apply(OPERATOR[self.operator],
-                             [item_matches(input_data[self.field],
+                             [item_matches(input_data.get(self.field, ""),
                                            self.term, options),
                               self.value])
         if self.operator == "in":

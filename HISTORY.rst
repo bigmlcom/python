@@ -3,6 +3,14 @@
 History
 -------
 
+4.5.2 (2016-03-24)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in model's local predictions. When the model uses text fields and
+  the field contents are missing in the input data, the prediction does
+  not return the last prediction and stop. It now follows the
+  "does not contain" branch.
+
 4.5.1 (2016-03-12)
 ~~~~~~~~~~~~~~~~~~
 

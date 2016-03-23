@@ -565,8 +565,9 @@ class Tree(object):
                                   none_value(children))
             # the missing is singled out as a special case only when there's
             # no missing branch in the children list
-            if (not has_missing_branch and
-                    self.fields[field]['slug'] not in cmv):
+            if not has_missing_branch and \
+                    self.fields[field]["optype"] not in ["text", "items"] and \
+                    self.fields[field]['slug'] not in cmv:
                 body += (u"%sif (%s is None):\n" %
                          (INDENT * depth,
                           map_data(self.fields[field]['slug'], True)))
@@ -705,13 +706,15 @@ class Tree(object):
     tm_full_term = '%s'
     tm_all = '%s'
 
-"""
+"""  % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
         if term_analysis_predicates:
             body += """
     def term_matches(text, field_name, term):
         \"\"\" Counts the number of occurences of term and its variants in text
 
         \"\"\"
+        if text is None:
+            text = ""
         forms_list = term_forms[field_name].get(term, [term])
         options = term_analysis[field_name]
         token_mode = options.get('token_mode', tm_tokens)
@@ -756,12 +759,12 @@ class Tree(object):
 
         \"\"\"
         flags = get_tokens_flags(case_sensitive)
-        expression = ur'(\\b|_)%%s(\\b|_)' %% '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
+        expression = ur'(\\b|_)%s(\\b|_)' % '(\\\\b|_)|(\\\\b|_)'.join(forms_list)
         pattern = re.compile(expression, flags=flags)
         matches = re.findall(pattern, text)
         return len(matches)
 
-""" % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
+"""
 
             term_analysis_options = set([predicate[0] for predicate in
                                          term_analysis_predicates])
@@ -814,6 +817,8 @@ class Tree(object):
         \"\"\" Counts the number of occurences of item in text
 
         \"\"\"
+        if text is None:
+            text = ""
         options = item_analysis[field_name]
         separator = options.get('separator', ' ')
         regexp = options.get('separator_regexp')

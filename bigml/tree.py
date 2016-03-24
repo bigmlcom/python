@@ -471,7 +471,9 @@ class Tree(object):
             return (merge_distributions({}, dict((x[0], x[1])
                                                  for x in self.distribution)),
                     self.min, self.max, self)
-        if one_branch(self.children, input_data):
+        if one_branch(self.children, input_data) or \
+                self.fields[split(self.children)]["optype"] in \
+                ["text", "items"]:
             for child in self.children:
                 if child.predicate.apply(input_data, self.fields):
                     new_rule = child.predicate.to_rule(self.fields)

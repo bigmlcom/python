@@ -21,6 +21,7 @@
 
 """
 
+import os
 try:
     import simplejson as json
 except ImportError:
@@ -33,6 +34,7 @@ from bigml.resourcehandler import (check_resource_type,
                                    get_dataset_id, check_resource)
 from bigml.constants import (SCRIPT_PATH, DATASET_PATH,
                              TINY_RESOURCE)
+from bigml.util import is_url
 
 
 class ScriptHandler(ResourceHandler):
@@ -76,6 +78,13 @@ class ScriptHandler(ResourceHandler):
                 create_args.update({
                     "origin": script_id})
         elif isinstance(source_code, basestring):
+            try:
+                if os.path.exists(source_code):
+                    with open(source_code) as code_file:
+                        source_code = code_file.read()
+            except IOError:
+                raise IOError("Could not open the source code file %s." %
+                              source_code)
             create_args.update({
                 "source_code": source_code})
         else:

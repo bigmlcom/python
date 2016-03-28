@@ -25,7 +25,7 @@ try:
     import simplejson as json
 except ImportError:
     import json
-
+import os
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
@@ -75,6 +75,13 @@ class LibraryHandler(ResourceHandler):
                 create_args.update({
                     "origin": library_id})
         elif isinstance(source_code, basestring):
+            try:
+                if os.path.exists(source_code):
+                    with open(source_code) as code_file:
+                        source_code = code_file.read()
+            except IOError:
+                raise IOError("Could not open the source code file %s." %
+                              source_code)
             create_args.update({
                 "source_code": source_code})
         else:

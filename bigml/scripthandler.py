@@ -57,6 +57,7 @@ class ScriptHandler(ResourceHandler):
         """Creates a whizzml script from its source code. The `source_code`
            parameter can be a:
             {script ID}: the ID for an existing whizzml script
+            {path}: the path to a file containing the source code
             {string} : the string containing the source code for the script
 
         """

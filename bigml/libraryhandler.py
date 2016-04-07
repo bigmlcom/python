@@ -54,6 +54,7 @@ class LibraryHandler(ResourceHandler):
         """Creates a whizzml library from its source code. The `source_code`
            parameter can be a:
             {library ID}: the ID for an existing whizzml library
+            {path}: the path to a file containing the source code
             {string} : the string containing the source code for the library
 
         """

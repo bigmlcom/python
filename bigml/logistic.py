@@ -221,7 +221,7 @@ class LogisticRegression(ModelFields):
 
         probabilities = {}
         total = 0
-        for category in self.categories[self.objective_id]:
+        for category in self.coefficients.keys():
             coefficients = self.coefficients[category]
             probabilities[category] = self.category_probability(
                 input_data, unique_terms, coefficients)

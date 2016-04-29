@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2014-2015 BigML
+# Copyright 2015 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,18 +16,11 @@
 # under the License.
 
 from world import world
+from bigml.api import HTTP_OK
 
-#@step(r'I store the dataset id in a list')
-def i_store_dataset_id(step):
-    world.dataset_ids.append(world.dataset['resource'])
-
-#@step(r'I check the model stems from the original dataset list')
-def i_check_model_datasets_and_datasets_ids(step):
-    model = world.model
-    if 'datasets' in model and model['datasets'] == world.dataset_ids:
-        assert True
-    else:
-        assert False, ("The model contains only %s "
-                       "and the dataset ids are %s" %
-                       (",".join(model['datasets']),
-                        ",".join(world.dataset_ids)))
+#@step(r'I get the library "(.*)"')
+def i_get_the_library(step, resource):
+    resource = world.api.get_library(resource)
+    world.status = resource['code']
+    assert world.status == HTTP_OK
+    world.library = resource['object']

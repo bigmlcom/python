@@ -96,6 +96,7 @@ class LogisticRegression(ModelFields):
     def __init__(self, logistic_regression, api=None):
 
         self.resource_id = None
+        self.input_fields = []
         self.term_forms = {}
         self.tag_clouds = {}
         self.term_analysis = {}
@@ -132,6 +133,7 @@ class LogisticRegression(ModelFields):
             isinstance(logistic_regression['object'], dict):
             logistic_regression = logistic_regression['object']
         try:
+            self.input_fields = logistic_regression.get("input_fields", [])
             self.dataset_field_types = logistic_regression.get(
                 "dataset_field_types", {})
             objective_field = logistic_regression['objective_fields']
@@ -146,6 +148,11 @@ class LogisticRegression(ModelFields):
                     'logistic_regression']
                 fields = logistic_regression_info.get('fields', {})
 
+                if not self.input_fields:
+                    self.input_fields = [ \
+                        field_id for field_id, _ in
+                        sorted(self.fields.items(),
+                               key=lambda x: x[1].get("column_number"))]
                 self.coefficients.update(logistic_regression_info.get( \
                     'coefficients', []))
                 self.bias = logistic_regression_info.get('bias', 0)
@@ -219,7 +226,7 @@ class LogisticRegression(ModelFields):
 
         probabilities = {}
         total = 0
-        for category in self.categories[self.objective_id]:
+        for category in self.coefficients.keys():
             coefficients = self.coefficients[category]
             probabilities[category] = self.category_probability(
                 input_data, unique_terms, coefficients)
@@ -343,9 +350,7 @@ class LogisticRegression(ModelFields):
 
         """
         field_ids = [ \
-            field_id for field_id, _ in
-            sorted(self.fields.items(),
-                   key=lambda x: x[1].get("column_number"))
+            field_id for field_id in self.input_fields
             if field_id != self.objective_id]
         shift = 0
         for field_id in field_ids:

@@ -3,6 +3,12 @@
 History
 -------
 
+4.5.3 (2016-04-30)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in logistic regression predictions. Results differred from
+  the backend predictions when date-time fields were present.
+
 4.5.2 (2016-03-24)
 ~~~~~~~~~~~~~~~~~~
 

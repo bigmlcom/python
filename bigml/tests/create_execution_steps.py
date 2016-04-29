@@ -20,6 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import assert_equal
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -59,7 +60,7 @@ def the_execution_ids_and_attributes(step, number_of_scripts,
 def i_create_an_execution(step):
     resource = world.api.create_execution(world.script['resource'])
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    assert_equal(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.execution = resource['object']
     world.executions.append(resource['resource'])
@@ -70,7 +71,7 @@ def i_create_an_execution_from_list(step, number_of_scripts=2):
     scripts = world.scripts[-number_of_scripts:]
     resource = world.api.create_execution(scripts)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    assert_equal(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.execution = resource['object']
     world.executions.append(resource['resource'])
@@ -81,7 +82,7 @@ def i_update_an_execution(step, param, param_value):
     resource = world.api.update_execution(world.execution['resource'],
                                           {param: param_value})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    assert_equal(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.execution = resource['object']
 

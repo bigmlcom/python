@@ -66,7 +66,7 @@ INDENT = " " * 4
 INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Mean', lambda(x): sum(x)/float(len(x))),
                           ('Maximum', max)]
-
+GLOBAL_CLUSTER_LABEL = 'Global'
 
 def parse_terms(text, case_sensitive=True):
     """Returns the list of parsed terms
@@ -122,6 +122,13 @@ class Cluster(ModelFields):
 
         self.resource_id = None
         self.centroids = None
+        self.cluster_global = None
+        self.total_ss = None
+        self.within_ss = None
+        self.between_ss = None
+        self.ratio_ss = None
+        self.critical_value = None
+        self.k = None
         self.scales = {}
         self.term_forms = {}
         self.tag_clouds = {}
@@ -148,9 +155,26 @@ class Cluster(ModelFields):
         if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
             if 'code' in status and status['code'] == FINISHED:
-                clusters = cluster['clusters']['clusters']
+                the_clusters = cluster['clusters']
+                cluster_global = the_clusters.get('global')
+                clusters = the_clusters['clusters']
                 self.centroids = [Centroid(centroid) for centroid in clusters]
-                self.scales = {}
+                self.cluster_global = cluster_global
+                if cluster_global:
+                    self.cluster_global = Centroid(cluster_global)
+                    # "global" has no "name" and "count" then we set them
+                    self.cluster_global.name = GLOBAL_CLUSTER_LABEL
+                    self.cluster_global.count = \
+                        self.cluster_global.distance['population']
+                self.total_ss = the_clusters.get('total_ss')
+                self.within_ss = the_clusters.get('within_ss')
+                if not self.within_ss:
+                    self.within_ss = sum(centroid.distance['sum_squares'] for
+                                         centroid in self.centroids)
+                self.between_ss = the_clusters.get('between_ss')
+                self.ratio_ss = the_clusters.get('ratio_ss')
+                self.critical_value = cluster.get('critical_value', None)
+                self.k = cluster.get('k')
                 self.scales.update(cluster['scales'])
                 self.term_forms = {}
                 self.tag_clouds = {}
@@ -223,6 +247,13 @@ class Cluster(ModelFields):
         nearest['distance'] = math.sqrt(nearest['distance'])
         return nearest
 
+    @property
+    def is_g_means(self):
+        """Checks whether the cluster has been created using g-means
+
+        """
+        return self.critical_value is not None
+
     def get_unique_terms(self, input_data):
         """Parses the input data to find the list of unique terms in the
            tag cloud
@@ -286,11 +317,22 @@ class Cluster(ModelFields):
             if centroid.centroid_id != to_centroid.centroid_id:
                 distances.append(
                     math.sqrt(
-                        centroid.distance2(to_centroid.center, unique_terms,
+                        centroid.distance2(to_centroid.center,
+                                           unique_terms,
                                            self.scales)))
         for measure, function in INTERCENTROID_MEASURES:
             result = function(distances)
             intercentroid_distance.append([measure, result])
+        return intercentroid_distance
+
+    def cluster_global_distance(self):
+        """Used to populate the intercentroid distances columns in the CSV
+           report. For now we don't want to compute real distance and jsut
+           display "N/A"
+        """
+        intercentroid_distance = []
+        for measure, function in INTERCENTROID_MEASURES:
+            intercentroid_distance.append([measure, 'N/A'])
         return intercentroid_distance
 
     def centroid_features(self, centroid, field_ids):
@@ -314,6 +356,37 @@ class Cluster(ModelFields):
                         self.centroids]
         return sorted(distribution, key=lambda x: x[0])
 
+
+    def print_global_distribution(self, out=sys.stdout):
+        """Prints the line Global: 100% (<total> instances)
+
+         """
+        output = u""
+        if self.cluster_global:
+            output += (u"    %s: 100%% (%d instances)\n" % (
+                self.cluster_global.name,
+                self.cluster_global.count))
+        out.write(output)
+        out.flush()
+
+    def print_ss_metrics(self, out=sys.stdout):
+        """Prints the block of *_ss metrics from the cluster
+
+        """
+        ss_metrics = [("total_ss (Total sum of squares)", self.total_ss),
+                      ("within_ss (Total within-cluster sum of the sum "
+                      "of squares)", self.within_ss),
+                      ("between_ss (Between sum of squares)", self.between_ss),
+                      ("ratio_ss (Ratio of sum of squares)", self.ratio_ss)]
+        output = u""
+
+        for metric in ss_metrics:
+            if metric[1]:
+                output += (u"%s%s: %5f\n" % (INDENT, metric[0], metric[1]))
+
+        out.write(output)
+        out.flush()
+
     def statistics_CSV(self, file_name=None):
         """To be deprecated. See statistics_csv
 
@@ -327,32 +400,49 @@ class Cluster(ModelFields):
         rows = []
         writer = None
         field_ids = self.centroids[0].center.keys()
-        headers = [u"centroid_name"]
+        headers = [u"Centroid_name"]
         headers.extend([u"%s" % self.fields[field_id]["name"]
                         for field_id in field_ids])
         headers.extend([u"Instances"])
         intercentroids = False
         header_complete = False
-        for centroid in self.centroids:
+
+
+        centroids_list = sorted(self.centroids, key=lambda x: x.name)
+        for centroid in centroids_list:
             row = [centroid.name]
             row.extend(self.centroid_features(centroid, field_ids))
             row.append(centroid.count)
             if len(self.centroids) > 1:
                 for measure, result in self.centroids_distance(centroid):
                     if not intercentroids:
-                        headers.append(u"Intercentroids %s" % measure.lower())
+                        headers.append(u"%s intercentroid distance" % \
+                            measure.title())
                     row.append(result)
                 intercentroids = True
             for measure, result in centroid.distance.items():
                 if measure in CSV_STATISTICS:
                     if not header_complete:
-                        headers.append(u"Data %s" %
+                        headers.append(u"Distance %s" %
                                        measure.lower().replace("_", " "))
                     row.append(result)
             if not header_complete:
                 rows.append(headers)
                 header_complete = True
             rows.append(row)
+
+        if self.cluster_global:
+            row = [u"%s" % self.cluster_global.name]
+            row.extend(self.centroid_features(self.cluster_global, field_ids))
+            row.append(self.cluster_global.count)
+            if len(self.centroids) > 1:
+                for measure, result in self.cluster_global_distance():
+                    row.append(result)
+            for measure, result in self.cluster_global.distance.items():
+                if measure in CSV_STATISTICS:
+                    row.append(result)
+            # header is already in rows then insert cluster_global after it
+            rows.insert(1, row)
 
         if file_name is None:
             return rows
@@ -365,16 +455,32 @@ class Cluster(ModelFields):
         """Prints a summary of the cluster info
 
         """
-        out.write(u"Cluster of %s centroids\n\n" % len(self.centroids))
+        report_header = ''
+        if self.is_g_means:
+            report_header = \
+                u'G-means Cluster (critical_value=%d)' % self.critical_value
+        else:
+            report_header = u'K-means Cluster (k=%d)' % self.k
+
+        out.write(report_header + ' with %d centroids\n\n' %
+                  len(self.centroids))
 
         out.write(u"Data distribution:\n")
+        # "Global" is set as first entry
+        self.print_global_distribution(out=out)
         print_distribution(self.get_data_distribution(), out=out)
-        out.write(u"\n\n")
-        centroids_list = sorted(self.centroids, key=lambda x: x.name)
+        out.write(u"\n")
+        centroids_list = [self.cluster_global] if self.cluster_global else []
+        centroids_list.extend(sorted(self.centroids, key=lambda x: x.name))
 
-        out.write(u"Centroids features:\n")
+        out.write(u"Cluster metrics:\n")
+        self.print_ss_metrics(out=out)
+        out.write(u"\n")
+
+
+        out.write(u"Centroids:\n")
         for centroid in centroids_list:
-            out.write(utf8(u"\n%s: " % centroid.name))
+            out.write(utf8(u"\n%s%s: " % (INDENT, centroid.name)))
             connector = ""
             for field_id, value in centroid.center.items():
                 if isinstance(value, basestring):
@@ -385,14 +491,18 @@ class Cluster(ModelFields):
                 connector = ", "
         out.write(u"\n\n")
 
-        out.write(u"Data distance statistics:\n\n")
+        out.write(u"Distance distribution:\n\n")
         for centroid in centroids_list:
             centroid.print_statistics(out=out)
+        out.write(u"\n")
 
         if len(self.centroids) > 1:
-            out.write(u"Intercentroids distance:\n\n")
+            out.write(u"Intercentroid distance:\n\n")
+            centroids_list = (centroids_list[1:] if self.cluster_global else
+                              centroids_list)
             for centroid in centroids_list:
-                out.write(utf8(u"To centroid: %s\n" % centroid.name))
+                out.write(utf8(u"%sTo centroid: %s\n" % (INDENT,
+                                                         centroid.name)))
                 for measure, result in self.centroids_distance(centroid):
-                    out.write(u"%s%s: %s\n" % (INDENT, measure, result))
+                    out.write(u"%s%s: %s\n" % (INDENT * 2, measure, result))
                 out.write(u"\n")

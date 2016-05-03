@@ -257,11 +257,11 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance |
-                | ../data/iris.csv | 20      | 20     | 30     | {"summary_fields": ["sepal width"]} |{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}             | Cluster 3   | 0.7155571246307187   |
+                | ../data/iris.csv | 20      | 20     | 30     | {"summary_fields": ["sepal width"]} |{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}             | Cluster 3   | 1.1176214402303308   |
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 3', '0.7155571246307187']]
+            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 3', '1.1176214402303308']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

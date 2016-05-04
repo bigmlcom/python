@@ -3,14 +3,10 @@
 History
 -------
 
-4.5.4 (2016-05-04)
+4.5.3 (2016-05-04)
 ~~~~~~~~~~~~~~~~~~
 
 - Improving the cluster report information.
-
-4.5.3 (2016-04-30)
-~~~~~~~~~~~~~~~~~~
-
 - Fixing bug in logistic regression predictions. Results differred from
   the backend predictions when date-time fields were present.
 

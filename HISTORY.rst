@@ -3,15 +3,11 @@
 History
 -------
 
-4.6.0 (2016-04-10)
+4.6.0 (2016-05-19)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding REST methods to manage new types of whizzml resources: scripts,
   executions and libraries.
-
-4.5.4 (2016-05-17)
-~~~~~~~~~~~~~~~~~~
-
 - Fixing bug in logistic regression predictions for datases with text fields.
   When input data has only one term and `all` token mode is used, local and
   remote predictions didn't match.

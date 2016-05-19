@@ -2372,11 +2372,7 @@ Each ``execution`` is run under its associated user credentials and its
 particular environment constaints. As ``scripts`` can be shared,
 you can execute the same ``script``
 several times under different
-usernames by creating different ``executions``. Also
-different environmental constraints can be set per ``execution``,
-such as the degree
-of parallelism (tlp), a time budget (max_exection_time) or even
-a maximum number of basic instructions (max_execution_steps).
+usernames by creating different ``executions``.
 
 As an example of ``execution`` resource, let's create one for the script
 in the previous section:

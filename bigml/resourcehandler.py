@@ -28,9 +28,27 @@ from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
 
+
 NO_QS = [c.EVALUATION_RE, c.PREDICTION_RE, c.BATCH_PREDICTION_RE,
          c.CENTROID_RE, c.BATCH_CENTROID_RE, c.ANOMALY_SCORE_RE,
          c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE, c.ASSOCIATION_SET_RE]
+
+
+# Resource status codes
+WAITING = 0
+QUEUED = 1
+STARTED = 2
+IN_PROGRESS = 3
+SUMMARIZED = 4
+FINISHED = 5
+UPLOADING = 6
+FAULTY = -1
+UNKNOWN = -2
+RUNNABLE = -3
+
+
+# Minimum query string to get model fields
+TINY_RESOURCE = "full=false"
 
 
 def get_resource_type(resource):
@@ -242,6 +260,27 @@ def get_association_set_id(association_set):
 
     """
     return get_resource(c.ASSOCIATION_SET_PATH, association_set)
+
+
+def get_script_id(script):
+    """Returns a script/id.
+
+    """
+    return get_resource(c.SCRIPT_PATH, script)
+
+
+def get_execution_id(execution):
+    """Returns a execution/id.
+
+    """
+    return get_resource(c.EXECUTION_PATH, execution)
+
+
+def get_library_id(library):
+    """Returns a library/id.
+
+    """
+    return get_resource(c.LIBRARY_PATH, library)
 
 
 def get_resource_id(resource):

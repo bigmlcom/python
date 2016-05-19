@@ -50,7 +50,7 @@ from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
-from bigml.predicate import TM_TOKENS, TM_FULL_TERM
+from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.modelfields import ModelFields
 from bigml.cluster import parse_terms, parse_items
 
@@ -66,6 +66,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
        term_forms or in the tag cloud.
 
     """
+
     extend_forms = {}
     for term, forms in term_forms.items():
         for form in forms:
@@ -136,7 +137,9 @@ class LogisticRegression(ModelFields):
             self.input_fields = logistic_regression.get("input_fields", [])
             self.dataset_field_types = logistic_regression.get(
                 "dataset_field_types", {})
-            objective_field = logistic_regression['objective_fields']
+            objective_field = logistic_regression['objective_fields'] if \
+                logistic_regression['objective_fields'] else \
+                logistic_regression['objective_field']
         except KeyError:
             raise ValueError("Failed to find the logistic regression expected "
                              "JSON structure. Check your arguments.")
@@ -309,10 +312,15 @@ class LogisticRegression(ModelFields):
                                             case_sensitive=case_sensitive)
                     else:
                         terms = []
-                    if token_mode != TM_TOKENS:
-                        terms.append(
-                            input_data_field if case_sensitive
-                            else input_data_field.lower())
+                    full_term = input_data_field if case_sensitive \
+                        else input_data_field.lower()
+                    # We add full_term if needed. Note that when there's
+                    # only one term in the input_data, full_term and term are
+                    # equal. Then full_term will not be added to avoid
+                    # duplicated counters for the term.
+                    if token_mode == TM_FULL_TERM or \
+                            (token_mode == TM_ALL and terms[0] != full_term):
+                        terms.append(full_term)
                     unique_terms[field_id] = get_unique_terms(
                         terms, self.term_forms[field_id],
                         self.tag_clouds.get(field_id, []))

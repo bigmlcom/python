@@ -44,6 +44,7 @@ fields =  Fields(prediction['object']['fields'])
 import sys
 import json
 
+
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
 from bigml.api import get_resource_type
@@ -588,7 +589,6 @@ class Fields(object):
                         self.field_id(int(field_attributes[0]))
                     new_fields_structure[field_id] = \
                         dict(zip(headers, field_attributes[1: 6]))
-
             except ValueError:
                 raise ValueError("The first column should contain either the"
                                  " column or ID of the fields. Failed to find"

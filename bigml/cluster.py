@@ -35,8 +35,8 @@ from bigml.cluster import Cluster
 api = BigML()
 
 cluster = Cluster('cluster/5026965515526876630001b2')
-cluster.predict({"petal length": 3, "petal width": 1,
-                 "sepal length": 1, "sepal width": 0.5})
+cluster.centroid({"petal length": 3, "petal width": 1,
+                  "sepal length": 1, "sepal width": 0.5})
 
 """
 import logging

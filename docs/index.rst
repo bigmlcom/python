@@ -2271,6 +2271,219 @@ from the datasets as well as the configuration parameters described in
 the `developers section <https://bigml.com/developers/associations>`_ .
 
 
+Whizzml Resources
+-----------------
+
+Whizzml is a Domain Specific Language that allows the definition and
+execution of ML-centric workflows. Its objective is allowing BigML
+users to define their own composite tasks, using as building blocks
+the basic resources provided by BigML itself. Using Whizzml they can be
+glued together using a higher order, functional, Turing-complete language.
+The Whizzml code can be stored and executed in BigML using three kinds of
+resources: ``Scripts``, ``Libraries`` and ``Executions``.
+
+Whizzml ``Scripts`` can be executed in BigML's servers, that is,
+in a controlled, fully-scalable environment which takes care of their
+parallelization and fail-safe operation. Each execution uses an ``Execution``
+resource to store the arguments and results of the process. Whizzml
+``Libraries`` store generic code to be shared of reused in other Whizzml
+``Scripts``.
+
+Scripts
+-------
+
+In BigML a ``Script`` resource stores Whizzml source code, and the results of
+its compilation. Once a Whizzml script is created, it's automatically compiled;
+if compilation succeeds, the script can be run, that is,
+used as the input for a Whizzml execution resource.
+
+An example of a ``script`` that would create a ``source`` in BigML using the
+contents of a remote file is:
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    # creating a script directly from the source code. This script creates
+    # a source uploading data from an s3 repo. You could also create a
+    # a script by using as first argument the path to a .whizzml file which
+    # contains your source code.
+    >>> script = api.create_script( \
+            "(create-source {\"remote\" \"s3://bigml-public/csv/iris.csv\"})")
+    >>> api.ok(script) # waiting for the script compilation to finish
+    >>> api.pprint(script['object'])
+    {   u'approval_status': 0,
+        u'category': 0,
+        u'code': 200,
+        u'created': u'2016-05-18T16:54:05.666000',
+        u'description': u'',
+        u'imports': [],
+        u'inputs': None,
+        u'line_count': 1,
+        u'locale': u'en-US',
+        u'name': u'Script',
+        u'number_of_executions': 0,
+        u'outputs': None,
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'provider': None,
+        u'resource': u'script/573c9e2db85eee23cd000489',
+        u'shared': False,
+        u'size': 59,
+        u'source_code': u'(create-source {"remote" "s3://bigml-public/csv/iris.csv"})',
+        u'status': {   u'code': 5,
+                       u'elapsed': 4,
+                       u'message': u'The script has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'updated': u'2016-05-18T16:54:05.850000',
+        u'white_box': False}
+
+A ``script`` allows to define some variables as ``inputs``. In the previous
+example, no input has been defined, but we could modify our code to
+allow the user to set the remote file name as input:
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> script = api.create_script( \
+            "(create-source {\"remote\" my_remote_data})",
+            {"inputs": [{"name": "my_remote_data",
+                         "type": "string",
+                         "default": "s3://bigml-public/csv/iris.csv",
+                         "description": "Location of the remote data"}]})
+
+The ``script`` can also use a ``library`` resource (please, see the
+``Libraries`` section below for more details) by including its id in the
+``imports`` attribute. Other attributes can be checked at the
+`API Developers documentation for Scripts<https://bigml.com/developers/scripts#ws_script_arguments>`_.
+
+Executions
+----------
+
+To execute in BigML a compiled Whizzml ``script`` you need to create an
+``execution`` resource. It's also possible to execute a pipeline of
+many compiled scripts in one request.
+
+Each ``execution`` is run under its associated user credentials and its
+particular environment constaints. As ``scripts`` can be shared,
+you can execute the same ``script``
+several times under different
+usernames by creating different ``executions``.
+
+As an example of ``execution`` resource, let's create one for the script
+in the previous section:
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> execution = api.create_execution('script/573c9e2db85eee23cd000489')
+    >>> api.ok(execution) # waiting for the execution to finish
+    >>> api.pprint(execution['object'])
+    {   u'category': 0,
+        u'code': 200,
+        u'created': u'2016-05-18T16:58:01.613000',
+        u'creation_defaults': {   },
+        u'description': u'',
+        u'execution': {   u'output_resources': [   {   u'code': 1,
+                                                       u'id': u'source/573c9f19b85eee23c600024a',
+                                                       u'last_update': 1463590681854,
+                                                       u'progress': 0.0,
+                                                       u'state': u'queued',
+                                                       u'task': u'Queuing job',
+                                                       u'variable': u''}],
+                          u'outputs': [],
+                          u'result': u'source/573c9f19b85eee23c600024a',
+                          u'results': [u'source/573c9f19b85eee23c600024a'],
+                          u'sources': [[   u'script/573c9e2db85eee23cd000489',
+                                              u'']],
+                          u'steps': 16},
+        u'inputs': None,
+        u'locale': u'en-US',
+        u'name': u"Script's Execution",
+        u'project': None,
+        u'resource': u'execution/573c9f19b85eee23bd000125',
+        u'script': u'script/573c9e2db85eee23cd000489',
+        u'script_status': True,
+        u'shared': False,
+        u'status': {   u'code': 5,
+                       u'elapsed': 249,
+                       u'elapsed_times': {   u'in-progress': 247,
+                                             u'queued': 62,
+                                             u'started': 2},
+                       u'message': u'The execution has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'updated': u'2016-05-18T16:58:02.035000'}
+
+
+An ``execution`` receives inputs, the ones defined in the ``script`` chosen
+to be executed, and generates a result. It can also generate outputs.
+As you can see, the execution resource contains information about the result
+of the execution, the resources that have been generated while executing and
+users can define some variables in the code to be exported as outputs. Please
+refer to the
+`Developers documentation for Executions<https://bigml.com/developers/executions#we_execution_arguments>`_
+for details on how to define execution outputs.
+
+Libraries
+---------
+
+The ``library`` resource in BigML stores a special kind of compiled Whizzml
+source code that only defines functions and constants. The ``library`` is
+intended as an import for executable scripts.
+Thus, a compiled library cannot be executed, just used as an
+import in other ``libraries`` and ``scripts`` (which then have access
+to all identifiers defined in the ``library``).
+
+As an example, we build a ``library`` to store the definition of two functions:
+``mu`` and ``g``. The first one adds one to the value set as argument and
+the second one adds two variables and increments the result by one.
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> library = api.create_library( \
+            "(define (mu x) (+ x 1)) (define (g z y) (mu (+ y z)))")
+    >>> api.ok(library) # waiting for the library compilation to finish
+    >>> api.pprint(library['object'])
+    {   u'approval_status': 0,
+        u'category': 0,
+        u'code': 200,
+        u'created': u'2016-05-18T18:58:50.838000',
+        u'description': u'',
+        u'exports': [   {   u'name': u'mu', u'signature': [u'x']},
+                        {   u'name': u'g', u'signature': [u'z', u'y']}],
+        u'imports': [],
+        u'line_count': 1,
+        u'name': u'Library',
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'provider': None,
+        u'resource': u'library/573cbb6ab85eee23c300018e',
+        u'shared': False,
+        u'size': 53,
+        u'source_code': u'(define (mu x) (+ x 1)) (define (g z y) (mu (+ y z)))',
+        u'status': {   u'code': 5,
+                       u'elapsed': 2,
+                       u'message': u'The library has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'updated': u'2016-05-18T18:58:52.432000',
+        u'white_box': False}
+
+Libraries can be imported in scripts. The ``imports`` attribute of a ``script``
+can contain a list of ``library`` IDs whose defined functions
+and constants will be ready to be used throughout the ``script``. Please,
+refer to the `API Developers documentation for Libraries<https://bigml.com/developers/libraries#wl_library_arguments>`_
+for more details.
+
 Creating Resources
 ------------------
 
@@ -2335,13 +2548,15 @@ You can query the status of any resource with the ``status`` method:
     api.status(anomaly)
     api.status(anomaly_score)
     api.status(batch_anomaly_score)
-    api.status(project)
     api.status(sample)
     api.status(correlation)
     api.status(statistical_test)
     api.status(logistic_regression)
     api.status(association)
     api.status(association_set)
+    api.status(script)
+    api.status(execution)
+    api.status(library)
 
 Before invoking the creation of a new resource, the library checks that
 the status of the resource that is passed as a parameter is
@@ -2949,6 +3164,9 @@ You can list resources with the appropriate api method:
     api.list_logistic_regressions()
     api.list_associations()
     api.list_association_sets()
+    api.list_scripts()
+    api.list_libraries()
+    api.list_executions()
 
 you will receive a dictionary with the following keys:
 
@@ -3083,6 +3301,9 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_logistic_regression(logistic_regression, {"name": "new name"})
     api.update_association(association, {"name": "new name"})
     api.update_association_set(association_set, {"name": "new name"})
+    api.update_script(script, {"name": "new name"})
+    api.update_library(library, {"name": "new name"})
+    api.update_execution(execution, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
 ``description`` attributes of a dataset, or specific properties. As an example,
@@ -3127,6 +3348,10 @@ each type of resource.
     api.delete_logistic_regression(logistic_regression)
     api.delete_association(association)
     api.delete_association_set(association_set)
+    api.delete_project(project)
+    api.delete_script(script)
+    api.delete_library(library)
+    api.delete_execution(execution)
 
 Each of the calls above will return a dictionary with the following
 keys:

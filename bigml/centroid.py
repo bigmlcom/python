@@ -25,9 +25,10 @@ in the cluster.
 import math
 import sys
 
-
+INDENT = " " * 4
 STATISTIC_MEASURES = [
-    'Minimum', 'Mean', 'Median', 'Maximum', 'Standard deviation']
+    'Minimum', 'Mean', 'Median', 'Maximum', 'Standard deviation', 'Sum',
+    'Sum squares', 'Variance']
 
 
 def cosine_distance2(terms, centroid_terms, scale):
@@ -88,9 +89,10 @@ class Centroid(object):
            centroid
 
         """
-        out.write(u"%s:\n" % self.name)
-        literal = u"    %s: %s\n"
+        out.write(u"%s%s:\n" % (INDENT, self.name))
+        literal = u"%s%s: %s\n"
         for measure_title in STATISTIC_MEASURES:
             measure = measure_title.lower().replace(" ", "_")
-            out.write(literal % (measure_title, self.distance[measure]))
+            out.write(literal % (INDENT * 2, measure_title,
+                                 self.distance[measure]))
         out.write("\n")

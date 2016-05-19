@@ -46,15 +46,17 @@ class TestExecution(object):
                 And I wait until the execution is ready less than <time_2> secs
                 And I update the execution with "<param>", "<param_value>"
                 And I wait until the execution is ready less than <time_3> secs
-                Then the script id is correct and the value of "<param>" is "<param_value>"
+                Then the script id is correct, the value of "<param>" is "<param_value>" and the result is "<result>"
 
                 Examples:
-                | source_code      | time_1  | time_2  | time_3  | param | param_value
-                | (+ 1 1)          | 10      | 10      | 50      | name  | my execution
+
+                | source_code      | time_1  | time_2  | time_3  | param | param_value | result
+                | (+ 1 1)          | 10      | 10      | 10      | name  | my execution | 2
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['(+ 1 1)', '10', '10', '50', 'name', 'my execution']]
+            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', 2]]
+
         for example in examples:
             print "\nTesting with:\n", example
             script_create.i_create_a_script(self, example[0])
@@ -63,7 +65,7 @@ class TestExecution(object):
             execution_create.the_execution_is_finished(self, example[2])
             execution_create.i_update_an_execution(self, example[4], example[5])
             execution_create.the_execution_is_finished(self, example[3])
-            execution_create.the_execution_and_attributes(self, example[4], example[5])
+            execution_create.the_execution_and_attributes(self, example[4], example[5], example[6])
 
     def test_scenario2(self):
         """
@@ -76,15 +78,16 @@ class TestExecution(object):
                 And I wait until the execution is ready less than <time_2> secs
                 And I update the execution with "<param>", "<param_value>"
                 And I wait until the execution is ready less than <time_3> secs
-                Then the script ids are correct and the value of "<param>" is "<param_value>"
+                Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
 
                 Examples:
-                | source_code      | time_1  | time_2  | time_3  | param | param_value
-                | (+ 1 1)          | 10      | 10      | 50      | name  | my execution
+
+                | source_code      | time_1  | time_2  | time_3  | param | param_value | result
+                | (+ 1 1)          | 10      | 10      | 10      | name  | my execution | [2, 2]
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['(+ 1 1)', '10', '10', '50', 'name', 'my execution']]
+            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', [2, 2]]]
         for example in examples:
             print "\nTesting with:\n", example
             script_create.i_create_a_script(self, example[0])
@@ -95,4 +98,4 @@ class TestExecution(object):
             execution_create.the_execution_is_finished(self, example[2])
             execution_create.i_update_an_execution(self, example[4], example[5])
             execution_create.the_execution_is_finished(self, example[3])
-            execution_create.the_execution_ids_and_attributes(self, 2, example[4], example[5])
+            execution_create.the_execution_ids_and_attributes(self, 2, example[4], example[5], example[6])

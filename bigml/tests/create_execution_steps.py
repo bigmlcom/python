@@ -31,9 +31,11 @@ from bigml.api import get_status
 from read_execution_steps import i_get_the_execution
 
 
-#@step(r'the script id is correct and the value of "(.*)" is "(.*)"')
-def the_execution_and_attributes(step, param, param_value):
+#@step(r'the script id is correct, the value of "(.*)" is "(.*)" and the result is "(.*)"')
+def the_execution_and_attributes(step, param, param_value, result):
     assert world.script['resource'] == world.execution['script']
+    print world.execution['execution']['results']
+    assert world.execution['execution']['results'][0] == result
     res_param_value = world.execution[param]
     if res_param_value == param_value:
         assert True
@@ -42,12 +44,13 @@ def the_execution_and_attributes(step, param, param_value):
                        "and the expected %s is %s" %
                        (param, param_value, param, param_value))
 
-
-#@step(r'the script ids are correct and the value of "(.*)" is "(.*)"')
+#@step(r'the script ids are correct, the value of "(.*)" is "(.*)" and the result is "(.*)"')
 def the_execution_ids_and_attributes(step, number_of_scripts,
-                                     param, param_value):
+                                     param, param_value, result):
     scripts = world.scripts[-number_of_scripts:]
     assert  scripts == world.execution['scripts']
+    print world.execution['execution']['results']
+    assert world.execution['execution']['results'] == result
     res_param_value = world.execution[param]
     if res_param_value == param_value:
         assert True

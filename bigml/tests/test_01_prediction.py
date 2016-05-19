@@ -187,11 +187,11 @@ class TestPrediction(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | data_input    | centroid  |
-                | ../data/diabetes.csv | 10      | 20     | 20     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 7 |
+                | ../data/diabetes.csv | 10      | 20     | 20     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 3 |
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 7']]
+            ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 3']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

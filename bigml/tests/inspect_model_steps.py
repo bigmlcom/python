@@ -26,12 +26,6 @@ def i_translate_the_tree_into_IF_THEN_rules(step):
     output = io.BytesIO()
     world.local_model.rules(out=output)
     world.output = output.getvalue()
-    """
-    if not os.path.exists('./tmp'):
-        os.mkdir('./tmp')
-    with open('./tmp/rules.txt', "w") as rules_file:
-        rules_file.write(world.output)
-    """
 
 #@step(r'I check data distribution with "(.*)" file$')
 def i_check_the_data_distribution(step, file):
@@ -65,12 +59,6 @@ def i_check_the_model_summary_with(step, file):
     output = io.BytesIO()
     world.local_model.summarize(out=output)
     world.output = output.getvalue()
-    if not os.path.exists('./tmp'):
-        os.mkdir('./tmp')
-    with open('./tmp/summary.txt', "w") as rules_file:
-        rules_file.write(world.output)
-
-
     i_check_if_the_output_is_like_expected_file(step, file)
 
 

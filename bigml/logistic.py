@@ -106,6 +106,7 @@ class LogisticRegression(ModelFields):
         self.categories = {}
         self.coefficients = {}
         self.data_field_types = {}
+        self.field_codings = {}
         self.numeric_fields = {}
         self.bias = None
         self.missing_numerics = None
@@ -164,6 +165,8 @@ class LogisticRegression(ModelFields):
                 self.lr_normalize = logistic_regression_info.get('normalize')
                 self.regularization = logistic_regression_info.get( \
                     'regularization')
+                self.field_codings = logistic_regression_info.get( \
+                     'field_codings')
                 # old models have no such attribute, so we set it to False in
                 # this case
                 self.missing_numerics = logistic_regression_info.get( \
@@ -195,6 +198,13 @@ class LogisticRegression(ModelFields):
                 ModelFields.__init__(
                     self, fields,
                     objective_id=objective_id)
+                for field_id in self.field_codings:
+                    if field_id not in fields and \
+                            field_id in self.inverted_fields:
+                        self.field_codings.update( \
+                            {self.inverted_fields[field_id]: \
+                             self.field_codings[field_id]})
+                        del self.field_codings[field_id]
                 self.map_coefficients()
             else:
                 raise Exception("The logistic regression isn't finished yet")
@@ -259,13 +269,32 @@ class LogisticRegression(ModelFields):
             shift = self.fields[field_id]['coefficients_shift']
             for term, occurrences in unique_terms[field_id]:
                 try:
+                    one_hot = True
                     if field_id in self.tag_clouds:
                         index = self.tag_clouds[field_id].index(term)
                     elif field_id in self.items:
                         index = self.items[field_id].index(term)
-                    elif field_id in self.categories:
+                    elif field_id in self.categories and ( \
+                            not field_id in self.field_codings or \
+                            self.field_codings[field_id].keys()[0] == "dummy"):
                         index = self.categories[field_id].index(term)
-                    probability += coefficients[shift + index] * occurrences
+                    elif field_id in self.categories:
+                        """ codings are given as arrays of coefficients. The
+                        last one is for missings and the previous ones are
+                        one per category as found in summary
+                        """
+                        one_hot = False
+                        index = self.categories[field_id].index(term)
+                        coeff_index = 0
+                        for contribution in \
+                                self.field_codings[field_id].values()[0]:
+                            probability += \
+                                coefficients[shift + coeff_index] * \
+                                contribution[index] * occurrences
+                            coeff_index += 1
+                    if one_hot:
+                        probability += coefficients[shift + index] * \
+                            occurrences
                 except ValueError:
                     pass
 
@@ -284,11 +313,25 @@ class LogisticRegression(ModelFields):
                 probability += coefficients[ \
                     shift + len(self.items[field_id])]
         for field_id in self.categories:
-            if field_id != self.objective_id and \
-                    field_id not in unique_terms:
-                shift = self.fields[field_id]['coefficients_shift']
-                probability += coefficients[ \
-                    shift + len(self.categories[field_id])]
+            if field_id != self.objective_id and field_id not in unique_terms:
+                if field_id not in self.field_codings or \
+                        self.field_codings[field_id].keys()[0] == "dummy":
+                    print "dummy", self.categories[field_id]
+                    shift = self.fields[field_id]['coefficients_shift']
+                    probability += coefficients[ \
+                        shift + len(self.categories[field_id])]
+                else:
+                    """ codings are given as arrays of coefficients. The
+                    last one is for missings and the previous ones are
+                    one per category as found in summary
+                    """
+                    shift = self.fields[field_id]['coefficients_shift']
+                    coeff_index = 0
+                    for contribution in \
+                            self.field_codings[field_id].values()[0]:
+                        probability += coefficients[shift + coeff_index] * \
+                            contribution[-1]
+                        coeff_index += 1
         probability += coefficients[-1]
         probability = 1 / (1 + math.exp(-probability))
         return probability
@@ -364,13 +407,20 @@ class LogisticRegression(ModelFields):
         for field_id in field_ids:
             optype = self.fields[field_id]['optype']
             if optype in EXPANSION_ATTRIBUTES.keys():
-                # text, items and categorical fields have one coefficient per
-                # text/class plus a missing terms coefficient plus a bias
+                # text and items fields have one coefficient per
+                # text plus a missing terms coefficient plus a bias
                 # coefficient
-                length = len(self.fields[field_id]['summary'][ \
-                    EXPANSION_ATTRIBUTES[optype]])
-                # missing coefficient
-                length += 1
+                # categorical fields too, unless they use a non-default
+                # field coding.
+                if optype != 'categorical' or \
+                        not field_id in self.field_codings or \
+                        self.field_codings[field_id].keys()[0] ==  "dummy":
+                    length = len(self.fields[field_id]['summary'][ \
+                        EXPANSION_ATTRIBUTES[optype]])
+                    # missing coefficient
+                    length += 1
+                else:
+                    length = len(self.field_codings[field_id].values()[0])
             else:
                 # numeric fields have one coefficient and an additional one
                 # if self.missing_numerics is True

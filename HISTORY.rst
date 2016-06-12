@@ -3,6 +3,12 @@
 History
 -------
 
+4.6.1 (2016-06-12)
+~~~~~~~~~~~~~~~~~~
+
+- Adapting local logistic regression object to new coefficients format and
+  adding field_codings attribute.
+
 4.6.0 (2016-05-19)
 ~~~~~~~~~~~~~~~~~~
 

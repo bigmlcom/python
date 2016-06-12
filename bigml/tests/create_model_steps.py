@@ -165,11 +165,13 @@ def i_create_a_logistic_model(step):
     world.logistic_regressions.append(resource['resource'])
 
 
-#@step(r'I create a logistic regression model with objective "(.*?)"$')
-def i_create_a_logistic_model_with_objective(step, objective):
+#@step(r'I create a logistic regression model with objective "(.*?)" and parms "(.*)"$')
+def i_create_a_logistic_model_with_objective_and_parms(step, objective, parms):
     dataset = world.dataset.get('resource')
+    parms = json.loads(parms)
+    parms.update({"objective_field": objective})
     resource = world.api.create_logistic_regression( \
-        dataset, {"objective_field": objective})
+        dataset, parms)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']

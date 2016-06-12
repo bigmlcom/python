@@ -124,8 +124,12 @@ class World(object):
         """Reset the api connection values
 
         """
-        self.api = BigML(self.USERNAME, self.API_KEY)
-        self.api_dev_mode = BigML(self.USERNAME, self.API_KEY, dev_mode=True)
+        if self.api is not None and self.api.dev_mode:
+            world.project_id = None
+        if self.api is None or self.api.dev_mode:
+            self.api = BigML(self.USERNAME, self.API_KEY)
+            self.api_dev_mode = BigML(self.USERNAME, self.API_KEY,
+                                      dev_mode=True)
 
     def delete_resources(self):
         """Deletes the created objects

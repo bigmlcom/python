@@ -166,9 +166,12 @@ def i_create_a_logistic_model(step):
 
 
 #@step(r'I create a logistic regression model with objective "(.*?)" and parms "(.*)"$')
-def i_create_a_logistic_model_with_objective_and_parms(step, objective, parms):
+def i_create_a_logistic_model_with_objective_and_parms(step, objective, parms=None):
     dataset = world.dataset.get('resource')
-    parms = json.loads(parms)
+    if parms is None:
+        parms = {}
+    else:
+        parms = json.loads(parms)
     parms.update({"objective_field": objective})
     resource = world.api.create_logistic_regression( \
         dataset, parms)

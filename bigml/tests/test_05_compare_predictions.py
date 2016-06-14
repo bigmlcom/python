@@ -483,9 +483,9 @@ class TestComparePrediction(object):
         """
         print self.test_scenario10.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.7645, "000000"],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'spam', 0.7175, "000000"],
-            ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', '25-34', '0.4135', '000002']]
+            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.7645, "000000"],
+            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'spam', 0.7175, "000000"],
+            ['data/movies.csv', '20', '20', '80', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', '25-34', '0.4135', '000002']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -493,7 +493,7 @@ class TestComparePrediction(object):
             source_create.i_update_source_with(self, example[4])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_logistic_model_with_objective(self, example[8])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8])
             model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_logistic_model(self)
             prediction_create.i_create_a_logistic_prediction(self, example[5])

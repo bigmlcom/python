@@ -328,10 +328,12 @@ class LogisticRegression(ModelFields):
                     probability += coefficients[ \
                         len(self.tag_clouds[field_id])]
         for field_id in self.items:
-            shift = self.fields[field_id]['coefficients_shift']
-            if field_id not in unique_terms or not unique_terms[field_id]:
-                probability += coefficients[ \
-                    shift + len(self.items[field_id])]
+            if field_id in self.input_fields:
+                coefficients = self.get_coefficients(category, field_id)
+                if field_id not in unique_terms or not unique_terms[field_id]:
+                    shift = self.fields[field_id]['coefficients_shift']
+                    probability += coefficients[ \
+                        shift + len(self.items[field_id])]
         for field_id in self.categories:
             if field_id in self.input_fields:
                 coefficients = self.get_coefficients(category, field_id)

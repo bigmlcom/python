@@ -3,6 +3,11 @@
 History
 -------
 
+4.6.2 (2016-06-20)
+~~~~~~~~~~~~~~~~~~
+
+- Adding local logistic regression as argument for evaluations.
+
 4.6.1 (2016-06-12)
 ~~~~~~~~~~~~~~~~~~
 

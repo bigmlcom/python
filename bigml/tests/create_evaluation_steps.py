@@ -50,6 +50,17 @@ def i_create_an_evaluation_ensemble(step):
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
 
+#@step(r'I create an evaluation for the logistic regression with the dataset$')
+def i_create_an_evaluation_logistic(step):
+    dataset = world.dataset.get('resource')
+    logistic = world.logistic_regression.get('resource')
+    resource = world.api.create_evaluation(logistic, dataset)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.evaluation = resource['object']
+    world.evaluations.append(resource['resource'])
+
 #@step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()

@@ -3592,7 +3592,8 @@ will result in
       'probability': 0.3333333333333333}]
 
 The argument can be set to ``all`` to obtain the complete
-list or to the maximum length that you want the list to have.
+list or to an integer``n``, in which case you will obtain the top ``n``
+predictions.
 
 When your test data has missing values, you can choose between
 ``last prediction``

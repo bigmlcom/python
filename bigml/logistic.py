@@ -265,8 +265,9 @@ class LogisticRegression(ModelFields):
         prediction, probability = predictions[0]
         return {
             "prediction": prediction,
-            "probability": probability,
-            "distribution": [{"category": category, "probability": probability}
+            "probability": probability["probability"],
+            "distribution": [{"category": category,
+                              "probability": probability["probability"]}
                              for category, probability in predictions]}
 
     def category_probability(self, input_data, unique_terms, category):

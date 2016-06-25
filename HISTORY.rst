@@ -3,6 +3,11 @@
 History
 -------
 
+4.6.3 (2016-06-25)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local logistic regression predictions' format.
+
 4.6.2 (2016-06-20)
 ~~~~~~~~~~~~~~~~~~
 

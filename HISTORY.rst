@@ -3,6 +3,12 @@
 History
 -------
 
+4.6.4 (2016-07-06)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in delete_execution method. The delete call now has a
+  query_string.
+
 4.6.3 (2016-06-25)
 ~~~~~~~~~~~~~~~~~~
 

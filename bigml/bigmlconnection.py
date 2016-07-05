@@ -564,7 +564,7 @@ class BigMLConnection(object):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def _delete(self, url):
+    def _delete(self, url, query_string=''):
         """Permanently deletes a remote resource.
 
         If the request is successful the status `code` will be HTTP_NO_CONTENT
@@ -581,7 +581,7 @@ class BigMLConnection(object):
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth,
+                    'url': url + self.auth + query_string,
                     'method': urlfetch.DELETE,
                     'validate_certificate': self.verify
                 }
@@ -594,7 +594,8 @@ class BigMLConnection(object):
                     'error': error}
         else:
             try:
-                response = requests.delete(url + self.auth, verify=self.verify)
+                response = requests.delete(url + self.auth + query_string,
+                                           verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException), exc:

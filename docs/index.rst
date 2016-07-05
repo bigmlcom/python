@@ -2899,8 +2899,8 @@ invocation:
 
 .. code-block:: python
 
-    model = api.create_association(dataset, {
-        "name": "my association", "input_fields": ["000000", "000001"],
+    association = api.create_association(dataset, { \
+        "name": "my association", "input_fields": ["000000", "000001"], \
         "range": [1, 10]})
 
 Again, the association is scheduled for creation, and you can retrieve its
@@ -2911,8 +2911,8 @@ list of ids as the first argument in the api call
 
 .. code-block:: python
 
-    model = api.create_association([dataset1, dataset2], {
-        "name": "my association", "input_fields": ["000000", "000001"],
+    association = api.create_association([dataset1, dataset2], { \
+        "name": "my association", "input_fields": ["000000", "000001"], \
         "range": [1, 10]})
 
 Creating predictions

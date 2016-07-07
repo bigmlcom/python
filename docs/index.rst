@@ -4339,14 +4339,15 @@ In this example, the information will be stored in the
 ``my_fields_summary.csv`` file. For the typical ``iris.csv`` data file, the
 summary will read:
 
-..code-block:: csv
+.. csv-table::
+   :header: "field column","field ID","field name","field label","field description","field type","preferred","missing count","errors","contents summary","errors summary"
+   :widths: 5, 10, 20, 20, 5, 10, 5, 5, 5, 30, 10
 
-field column,field ID,field name,field label,field description,field type,preferred,missing count,errors,contents summary,errors summary
-0,000000,sepal length,,,numeric,true,0,0,"[4.3, 7.9], mean: 5.84333",
-1,000001,sepal width,,,numeric,false,0,0,"[2, 4.4], mean: 3.05733",
-2,000002,petal length,,,numeric,true,0,0,"[1, 6.9], mean: 3.758",
-3,000003,petal width,,,numeric,true,0,0,"[0.1, 2.5], mean: 1.19933",
-4,000004,species,,,categorical,true,0,0,"3 categorìes: Iris-setosa (50), Iris-versicolor (50), Iris-virginica (50)",
+   0,000000,sepal length,,,numeric,true,0,0,"[4.3, 7.9], mean: 5.84333",
+   1,000001,sepal width,,,numeric,false,0,0,"[2, 4.4], mean: 3.05733",
+   2,000002,petal length,,,numeric,true,0,0,"[1, 6.9], mean: 3.758",
+   3,000003,petal width,,,numeric,true,0,0,"[0.1, 2.5], mean: 1.19933",
+   4,000004,species,,,categorical,true,0,0,"3 categorìes: Iris-setosa (50), Iris-versicolor (50), Iris-virginica (50)",
 
 Another utility in the ``Fields`` object will help you update the updatable
 attributes of your source or dataset fields. For instance, if you

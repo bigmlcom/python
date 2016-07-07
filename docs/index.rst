@@ -4323,7 +4323,7 @@ while the ``dataset`` resource really reads all the uploaded information. Thus,
 dataset's fields structure will always be more complete that source's.
 
 In both cases, you can extract the summarized information available using
-the ``summarize_csv`` method:
+the ``summary_csv`` method:
 
 .. code-block:: python
 
@@ -4333,13 +4333,13 @@ the ``summarize_csv`` method:
     dataset = api.get_dataset("dataset/5143a51a37203f2cf7300974")
 
     fields = Fields(dataset)
-    fields.summarize_csv("my_fields_summary.csv")
+    fields.summary_csv("my_fields_summary.csv")
 
 In this example, the information will be stored in the
 ``my_fields_summary.csv`` file. For the typical ``iris.csv`` data file, the
 summary will read:
 
-..code-block: csv
+..code-block:: csv
 
 field column,field ID,field name,field label,field description,field type,preferred,missing count,errors,contents summary,errors summary
 0,000000,sepal length,,,numeric,true,0,0,"[4.3, 7.9], mean: 5.84333",

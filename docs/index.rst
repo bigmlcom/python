@@ -4424,7 +4424,7 @@ counts per field:
 
 .. code-block:: python
 
-{'000000': 1}
+    {'000000': 1}
 
 
 Rule Generation

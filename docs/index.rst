@@ -4341,7 +4341,7 @@ summary will read:
 
 .. csv-table::
    :header: "field column","field ID","field name","field label","field description","field type","preferred","missing count","errors","contents summary","errors summary"
-   :widths: 5, 10, 20, 20, 5, 10, 5, 5, 5, 30, 10
+   :widths: 5, 10, 20, 20, 5, 10, 5, 5, 5, 100, 10
 
    0,000000,sepal length,,,numeric,true,0,0,"[4.3, 7.9], mean: 5.84333",
    1,000001,sepal width,,,numeric,false,0,0,"[2, 4.4], mean: 3.05733",

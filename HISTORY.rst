@@ -3,6 +3,11 @@
 History
 -------
 
+4.6.5 (2016-07-16)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local model. Fixing predictions for weighted models.
+
 4.6.4 (2016-07-06)
 ~~~~~~~~~~~~~~~~~~
 

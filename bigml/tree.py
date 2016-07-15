@@ -254,6 +254,7 @@ class Tree(object):
         self.distribution = None
         self.max = None
         self.min = None
+        self.weighted = False
         summary = None
         if 'distribution' in tree:
             self.distribution = tree['distribution']
@@ -261,6 +262,11 @@ class Tree(object):
             summary = tree['objective_summary']
             (self.distribution_unit,
              self.distribution) = extract_distribution(summary)
+            if 'weighted_objective_summary' in tree:
+                summary = tree['weighted_objective_summary']
+                (self.weighted_distribution_unit,
+                 self.weighted_distribution) = extract_distribution(summary)
+                self.weighted = True
         else:
             summary = root_distribution
             (self.distribution_unit,
@@ -375,7 +381,8 @@ class Tree(object):
             (final_distribution,
              d_min,
              d_max,
-             last_node) = self.predict_proportional(input_data, path=path)
+             last_node,
+             population) = self.predict_proportional(input_data, path=path)
 
             if self.regression:
                 # singular case:
@@ -425,9 +432,10 @@ class Tree(object):
                 return Prediction(
                     distribution[0][0],
                     path,
-                    ws_confidence(distribution[0][0], final_distribution),
+                    ws_confidence(distribution[0][0], final_distribution,
+                    ws_n=population),
                     distribution=distribution,
-                    count=get_instances(distribution),
+                    count=population,
                     median=None,
                     distribution_unit='categorical',
                     children=last_node.children)
@@ -468,9 +476,11 @@ class Tree(object):
 
         final_distribution = {}
         if not self.children:
+            distribution = self.distribution if not self.weighted else \
+                self.weighted_distribution
             return (merge_distributions({}, dict((x[0], x[1])
-                                                 for x in self.distribution)),
-                    self.min, self.max, self)
+                                                 for x in distribution)),
+                    self.min, self.max, self, self.count)
         if one_branch(self.children, input_data) or \
                 self.fields[split(self.children)]["optype"] in \
                 ["text", "items"]:
@@ -486,19 +496,22 @@ class Tree(object):
             missing_found = True
             minimums = []
             maximums = []
+            population = 0
             for child in self.children:
-                subtree_distribution, subtree_min, subtree_max, _ = \
+                (subtree_distribution, subtree_min,
+                 subtree_max, _, subtree_pop) = \
                     child.predict_proportional(input_data, path,
                                                missing_found, median)
                 if subtree_min is not None:
                     minimums.append(subtree_min)
                 if subtree_max is not None:
                     maximums.append(subtree_max)
+                population += subtree_pop
                 final_distribution = merge_distributions(
                     final_distribution, subtree_distribution)
             return (final_distribution,
                     min(minimums) if minimums else None,
-                    max(maximums) if maximums else None, self)
+                    max(maximums) if maximums else None, self, population)
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):
         """Translates a tree model into a set of IF-THEN rules.

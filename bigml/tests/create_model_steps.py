@@ -43,6 +43,19 @@ def i_create_a_model(step):
     world.model = resource['object']
     world.models.append(resource['resource'])
 
+#@step(r'I create a balanced model$')
+def i_create_a_balanced_model(step):
+    dataset = world.dataset.get('resource')
+    args = {}
+    args.update(NO_MISSING_SPLITS)
+    args.update({"balance_objective": True})
+    resource = world.api.create_model(dataset, args=args)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.model = resource['object']
+    world.models.append(resource['resource'])
+
 #@step(r'I create a model from a dataset list$')
 def i_create_a_model_from_dataset_list(step):
     resource = world.api.create_model(world.dataset_ids,

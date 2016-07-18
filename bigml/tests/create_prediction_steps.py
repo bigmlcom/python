@@ -91,10 +91,9 @@ def the_centroid_is_ok(step):
 
 
 def the_confidence_is(step, confidence):
-    local_confidence = round(float(world.prediction['confidence']), 4)
-    confidence = round(float(confidence), 4)
-    assert local_confidence == confidence
-
+    local_confidence = world.prediction['confidence']
+    nose.tools.assert_almost_equals(float(local_confidence),
+                                    float(confidence), 4)
 
 def i_create_an_ensemble_prediction(step, data=None):
     if data is None:

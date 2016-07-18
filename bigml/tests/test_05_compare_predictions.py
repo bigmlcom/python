@@ -603,14 +603,14 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |
-                | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.2629     |
-                | ../data/iris.csv   | 10      | 10     | 10     | {"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}  | 000004    | Iris-setosa    | 0.2629     |
+                | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.25284     |
+                | ../data/iris.csv   | 10      | 10     | 10     | {"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}  | 000004    | Iris-setosa    | 0.7575     |
 
         """
         print self.test_scenario13.__doc__
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.2629'],
-            ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.2629']]
+            ['data/iris_unbalanced.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.25284'],
+            ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.7575']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -624,3 +624,5 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_proportional_local_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+            prediction_create.the_confidence_is(self, example[7])
+            prediction_compare.the_local_prediction_confidence_is(self, example[7])

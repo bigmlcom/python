@@ -114,6 +114,7 @@ class LogisticRegression(ModelFields):
         self.c = None
         self.eps = None
         self.lr_normalize = None
+        self.balance_fields = None
         self.regularization = None
         old_coefficients = False
         if not (isinstance(logistic_regression, dict)
@@ -167,6 +168,8 @@ class LogisticRegression(ModelFields):
                 self.c = logistic_regression_info.get('c')
                 self.eps = logistic_regression_info.get('eps')
                 self.lr_normalize = logistic_regression_info.get('normalize')
+                self.balance_fields = logistic_regression_info.get( \
+                    'balance_fields')
                 self.regularization = logistic_regression_info.get( \
                     'regularization')
                 self.field_codings = logistic_regression_info.get( \
@@ -242,6 +245,14 @@ class LogisticRegression(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
+        if self.balance_fields:
+            for field in input_data:
+                if self.fields[field]['optype'] == 'numeric':
+                    mean = self.fields[field]['summary']['mean']
+                    stddev = self.fields[field]['summary'][ \
+                        'standard_deviation']
+                    input_data[field] = (input_data[field] - mean) / stddev
+
         # Compute text and categorical field expansion
         unique_terms = self.get_unique_terms(input_data)
 
@@ -275,6 +286,7 @@ class LogisticRegression(ModelFields):
 
         """
         probability = 0
+        norm2 = 0
         # the bias term is the last in the coefficients list
         bias = self.coefficients[category][\
             len(self.coefficients[category]) - 1][0]
@@ -283,6 +295,7 @@ class LogisticRegression(ModelFields):
         for field_id in input_data :
             coefficients = self.get_coefficients(category, field_id)
             probability += coefficients[0] * input_data[field_id]
+            norm2 += math.pow(input_data[field_id], 2)
 
         # text, items and categories
         for field_id in unique_terms:
@@ -313,6 +326,7 @@ class LogisticRegression(ModelFields):
                         if one_hot:
                             probability += coefficients[index] * \
                                 occurrences
+                        norm2 += math.pow(occurrences, 2)
                     except ValueError:
                         pass
 
@@ -322,16 +336,19 @@ class LogisticRegression(ModelFields):
                 coefficients = self.get_coefficients(category, field_id)
                 if field_id not in input_data:
                     probability += coefficients[1]
+                    norm2 += 1
         for field_id in self.tag_clouds:
             if field_id in self.input_fields:
                 coefficients = self.get_coefficients(category, field_id)
                 if field_id not in unique_terms or not unique_terms[field_id]:
+                    norm2 += 1
                     probability += coefficients[ \
                         len(self.tag_clouds[field_id])]
         for field_id in self.items:
             if field_id in self.input_fields:
                 coefficients = self.get_coefficients(category, field_id)
                 if field_id not in unique_terms or not unique_terms[field_id]:
+                    norm2 += 1
                     shift = self.fields[field_id]['coefficients_shift']
                     probability += coefficients[ \
                         shift + len(self.items[field_id])]
@@ -340,6 +357,7 @@ class LogisticRegression(ModelFields):
                 coefficients = self.get_coefficients(category, field_id)
                 if field_id != self.objective_id and field_id \
                         not in unique_terms:
+                    norm2 += 1
                     if field_id not in self.field_codings or \
                             self.field_codings[field_id].keys()[0] == "dummy":
                         shift = self.fields[field_id]['coefficients_shift']
@@ -357,6 +375,15 @@ class LogisticRegression(ModelFields):
                                 contribution[-1]
                             coeff_index += 1
         probability += bias
+        if bias != 0:
+            norm2 += 1
+
+        if self.lr_normalize:
+            try:
+                probability /= math.sqrt(norm2)
+            except ZeroDivisionError:
+                # this should never happen
+                probability = float('NaN')
         probability = 1 / (1 + math.exp(-probability))
         return probability
 

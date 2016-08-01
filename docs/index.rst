@@ -219,7 +219,8 @@ You can easily generate a prediction following these steps:
     source = api.create_source('./data/iris.csv')
     dataset = api.create_dataset(source)
     model = api.create_model(dataset)
-    prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
 
 You can then print the prediction using the ``pprint`` method:
 
@@ -228,15 +229,43 @@ You can then print the prediction using the ``pprint`` method:
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
 
-and also generate an evaluation for the model by using:
+The ``iris`` dataset has a small number of instances, and usually will be
+instantly created, so the ``api.create_`` calls will probably return the
+finished resources outright. As BigML's API is asynchronous,
+in general you will need to ensure
+that objects are finished before using them by using ``api.ok``.
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create_source('./data/iris.csv')
+    api.ok(source)
+    dataset = api.create_dataset(source)
+    api.ok(dataset)
+    model = api.create_model(dataset)
+    api.ok(model)
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
+    api.ok(prediction)
+
+This method retrieves the remote object in its latest state and updates
+the variable used as argument with this information.
+
+You can also generate an evaluation for the model by using:
 
 .. code-block:: python
 
     test_source = api.create_source('./data/test_iris.csv')
+    api.ok(test_source)
     test_dataset = api.create_dataset(test_source)
+    api.ok(test_dataset)
     evaluation = api.create_evaluation(model, test_dataset)
+    api.ok(evaluation)
 
-Setting the ``storage`` argument in the api instantiation:
+If you set the ``storage`` argument in the ``api`` instantiation:
 
 .. code-block:: python
 
@@ -2531,7 +2560,47 @@ you might need to import the following constants:
     from bigml.api import UNKNOWN
     from bigml.api import RUNNABLE
 
-You can query the status of any resource with the ``status`` method:
+Usually, you will simply need to wait until the resource is
+in the ``bigml.api.FINISHED`` state for further processing. If that's the case,
+the easiest way is calling the ``api.ok`` method and passing as first argument
+the object that contains your resource:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    api = BigML() # creates a connection to BigML's API
+    source = api.create_source('my_file.csv') # creates a source object
+    api.ok(source) # checks that the source is finished and updates ``source``
+
+In this code, the ``api.create_source`` will probably return a non-finished
+``source`` object. The ``api.ok`` will query its status and update the
+contents of the ``source`` variable with the retrieved information until it
+reaches a ``bigml.api.FINISHED`` or ``bigml.api.FAILED`` status.
+
+If you don't want the contents of the variable to be updated, you can
+also use the ``check_resource`` function:
+
+.. code-block:: python
+
+    check_resource(resource, api.get_source)
+
+that will constantly query the API until the resource gets to a FINISHED or
+FAULTY state, or can also be used with ``wait_time`` and ``retries``
+arguments to control the pulling:
+
+.. code-block:: python
+
+    check_resource(resource, api.get_source, wait_time=2, retries=20)
+
+The ``wait_time`` value is used as seed to a wait
+interval that grows exponentially with the number of retries up to the given
+``retries`` limit.
+
+However, in other scenarios you might need to control the complete
+evolution of the resource, not only its final states.
+Then, you can query the status of any resource
+with the ``status`` method, which simply returns its value and does not
+update the contents of the associated variable:
 
 .. code-block:: python
 
@@ -2558,28 +2627,9 @@ You can query the status of any resource with the ``status`` method:
     api.status(execution)
     api.status(library)
 
-Before invoking the creation of a new resource, the library checks that
-the status of the resource that is passed as a parameter is
-``FINISHED``. You can change how often the status will be checked with
-the ``wait_time`` argument. By default, it is set to 3 seconds.
+Remember that, consequently, you will need to retrieve the resources
+explicitly in your code to get the updated information.
 
-You can also use the ``check_resource`` function:
-
-.. code-block:: python
-
-    check_resource(resource, api.get_source)
-
-that will constantly query the API until the resource gets to a FINISHED or
-FAULTY state, or can also be used with ``wait_time`` and ``retries``
-arguments to control the pulling:
-
-.. code-block:: python
-
-    check_resource(resource, api.get_source, wait_time=2, retries=20)
-
-The ``wait_time`` value is used as seed to a wait
-interval that grows exponentially with the number of retries up to the given
-``retries`` limit.
 
 Projects
 ~~~~~~~~

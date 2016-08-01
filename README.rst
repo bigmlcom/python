@@ -181,7 +181,8 @@ You can easily generate a prediction following these steps:
     source = api.create_source('./data/iris.csv')
     dataset = api.create_dataset(source)
     model = api.create_model(dataset)
-    prediction = api.create_prediction(model, {'sepal length': 5, 'sepal width': 2.5})
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
 
 You can then print the prediction using the ``pprint`` method:
 
@@ -189,6 +190,52 @@ You can then print the prediction using the ``pprint`` method:
 
     >>> api.pprint(prediction)
     species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
+
+The ``iris`` dataset has a small number of instances, and usually will be
+instantly created, so the ``api.create_`` calls will probably return the
+finished resources outright. As BigML's API is asynchronous,
+in general you will need to ensure
+that objects are finished before using them by using ``api.ok``.
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create_source('./data/iris.csv')
+    api.ok(source)
+    dataset = api.create_dataset(source)
+    api.ok(dataset)
+    model = api.create_model(dataset)
+    api.ok(model)
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
+    api.ok(prediction)
+
+This method retrieves the remote object in its latest state and updates
+the variable used as argument with this information.
+
+You can also generate an evaluation for the model by using:
+
+.. code-block:: python
+
+    test_source = api.create_source('./data/test_iris.csv')
+    api.ok(test_source)
+    test_dataset = api.create_dataset(test_source)
+    api.ok(test_dataset)
+    evaluation = api.create_evaluation(model, test_dataset)
+    api.ok(evaluation)
+
+If you set the ``storage`` argument in the ``api`` instantiation:
+
+.. code-block:: python
+
+    api = BigML(storage='./storage')
+
+all the generated, updated or retrieved resources will be automatically
+saved to the chosen directory.
+
 
 Additional Information
 ----------------------

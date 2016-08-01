@@ -562,7 +562,7 @@ class TestComparePrediction(object):
                 And the local logistic regression probability for the prediction is "<probability>"
 
         """
-        print self.test_scenario10.__doc__
+        print self.test_scenario12.__doc__
         examples = [
             ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.02857, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
             ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.5', 0.04293, "000000", '{"field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
@@ -626,3 +626,93 @@ class TestComparePrediction(object):
             prediction_compare.the_local_prediction_is(self, example[6])
             prediction_create.the_confidence_is(self, example[7])
             prediction_compare.the_local_prediction_confidence_is(self, example[7])
+
+    def test_scenario14(self):
+        """
+            Scenario: Successfully comparing predictions for logistic regression with balance_fields:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I update the source with params "<options>"
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a logistic regression model with objective "<objective>" and flags
+                And I wait until the logistic regression model is ready less than <time_3> secs
+                And I create a local logistic regression model
+                When I create a logistic regression prediction for "<data_input>"
+                Then the logistic regression prediction is "<prediction>"
+                And the logistic regression probability for the prediction is "<probability>"
+                And I create a local logistic regression prediction for "<data_input>"
+                Then the local logistic regression prediction is "<prediction>"
+                And the local logistic regression probability for the prediction is "<probability>"
+
+                Examples:
+                | data               | time_1  | time_2 | objective | time_3 | options | data_input                             | prediction  | probability
+                | ../data/movies.csv | 20      | 20     | 000009    | 30     | {"fields": {'000000': {'name': 'user_id', 'optype': 'numeric'},
+                                                                                           '000001': {'name': 'gender', 'optype': 'categorical'},
+                                                                                           '000002': {'name': 'age_range', 'optype': 'categorical'},
+                                                                                           '000003': {'name': 'occupation', 'optype': 'categorical'},
+                                                                                           '000004': {'name': 'zipcode', 'optype': 'numeric'},
+                                                                                           '000005': {'name': 'movie_id', 'optype': 'numeric'},
+                                                                                           '000006': {'name': 'title', 'optype': 'text'},
+                                                                                           '000007': {'name': 'genres', 'optype': 'items',
+                                                                                                      'item_analysis': {'separator': "$"}},
+                                                                                           '000008': {'name': 'timestamp', 'optype': 'numeric'},
+                                                                                           '000009': {'name': 'rating', 'optype': 'categorical'}},
+                                                                               "source_parser": {"separator": ";"}}
+                |{"timestamp": "999999999"}       | 5     | 0.3231 | '{"balance_fields": true}'
+
+        """
+        print self.test_scenario14.__doc__
+        examples = [
+            ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
+                                                  ' "000001": {"name": "gender", "optype": "categorical"},'
+                                                  ' "000002": {"name": "age_range", "optype": "categorical"},'
+                                                  ' "000003": {"name": "occupation", "optype": "categorical"},'
+                                                  ' "000004": {"name": "zipcode", "optype": "numeric"},'
+                                                  ' "000005": {"name": "movie_id", "optype": "numeric"},'
+                                                  ' "000006": {"name": "title", "optype": "text"},'
+                                                  ' "000007": {"name": "genres", "optype": "items",'
+                                                  '"item_analysis": {"separator": "$"}},'
+                                                  '"000008": {"name": "timestamp", "optype": "numeric"},'
+                                                  '"000009": {"name": "rating", "optype": "categorical"}},'
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '5', 0.3231, "000009", '{"balance_fields": true}'],
+            ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
+                                                  ' "000001": {"name": "gender", "optype": "categorical"},'
+                                                  ' "000002": {"name": "age_range", "optype": "categorical"},'
+                                                  ' "000003": {"name": "occupation", "optype": "categorical"},'
+                                                  ' "000004": {"name": "zipcode", "optype": "numeric"},'
+                                                  ' "000005": {"name": "movie_id", "optype": "numeric"},'
+                                                  ' "000006": {"name": "title", "optype": "text"},'
+                                                  ' "000007": {"name": "genres", "optype": "items",'
+                                                  '"item_analysis": {"separator": "$"}},'
+                                                  '"000008": {"name": "timestamp", "optype": "numeric"},'
+                                                  '"000009": {"name": "rating", "optype": "categorical"}},'
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.3147, "000009", '{"normalize": true}'],
+            ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
+                                                  ' "000001": {"name": "gender", "optype": "categorical"},'
+                                                  ' "000002": {"name": "age_range", "optype": "categorical"},'
+                                                  ' "000003": {"name": "occupation", "optype": "categorical"},'
+                                                  ' "000004": {"name": "zipcode", "optype": "numeric"},'
+                                                  ' "000005": {"name": "movie_id", "optype": "numeric"},'
+                                                  ' "000006": {"name": "title", "optype": "text"},'
+                                                  ' "000007": {"name": "genres", "optype": "items",'
+                                                  '"item_analysis": {"separator": "$"}},'
+                                                  '"000008": {"name": "timestamp", "optype": "numeric"},'
+                                                  '"000009": {"name": "rating", "optype": "categorical"}},'
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2282, "000009", '{"balance_fields": true, "normalize": true}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, example[4])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8], example[9])
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction(self, example[5])
+            prediction_create.the_logistic_prediction_is(self, example[6])
+            prediction_create.the_logistic_probability_is(self, example[7])
+            prediction_compare.i_create_a_local_prediction(self, example[5])
+            prediction_compare.the_local_prediction_is(self, example[6])
+            prediction_compare.the_local_probability_is(self, example[7])

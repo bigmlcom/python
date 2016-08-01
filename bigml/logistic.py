@@ -297,6 +297,7 @@ class LogisticRegression(ModelFields):
             probability += coefficients[0] * input_data[field_id]
             norm2 += math.pow(input_data[field_id], 2)
 
+
         # text, items and categories
         for field_id in unique_terms:
             if field_id in self.input_fields:
@@ -349,9 +350,7 @@ class LogisticRegression(ModelFields):
                 coefficients = self.get_coefficients(category, field_id)
                 if field_id not in unique_terms or not unique_terms[field_id]:
                     norm2 += 1
-                    shift = self.fields[field_id]['coefficients_shift']
-                    probability += coefficients[ \
-                        shift + len(self.items[field_id])]
+                    probability += coefficients[len(self.items[field_id])]
         for field_id in self.categories:
             if field_id in self.input_fields:
                 coefficients = self.get_coefficients(category, field_id)
@@ -360,7 +359,6 @@ class LogisticRegression(ModelFields):
                     norm2 += 1
                     if field_id not in self.field_codings or \
                             self.field_codings[field_id].keys()[0] == "dummy":
-                        shift = self.fields[field_id]['coefficients_shift']
                         probability += coefficients[ \
                             len(self.categories[field_id])]
                     else:
@@ -374,6 +372,7 @@ class LogisticRegression(ModelFields):
                             probability += coefficients[coeff_index] * \
                                 contribution[-1]
                             coeff_index += 1
+
         probability += bias
         if bias != 0:
             norm2 += 1
@@ -384,7 +383,11 @@ class LogisticRegression(ModelFields):
             except ZeroDivisionError:
                 # this should never happen
                 probability = float('NaN')
-        probability = 1 / (1 + math.exp(-probability))
+
+        try:
+            probability = 1 / (1 + math.exp(-probability))
+        except OverflowError:
+            probability = 0 if probability < 0 else 1
         return probability
 
     def get_unique_terms(self, input_data):

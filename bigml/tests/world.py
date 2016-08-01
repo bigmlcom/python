@@ -88,15 +88,19 @@ class World(object):
         self.API_KEY = None
         self.api = None
         self.api_dev_mode = None
-        self.reset_api()
+        try:
+            self.debug = bool(os.environ.get('BIGML_DEBUG', 0))
+        except ValueError:
+            pass
         self.clear()
         self.dataset_ids = []
         self.fields_properties_dict = {}
         self.counters = {}
-        self.print_connection_info()
         self.test_project_name = "Test: python bindings %s" % \
             datetime.datetime.now()
         self.project_id = None
+        self.print_connection_info()
+        self.reset_api()
 
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
@@ -108,7 +112,7 @@ class World(object):
                            "set them before testing.")
         else:
             assert True
-        self.api = BigML(self.USERNAME, self.API_KEY)
+        self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
         print self.api.connection_info()
 
     def clear(self):
@@ -125,11 +129,11 @@ class World(object):
 
         """
         if self.api is not None and self.api.dev_mode:
-            world.project_id = None
+            self.project_id = None
         if self.api is None or self.api.dev_mode:
-            self.api = BigML(self.USERNAME, self.API_KEY)
+            self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
             self.api_dev_mode = BigML(self.USERNAME, self.API_KEY,
-                                      dev_mode=True)
+                                      dev_mode=True, debug=self.debug)
 
     def delete_resources(self):
         """Deletes the created objects
@@ -179,15 +183,16 @@ def teardown_module():
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
-    world.delete_resources()
-    project_stats = world.api.get_project( \
-        world.project_id)['object']['stats']
-    for resource_type, value in project_stats.items():
-        if value['count'] != 0:
-            # assert False, ("Increment in %s: %s" % (resource_type, value))
-            print "WARNING: Increment in %s: %s" % (resource_type, value)
-    world.api.delete_project(world.project_id)
-    world.project_id = None
+    if not world.debug:
+        world.delete_resources()
+        project_stats = world.api.get_project( \
+            world.project_id)['object']['stats']
+        for resource_type, value in project_stats.items():
+            if value['count'] != 0:
+                # assert False, ("Increment in %s: %s" % (resource_type, value))
+                print "WARNING: Increment in %s: %s" % (resource_type, value)
+        world.api.delete_project(world.project_id)
+        world.project_id = None
 
 
 def teardown_class():

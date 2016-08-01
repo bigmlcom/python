@@ -201,6 +201,7 @@ class BigMLConnection(object):
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.dev_mode = dev_mode
+        self.debug = debug
         self.general_domain = None
         self.genearl_protocol = None
         self.prediction_domain = None

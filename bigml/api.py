@@ -231,6 +231,8 @@ class BigML(LibraryHandler, ExecutionHandler, ScriptHandler,
             info += u"    using %s protocol\n" % self.general_protocol
         info += u"    SSL verification %s\n" % (
             "on" if self.verify else "off")
+        if self.debug:
+            info += u"    Debug on\n"
         if self.general_domain != self.prediction_domain:
             info += u"    %s (predictions only)\n" % self.prediction_domain
             if self.prediction_protocol != BIGML_PROTOCOL:

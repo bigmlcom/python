@@ -783,7 +783,10 @@ class BigMLConnection(object):
                         resource_type, resource_type))
                 return error
             if code == HTTP_UNAUTHORIZED:
-                error += u'\nDouble-check your credentials and the general domain your account is registered with, please.'
+                error += (u'\nDouble-check your credentials and the general'
+                          u' domain your account is registered with (currently'
+                          u' using %s), please.' % self.general_domain)
+
                 return error
             if code == HTTP_BAD_REQUEST:
                 error += u'\nDouble-check the arguments for the call, please.'

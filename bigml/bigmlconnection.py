@@ -772,22 +772,23 @@ class BigMLConnection(object):
                             resource_type, self.general_domain))
                 error += (
                     u'\nCouldn\'t find a %s matching the given'
-                    u' id. The most probable causes are:\n\n%s'
+                    u' id in %a. The most probable causes are:\n\n%s'
                     u'- A typo in the %s\'s id.\n'
-                    u'- The %s id cannot be accessed with your credentials.\n'
+                    u'- The %s id cannot be accessed with your credentials'
+                    u' or was not created in %s.\n'
                     u'- The resource was created in a mode (development or'
                     u' production) that is not the one set in the'
                     u' BigML connection object by the corresponding flag.\n'
                     u'\nDouble-check your %s and'
                     u' credentials info and retry.' % (
-                        resource_type, alternate_message, resource_type,
-                        resource_type, resource_type))
+                        resource_type, self.general_domain,
+                        alternate_message, resource_type,
+                        resource_type, self.general_domain, resource_type))
                 return error
             if code == HTTP_UNAUTHORIZED:
                 error += (u'\nDouble-check your credentials and the general'
                           u' domain your account is registered with (currently'
                           u' using %s), please.' % self.general_domain)
-
                 return error
             if code == HTTP_BAD_REQUEST:
                 error += u'\nDouble-check the arguments for the call, please.'

@@ -3,6 +3,12 @@
 History
 -------
 
+4.6.6 (2016-08-02)
+~~~~~~~~~~~~~~~~~~
+
+- Improving message for unauthorized API calls adding information about the
+  current domain.
+
 4.6.5 (2016-07-16)
 ~~~~~~~~~~~~~~~~~~
 

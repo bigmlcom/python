@@ -202,11 +202,11 @@ class TestEnsemblePrediction(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  |
-                | ../data/grades.csv | 10      | 10     | 50     | 2                | 1     | {}             | 67.8816 |
+                | ../data/grades.csv | 10      | 10     | 50     | 2                | 1     | {}             | 67.5 |
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 67.8816]]
+            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 67.5]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

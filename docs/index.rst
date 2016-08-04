@@ -249,10 +249,12 @@ that objects are finished before using them by using ``api.ok``.
     api.ok(model)
     prediction = api.create_prediction(model, \
         {'sepal length': 5, 'sepal width': 2.5})
-    api.ok(prediction)
 
 This method retrieves the remote object in its latest state and updates
-the variable used as argument with this information.
+the variable used as argument with this information. Note that the prediction
+call is not followed by the ``api.ok`` method. Predictions are so quick to be
+generated that, unlike the
+rest of resouces, will be generated synchronously as a finished object.
 
 You can also generate an evaluation for the model by using:
 
@@ -2572,8 +2574,8 @@ the object that contains your resource:
     source = api.create_source('my_file.csv') # creates a source object
     api.ok(source) # checks that the source is finished and updates ``source``
 
-In this code, the ``api.create_source`` will probably return a non-finished
-``source`` object. The ``api.ok`` will query its status and update the
+In this code, ``api.create_source`` will probably return a non-finished
+``source`` object. Then, ``api.ok`` will query its status and update the
 contents of the ``source`` variable with the retrieved information until it
 reaches a ``bigml.api.FINISHED`` or ``bigml.api.FAILED`` status.
 
@@ -2585,8 +2587,11 @@ also use the ``check_resource`` function:
     check_resource(resource, api.get_source)
 
 that will constantly query the API until the resource gets to a FINISHED or
-FAULTY state, or can also be used with ``wait_time`` and ``retries``
-arguments to control the pulling:
+FAULTY state, or can also be used with ``wait_time`` (in seconds)
+and ``retries``
+arguments to control the pulling. The lapses between calls are separated
+according to an exponential function that uses ``wait_time`` as a
+starting point to avoid throttling:
 
 .. code-block:: python
 
@@ -2598,7 +2603,7 @@ interval that grows exponentially with the number of retries up to the given
 
 However, in other scenarios you might need to control the complete
 evolution of the resource, not only its final states.
-Then, you can query the status of any resource
+There, you can query the status of any resource
 with the ``status`` method, which simply returns its value and does not
 update the contents of the associated variable:
 

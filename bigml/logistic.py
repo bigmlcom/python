@@ -281,7 +281,7 @@ class LogisticRegression(ModelFields):
                               "probability": probability["probability"]}
                              for category, probability in predictions]}
 
-    def category_probability(self, input_data, unique_terms, category):
+    def category_probability(self, numeric_inputs, unique_terms, category):
         """Computes the probability for a concrete category
 
         """
@@ -292,10 +292,10 @@ class LogisticRegression(ModelFields):
             len(self.coefficients[category]) - 1][0]
 
         # numeric input data
-        for field_id in input_data :
+        for field_id in numeric_inputs:
             coefficients = self.get_coefficients(category, field_id)
-            probability += coefficients[0] * input_data[field_id]
-            norm2 += math.pow(input_data[field_id], 2)
+            probability += coefficients[0] * numeric_inputs[field_id]
+            norm2 += math.pow(numeric_inputs[field_id], 2)
 
 
         # text, items and categories
@@ -335,7 +335,7 @@ class LogisticRegression(ModelFields):
         for field_id in self.numeric_fields:
             if field_id in self.input_fields:
                 coefficients = self.get_coefficients(category, field_id)
-                if field_id not in input_data:
+                if field_id not in numeric_inputs:
                     probability += coefficients[1]
                     norm2 += 1
         for field_id in self.tag_clouds:

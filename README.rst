@@ -211,10 +211,13 @@ that objects are finished before using them by using ``api.ok``.
     api.ok(model)
     prediction = api.create_prediction(model, \
         {'sepal length': 5, 'sepal width': 2.5})
-    api.ok(prediction)
 
 This method retrieves the remote object in its latest state and updates
-the variable used as argument with this information.
+the variable used as argument with this information. Note that the prediction
+call is not followed by the ``api.ok`` method. Predictions are so quick to be
+generated that, unlike the
+rest of resouces, will be generated synchronously as a finished object.
+
 
 You can also generate an evaluation for the model by using:
 

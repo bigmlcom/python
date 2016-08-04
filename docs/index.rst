@@ -2589,9 +2589,7 @@ also use the ``check_resource`` function:
 that will constantly query the API until the resource gets to a FINISHED or
 FAULTY state, or can also be used with ``wait_time`` (in seconds)
 and ``retries``
-arguments to control the pulling. The lapses between calls are separated
-according to an exponential function that uses ``wait_time`` as a
-starting point to avoid throttling:
+arguments to control the pulling:
 
 .. code-block:: python
 

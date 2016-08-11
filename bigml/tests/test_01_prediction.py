@@ -25,6 +25,7 @@ import create_dataset_steps as dataset_create
 import create_model_steps as model_create
 import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create
+import create_lda_steps as lda_create
 import create_prediction_steps as prediction_create
 
 
@@ -234,3 +235,33 @@ class TestPrediction(object):
             anomaly_create.the_anomaly_is_finished_in_less_than(self, example[3])
             prediction_create.i_create_an_anomaly_score(self, example[4])
             prediction_create.the_anomaly_score_is(self, example[5])
+
+
+    def test_scenario7(self):
+        """
+            Scenario: Successfully creating an LDA:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I update the source with params "<params>"
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                When I create an LDA from a dataset
+                Then I wait until the LDA is ready less than <time_3> secs
+
+                Examples:
+                | data                 | time_1  | time_2 | time_3 | params
+                | ../data/movies.csv | 10      | 10     | 100     | {"fields": {"genre": {"optype": "items", "item_analysis": {"separator": "$"}}, "title": {"optype": "text"}}}
+        """
+        print self.test_scenario7.__doc__
+        examples = [
+            ['data/movies.csv', '10', '10', '100', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}, "000006": {"optype": "text"}}}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, data=example[4])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            lda_create.i_create_an_lda(self)
+            lda_create.the_lda_is_finished_in_less_than(self, example[3])

@@ -59,6 +59,7 @@ from bigml.statisticaltesthandler import StatisticalTestHandler
 from bigml.logistichandler import LogisticRegressionHandler
 from bigml.associationhandler import AssociationHandler
 from bigml.associationsethandler import AssociationSetHandler
+from bigml.ldahandler import LDAHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
@@ -86,7 +87,7 @@ from bigml.constants import (
     SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
     STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
-    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE,
+    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE, LDA_RE,
     SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE)
 
@@ -98,7 +99,7 @@ from bigml.resourcehandler import (
     get_batch_anomaly_score_id, get_resource_id, resource_is_ready,
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
     get_correlation_id, get_statistical_test_id, get_logistic_regression_id,
-    get_association_id, get_association_set_id, get_script_id,
+    get_association_id, get_association_set_id, get_lda_id, get_script_id,
     get_execution_id, get_library_id)
 
 
@@ -125,7 +126,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(LibraryHandler, ExecutionHandler, ScriptHandler,
+class BigML(LDAHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
             AssociationSetHandler, AssociationHandler,
             LogisticRegressionHandler,
             StatisticalTestHandler, CorrelationHandler,
@@ -199,6 +200,7 @@ class BigML(LibraryHandler, ExecutionHandler, ScriptHandler,
         ScriptHandler.__init__(self)
         ExecutionHandler.__init__(self)
         LibraryHandler.__init__(self)
+        LDAHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:
@@ -272,6 +274,8 @@ class BigML(LibraryHandler, ExecutionHandler, ScriptHandler,
                     return resource['object']['logistic_regression']['fields']
                 elif ASSOCIATION_RE.match(resource_id):
                     return resource['object']['associations']['fields']
+                elif LDA_RE.match(resource_id):
+                    return resource['object']['lda']['fields']
                 elif SAMPLE_RE.match(resource_id):
                     return dict([(field['id'], field) for field in
                                  resource['object']['sample']['fields']])
@@ -315,7 +319,8 @@ class BigML(LibraryHandler, ExecutionHandler, ScriptHandler,
                     or EVALUATION_RE.match(resource_id)
                     or ENSEMBLE_RE.match(resource_id)
                     or CLUSTER_RE.match(resource_id)
-                    or ANOMALY_RE.match(resource_id)):
+                    or ANOMALY_RE.match(resource_id)
+                    or LDA_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):

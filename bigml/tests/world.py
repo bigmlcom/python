@@ -49,6 +49,7 @@ RESOURCE_TYPES = [
     'statisticaltest',
     'logisticregression',
     'association',
+    'lda',
     'script',
     'execution',
     'library'

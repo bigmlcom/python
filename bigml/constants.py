@@ -42,6 +42,7 @@ STATISTICAL_TEST_PATH = 'statisticaltest'
 LOGISTIC_REGRESSION_PATH = 'logisticregression'
 ASSOCIATION_PATH = 'association'
 ASSOCIATION_SET_PATH = 'associationset'
+LDA_PATH = 'lda'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -84,6 +85,8 @@ ASSOCIATION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (ASSOCIATION_PATH, ID_PATTERN, ASSOCIATION_PATH, SHARED_PATTERN))
 ASSOCIATION_SET_RE = re.compile(r'^%s/%s$' % \
     (ASSOCIATION_SET_PATH, ID_PATTERN))
+LDA_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    LDA_PATH, ID_PATTERN, LDA_PATH, SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -112,6 +115,7 @@ RESOURCE_RE = {
     LOGISTIC_REGRESSION_PATH: LOGISTIC_REGRESSION_RE,
     ASSOCIATION_PATH: ASSOCIATION_RE,
     ASSOCIATION_SET_PATH: ASSOCIATION_SET_RE,
+    LDA_PATH: LDA_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}

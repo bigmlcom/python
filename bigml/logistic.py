@@ -374,7 +374,7 @@ class LogisticRegression(ModelFields):
                             coeff_index += 1
 
         probability += bias
-        if bias != 0:
+        if self.bias != 0:
             norm2 += 1
 
         if self.lr_normalize:

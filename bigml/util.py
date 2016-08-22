@@ -27,6 +27,8 @@ import os
 import json
 import math
 import random
+import numbers
+import ast
 from urlparse import urlparse
 
 import unidecode
@@ -400,7 +402,27 @@ def cast(input_data, fields):
 
     """
     for (key, value) in input_data.items():
-        if (
+        # strings given as booleans
+        if (isinstance(value, bool) and
+            fields[key]['optype'] == 'categorical' and
+            len(fields[key]['summary']['categories']) == 2):
+            try:
+                booleans = {}
+                categories = [category for category, _ in \
+                    fields[key]['summary']['categories']]
+                # checking which string represents the boolean
+                for category in categories:
+                    bool_key = 'True' if ast.literal_eval( \
+                        category.capitalize()) else 'False'
+                    booleans[bool_key] = category
+                # converting boolean to the corresponding string
+                input_data.update({key: booleans[str(value)]})
+            except ValueError:
+                raise ValueError(u"Mismatch input data type in field "
+                                 u"\"%s\" for value %s. String expected" %
+                                 (fields[key]['name'], value))
+        # numerics given as strings
+        elif (
                 (fields[key]['optype'] == 'numeric' and
                  isinstance(value, basestring)) or
                 (fields[key]['optype'] != 'numeric' and
@@ -416,6 +438,11 @@ def cast(input_data, fields):
                                  u"\"%s\" for value %s." %
                                  (fields[key]['name'],
                                   value))
+        elif (fields[key]['optype'] == 'numeric' and
+              isinstance(value, bool)):
+            raise ValueError(u"Mismatch input data type in field "
+                             u"\"%s\" for value %s. Numeric expected." %
+                             (fields[key]['name'], value))
 
 
 def check_dir(path):

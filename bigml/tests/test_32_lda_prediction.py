@@ -41,7 +41,7 @@ DUMMY_MODEL = {
         "fields": {
             "000001": {
                 "datatype": "string",
-                "name": "SAMPLE NAME",
+                "name": "TEST TEXT",
                 "optype": "text",
                 "order": 0,
                 "preferred": True,

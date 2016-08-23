@@ -19,3 +19,6 @@ set_credentials.sh
 docs/_build/*
 *~
 /tests/storage/
+/tmp
+.noseids
+fields_summary.csv

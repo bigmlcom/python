@@ -249,6 +249,7 @@ class Model(BaseModel):
                 add_next=False,
                 add_min=False,
                 add_max=False,
+                add_unused_fields=False,
                 multiple=None):
         """Makes a prediction based on a number of field values.
 
@@ -279,6 +280,9 @@ class Model(BaseModel):
                  distribution (for regressions only)
         add_max: Boolean, if True adds the maximum value in the prediction's
                  distribution (for regressions only)
+        add_unused_fields: Boolean, if True adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
         multiple: For categorical fields, it will return the categories
                   in the distribution of the predicted node as a
                   list of dicts:
@@ -305,7 +309,13 @@ class Model(BaseModel):
                               " for regressions. Please install them before"
                               " using local predictions for the model.")
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        new_data = self.filter_input_data( \
+            input_data, by_name=by_name,
+            add_unused_fields=add_unused_fields)
+        if add_unused_fields:
+            input_data, unused_fields = new_data
+        else:
+            input_data = new_data
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
@@ -339,32 +349,34 @@ class Model(BaseModel):
                         'probability': instances / total_instances,
                         'count': instances}
                     output.append(prediction_dict)
-        else:
-            if (add_confidence or add_path or add_distribution or add_count or
-                    add_median or add_next or add_min or add_max):
-                output = {'prediction': prediction.output}
-                if add_confidence:
-                    output.update({'confidence': prediction.confidence})
-                if add_path:
-                    output.update({'path': prediction.path})
-                if add_distribution:
-                    output.update(
-                        {'distribution': prediction.distribution,
-                         'distribution_unit': prediction.distribution_unit})
-                if add_count:
-                    output.update({'count': prediction.count})
-                if self.tree.regression and add_median:
-                    output.update({'median': prediction.median})
-                if add_next:
-                    field = (None if len(prediction.children) == 0 else
-                             prediction.children[0].predicate.field)
-                    if field is not None and field in self.fields:
-                        field = self.fields[field]['name']
-                    output.update({'next': field})
-                if self.tree.regression and add_min:
-                    output.update({'min': prediction.min})
-                if self.tree.regression and add_max:
-                    output.update({'max': prediction.max})
+        elif (add_confidence or add_path or add_distribution or add_count or
+              add_median or add_next or add_min or add_max or
+              add_unused_fields):
+            output = {'prediction': prediction.output}
+            if add_confidence:
+                output.update({'confidence': prediction.confidence})
+            if add_path:
+                output.update({'path': prediction.path})
+            if add_distribution:
+                output.update(
+                    {'distribution': prediction.distribution,
+                     'distribution_unit': prediction.distribution_unit})
+            if add_count:
+                output.update({'count': prediction.count})
+            if self.tree.regression and add_median:
+                output.update({'median': prediction.median})
+            if add_next:
+                field = (None if len(prediction.children) == 0 else
+                         prediction.children[0].predicate.field)
+                if field is not None and field in self.fields:
+                    field = self.fields[field]['name']
+                output.update({'next': field})
+            if self.tree.regression and add_min:
+                output.update({'min': prediction.min})
+            if self.tree.regression and add_max:
+                output.update({'max': prediction.max})
+            if add_unused_fields:
+                output.update({'unused_fields': unused_fields})
 
         return output
 

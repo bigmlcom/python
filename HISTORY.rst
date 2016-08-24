@@ -3,10 +3,12 @@
 History
 -------
 
-4.7.0 (2016-08-11)
+4.7.0 (2016-08-24)
 ~~~~~~~~~~~~~~~~~~
 
 - Adding REST methods to manage LDA.
+- Adding optional information to local predictions.
+- Improving casting for booleans in local predictions.
 
 4.6.6 (2016-08-02)
 ~~~~~~~~~~~~~~~~~~

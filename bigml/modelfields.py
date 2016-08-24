@@ -104,11 +104,16 @@ class ModelFields(object):
             value = unicode(value, "utf-8")
         return None if value in self.missing_tokens else value
 
-    def filter_input_data(self, input_data, by_name=True):
-        """Filters the keys given in input_data checking against model fields
+    def filter_input_data(self, input_data, by_name=True,
+                          add_unused_fields=False):
+        """Filters the keys given in input_data checking against model fields.
+        If `add_unused_fields` is set to True, it also
+        provides information about the ones that are not used.
 
         """
 
+        unused_fields = []
+        new_input = {}
         if isinstance(input_data, dict):
             # remove all missing values
             for key, value in input_data.items():
@@ -120,22 +125,25 @@ class ModelFields(object):
                 # We no longer check that the input data keys match some of
                 # the dataset fields. We only remove the keys that are not
                 # used as predictors in the model
-                input_data = dict(
-                    [[self.inverted_fields[key], value]
-                     for key, value in input_data.items()
-                     if key in self.inverted_fields and
-                     (self.objective_id is None or
-                      self.inverted_fields[key] != self.objective_id)])
+                for key, value in input_data.items():
+                    if key in self.inverted_fields and \
+                            (self.objective_id is None or \
+                             self.inverted_fields[key] != self.objective_id):
+                        new_input[self.inverted_fields[key]] = value
+                    else:
+                        unused_fields.append(key)
             else:
-                input_data = dict(
-                    [[key, value]
-                     for key, value in input_data.items()
-                     if key in self.fields and
-                     (self.objective_id is None or
-                      key != self.objective_id)])
-
-            return input_data
+                for key, value in input_data.items():
+                    if key in self.fields and \
+                            (self.objective_id is None or \
+                             key != self.objective_id):
+                        new_input[key] = value
+                    else:
+                        unused_fields.append(key)
+            result = (new_input, unused_fields) if add_unused_fields else \
+                new_input
+            return result
         else:
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
-            return {}
+            return ({}, []) if add_unused_fields else {}

@@ -225,12 +225,27 @@ class LogisticRegression(ModelFields):
                             " in the resource:\n\n%s" %
                             logistic_regression)
 
-    def predict(self, input_data, by_name=True):
+    def predict(self, input_data, by_name=True, add_unused_fields=False):
         """Returns the class prediction and the probability distribution
+        By default the input fields must be keyed by field name but you can use
+        `by_name` to input them directly keyed by id.
+
+        input_data: Input data to be predicted
+        by_name: Boolean, True if input_data is keyed by names
+        add_unused_fields: Boolean, if True adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
 
         """
+
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        new_data = self.filter_input_data( \
+            input_data, by_name=by_name,
+            add_unused_fields=add_unused_fields)
+        if add_unused_fields:
+            input_data, unused_fields = new_data
+        else:
+            input_data = new_data
 
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
@@ -274,12 +289,17 @@ class LogisticRegression(ModelFields):
         for prediction, probability in predictions:
           del probability['order']
         prediction, probability = predictions[0]
-        return {
+
+        result = {
             "prediction": prediction,
             "probability": probability["probability"],
             "distribution": [{"category": category,
                               "probability": probability["probability"]}
                              for category, probability in predictions]}
+
+        if add_unused_fields:
+            result.update({'unused_fields': unused_fields})
+        return result
 
     def category_probability(self, numeric_inputs, unique_terms, category):
         """Computes the probability for a concrete category

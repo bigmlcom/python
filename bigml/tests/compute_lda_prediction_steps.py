@@ -17,23 +17,17 @@
 
 from bigml.lda import LDA
 
+from nose.tools import assert_almost_equals
+
 #@step(r'predict the topic distribution for the text "(.*)"$')
 def i_make_a_prediction(step, model, text, expected):
     lda_model = LDA(model)
     distribution = lda_model.distribution(text)
 
-    all_close = True
+    msg = ("Computed distribution is %s, but expected distribution is %s" %
+           (str(distribution), str(expected)))
 
-    if len(distribution) != len(expected):
-        all_close = False
+    assert len(distribution) == len(expected), msg
 
     for d, e in zip(distribution, expected):
-        if abs(d - e) > 1e-6:
-            all_close = False
-
-    if all_close:
-        assert True
-    else:
-        assert False, ("The computed distribution is %s "
-                       "but the expected distribution is %s" %
-                       (distribution, expected))
+        assert_almost_equals(d, e, places=6, msg=msg)

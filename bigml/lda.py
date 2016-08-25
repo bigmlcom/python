@@ -179,6 +179,10 @@ class LDA(ModelFields):
         return self.distribution_for_text("\n\n".join(input_data.values()))
 
     def distribution_for_text(self, text):
+        """Returns the topic distribution of the given `text`, which can
+           either be a string or a list of strings
+
+        """
         if isinstance(text, (str, unicode)):
             astr = text
         else:
@@ -189,18 +193,30 @@ class LDA(ModelFields):
         return self.infer(doc, UPDATES)
 
     def stem(self, term):
+        """Returns the stem of the given term, if the stemmer is defined
+
+        """
         if not self.stemmer:
             return term
         else:
             return self.stemmer.stemWord(term)
 
     def append_bigram(self, out_terms, last_term, term_before):
+        """Takes two terms and appends the index of their concatenation to the
+           provided list of output terms
+
+        """
         if self.bigrams and last_term is not None and term_before is not None:
             bigram = self.stem(term_before + " " + last_term)
             if bigram in self.term_to_index:
                 out_terms.append(self.term_to_index[bigram])
 
     def tokenize(self, astr):
+        """Tokenizes the input string `astr` into a list of integers, one for
+           each term term present in the `self.term_to_index`
+           dictionary.  Uses word stemming if applicable.
+
+        """
         out_terms = []
 
         last_term = None
@@ -264,9 +280,16 @@ class LDA(ModelFields):
 
         return out_terms
 
-    def sampleTopic(self, t, assignments, norm, rng):
+    def sampleTopic(self, term, assignments, normalizer, rng):
+        """Samples a topic for the given `term`, given a set of topic
+           assigments for the current document and a normalizer term
+           derived from the dirichlet hyperparameters
+
+        """
         for k in range(self.ntopics):
-            self.temp[k] = self.phi[k][t] * (assignments[k] + self.alpha) / norm
+            topic_term = self.phi[k][term]
+            topic_document =  (assignments[k] + self.alpha) / normalizer
+            self.temp[k] = topic_term * topic_document
 
         for k in range(1, self.ntopics):
             self.temp[k] += self.temp[k - 1]
@@ -280,12 +303,21 @@ class LDA(ModelFields):
         return topic
 
     def sampleUniform(self, term, rng):
+        """Samples a topic for the given term assuming uniform topic
+           assignments for the given document.  Used to initialize the
+           gibbs sampler.
+
+        """
         assignments = self.uniform_doc_assignments
         norm = self.uniform_normalizer
 
         return self.sampleTopic(term, assignments, norm, rng)
 
     def infer(self, doc, max_updates):
+        """Infer a topic distribution for a document using `max_updates`
+           iterations of gibbs sampling
+
+        """
         rng = random.Random(self.seed)
         normalizer = len(doc) + self.ktimesalpha
         doc_assignments = [0] * self.ntopics

@@ -169,7 +169,7 @@ class LDA(ModelFields):
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
 
-        # Checks that all numeric fields are present in input data
+        # Checks that all modeled fields are present in input data
         for field_id, field in self.fields.items():
             if field_id not in input_data:
                 raise Exception("Failed to predict a topic distribution.  "

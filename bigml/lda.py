@@ -50,7 +50,7 @@ import Stemmer
 
 LOGGER = logging.getLogger('BigML')
 
-MAX_TERM_LENGTH = 30
+MAXIMUM_TERM_LENGTH = 30
 UPDATES = 64
 
 CODE_TO_NAME = {
@@ -72,25 +72,26 @@ CODE_TO_NAME = {
 }
 
 class LDA(ModelFields):
-    """ A lightweight wrapper around a cluster model.
+    """ A lightweight wrapper around an LDA model.
 
-    Uses a BigML remote cluster model to build a local version that can be used
-    to generate centroid predictions locally.
+    Uses a BigML remote LDA model to build a local version that can be used
+    to generate topic distributions for input documents locally.
 
     """
 
     def __init__(self, lda_model, api=None):
 
         self.resource_id = None
-        self._stemmer = None
-        self._seed = None
-        self._case_sensitive = False
-        self._bigrams = False
-        self._ntopics = None
-        self._temp = None
-        self._uni_doc_assigns = None
-        self._uni_daspka = None
-        self._phi = None
+        self.stemmer = None
+        self.seed = None
+        self.case_sensitive = False
+        self.bigrams = False
+        self.ntopics = None
+        self.temp = None
+        self.uniform_doc_assignments = None
+        self.uniform_normalizer = None
+        self.phi = None
+        self.term_to_index = None
 
         if not (isinstance(lda_model, dict) and 'resource' in lda_model and
                 lda_model['resource'] is not None):
@@ -99,7 +100,7 @@ class LDA(ModelFields):
             self.resource_id = get_lda_id(lda_model)
             if self.resource_id is None:
                 raise Exception(api.error_message(lda_model,
-                                                  resource_type='cluster',
+                                                  resource_type='lda',
                                                   method='get'))
             query_string = ONLY_MODEL
             lda_model = retrieve_resource(api, self.resource_id,
@@ -119,39 +120,39 @@ class LDA(ModelFields):
                 if 'language' in model and  model['language'] is not None:
                     lang = model['language']
                     if lang in CODE_TO_NAME:
-                        self._stemmer = Stemmer.Stemmer(CODE_TO_NAME[lang])
+                        self.stemmer = Stemmer.Stemmer(CODE_TO_NAME[lang])
 
-                tenum = enumerate(model['termset'])
-                self._term_to_idx = {self._stem(t): i for i, t in tenum}
+                self.term_to_index = {self.stem(term): index for index, term
+                                      in enumerate(model['termset'])}
 
-                self._seed = model['hashed_seed']
-                self._case_sensitive = model['case_sensitive']
-                self._bigrams = model['bigrams']
+                self.seed = model['hashed_seed']
+                self.case_sensitive = model['case_sensitive']
+                self.bigrams = model['bigrams']
 
-                self._ntopics = len(model['term_topic_assignments'][0])
+                self.ntopics = len(model['term_topic_assignments'][0])
 
-                self._alpha = model['alpha']
-                self._ktimesalpha = self._ntopics * self._alpha
+                self.alpha = model['alpha']
+                self.ktimesalpha = self.ntopics * self.alpha
 
-                self._uni_doc_assigns = [1] * self._ntopics
-                self._uni_daspka = self._ntopics + self._ktimesalpha
+                self.uniform_doc_assignments = [1] * self.ntopics
+                self.uniform_normalizer = self.ntopics + self.ktimesalpha
 
-                self._temp = [0] * self._ntopics
+                self.temp = [0] * self.ntopics
 
-                assigns = model['term_topic_assignments']
+                assignments = model['term_topic_assignments']
                 beta = model['beta']
-                nterms = len(self._term_to_idx)
+                nterms = len(self.term_to_index)
 
-                sums = [sum(n[i] for n in assigns)
-                        for i in range(self._ntopics)]
+                sums = [sum(n[index] for n in assignments) for index
+                        in range(self.ntopics)]
 
-                self._phi = [[0 for _ in range(nterms)]
-                             for _ in range(self._ntopics)]
+                self.phi = [[0 for _ in range(nterms)]
+                             for _ in range(self.ntopics)]
 
-                for k in range(self._ntopics):
+                for k in range(self.ntopics):
                     norm = sums[k] + nterms * beta
                     for w in range(nterms):
-                        self._phi[k][w] = (assigns[w][k] + beta) / norm
+                        self.phi[k][w] = (assignments[w][k] + beta) / norm
 
                 ModelFields.__init__(self, model['fields'])
             else:
@@ -175,25 +176,25 @@ class LDA(ModelFields):
                                 "Input data must contain values for all "
                                 "modeled text fields.")
 
-        return self._distribution_for_text("\n\n".join(input_data.values()))
+        return self.distribution_for_text("\n\n".join(input_data.values()))
 
-    def _distribution_for_text(self, text):
+    def distribution_for_text(self, text):
         if isinstance(text, (str, unicode)):
             astr = text
         else:
             # List of strings
             astr = "\n\n".join(text)
 
-        doc = self._tokenize(astr)
-        return self._infer(doc, UPDATES)
+        doc = self.tokenize(astr)
+        return self.infer(doc, UPDATES)
 
-    def _stem(self, term):
-        if not self._stemmer:
+    def stem(self, term):
+        if not self.stemmer:
             return turn
         else:
-            return self._stemmer.stemWord(term)
+            return self.stemmer.stemWord(term)
 
-    def _tokenize(self, astr):
+    def tokenize(self, astr):
         out_terms = []
 
         last_term = None
@@ -202,45 +203,45 @@ class LDA(ModelFields):
         space_was_sep = False
         saw_char = False
 
-        ustr = unicode(astr)
-        i = 0
+        text = unicode(astr)
+        index = 0
 
-        while i < len(ustr):
-            if (self._bigrams and
+        while index < len(text):
+            if (self.bigrams and
                 last_term is not None and
                 term_before is not None):
 
-                bigram = self._stem(term_before + " " + last_term)
-                if bigram in self._term_to_idx:
-                    out_terms.append(self._term_to_idx[bigram])
+                bigram = self.stem(term_before + " " + last_term)
+                if bigram in self.term_to_index:
+                    out_terms.append(self.term_to_index[bigram])
 
-            char = ustr[i]
+            char = text[index]
             buf = array.array('u')
             saw_char = False
 
             if not char.isalnum():
                 saw_char = True
 
-            while not char.isalnum() and i < len(ustr):
-                i += 1
-                char = ustr[i]
+            while not char.isalnum() and index < len(text):
+                index += 1
+                char = text[index]
 
-            while (i < len(ustr) and
+            while (index < len(text) and
                    (char.isalnum() or char == "'") and
-                   len(buf) < MAX_TERM_LENGTH):
+                   len(buf) < MAXIMUM_TERM_LENGTH):
 
                 buf.append(char)
-                i += 1
+                index += 1
 
-                if i < len(ustr):
-                    char = ustr[i]
+                if index < len(text):
+                    char = text[index]
                 else:
                     char = None
 
             if len(buf) > 0:
                 term_out = buf.tounicode()
 
-                if not self._case_sensitive:
+                if not self.case_sensitive:
                     term_out = term_out.lower()
 
                 if space_was_sep and not saw_char:
@@ -253,58 +254,58 @@ class LDA(ModelFields):
                 if char == " " or char == "\n":
                     space_was_sep = True
 
-                tstem = self._stem(term_out)
-                if tstem in self._term_to_idx:
-                    out_terms.append(self._term_to_idx[tstem])
+                tstem = self.stem(term_out)
+                if tstem in self.term_to_index:
+                    out_terms.append(self.term_to_index[tstem])
 
-                i += 1
+                index += 1
 
-        if (self._bigrams and
+        if (self.bigrams and
             last_term is not None and
             term_before is not None):
 
-            bigram = self._stem(term_before + " " + last_term)
-            if bigram in self._term_to_idx:
-                out_terms.append(self._term_to_idx[bigram])
+            bigram = self.stem(term_before + " " + last_term)
+            if bigram in self.term_to_index:
+                out_terms.append(self.term_to_index[bigram])
 
         return out_terms
 
-    def _sampleTopic(self, t, assigns, norm, rng):
-        for k in range(self._ntopics):
-            self._temp[k] = self._phi[k][t] * (assigns[k] + self._alpha) / norm
+    def sampleTopic(self, t, assignments, norm, rng):
+        for k in range(self.ntopics):
+            self.temp[k] = self.phi[k][t] * (assignments[k] + self.alpha) / norm
 
-        for k in range(1, self._ntopics):
-            self._temp[k] += self._temp[k - 1]
+        for k in range(1, self.ntopics):
+            self.temp[k] += self.temp[k - 1]
 
-        rand_val = rng.random() * self._temp[-1]
+        random_value = rng.random() * self.temp[-1]
         topic = 0
 
-        while self._temp[topic] < rand_val and topic < self._ntopics:
+        while self.temp[topic] < random_value and topic < self.ntopics:
             topic += 1
 
         return topic
 
-    def _sampleUniform(self, term, rng):
-        assigns = self._uni_doc_assigns
-        norm = self._uni_daspka
+    def sampleUniform(self, term, rng):
+        assignments = self.uniform_doc_assignments
+        norm = self.uniform_normalizer
 
-        return self._sampleTopic(term, assigns, norm, rng)
+        return self.sampleTopic(term, assignments, norm, rng)
 
-    def _infer(self, doc, max_updates):
-        rng = random.Random(self._seed)
-        normalizer = len(doc) + self._ktimesalpha
-        doc_assigns = [0] * self._ntopics
+    def infer(self, doc, max_updates):
+        rng = random.Random(self.seed)
+        normalizer = len(doc) + self.ktimesalpha
+        doc_assignments = [0] * self.ntopics
 
         for index, term in enumerate(doc):
-            topic = self._sampleUniform(term, rng)
-            doc_assigns[topic] += 1
+            topic = self.sampleUniform(term, rng)
+            doc_assignments[topic] += 1
 
         # Gibbs sampling
         for _ in range(max_updates):
             for index, term in enumerate(doc):
-                topic = self._sampleTopic(term, doc_assigns, normalizer, rng)
-                doc_assigns[topic] += 1
+                topic = self.sampleTopic(term, doc_assignments, normalizer, rng)
+                doc_assignments[topic] += 1
                 normalizer += 1
 
-        return [(doc_assigns[k] + self._alpha) / normalizer
-                for k in range(self._ntopics)]
+        return [(doc_assignments[k] + self.alpha) / normalizer
+                for k in range(self.ntopics)]

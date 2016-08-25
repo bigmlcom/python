@@ -190,9 +190,15 @@ class LDA(ModelFields):
 
     def stem(self, term):
         if not self.stemmer:
-            return turn
+            return term
         else:
             return self.stemmer.stemWord(term)
+
+    def append_bigram(self, out_terms, last_term, term_before):
+        if self.bigrams and last_term is not None and term_before is not None:
+            bigram = self.stem(term_before + " " + last_term)
+            if bigram in self.term_to_index:
+                out_terms.append(self.term_to_index[bigram])
 
     def tokenize(self, astr):
         out_terms = []
@@ -207,13 +213,7 @@ class LDA(ModelFields):
         index = 0
 
         while index < len(text):
-            if (self.bigrams and
-                last_term is not None and
-                term_before is not None):
-
-                bigram = self.stem(term_before + " " + last_term)
-                if bigram in self.term_to_index:
-                    out_terms.append(self.term_to_index[bigram])
+            self.append_bigram(out_terms, last_term, term_before)
 
             char = text[index]
             buf = array.array('u')
@@ -260,13 +260,7 @@ class LDA(ModelFields):
 
                 index += 1
 
-        if (self.bigrams and
-            last_term is not None and
-            term_before is not None):
-
-            bigram = self.stem(term_before + " " + last_term)
-            if bigram in self.term_to_index:
-                out_terms.append(self.term_to_index[bigram])
+        self.append_bigram(out_terms, last_term, term_before)
 
         return out_terms
 

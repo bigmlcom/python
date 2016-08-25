@@ -36,7 +36,7 @@ topic_distribution = lda.distribution({"text": "A sample string"}))
 
 """
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_lda_id, get_status)
+from bigml.api import BigML, get_lda_id, get_status
 from bigml.util import cast, utf8
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL

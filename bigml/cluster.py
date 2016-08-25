@@ -45,7 +45,7 @@ import math
 import re
 
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_cluster_id, get_status)
+from bigml.api import BigML, get_cluster_id, get_status
 from bigml.util import cast, utf8
 from bigml.centroid import Centroid
 from bigml.basemodel import retrieve_resource

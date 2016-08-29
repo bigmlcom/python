@@ -186,7 +186,7 @@ class Ensemble(object):
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
-                add_min=False, add_max=False,
+                add_min=False, add_max=False, add_unused_fields=False,
                 options=None, missing_strategy=LAST_PREDICTION, median=False):
         """Makes a prediction based on the prediction made by every model.
 
@@ -219,6 +219,9 @@ class Ensemble(object):
                         prediction's distribution (for regressions only)
         :param add_max: Boolean, if True adds the maximum value in the
                         prediction's distribution (for regressions only)
+        :param add_unused_fields: Boolean, if True adds the information about
+                                  the fields in the input_data that are not
+                                  being used in the model as predictors.
         :param options: Options to be used in threshold filtered votes.
         :param missing_strategy: numeric key for the individual model's
                                  prediction method. See the model predict
@@ -256,7 +259,8 @@ class Ensemble(object):
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
                     add_median=(add_median or median),
-                    add_min=add_min, add_max=add_max)
+                    add_min=add_min, add_max=add_max,
+                    add_unused_fields=add_unused_fields)
                 if median:
                     for prediction in votes_split.predictions:
                         prediction['prediction'] = prediction['median']
@@ -267,19 +271,28 @@ class Ensemble(object):
             votes_split = self.multi_model.generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
                 add_median=(add_median or median), add_min=add_min,
-                add_max=add_max)
+                add_max=add_max, add_unused_fields=add_unused_fields)
             votes = MultiVote(votes_split.predictions)
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']
-        return votes.combine(method=method, with_confidence=with_confidence,
-                             add_confidence=add_confidence,
-                             add_distribution=add_distribution,
-                             add_count=add_count,
-                             add_median=add_median,
-                             add_min=add_min,
-                             add_max=add_max,
-                             options=options)
+        result = votes.combine(method=method, with_confidence=with_confidence,
+                               add_confidence=add_confidence,
+                               add_distribution=add_distribution,
+                               add_count=add_count,
+                               add_median=add_median,
+                               add_min=add_min,
+                               add_max=add_max,
+                               options=options)
+        if add_unused_fields:
+            unused_fields = set(input_data.keys())
+            for index, prediction in enumerate(votes.predictions):
+                unused_fields = unused_fields.intersection( \
+                    set(prediction["unused_fields"]))
+            if not isinstance(result, dict):
+                result = {"prediction": result}
+            result['unused_fields'] = list(unused_fields)
+        return result
 
     def field_importance_data(self):
         """Computes field importance based on the field importance information

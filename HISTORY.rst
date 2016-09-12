@@ -3,10 +3,11 @@
 History
 -------
 
-4.7.0 (2016-08-11)
+4.6.7 (2016-09-15)
 ~~~~~~~~~~~~~~~~~~
 
-- Adding REST methods to manage LDA.
+- Changing the type for the bias attribute to create logistic regressions to
+  boolean.
 
 4.6.6 (2016-08-02)
 ~~~~~~~~~~~~~~~~~~

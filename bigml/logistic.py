@@ -164,7 +164,7 @@ class LogisticRegression(ModelFields):
                     'coefficients', []))
                 if (not isinstance(self.coefficients.values()[0][0], list)):
                   old_coefficients = True
-                self.bias = logistic_regression_info.get('bias', 0)
+                self.bias = logistic_regression_info.get('bias', True)
                 self.c = logistic_regression_info.get('c')
                 self.eps = logistic_regression_info.get('eps')
                 self.lr_normalize = logistic_regression_info.get('normalize')
@@ -374,7 +374,7 @@ class LogisticRegression(ModelFields):
                             coeff_index += 1
 
         probability += bias
-        if self.bias != 0:
+        if self.bias:
             norm2 += 1
 
         if self.lr_normalize:

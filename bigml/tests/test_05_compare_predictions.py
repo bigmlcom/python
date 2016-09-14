@@ -363,7 +363,7 @@ class TestComparePrediction(object):
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a logistic regresssion model
+                And I create a logistic regression model
                 And I wait until the logistic regression model is ready less than <time_3> secs
                 And I create a local logistic regression model
                 When I create a logistic regression prediction for "<data_input>"
@@ -373,9 +373,9 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                                                                                 | prediction  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}         | 'Iris-virginica' |
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}         | 'Iris-versicolor' |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}             | Iris-virginica |
-                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}           | Iris-virginica |
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}           | Iris-versicolor |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 1}                                                                         | Iris-versicolor |
                 | ../data/iris_sp_chars.csv | 10      | 10     | 10     | {"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}| Iris-virginica |
                 | ../data/price.csv | 10      | 10     | 10     | {"Price": 1200}| Product1 |
@@ -383,10 +383,10 @@ class TestComparePrediction(object):
         """
         print self.test_scenario8.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '50', '{"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
             ['data/iris.csv', '10', '10', '50', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
             ['data/iris.csv', '10', '10', '50', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
-            ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-virginica'],
+            ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-versicolor'],
             ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-virginica'],
             ['data/price.csv', '10', '10', '50', '{"Price": 1200}', 'Product2']]
         for example in examples:
@@ -435,13 +435,13 @@ class TestComparePrediction(object):
         """
         print self.test_scenario9.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Message": "Mobile call"}', 'spam'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Message": "A normal message"}', 'spam'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false, "language": "en"}}}}', '{"Message": "Mobile calls"}', 'spam'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Message": "Mobile call"}', 'ham'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Message": "A normal message"}', 'ham'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false, "language": "en"}}}}', '{"Message": "Mobile calls"}', 'ham'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false, "language": "en"}}}}', '{"Message": "A normal message"}', 'ham'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "Mobile call"}', 'spam'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "A normal message"}', 'spam'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}', 'spam'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "Mobile call"}', 'ham'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "A normal message"}', 'ham'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}', 'ham'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "Ok"}', 'ham']]
         for example in examples:
             print "\nTesting with:\n", example
@@ -483,8 +483,8 @@ class TestComparePrediction(object):
         """
         print self.test_scenario10.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.7645, "000000"],
-            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'spam', 0.7175, "000000"],
+            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169, "000000"],
+            ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'ham', 0.9202, "000000"],
             ['data/movies.csv', '20', '20', '80', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', '25-34', '0.4135', '000002']]
         for example in examples:
             print "\nTesting with:\n", example
@@ -564,9 +564,10 @@ class TestComparePrediction(object):
         """
         print self.test_scenario12.__doc__
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.02857, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.5', 0.04293, "000000", '{"field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.5', 0.04293, "000000", '{"field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}']]
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0409, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0513, "000000", '{"bias": true}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -675,7 +676,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '5', 0.3231, "000009", '{"balance_fields": true}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '5', 0.4104, "000009", '{"balance_fields": true}'],
             ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -699,7 +700,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2282, "000009", '{"balance_fields": true, "normalize": true}']]
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"balance_fields": true, "normalize": true}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

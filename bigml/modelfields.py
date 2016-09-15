@@ -30,7 +30,8 @@ from bigml.fields import DEFAULT_MISSING_TOKENS
 
 
 def check_model_structure(model):
-    """Checks the model structure to see if it contains all the needed keys
+    """Checks the model structure to see if it contains all the
+    main expected keys
 
     """
     return (isinstance(model, dict) and 'resource' in model and
@@ -39,9 +40,36 @@ def check_model_structure(model):
              'model' in model))
 
 
+def check_model_fields(model, inner_key="model"):
+    """Checks the model structure to see whether it contains the required
+    fields information
+
+    """
+    if check_model_structure(model):
+        model = model.get('object', model)
+        fields = model.get("fields", model.get(inner_key, {}).get('fields'))
+        # models only need model_fields to work. The rest of resources will
+        # need all fields to work
+        model_fields = model.get(inner_key, {}).get( \
+            'model_fields', {}).keys()
+        if not model_fields:
+            fields_meta = model.get('fields_meta', \
+                model.get(inner_key, {}).get('fields_meta', {}))
+            try:
+                return fields_meta['count'] == fields_meta['total']
+            except KeyError:
+                # stored old models will not have the fields_meta info, so
+                # we return True to avoid failing in this case
+                return True
+        else:
+            return all([field_id in fields.keys() \
+                for field_id in model_fields])
+    return False
+
+
 class ModelFields(object):
     """ A lightweight wrapper of the field information in the model, cluster
-        or anomaly objects
+    or anomaly objects
 
     """
 

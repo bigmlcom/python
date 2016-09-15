@@ -43,12 +43,12 @@ LOGGER = logging.getLogger('BigML')
 ONLY_MODEL = 'only_model=true;limit=-1;'
 
 
-def retrieve_resource(api, resource_id, query_string=''):
+def retrieve_resource(api, resource_id, query_string='', local_first=True):
     """ Retrieves resource info either from a local repo or
         from the remote server
 
     """
-    if api.storage is not None:
+    if api.storage is not None and local_first:
         try:
             stored_resource = "%s%s%s" % (api.storage, os.sep,
                                           resource_id.replace("/", "_"))

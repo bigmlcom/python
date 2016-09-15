@@ -65,6 +65,7 @@ from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL
+from bigml.modelfields import check_model_fields
 from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
@@ -162,13 +163,20 @@ class Model(BaseModel):
                 raise ValueError("Failed to interpret %s."
                                  " JSON file expected.")
 
+        has_model_fields = check_model_fields(model)
+        if not has_model_fields:
+            # if the fields used by the model are not available, use only ID
+            # to retrieve it again
+            model = get_model_id(model)
+            self.resource_id = model
         if not (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
             query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
-                                      query_string=query_string)
+                                      query_string=query_string,
+                                      local_first=has_model_fields)
         else:
             self.resource_id = get_model_id(model)
         BaseModel.__init__(self, model, api=api)

@@ -40,7 +40,8 @@ def i_create_an_ensemble(step, number_of_models, tlp):
         number_of_models = int(number_of_models)
         tlp = int(tlp)
         args = {'number_of_models': number_of_models,
-                'tlp': tlp, 'sample_rate': 0.70, 'seed': 'BigML'}
+                'tlp': tlp, 'ensemble_sample': {"rate": 0.70,
+                                                "seed": 'BigML'}}
     except:
         args = {}
     args.update(NO_MISSING_SPLITS)

@@ -23,7 +23,7 @@ import time
 
 import bigml.constants as c
 
-from bigml.util import get_exponential_wait
+from bigml.util import get_exponential_wait, get_status
 from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
@@ -103,23 +103,6 @@ def check_resource_type(resource, expected_resource, message=None):
     resource_type = get_resource_type(resource)
     if expected_resource != resource_type:
         raise Exception("%s\nFound %s." % (message, resource_type))
-
-
-def get_status(resource):
-    """Extracts status info if present or sets the default if public
-
-    """
-    if not isinstance(resource, dict):
-        raise ValueError("We need a complete resource to extract its status")
-    if 'object' in resource:
-        if resource['object'] is None:
-            raise ValueError("The resource has no status info\n%s" % resource)
-        resource = resource['object']
-    if not resource.get('private', True) or resource.get('status') is None:
-        status = {'code': c.FINISHED}
-    else:
-        status = resource['status']
-    return status
 
 
 def get_source_id(source):

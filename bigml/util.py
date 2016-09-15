@@ -32,6 +32,8 @@ from urlparse import urlparse
 import unidecode
 
 
+import bigml.constants as c
+
 PY3 = sys.version > '3'
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
@@ -457,17 +459,37 @@ def empty_resource():
                 "message": "The resource couldn't be created"}})
 
 
+def get_status(resource):
+    """Extracts status info if present or sets the default if public
+
+    """
+    if not isinstance(resource, dict):
+        raise ValueError("We need a complete resource to extract its status")
+    if 'object' in resource:
+        if resource['object'] is None:
+            raise ValueError("The resource has no status info\n%s" % resource)
+        resource = resource['object']
+    if not resource.get('private', True) or resource.get('status') is None:
+        status = {'code': c.FINISHED}
+    else:
+        status = resource['status']
+    return status
+
+
 def maybe_save(resource_id, path,
                code=None, location=None,
                resource=None, error=None):
     """Builds the resource dict response and saves it if a path is provided.
 
     The resource is saved in a local repo json file in the given path.
+    Only final resources are stored. Final resources should be FINISHED or
+    FAILED
 
     """
     resource = resource_structure(code, resource_id, location, resource, error)
-
-    if path is not None and resource_id is not None:
+    status = get_status(resource)
+    if status['code'] in [c.FINISHED, c.FAULTY] and \
+            path is not None and resource_id is not None:
         try:
             resource_json = json.dumps(resource)
         except ValueError:

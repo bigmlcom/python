@@ -134,8 +134,10 @@ def i_download_anomaly_score_file(step, filename):
     world.output = file_object
 
 def check_rows(prediction_rows, test_rows):
+    row_num = 0
     for row in prediction_rows:
         check_row = next(test_rows)
+        row_num += 1
         assert len(check_row) == len (row)
         for index in range(len(row)):
             dot = row[index].find(".")
@@ -146,7 +148,8 @@ def check_rows(prediction_rows, test_rows):
                     check_row[index] = round(float(check_row[index]), decs)
                 except ValueError:
                     pass
-            assert check_row[index] == row[index], ("Got: %s/ Expected: %s" % (row, check_row))
+            assert check_row[index] == row[index], ( \
+                "Got: %s/ Expected: %s in line %s" % (row, check_row, row_num))
 
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):

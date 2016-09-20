@@ -3548,16 +3548,19 @@ local model object:
 
     local_model = Model(model)
 
-Any of these methods will return a Model object that you can use to make
+As you can see, the ``query_string`` used to retrieve the model has two parts.
+They both act on the ``fields``
+information that is added to the JSON response. First
+``only_model=true`` is used to restrict the fields described in the
+``fields`` structure of the response to those used as
+predictors in the model. Also
+``limit=-1`` avoids the pagination of fields which is used by default and
+includes them all at once. These details are already taken care of in the
+two previous examples, where the model ID is used as argument.
+
+Any of these methods will return a ``Model`` object that you can use to make
 local predictions, generate IF-THEN rules, Tableau rules
 or a Python function that implements the model.
-
-Beware of using filtered fields models to instantiate a local model. The local
-model methods need the important fields in the ``model`` parameter to be
-available. If an important field is missing (because it has been excluded or
-filtered), an exception will arise. To avoid that, the last example uses a
-particular ``query_string`` parameter that will ensure that the needed
-fields information structure is returned in the get call.
 
 You can also build a local model from a model previously retrieved and stored
 in a JSON file:

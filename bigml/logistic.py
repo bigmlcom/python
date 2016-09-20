@@ -52,7 +52,7 @@ from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
-from bigml.modelfields import ModelFields
+from bigml.modelfields import ModelFields, check_model_fields
 from bigml.cluster import parse_terms, parse_items
 
 
@@ -117,6 +117,17 @@ class LogisticRegression(ModelFields):
         self.balance_fields = None
         self.regularization = None
         old_coefficients = False
+
+        # checks whether the information needed for local predictions is in
+        # the first argument
+        if isinstance(logistic_regression, dict) and \
+                not check_model_fields(logistic_regression):
+            # if the fields used by the logistic regression are not
+            # available, use only ID to retrieve it again
+            logistic_regression = get_logistic_regression_id( \
+                logistic_regression)
+            self.resource_id = logistic_regression
+
         if not (isinstance(logistic_regression, dict)
                 and 'resource' in logistic_regression and
                 logistic_regression['resource'] is not None):

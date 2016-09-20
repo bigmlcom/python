@@ -47,7 +47,7 @@ from bigml.util import cast
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
-from bigml.modelfields import ModelFields
+from bigml.modelfields import ModelFields, check_model_fields
 from bigml.anomalytree import AnomalyTree
 
 
@@ -74,6 +74,17 @@ class Anomaly(ModelFields):
         self.iforest = None
         self.top_anomalies = None
         self.id_fields = []
+
+
+        # checks whether the information needed for local predictions is in
+        # the first argument
+        if isinstance(anomaly, dict) and \
+                not check_model_fields(anomaly):
+            # if the fields used by the anomaly detector are not
+            # available, use only ID to retrieve it again
+            anomaly = get_anomaly_id(anomaly)
+            self.resource_id = anomaly
+
         if not (isinstance(anomaly, dict) and 'resource' in anomaly and
                 anomaly['resource'] is not None):
             if api is None:

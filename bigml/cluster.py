@@ -53,7 +53,7 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
-from bigml.modelfields import ModelFields
+from bigml.modelfields import ModelFields, check_model_fields
 from bigml.io import UnicodeWriter
 
 
@@ -135,6 +135,16 @@ class Cluster(ModelFields):
         self.term_analysis = {}
         self.item_analysis = {}
         self.items = {}
+
+        # checks whether the information needed for local predictions is in
+        # the first argument
+        if isinstance(cluster, dict) and \
+                not check_model_fields(cluster):
+            # if the fields used by the cluster are not
+            # available, use only ID to retrieve it again
+            cluster = get_cluster_id(cluster)
+            self.resource_id = cluster
+
         if not (isinstance(cluster, dict) and 'resource' in cluster and
                 cluster['resource'] is not None):
             if api is None:

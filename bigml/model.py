@@ -163,20 +163,22 @@ class Model(BaseModel):
                 raise ValueError("Failed to interpret %s."
                                  " JSON file expected.")
 
-        has_model_fields = check_model_fields(model)
-        if not has_model_fields:
-            # if the fields used by the model are not available, use only ID
-            # to retrieve it again
+        # checks whether the information needed for local predictions is in
+        # the first argument
+        if isinstance(model, dict) and \
+                not check_model_fields(model):
+            # if the fields used by the model are not
+            # available, use only ID to retrieve it again
             model = get_model_id(model)
             self.resource_id = model
+
         if not (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
             query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
-                                      query_string=query_string,
-                                      local_first=has_model_fields)
+                                      query_string=query_string)
         else:
             self.resource_id = get_model_id(model)
         BaseModel.__init__(self, model, api=api)

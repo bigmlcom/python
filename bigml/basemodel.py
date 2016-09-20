@@ -33,7 +33,8 @@ from bigml.api import (get_status, BigML, get_model_id,
                        check_resource, get_resource_type)
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
-from bigml.modelfields import ModelFields, check_model_structure
+from bigml.modelfields import (ModelFields, check_model_structure,
+                               check_model_fields)
 
 LOGGER = logging.getLogger('BigML')
 
@@ -43,18 +44,21 @@ LOGGER = logging.getLogger('BigML')
 ONLY_MODEL = 'only_model=true;limit=-1;'
 
 
-def retrieve_resource(api, resource_id, query_string='', local_first=True):
+def retrieve_resource(api, resource_id, query_string=''):
     """ Retrieves resource info either from a local repo or
         from the remote server
 
     """
-    if api.storage is not None and local_first:
+    if api.storage is not None:
         try:
             stored_resource = "%s%s%s" % (api.storage, os.sep,
                                           resource_id.replace("/", "_"))
             with open(stored_resource) as resource_file:
                 resource = json.loads(resource_file.read())
-            return resource
+            # we check that the stored resource has enough fields information
+            # for local predictions to work. Otherwise we should retrieve it.
+            if check_model_fields(resource):
+                return resource
         except ValueError:
             raise ValueError("The file %s contains no JSON")
         except IOError:

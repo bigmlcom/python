@@ -27,25 +27,33 @@ LOGGER = logging.getLogger('BigML')
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
 from bigml.fields import DEFAULT_MISSING_TOKENS
+from bigml.resourcehandler import get_resource_type
 
 
-def check_model_structure(model):
+FIELDS_PARENT = { \
+    "cluster": "clusters",
+    "logisticregression": "logistic_regression"
+}
+
+
+def check_model_structure(model, inner_key="model"):
     """Checks the model structure to see if it contains all the
     main expected keys
 
     """
     return (isinstance(model, dict) and 'resource' in model and
             model['resource'] is not None and
-            ('object' in model and 'model' in model['object'] or
-             'model' in model))
+            ('object' in model and inner_key in model['object'] or
+             inner_key in model))
 
 
-def check_model_fields(model, inner_key="model"):
+def check_model_fields(model):
     """Checks the model structure to see whether it contains the required
     fields information
 
     """
-    if check_model_structure(model):
+    inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
+    if check_model_structure(model, inner_key):
         model = model.get('object', model)
         fields = model.get("fields", model.get(inner_key, {}).get('fields'))
         # models only need model_fields to work. The rest of resources will

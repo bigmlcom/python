@@ -8,6 +8,8 @@ History
 
 - Adding optional information to local predictions.
 - Improving casting for booleans in local predictions.
+- Improving the retrieval of stored or remote resources in local
+  predictor objects.
 
 4.6.7 (2016-09-15)
 ~~~~~~~~~~~~~~~~~~

@@ -3,13 +3,17 @@
 History
 -------
 
+4.6.8 (2016-09-22)
+~~~~~~~~~~~~~~~~~~
+
+- Adding optional information to local predictions.
+- Improving casting for booleans in local predictions.
+
 4.6.7 (2016-09-15)
 ~~~~~~~~~~~~~~~~~~
 
 - Changing the type for the bias attribute to create logistic regressions to
   boolean.
-- Adding optional information to local predictions.
-- Improving casting for booleans in local predictions.
 
 4.6.6 (2016-08-02)
 ~~~~~~~~~~~~~~~~~~

@@ -400,8 +400,8 @@ class BigMLConnection(object):
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
-        except ValueError:
-            LOGGER.error("Malformed response")
+        except ValueError, exc:
+            LOGGER.error("Malformed response: %s" % str(exc))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -772,7 +772,7 @@ class BigMLConnection(object):
                             resource_type, self.general_domain))
                 error += (
                     u'\nCouldn\'t find a %s matching the given'
-                    u' id in %a. The most probable causes are:\n\n%s'
+                    u' id in %s. The most probable causes are:\n\n%s'
                     u'- A typo in the %s\'s id.\n'
                     u'- The %s id cannot be accessed with your credentials'
                     u' or was not created in %s.\n'

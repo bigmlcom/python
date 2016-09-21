@@ -487,20 +487,24 @@ def maybe_save(resource_id, path,
 
     """
     resource = resource_structure(code, resource_id, location, resource, error)
-    status = get_status(resource)
-    if status['code'] in [c.FINISHED, c.FAULTY] and \
-            path is not None and resource_id is not None:
+    if resource_id is not None:
         try:
-            resource_json = json.dumps(resource)
+            status = get_status(resource)
         except ValueError:
-            print "The resource has an invalid JSON format"
-        try:
-            resource_file_name = "%s%s%s" % (path, os.sep,
-                                             resource_id.replace('/', '_'))
-            with open(resource_file_name, "wb", 0) as resource_file:
-                resource_file.write(resource_json.encode('UTF-8'))
-        except IOError:
-            print "Failed writing resource to %s" % resource_file_name
+            status['code'] = None
+        if status['code'] in [c.FINISHED, c.FAULTY] and \
+                path is not None:
+            try:
+                resource_json = json.dumps(resource)
+            except ValueError:
+                print "The resource has an invalid JSON format"
+            try:
+                resource_file_name = "%s%s%s" % (path, os.sep,
+                                                 resource_id.replace('/', '_'))
+                with open(resource_file_name, "wb", 0) as resource_file:
+                    resource_file.write(resource_json.encode('UTF-8'))
+            except IOError:
+                print "Failed writing resource to %s" % resource_file_name
     return resource
 
 

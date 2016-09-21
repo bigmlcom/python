@@ -35,18 +35,20 @@ lda = LDA('lda/5026965515526876630001b2')
 topic_distribution = lda.distribution({"text": "A sample string"}))
 
 """
-from bigml.api import FINISHED
-from bigml.api import BigML, get_lda_id, get_status
-from bigml.util import cast, utf8
-from bigml.basemodel import retrieve_resource
-from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
-from bigml.modelfields import ModelFields
 
 import random
 import logging
 import array
 import Stemmer
+
+
+from bigml.api import FINISHED
+from bigml.api import BigML, get_lda_id, get_status
+from bigml.basemodel import retrieve_resource
+from bigml.basemodel import ONLY_MODEL
+from bigml.model import STORAGE
+from bigml.modelfields import ModelFields
+
 
 LOGGER = logging.getLogger('BigML')
 
@@ -147,7 +149,7 @@ class LDA(ModelFields):
                         in range(self.ntopics)]
 
                 self.phi = [[0 for _ in range(nterms)]
-                             for _ in range(self.ntopics)]
+                            for _ in range(self.ntopics)]
 
                 for k in range(self.ntopics):
                     norm = sums[k] + nterms * beta
@@ -170,7 +172,7 @@ class LDA(ModelFields):
         input_data = self.filter_input_data(input_data, by_name=by_name)
 
         # Checks that all modeled fields are present in input data
-        for field_id, field in self.fields.items():
+        for field_id in self.fields:
             if field_id not in input_data:
                 raise Exception("Failed to predict a topic distribution.  "
                                 "Input data must contain values for all "
@@ -280,7 +282,7 @@ class LDA(ModelFields):
 
         return out_terms
 
-    def sampleTopic(self, term, assignments, normalizer, rng):
+    def sample_topic(self, term, assignments, normalizer, rng):
         """Samples a topic for the given `term`, given a set of topic
            assigments for the current document and a normalizer term
            derived from the dirichlet hyperparameters
@@ -288,7 +290,7 @@ class LDA(ModelFields):
         """
         for k in range(self.ntopics):
             topic_term = self.phi[k][term]
-            topic_document =  (assignments[k] + self.alpha) / normalizer
+            topic_document = (assignments[k] + self.alpha) / normalizer
             self.temp[k] = topic_term * topic_document
 
         for k in range(1, self.ntopics):
@@ -302,7 +304,7 @@ class LDA(ModelFields):
 
         return topic
 
-    def sampleUniform(self, term, rng):
+    def sample_uniform(self, term, rng):
         """Samples a topic for the given term assuming uniform topic
            assignments for the given document.  Used to initialize the
            gibbs sampler.
@@ -311,7 +313,7 @@ class LDA(ModelFields):
         assignments = self.uniform_doc_assignments
         norm = self.uniform_normalizer
 
-        return self.sampleTopic(term, assignments, norm, rng)
+        return self.sample_topic(term, assignments, norm, rng)
 
     def infer(self, doc, max_updates):
         """Infer a topic distribution for a document using `max_updates`
@@ -322,14 +324,15 @@ class LDA(ModelFields):
         normalizer = len(doc) + self.ktimesalpha
         doc_assignments = [0] * self.ntopics
 
-        for index, term in enumerate(doc):
-            topic = self.sampleUniform(term, rng)
+        for term in doc:
+            topic = self.sample_uniform(term, rng)
             doc_assignments[topic] += 1
 
         # Gibbs sampling
         for _ in range(max_updates):
-            for index, term in enumerate(doc):
-                topic = self.sampleTopic(term, doc_assignments, normalizer, rng)
+            for term in doc:
+                topic = self.sample_topic( \
+                    term, doc_assignments, normalizer, rng)
                 doc_assignments[topic] += 1
                 normalizer += 1
 

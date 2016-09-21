@@ -74,7 +74,7 @@ class ExecutionHandler(ResourceHandler):
                             get_resource_type(origin_resource))
 
         if all([get_resource_type(script_id) == SCRIPT_PATH for
-               script_id in script_ids]):
+                script_id in script_ids]):
             for script in scripts:
                 check_resource(script,
                                query_string=TINY_RESOURCE,

@@ -23,17 +23,17 @@ is used for local predictions.
 
 """
 import logging
-LOGGER = logging.getLogger('BigML')
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
 from bigml.fields import DEFAULT_MISSING_TOKENS
 from bigml.resourcehandler import get_resource_type
 
 
+LOGGER = logging.getLogger('BigML')
+
 FIELDS_PARENT = { \
     "cluster": "clusters",
-    "logisticregression": "logistic_regression"
-}
+    "logisticregression": "logistic_regression"}
 
 
 def check_model_structure(model, inner_key="model"):

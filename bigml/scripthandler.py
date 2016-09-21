@@ -31,10 +31,8 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_script_id, get_resource_type,
-                                   get_dataset_id, check_resource)
-from bigml.constants import (SCRIPT_PATH, DATASET_PATH,
-                             TINY_RESOURCE)
-from bigml.util import is_url
+                                   check_resource)
+from bigml.constants import SCRIPT_PATH, TINY_RESOURCE
 
 
 class ScriptHandler(ResourceHandler):

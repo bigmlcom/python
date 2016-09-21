@@ -889,12 +889,6 @@ if count > 0:
         """
         return self.tree.get_nodes_info(headers, leaves_only=leaves_only)
 
-    def tree_CSV(self, file_name=None, leaves_only=False):
-        """To be deprecated. See tree_csv
-
-        """
-        self.tree_csv(file_name=file_name, leaves_only=leaves_only)
-
     def tree_csv(self, file_name=None, leaves_only=False):
         """Outputs the node structure to a CSV file or array
 

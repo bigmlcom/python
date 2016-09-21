@@ -64,7 +64,7 @@ DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
 
 LIST_LIMIT = 10
 SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
-                   "field description","field type", "preferred",
+                   "field description", "field type", "preferred",
                    "missing count", "errors", "contents summary",
                    "errors summary"]
 
@@ -549,12 +549,12 @@ class Fields(object):
                     del new_attributes["field ID"]
                 else:
                     field_column = int(new_attributes.get("field column"))
-                    if not field_column in self.field_columns:
+                    if not field_column in self.fields_columns:
                         raise ValueError("Field column %s not found"
                                          " in this resource" % field_column)
                     field_id = self.field_id(field_column)
                     del new_attributes["field column"]
-                for attribute, value in new_attributes.items():
+                for attribute in new_attributes:
                     if not attribute in UPDATABLE_HEADERS.keys():
                         del new_attributes[attribute]
                     else:
@@ -599,7 +599,7 @@ class Fields(object):
             try:
                 with open(out_file, "w") as out:
                     json.dump({"fields": new_fields_structure}, out)
-            except IOError, exc:
+            except IOError:
                 raise IOError("Failed writing the fields structure file in"
                               " %s- Please, check your arguments." %
                               out_file)

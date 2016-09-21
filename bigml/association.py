@@ -165,8 +165,8 @@ class Association(ModelFields):
                 self.min_support = associations.get('min_support', 0)
                 self.min_lift = associations.get('min_lift', 0)
                 self.prune = associations.get('prune', True)
-                self.search_strategy = associations.get('search_strategy',
-                                     DEFAULT_SEARCH_STRATEGY)
+                self.search_strategy = associations.get('search_strategy', \
+                    DEFAULT_SEARCH_STRATEGY)
                 self.rules = [AssociationRule(rule) for rule in
                               associations.get('rules', [])]
                 self.significance_level = associations.get(

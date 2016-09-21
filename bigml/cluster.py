@@ -341,7 +341,7 @@ class Cluster(ModelFields):
            display "N/A"
         """
         intercentroid_distance = []
-        for measure, function in INTERCENTROID_MEASURES:
+        for measure, _ in INTERCENTROID_MEASURES:
             intercentroid_distance.append([measure, 'N/A'])
         return intercentroid_distance
 
@@ -385,7 +385,7 @@ class Cluster(ModelFields):
         """
         ss_metrics = [("total_ss (Total sum of squares)", self.total_ss),
                       ("within_ss (Total within-cluster sum of the sum "
-                      "of squares)", self.within_ss),
+                       "of squares)", self.within_ss),
                       ("between_ss (Between sum of squares)", self.between_ss),
                       ("ratio_ss (Ratio of sum of squares)", self.ratio_ss)]
         output = u""
@@ -396,12 +396,6 @@ class Cluster(ModelFields):
 
         out.write(output)
         out.flush()
-
-    def statistics_CSV(self, file_name=None):
-        """To be deprecated. See statistics_csv
-
-        """
-        self.statistics_csv(file_name=file_name)
 
     def statistics_csv(self, file_name=None):
         """Clusters statistic information in CSV format

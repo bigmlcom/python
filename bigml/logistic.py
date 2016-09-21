@@ -51,9 +51,9 @@ from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
-from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
+from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml.modelfields import ModelFields, check_model_fields
-from bigml.cluster import parse_terms, parse_items
+from bigml.cluster import parse_terms, parse_items, OPTIONAL_FIELDS
 
 
 LOGGER = logging.getLogger('BigML')
@@ -173,7 +173,7 @@ class LogisticRegression(ModelFields):
                                key=lambda x: x[1].get("column_number"))]
                 self.coefficients.update(logistic_regression_info.get( \
                     'coefficients', []))
-                if (not isinstance(self.coefficients.values()[0][0], list)):
+                if not isinstance(self.coefficients.values()[0][0], list):
                   old_coefficients = True
                 self.bias = logistic_regression_info.get('bias', True)
                 self.c = logistic_regression_info.get('c')
@@ -217,7 +217,7 @@ class LogisticRegression(ModelFields):
                     self, fields,
                     objective_id=objective_id)
                 self.field_codings = logistic_regression_info.get( \
-                  'field_codings', {});
+                  'field_codings', {})
                 self.format_field_codings()
                 for field_id in self.field_codings:
                     if field_id not in fields and \
@@ -269,7 +269,7 @@ class LogisticRegression(ModelFields):
 
         probabilities = {}
         total = 0
-        for category in self.coefficients.keys():
+        for category in self.coefficients:
             probability = self.category_probability( \
                 input_data, unique_terms, category)
             order = self.categories[self.objective_id].index(category)
@@ -277,7 +277,7 @@ class LogisticRegression(ModelFields):
                                        "probability": probability,
                                        "order": order}
             total += probabilities[category]["probability"]
-        for category in probabilities.keys():
+        for category in probabilities:
             probabilities[category]["probability"] /= total
         predictions = sorted(probabilities.items(),
                              key=lambda x: (x[1]["probability"],
@@ -479,7 +479,7 @@ class LogisticRegression(ModelFields):
                 # field coding.
                 if optype != 'categorical' or \
                         not field_id in self.field_codings or \
-                        self.field_codings[field_id].keys()[0] ==  "dummy":
+                        self.field_codings[field_id].keys()[0] == "dummy":
                     length = len(self.fields[field_id]['summary'][ \
                         EXPANSION_ATTRIBUTES[optype]])
                     # missing coefficient
@@ -528,7 +528,7 @@ class LogisticRegression(ModelFields):
             self.field_codings_list = self.field_codings[:]
             field_codings = self.field_codings[:]
             self.field_codings = {}
-            for index, element in enumerate(field_codings):
+            for element in field_codings:
                 field_id = element['field']
                 if element["coding"] == "dummy":
                     self.field_codings[field_id] = {\

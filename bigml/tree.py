@@ -433,7 +433,7 @@ class Tree(object):
                     distribution[0][0],
                     path,
                     ws_confidence(distribution[0][0], final_distribution,
-                    ws_n=population),
+                                  ws_n=population),
                     distribution=distribution,
                     count=population,
                     median=None,

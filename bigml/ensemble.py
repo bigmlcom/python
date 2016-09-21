@@ -316,7 +316,7 @@ class Ensemble(object):
                     field_importance[field_id] += field_info[1]
 
         number_of_models = len(self.model_ids)
-        for field_id in field_importance.keys():
+        for field_id in field_importance:
             field_importance[field_id] /= number_of_models
         return [list(importance) for importance in \
             sorted(field_importance.items(), key=lambda x: x[1],

@@ -988,7 +988,7 @@ the metrics used to compute the correlation degree will be:
   `One-way Analysis of Variance <https://en.wikipedia.org/wiki/One-way_analysis_of_variance>`_, with the
   categorical field as the predictor variable.
 - for categorical to categorical pairs:
-  `contingency table (or two-way table) <https://en.wikipedia.org/wiki/Contingency_table>`,
+  `contingency table (or two-way table) <https://en.wikipedia.org/wiki/Contingency_table>`_,
   `Chi-square test of independence <https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test>`_
   , and `Cramer's V <https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V>`_
   and `Tschuprow's T <https://en.wikipedia.org/wiki/Tschuprow%27s_T>`_ coefficients.
@@ -2390,7 +2390,7 @@ allow the user to set the remote file name as input:
 The ``script`` can also use a ``library`` resource (please, see the
 ``Libraries`` section below for more details) by including its id in the
 ``imports`` attribute. Other attributes can be checked at the
-`API Developers documentation for Scripts<https://bigml.com/developers/scripts#ws_script_arguments>`_.
+`API Developers documentation for Scripts <https://bigml.com/developers/scripts#ws_script_arguments>`_.
 
 Executions
 ----------
@@ -2512,7 +2512,7 @@ the second one adds two variables and increments the result by one.
 Libraries can be imported in scripts. The ``imports`` attribute of a ``script``
 can contain a list of ``library`` IDs whose defined functions
 and constants will be ready to be used throughout the ``script``. Please,
-refer to the `API Developers documentation for Libraries<https://bigml.com/developers/libraries#wl_library_arguments>`_
+refer to the `API Developers documentation for Libraries <https://bigml.com/developers/libraries#wl_library_arguments>`_
 for more details.
 
 Creating Resources

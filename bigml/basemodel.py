@@ -44,7 +44,8 @@ LOGGER = logging.getLogger('BigML')
 ONLY_MODEL = 'only_model=true;limit=-1;'
 
 
-def retrieve_resource(api, resource_id, query_string=''):
+def retrieve_resource(api, resource_id, query_string='',
+                      no_check_fields=False):
     """ Retrieves resource info either from a local repo or
         from the remote server
 
@@ -57,7 +58,7 @@ def retrieve_resource(api, resource_id, query_string=''):
                 resource = json.loads(resource_file.read())
             # we check that the stored resource has enough fields information
             # for local predictions to work. Otherwise we should retrieve it.
-            if check_model_fields(resource):
+            if no_check_fields or check_model_fields(resource):
                 return resource
         except ValueError:
             raise ValueError("The file %s contains no JSON")

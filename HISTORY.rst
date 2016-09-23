@@ -3,6 +3,11 @@
 History
 -------
 
+4.6.9 (2016-09-27)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in tests for anomaly detector and ill-formatted comments.
+
 4.6.8 (2016-09-22)
 ~~~~~~~~~~~~~~~~~~
 

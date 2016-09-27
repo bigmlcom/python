@@ -385,11 +385,11 @@ class TestComparePrediction(object):
         print self.test_scenario8.__doc__
         examples = [
             ['data/iris.csv', '10', '10', '50', '{"petal width": 0.5, "petal length": 0.5, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
-            ['data/iris.csv', '10', '10', '50', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
-            ['data/iris.csv', '10', '10', '50', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-virginica'],
-            ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-versicolor'],
-            ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-virginica'],
-            ['data/price.csv', '10', '10', '50', '{"Price": 1200}', 'Product2']]
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
+            ['data/iris.csv', '10', '10', '50', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
+            ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-setosa'],
+            ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-versicolor'],
+            ['data/price.csv', '10', '10', '50', '{"Price": 1200}', 'Product1']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -486,7 +486,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169, "000000"],
             ['data/spam.csv', '20', '20', '80', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'ham', 0.9158, "000000"],
-            ['data/movies.csv', '20', '20', '80', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', '25-34', '0.4135', '000002']]
+            ['data/movies.csv', '20', '20', '80', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Under 18', '0.8393', '000002']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -565,10 +565,10 @@ class TestComparePrediction(object):
         """
         print self.test_scenario12.__doc__
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0409, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
-            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0513, "000000", '{"bias": true}']]
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0394, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '30', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0417, "000000", '{"bias": false}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -677,7 +677,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '5', 0.4104, "000009", '{"balance_fields": true}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.3231, "000009", '{"balance_fields": false}'],
             ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -689,7 +689,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.3147, "000009", '{"normalize": true}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"normalize": true}'],
             ['data/movies.csv', '20', '20', '80', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'

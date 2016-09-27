@@ -7,6 +7,7 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Fixing bug in tests for anomaly detector and ill-formatted comments.
+- Adapting tests to new logistic regression default value for balance_fields.
 
 4.6.8 (2016-09-22)
 ~~~~~~~~~~~~~~~~~~

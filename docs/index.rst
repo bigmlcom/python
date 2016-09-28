@@ -2476,6 +2476,9 @@ As an example, we build a ``library`` to store the definition of two functions:
 ``mu`` and ``g``. The first one adds one to the value set as argument and
 the second one adds two variables and increments the result by one.
 
+
+.. code-block:: python
+
     >>> from bigml.api import BigML
     >>> api = BigML()
     >>> library = api.create_library( \

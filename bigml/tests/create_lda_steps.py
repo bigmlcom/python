@@ -21,7 +21,7 @@ import os
 from datetime import datetime, timedelta
 from world import world
 
-from read_lda_steps import i_get_the_lda
+from read_lda_steps import i_get_the_topic_model
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -29,81 +29,83 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-#@step(r'I create an lda')
-def i_create_an_lda(step):
+#@step(r'I create a Topic Model')
+def i_create_a_topic_model(step):
     dataset = world.dataset.get('resource')
-    resource = world.api.create_lda(
+    resource = world.api.create_topic_model(
         dataset, {'seed': 'BigML', 'lda_seed': 'BigML'})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
-    world.lda = resource['object']
-    world.ldas.append(resource['resource'])
+    world.topic_model = resource['object']
+    world.topic_models.append(resource['resource'])
 
-#@step(r'I create an lda from a dataset list$')
-def i_create_an_lda_from_dataset_list(step):
-    resource = world.api.create_lda(world.dataset_ids)
+#@step(r'I create a topic model from a dataset list$')
+def i_create_a_topic_model_from_dataset_list(step):
+    resource = world.api.create_topic_model(world.dataset_ids)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
-    world.lda = resource['object']
-    world.ldas.append(resource['resource'])
+    world.topic_model = resource['object']
+    world.topic_models.append(resource['resource'])
 
 
-#@step(r'I create an lda with options "(.*)"$')
-def i_create_an_lda_with_options(step, options):
+#@step(r'I create a topic model with options "(.*)"$')
+def i_create_a_topic_model_with_options(step, options):
     dataset = world.dataset.get('resource')
     options = json.loads(options)
     options.update({'seed': 'BigML',
                     'lda_seed': 'BigML'})
-    resource = world.api.create_cluster(
+    resource = world.api.create_topic_model(
         dataset, options)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
-    world.lda = resource['object']
-    world.ldas.append(resource['resource'])
+    world.topic_model= resource['object']
+    world.topic_models.append(resource['resource'])
 
-#@step(r'I wait until the lda status code is either (\d) or (-\d) less than (\d+)')
-def wait_until_lda_status_code_is(step, code1, code2, secs):
+#@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
-    i_get_the_lda(step, world.lda['resource'])
-    status = get_status(world.lda)
+    i_get_the_topic_model(step, world.topic_model['resource'])
+    status = get_status(world.topic_model)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
-           i_get_the_lda(step, world.lda['resource'])
-           status = get_status(world.lda)
+           i_get_the_topic_model(step, world.topic_model['resource'])
+           status = get_status(world.topic_model)
     assert status['code'] == int(code1)
 
-#@step(r'I wait until the lda is ready less than (\d+)')
-def the_lda_is_finished_in_less_than(step, secs):
-    wait_until_lda_status_code_is(step, FINISHED, FAULTY, secs)
+#@step(r'I wait until the topic model is ready less than (\d+)')
+def the_topic_model_is_finished_in_less_than(step, secs):
+    wait_until_topic_model_status_code_is(step, FINISHED, FAULTY, secs)
 
-#@step(r'I make the lda shared')
-def make_the_lda_shared(step):
-    resource = world.api.update_lda(world.lda['resource'],
-                                      {'shared': True})
+#@step(r'I make the topic model shared')
+def make_the_topic_model_shared(step):
+    resource = world.api.update_topic_model(world.topic_model['resource'],
+                                            {'shared': True})
     world.status = resource['code']
     assert world.status == HTTP_ACCEPTED
     world.location = resource['location']
-    world.lda = resource['object']
+    world.topic_model = resource['object']
 
-#@step(r'I get the lda sharing info')
+#@step(r'I get the topic_model sharing info')
 def get_sharing_info(step):
-    world.shared_hash = world.lda['shared_hash']
-    world.sharing_key = world.lda['sharing_key']
+    world.shared_hash = world.topic_model['shared_hash']
+    world.sharing_key = world.topic_model['sharing_key']
 
-#@step(r'I check the lda status using the lda\'s shared url')
-def lda_from_shared_url(step):
-    world.lda = world.api.get_lda("shared/lda/%s" % world.shared_hash)
-    assert get_status(world.lda)['code'] == FINISHED
+#@step(r'I check the topic model status using the topic model\'s shared url')
+def topic_model_from_shared_url(step):
+    world.topic_model = world.api.get_topic_model("shared/topicmodel/%s" %
+                                          world.shared_hash)
+    assert get_status(world.topic_model)['code'] == FINISHED
 
-#@step(r'I check the lda status using the lda\'s shared key')
-def lda_from_shared_key(step):
+#@step(r'I check the topic model status using the topic model\'s shared key')
+def topic_model_from_shared_key(step):
 
     username = os.environ.get("BIGML_USERNAME")
-    world.lda = world.api.get_lda(world.lda['resource'],
+    world.topic_model = world.api.get_topic_model( \
+        world.topic_model['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
-    assert get_status(world.lda)['code'] == FINISHED
+    assert get_status(world.topic_model)['code'] == FINISHED

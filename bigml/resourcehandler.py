@@ -245,11 +245,11 @@ def get_association_set_id(association_set):
     return get_resource(c.ASSOCIATION_SET_PATH, association_set)
 
 
-def get_lda_id(lda):
-    """Returns an lda/id.
+def get_topic_model_id(topic_model):
+    """Returns a topicmodel/id.
 
     """
-    return get_resource(c.LDA_PATH, lda)
+    return get_resource(c.TOPIC_MODEL_PATH, topic_model)
 
 
 def get_script_id(script):

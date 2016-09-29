@@ -20,9 +20,9 @@ from world import world
 
 from bigml.api import HTTP_OK
 
-#@step(r'I get the lda "(.*)"')
-def i_get_the_lda(step, lda):
-    resource = world.api.get_lda(lda)
+#@step(r'I get the topic model "(.*)"')
+def i_get_the_topic_model(step, topic_model):
+    resource = world.api.get_topic_model(topic_model)
     world.status = resource['code']
     assert world.status == HTTP_OK
     world.lda = resource['object']

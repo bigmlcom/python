@@ -27,7 +27,6 @@ import os
 import json
 import math
 import random
-import numbers
 import ast
 from urlparse import urlparse
 
@@ -405,9 +404,9 @@ def cast(input_data, fields):
     """
     for (key, value) in input_data.items():
         # strings given as booleans
-        if (isinstance(value, bool) and
-            fields[key]['optype'] == 'categorical' and
-            len(fields[key]['summary']['categories']) == 2):
+        if (isinstance(value, bool) and \
+                fields[key]['optype'] == 'categorical' and \
+                len(fields[key]['summary']['categories']) == 2):
             try:
                 booleans = {}
                 categories = [category for category, _ in \

@@ -49,7 +49,7 @@ RESOURCE_TYPES = [
     'statisticaltest',
     'logisticregression',
     'association',
-    'lda',
+    'topicmodel',
     'script',
     'execution',
     'library'
@@ -62,6 +62,7 @@ IRREGULAR_PLURALS = {
     'batchanomalyscore': 'batch_anomaly_scores',
     'statisticaltest': 'statistical_tests',
     'logisticregression': 'logistic_regressions',
+    'topicmodel': 'topic_models',
     'library': 'libraries'
 }
 
@@ -71,7 +72,8 @@ TRANSLATED_RESOURCES = {
     'anomalyscore': 'anomaly_score',
     'batchanomalyscore': 'batch_anomaly_score',
     'statisticaltest': 'statistical_test',
-    'logisticregression': 'logistic_regression'
+    'logisticregression': 'logistic_regression',
+    'topicmodel': 'topic_model'
 }
 
 

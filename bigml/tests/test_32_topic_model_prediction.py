@@ -16,7 +16,7 @@
 # under the License.
 
 
-""" Creating and updating scripts
+""" Creating a local Topic distribution from Topic Model
 
 """
 import compute_lda_prediction_steps as lda_predict
@@ -50,11 +50,11 @@ DUMMY_MODEL = {
             }
         }
     },
-    "resource": "lda/aaaaaabbbbbbccccccdddddd"
+    "resource": "topicmodel/aaaaaabbbbbbccccccdddddd"
 }
 
 
-class TestLDA(object):
+class TestTopicModel(object):
 
     def setup(self):
         """
@@ -70,10 +70,10 @@ class TestLDA(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a whizzml library:
+            Scenario: Successfully creating a local Topic Distribution
                 Given I have a block of text and an LDA model
                 And I use the model to predict the topic distribution
-                Then the value of the distribution matches production code
+                Then the value of the distribution matches the expected distribution
 
                 Examples:
                 | model | text            | expected_distribution  |

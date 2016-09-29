@@ -25,7 +25,7 @@ import create_dataset_steps as dataset_create
 import create_model_steps as model_create
 import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create
-import create_lda_steps as lda_create
+import create_lda_steps as topic_create
 import create_prediction_steps as prediction_create
 
 
@@ -239,14 +239,14 @@ class TestPrediction(object):
 
     def test_scenario7(self):
         """
-            Scenario: Successfully creating an LDA:
+            Scenario: Successfully creating a Topic Model:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I update the source with params "<params>"
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                When I create an LDA from a dataset
-                Then I wait until the LDA is ready less than <time_3> secs
+                When I create a Topic Model from a dataset
+                Then I wait until the Topic Model is ready less than <time_3> secs
 
                 Examples:
                 | data                 | time_1  | time_2 | time_3 | params
@@ -263,5 +263,5 @@ class TestPrediction(object):
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            lda_create.i_create_an_lda(self)
-            lda_create.the_lda_is_finished_in_less_than(self, example[3])
+            topic_create.i_create_a_topic_model(self)
+            topic_create.the_topic_model_is_finished_in_less_than(self, example[3])

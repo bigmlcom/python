@@ -15,24 +15,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A local Predictive LDA Model.
+"""A local Predictive Topic Model.
 
-This module allows you to download and use LDA models for local
-predicitons.  Specifically, the function LDA.distribution allows you
+This module allows you to download and use Topic models for local
+predicitons.  Specifically, the function topic_model.distribution allows you
 to pass in input text and infers a generative distribution over the
-topics in the learned LDA model.
+topics in the learned topic model.
 
 Example usage (assuming that you have previously set up the BIGML_USERNAME
-and BIGML_API_KEY environment variables and that you own the lda/id
+and BIGML_API_KEY environment variables and that you own the topicmodel/id
 below):
 
 from bigml.api import BigML
-from bigml.lda import LDA
+from bigml.topicmodel import TopicModel
 
 api = BigML()
 
-lda = LDA('lda/5026965515526876630001b2')
-topic_distribution = lda.distribution({"text": "A sample string"}))
+topic_model = TopicModel('topicmodel/5026965515526876630001b2')
+topic_distribution = topic_model.distribution({"text": "A sample string"}))
 
 """
 
@@ -43,7 +43,7 @@ import Stemmer
 
 
 from bigml.api import FINISHED
-from bigml.api import BigML, get_lda_id, get_status
+from bigml.api import BigML, get_topic_model_id, get_status
 from bigml.basemodel import retrieve_resource
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
@@ -73,15 +73,15 @@ CODE_TO_NAME = {
     "tr": u'turkish'
 }
 
-class LDA(ModelFields):
-    """ A lightweight wrapper around an LDA model.
+class TopicModel(ModelFields):
+    """ A lightweight wrapper around a Topic Model.
 
-    Uses a BigML remote LDA model to build a local version that can be used
+    Uses a BigML remote Topic Model to build a local version that can be used
     to generate topic distributions for input documents locally.
 
     """
 
-    def __init__(self, lda_model, api=None):
+    def __init__(self, topic_model, api=None):
 
         self.resource_id = None
         self.stemmer = None
@@ -95,29 +95,29 @@ class LDA(ModelFields):
         self.phi = None
         self.term_to_index = None
 
-        if not (isinstance(lda_model, dict) and 'resource' in lda_model and
-                lda_model['resource'] is not None):
+        if not (isinstance(topic_model, dict) and 'resource' in topic_model and
+                topic_model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
-            self.resource_id = get_lda_id(lda_model)
+            self.resource_id = get_topic_model_id(topic_model)
             if self.resource_id is None:
-                raise Exception(api.error_message(lda_model,
-                                                  resource_type='lda',
+                raise Exception(api.error_message(topic_model,
+                                                  resource_type='topicmodel',
                                                   method='get'))
             query_string = ONLY_MODEL
-            lda_model = retrieve_resource(api, self.resource_id,
-                                          query_string=query_string)
+            topic_model = retrieve_resource(api, self.resource_id,
+                                            query_string=query_string)
         else:
-            self.resource_id = get_lda_id(lda_model)
+            self.resource_id = get_topic_model_id(topic_model)
 
-        if 'object' in lda_model and isinstance(lda_model['object'], dict):
-            lda_model = lda_model['object']
+        if 'object' in topic_model and isinstance(topic_model['object'], dict):
+            topic_model = topic_model['object']
 
-        if 'model' in lda_model and isinstance(lda_model['model'], dict):
-            status = get_status(lda_model)
+        if 'model' in topic_model and isinstance(topic_model['model'], dict):
+            status = get_status(topic_model)
             if 'code' in status and status['code'] == FINISHED:
 
-                model = lda_model['model']
+                model = topic_model['model']
 
                 if 'language' in model and  model['language'] is not None:
                     lang = model['language']
@@ -160,9 +160,9 @@ class LDA(ModelFields):
             else:
                 raise Exception("The topic model isn't finished yet")
         else:
-            raise Exception("Cannot create the LDA instance. Could not"
+            raise Exception("Cannot create the topic model instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
-                            lda_model)
+                            topic_model)
 
     def distribution(self, input_data, by_name=True):
         """Returns the distribution of topics given the input text.

@@ -15,14 +15,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from bigml.lda import LDA
+from bigml.topicmodel import TopicModel
 
 from nose.tools import assert_almost_equals
 
 #@step(r'predict the topic distribution for the text "(.*)"$')
 def i_make_a_prediction(step, model, text, expected):
-    lda_model = LDA(model)
-    distribution = lda_model.distribution(text)
+    topic_model = TopicModel(model)
+    distribution = topic_model.distribution(text)
 
     msg = ("Computed distribution is %s, but expected distribution is %s" %
            (str(distribution), str(expected)))

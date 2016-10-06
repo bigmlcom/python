@@ -113,11 +113,12 @@ class TopicModel(ModelFields):
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']
 
-        if 'model' in topic_model and isinstance(topic_model['model'], dict):
+        if 'topic_model' in topic_model \
+                and isinstance(topic_model['topic_model'], dict):
             status = get_status(topic_model)
             if 'code' in status and status['code'] == FINISHED:
 
-                model = topic_model['model']
+                model = topic_model['topic_model']
 
                 if 'language' in model and  model['language'] is not None:
                     lang = model['language']
@@ -161,8 +162,8 @@ class TopicModel(ModelFields):
                 raise Exception("The topic model isn't finished yet")
         else:
             raise Exception("Cannot create the topic model instance. Could not"
-                            " find the 'model' key in the resource:\n\n%s" %
-                            topic_model)
+                            " find the 'topic_model' key in the"
+                            " resource:\n\n%s" % topic_model)
 
     def distribution(self, input_data, by_name=True):
         """Returns the distribution of topics given the input text.

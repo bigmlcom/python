@@ -719,3 +719,41 @@ class TestComparePrediction(object):
             prediction_compare.i_create_a_local_prediction(self, example[5])
             prediction_compare.the_local_prediction_is(self, example[6])
             prediction_compare.the_local_probability_is(self, example[7])
+
+
+    def test_scenario15(self):
+        """
+            Scenario: Successfully comparing topic distributions:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I update the source with params "<options>"
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a topic model
+                And I wait until the topic model is ready less than <time_3> secs
+                And I create a local topic model
+                When I create a topic distribution for "<data_input>"
+                Then the topic distribution is "<topic_distribution>"
+                And I create a local topic distribution for "<data_input>"
+                Then the local topic distribution is "<topic_distribution>"
+
+                Examples headers:
+                | data             | time_1  | time_2 | time_3 | options | data_input                            | topic distribution  |
+
+        """
+        print self.test_scenario15.__doc__
+        examples = [
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', 'Cluster 1']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, example[4])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            topic_create.i_create_a_topic_model(self)
+            topic_create.the_topic_is_finished_in_less_than(self, example[3])
+            topic_create.i_create_a_topic_model(self)
+            prediction_compare.the_topic_distribution_is(self, example[5])
+            topic_create.i_create_a_local_topic_distribution(self, example[5])
+            prediction_compare.the_local_topic_distribution(self, example[6])

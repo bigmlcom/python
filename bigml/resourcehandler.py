@@ -31,7 +31,8 @@ from bigml.bigmlconnection import BigMLConnection
 
 NO_QS = [c.EVALUATION_RE, c.PREDICTION_RE, c.BATCH_PREDICTION_RE,
          c.CENTROID_RE, c.BATCH_CENTROID_RE, c.ANOMALY_SCORE_RE,
-         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE, c.ASSOCIATION_SET_RE]
+         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE, c.ASSOCIATION_SET_RE,
+         c.TOPIC_DISTRIBUTION_RE]
 
 
 # Resource status codes
@@ -250,6 +251,13 @@ def get_topic_model_id(topic_model):
 
     """
     return get_resource(c.TOPIC_MODEL_PATH, topic_model)
+
+
+def get_topic_distribution_id(topic_distribution):
+    """Returns a topicdistribution/id.
+
+    """
+    return get_resource(c.TOPIC_DISTRIBUTION_PATH, topic_distribution)
 
 
 def get_script_id(script):

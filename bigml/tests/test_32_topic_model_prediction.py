@@ -19,7 +19,12 @@
 """ Creating a local Topic distribution from Topic Model
 
 """
+from world import world, setup_module, teardown_module
+import create_source_steps as source_create
+import create_dataset_steps as dataset_create
+import create_lda_steps as topic_create
 import compute_lda_prediction_steps as lda_predict
+
 
 # This model is from the bigmlcom/streaming-lda; the associated test is
 # for near-exact equivalence with that library (with special attention
@@ -70,7 +75,7 @@ class TestTopicModel(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a local Topic Distribution
+            Scenario 1: Successfully creating a local Topic Distribution
                 Given I have a block of text and an LDA model
                 And I use the model to predict the topic distribution
                 Then the value of the distribution matches the expected distribution
@@ -94,3 +99,36 @@ class TestTopicModel(object):
         for ex in examples:
             print "\nTesting with:\n", ex[1]
             lda_predict.i_make_a_prediction(self, ex[0], ex[1], ex[2])
+
+    def test_scenario2(self):
+        """
+            Scenario 2: Successfully creating Topic Model from a dataset:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create topic model from a dataset
+                And I wait until the topic model is ready less than <time_3> secs
+                And I update the topic model name to "<topic_model_name>"
+                When I wait until the topic_model is ready less than <time_4> secs
+                Then the topic model name is "<topic_model_name>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | time_4 | topic_model_name | params
+                | ../data/spam.csv | 100      | 100     | 200     | 500 | my new topic model name | '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}'
+        """
+        print self.test_scenario2.__doc__
+        examples = [
+            ['data/spam.csv', '100', '100', '10000', '500', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, example[6])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            topic_create.i_create_a_topic_model(self)
+            topic_create.the_topic_model_is_finished_in_less_than(self, example[3])
+            topic_create.i_update_topic_model_name(self, example[5])
+            topic_create.the_topic_model_is_finished_in_less_than(self, example[4])
+            topic_create.i_check_topic_model_name(self, example[5])

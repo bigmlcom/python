@@ -25,7 +25,7 @@ def i_get_the_topic_model(step, topic_model):
     resource = world.api.get_topic_model(topic_model)
     world.status = resource['code']
     assert world.status == HTTP_OK
-    world.lda = resource['object']
+    world.topic_model = resource['object']
 
 #@step(r'I get the topic distribution "(.*)"')
 def i_get_the_topic_distribution(step, topic_distribution):

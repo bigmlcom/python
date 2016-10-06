@@ -33,7 +33,7 @@ from bigml.api import get_status
 def i_create_a_topic_model(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_topic_model(
-        dataset, {'seed': 'BigML', 'lda_seed': 'BigML'})
+        dataset, {'seed': 'BigML', 'topicmodel_seed': 'BigML'})
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
@@ -55,14 +55,25 @@ def i_create_a_topic_model_with_options(step, options):
     dataset = world.dataset.get('resource')
     options = json.loads(options)
     options.update({'seed': 'BigML',
-                    'lda_seed': 'BigML'})
+                    'topicmodel_seed': 'BigML'})
     resource = world.api.create_topic_model(
         dataset, options)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
     world.location = resource['location']
-    world.topic_model= resource['object']
+    world.topic_model = resource['object']
     world.topic_models.append(resource['resource'])
+
+
+#@step(r'I update the topic model name to "(.*)"$')
+def i_update_topic_model_name(step, name):
+    resource = world.api.update_topic_model(world.topic_model['resource'],
+                                            {'name': name})
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED
+    world.location = resource['location']
+    world.topic_model = resource['object']
+
 
 #@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_topic_model_status_code_is(step, code1, code2, secs):
@@ -109,3 +120,14 @@ def topic_model_from_shared_key(step):
         world.topic_model['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
     assert get_status(world.topic_model)['code'] == FINISHED
+
+
+#@step(r'the topic model name is "(.*)"')
+def i_check_topic_model_name(step, name):
+    topic_model_name = world.topic_model['name']
+    if name == topic_model_name:
+        assert True
+    else:
+        assert False, ("The topic model name is %s "
+                       "and the expected name is %s" %
+                       (topic_model_name, name))

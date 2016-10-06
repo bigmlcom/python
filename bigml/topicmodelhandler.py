@@ -59,7 +59,7 @@ class TopicModelHandler(ResourceHandler):
         return self._create(self.topic_model_url, body)
 
     def get_topic_model(self, topic_model, query_string='',
-                shared_username=None, shared_api_key=None):
+                        shared_username=None, shared_api_key=None):
         """Retrieves a Topic Model.
 
            The topic_model parameter should be a string containing the

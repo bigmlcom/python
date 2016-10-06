@@ -61,6 +61,7 @@ from bigml.associationhandler import AssociationHandler
 from bigml.associationsethandler import AssociationSetHandler
 from bigml.topicmodelhandler import TopicModelHandler
 from bigml.topicdistributionhandler import TopicDistributionHandler
+from bigml.batchtopicdistributionhandler import BatchTopicDistributionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
@@ -89,7 +90,7 @@ from bigml.constants import (
     STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
     ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE, TOPIC_MODEL_RE,
-    TOPIC_DISTRIBUTION_RE, SCRIPT_PATH, SCRIPT_RE,
+    TOPIC_DISTRIBUTION_RE, BATCH_TOPIC_DISTRIBUTION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE)
 
 from bigml.resourcehandler import (
@@ -101,7 +102,7 @@ from bigml.resourcehandler import (
     get_status, check_resource, http_ok, get_project_id, get_sample_id,
     get_correlation_id, get_statistical_test_id, get_logistic_regression_id,
     get_association_id, get_association_set_id, get_topic_model_id,
-    get_topic_distribution_id,
+    get_topic_distribution_id, get_batch_topic_distribution_id,
     get_script_id, get_execution_id, get_library_id)
 
 
@@ -128,7 +129,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(TopicDistributionHandler,
+class BigML(BatchTopicDistributionHandler, TopicDistributionHandler,
             TopicModelHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
             AssociationSetHandler, AssociationHandler,
             LogisticRegressionHandler,
@@ -205,6 +206,7 @@ class BigML(TopicDistributionHandler,
         LibraryHandler.__init__(self)
         TopicModelHandler.__init__(self)
         TopicDistributionHandler.__init__(self)
+        BatchTopicDistributionHandler.__init__(self)
 
         self.getters = {}
         for resource_type in RESOURCE_RE:

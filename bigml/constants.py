@@ -44,6 +44,7 @@ ASSOCIATION_PATH = 'association'
 ASSOCIATION_SET_PATH = 'associationset'
 TOPIC_MODEL_PATH = 'topicmodel'
 TOPIC_DISTRIBUTION_PATH = 'topicdistribution'
+BATCH_TOPIC_DISTRIBUTION_PATH = 'batchtopicdistribution'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -91,6 +92,9 @@ TOPIC_MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
 TOPIC_DISTRIBUTION_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     TOPIC_DISTRIBUTION_PATH, ID_PATTERN, TOPIC_DISTRIBUTION_PATH,
     SHARED_PATTERN))
+BATCH_TOPIC_DISTRIBUTION_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
+    BATCH_TOPIC_DISTRIBUTION_PATH, ID_PATTERN, BATCH_TOPIC_DISTRIBUTION_PATH,
+    SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -121,6 +125,7 @@ RESOURCE_RE = {
     ASSOCIATION_SET_PATH: ASSOCIATION_SET_RE,
     TOPIC_MODEL_PATH: TOPIC_MODEL_RE,
     TOPIC_DISTRIBUTION_PATH: TOPIC_DISTRIBUTION_RE,
+    BATCH_TOPIC_DISTRIBUTION_PATH: BATCH_TOPIC_DISTRIBUTION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}
@@ -135,7 +140,8 @@ RENAMED_RESOURCES = {
     LOGISTIC_REGRESSION_PATH: 'logistic_regression',
     ASSOCIATION_SET_PATH: 'association_set',
     TOPIC_MODEL_PATH: 'topic_model',
-    TOPIC_DISTRIBUTION_PATH: 'topic_distribution'
+    TOPIC_DISTRIBUTION_PATH: 'topic_distribution',
+    BATCH_TOPIC_DISTRIBUTION_PATH: 'batch_topic_distribution',
 }
 
 

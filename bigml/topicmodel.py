@@ -53,7 +53,7 @@ from bigml.modelfields import ModelFields
 LOGGER = logging.getLogger('BigML')
 
 MAXIMUM_TERM_LENGTH = 30
-UPDATES = 64
+UPDATES = 128
 
 CODE_TO_NAME = {
     "da": u'danish',
@@ -171,13 +171,6 @@ class TopicModel(ModelFields):
         """
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data, by_name=by_name)
-
-        # Checks that all modeled fields are present in input data
-        for field_id in self.fields:
-            if field_id not in input_data:
-                raise Exception("Failed to predict a topic distribution.  "
-                                "Input data must contain values for all "
-                                "modeled text fields.")
 
         return self.distribution_for_text("\n\n".join(input_data.values()))
 

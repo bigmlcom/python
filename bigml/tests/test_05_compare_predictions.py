@@ -27,6 +27,7 @@ import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create
 import create_prediction_steps as prediction_create
 import compare_predictions_steps as prediction_compare
+import create_lda_steps as topic_create
 
 
 class TestComparePrediction(object):
@@ -743,7 +744,7 @@ class TestComparePrediction(object):
         """
         print self.test_scenario15.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', 'Cluster 1']]
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01353, 0.01353, 0.01677, 0.01353, 0.01353, 0.01353, 0.42587, 0.01353, 0.01353, 0.43561, 0.01353, 0.01353]']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -752,8 +753,9 @@ class TestComparePrediction(object):
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
             topic_create.i_create_a_topic_model(self)
-            topic_create.the_topic_is_finished_in_less_than(self, example[3])
-            topic_create.i_create_a_topic_model(self)
-            prediction_compare.the_topic_distribution_is(self, example[5])
+            topic_create.the_topic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_topic_model(self)
+            topic_create.i_create_a_topic_distribution(self, example[5])
+            prediction_compare.the_topic_distribution_is(self, example[6])
             topic_create.i_create_a_local_topic_distribution(self, example[5])
-            prediction_compare.the_local_topic_distribution(self, example[6])
+            prediction_compare.the_local_topic_distribution_is(self, example[6])

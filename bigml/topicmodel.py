@@ -94,6 +94,7 @@ class TopicModel(ModelFields):
         self.uniform_normalizer = None
         self.phi = None
         self.term_to_index = None
+        self.topics = []
 
         if not (isinstance(topic_model, dict) and 'resource' in topic_model and
                 topic_model['resource'] is not None):
@@ -119,6 +120,7 @@ class TopicModel(ModelFields):
             if 'code' in status and status['code'] == FINISHED:
 
                 model = topic_model['topic_model']
+                self.topics = model['topics']
 
                 if 'language' in model and  model['language'] is not None:
                     lang = model['language']
@@ -186,7 +188,10 @@ class TopicModel(ModelFields):
             astr = "\n\n".join(text)
 
         doc = self.tokenize(astr)
-        return self.infer(doc, UPDATES)
+        topics_probability = self.infer(doc, UPDATES)
+        return [{"name": self.topics[index]["name"], \
+            "probability": probability} \
+            for index, probability in enumerate(topics_probability)]
 
     def stem(self, term):
         """Returns the stem of the given term, if the stemmer is defined
@@ -295,7 +300,6 @@ class TopicModel(ModelFields):
 
         while self.temp[topic] < random_value and topic < self.ntopics:
             topic += 1
-
         return topic
 
     def sample_uniform(self, term, rng):
@@ -317,6 +321,7 @@ class TopicModel(ModelFields):
         rng = random.Random(self.seed)
         normalizer = len(doc) + self.ktimesalpha
         doc_assignments = [0] * self.ntopics
+
 
         for term in doc:
             topic = self.sample_uniform(term, rng)

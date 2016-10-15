@@ -30,4 +30,6 @@ def i_make_a_prediction(step, model, text, expected):
     assert len(distribution) == len(expected), msg
 
     for d, e in zip(distribution, expected):
-        assert_almost_equals(d, e, places=6, msg=msg)
+        assert_almost_equals(d['probability'],
+                             e['probability'],
+                             places=6, msg=msg)

@@ -18,6 +18,8 @@
 
 import json
 import os
+
+from nose.tools import eq_, assert_almost_equal
 from world import world, res_filename
 from bigml.model import Model
 from bigml.logistic import LogisticRegression
@@ -25,6 +27,7 @@ from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
+from bigml.topicmodel import TopicModel
 
 from create_prediction_steps import check_prediction
 
@@ -267,3 +270,23 @@ def the_confidence_weighted_prediction(step, predictions):
 #@step(r'I create a local logistic regression model$')
 def i_create_a_local_logistic_model(step):
     world.local_model = LogisticRegression(world.logistic_regression)
+
+
+#@step(r'I create a local topic model$')
+def i_create_a_local_topic_model(step):
+    world.local_topic_model = TopicModel(world.topic_model)
+
+#@step(r'the topic distribution is "(.*)"$')
+def the_topic_distribution_is(step, distribution):
+    eq_(json.loads(distribution),
+        world.topic_distribution['topic_distribution']['result'])
+
+
+#@step(r'the local topic distribution is "(.*)"')
+def the_local_topic_distribution_is(step, distribution):
+    distribution = json.loads(distribution)
+    print world.local_topic_distribution
+    print "****", world.topic_model['resource']
+    for index, topic_dist in enumerate(world.local_topic_distribution):
+        assert_almost_equal(topic_dist["probability"], distribution[index],
+                            places=5)

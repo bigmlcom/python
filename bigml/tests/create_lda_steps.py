@@ -131,3 +131,21 @@ def i_check_topic_model_name(step, name):
         assert False, ("The topic model name is %s "
                        "and the expected name is %s" %
                        (topic_model_name, name))
+
+
+def i_create_a_topic_distribution(step, data=None):
+    if data is None:
+        data = "{}"
+    topic_model = world.topic_model['resource']
+    data = json.loads(data)
+    resource = world.api.create_topic_distribution(topic_model, data)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.topic_distribution = resource['object']
+    world.topic_distributions.append(resource['resource'])
+
+#@step(r'I create a local topic distribution')
+def i_create_a_local_topic_distribution(step, data=None):
+    world.local_topic_distribution = \
+        world.local_topic_model.distribution(json.loads(data))

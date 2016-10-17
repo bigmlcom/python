@@ -285,8 +285,6 @@ def the_topic_distribution_is(step, distribution):
 #@step(r'the local topic distribution is "(.*)"')
 def the_local_topic_distribution_is(step, distribution):
     distribution = json.loads(distribution)
-    print world.local_topic_distribution
-    print "****", world.topic_model['resource']
     for index, topic_dist in enumerate(world.local_topic_distribution):
         assert_almost_equal(topic_dist["probability"], distribution[index],
                             places=5)

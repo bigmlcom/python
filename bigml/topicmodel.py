@@ -130,7 +130,7 @@ class TopicModel(ModelFields):
                 self.term_to_index = {self.stem(term): index for index, term
                                       in enumerate(model['termset'])}
 
-                self.seed = model['hashed_seed']
+                self.seed = abs(model['hashed_seed'])
                 self.case_sensitive = model['case_sensitive']
                 self.bigrams = model['bigrams']
 

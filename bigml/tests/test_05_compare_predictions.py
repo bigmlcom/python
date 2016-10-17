@@ -744,7 +744,7 @@ class TestComparePrediction(object):
         """
         print self.test_scenario15.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01353, 0.01353, 0.01677, 0.01353, 0.01353, 0.01353, 0.42587, 0.01353, 0.01353, 0.43561, 0.01353, 0.01353]']]
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01353, 0.01353, 0.01353, 0.01353, 0.01353, 0.01353, 0.42911, 0.01353, 0.01353, 0.43561, 0.01353, 0.01353]']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -755,7 +755,7 @@ class TestComparePrediction(object):
             topic_create.i_create_a_topic_model(self)
             topic_create.the_topic_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_topic_model(self)
-            topic_create.i_create_a_topic_distribution(self, example[5])
-            prediction_compare.the_topic_distribution_is(self, example[6])
             topic_create.i_create_a_local_topic_distribution(self, example[5])
             prediction_compare.the_local_topic_distribution_is(self, example[6])
+            topic_create.i_create_a_topic_distribution(self, example[5])
+            prediction_compare.the_topic_distribution_is(self, example[6])

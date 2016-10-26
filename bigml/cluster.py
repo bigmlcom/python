@@ -67,6 +67,8 @@ INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Mean', lambda(x): sum(x)/float(len(x))),
                           ('Maximum', max)]
 GLOBAL_CLUSTER_LABEL = 'Global'
+NUMERIC_DEFAULTS = ["mean", "median", "minimum", "maximum", "zero"]
+
 
 def parse_terms(text, case_sensitive=True):
     """Returns the list of parsed terms
@@ -128,7 +130,9 @@ class Cluster(ModelFields):
         self.between_ss = None
         self.ratio_ss = None
         self.critical_value = None
+        self.default_numeric_value = None
         self.k = None
+        self.summary_fields = []
         self.scales = {}
         self.term_forms = {}
         self.tag_clouds = {}
@@ -165,6 +169,9 @@ class Cluster(ModelFields):
         if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
             if 'code' in status and status['code'] == FINISHED:
+                self.default_numeric_value = cluster.get( \
+                    "default_numeric_value")
+                self.summary_fields = cluster.get("summary_fields", [])
                 the_clusters = cluster['clusters']
                 cluster_global = the_clusters.get('global')
                 clusters = the_clusters['clusters']
@@ -231,23 +238,25 @@ class Cluster(ModelFields):
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        clean_input_data = self.filter_input_data(input_data, by_name=by_name)
 
-        # Checks that all numeric fields are present in input data
-        for field_id, field in self.fields.items():
-            if (field['optype'] not in OPTIONAL_FIELDS and
-                    field_id not in input_data):
-                raise Exception("Failed to predict a centroid. Input"
-                                " data must contain values for all "
-                                "numeric fields to find a centroid.")
+        # Checks that all numeric fields are present in input data and
+        # fills them with the default average (if given) when otherwise
+        try:
+            self.fill_numeric_defaults(clean_input_data,
+                                       self.default_numeric_value)
+        except ValueError:
+            raise Exception("Failed to predict a centroid. Input"
+                            " data must contain values for all "
+                            "numeric fields to find a centroid.")
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(clean_input_data, self.fields)
 
-        unique_terms = self.get_unique_terms(input_data)
+        unique_terms = self.get_unique_terms(clean_input_data)
         nearest = {'centroid_id': None, 'centroid_name': None,
                    'distance': float('inf')}
         for centroid in self.centroids:
-            distance2 = centroid.distance2(input_data, unique_terms,
+            distance2 = centroid.distance2(clean_input_data, unique_terms,
                                            self.scales,
                                            stop_distance2=nearest['distance'])
             if distance2 is not None:
@@ -263,6 +272,24 @@ class Cluster(ModelFields):
 
         """
         return self.critical_value is not None
+
+    def fill_numeric_defaults(self, input_data, average="mean"):
+        """Checks whether input data is missing a numeric field and
+        fills it with the average quantity provided in the
+        ``average`` parameter
+        """
+
+        for field_id, field in self.fields.items():
+            if (field_id not in self.summary_fields and \
+                    field['optype'] not in OPTIONAL_FIELDS and
+                    field_id not in input_data):
+                if average not in NUMERIC_DEFAULTS:
+                    raise ValueError("The available defaults are: %s" % \
+                 ", ".join(NUMERIC_DEFAULTS))
+                default_value = 0 if average == "zero" \
+                    else field['summary'].get(average)
+                input_data[field_id] = default_value
+        return input_data
 
     def get_unique_terms(self, input_data):
         """Parses the input data to find the list of unique terms in the

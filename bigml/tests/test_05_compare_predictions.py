@@ -243,7 +243,7 @@ class TestComparePrediction(object):
 
     def test_scenario5(self):
         """
-            Scenario: Successfully comparing centroids with summary fields:
+            Scenario: Successfully comparing centroids with configuration options:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -257,12 +257,13 @@ class TestComparePrediction(object):
                 Then the local centroid is "<centroid>" with distance "<distance>"
 
                 Examples:
-                | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance |
+                | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance | full_data_input
                 | ../data/iris.csv | 20      | 20     | 30     | {"summary_fields": ["sepal width"]} |{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}             | Cluster 2   | 1.1643644909783857   |
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 2', '1.1643644909783857']]
+            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 2', '1.1643644909783857', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}'],
+            ['data/iris.csv', '20', '20', '30', '{"default_numeric_value": "zero"}', '{"petal length": 1}', 'Cluster 4', '1.41215', '{"petal length": 1, "petal width": 0, "sepal length": 0, "sepal width": 0, "species": ""}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -272,7 +273,7 @@ class TestComparePrediction(object):
             cluster_create.i_create_a_cluster_with_options(self, example[4])
             cluster_create.the_cluster_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_cluster(self)
-            prediction_create.i_create_a_centroid(self, example[5])
+            prediction_create.i_create_a_centroid(self, example[8])
             prediction_create.the_centroid_is_with_distance(self, example[6], example[7])
             prediction_compare.i_create_a_local_centroid(self, example[5])
             prediction_compare.the_local_centroid_is(self, example[6], example[7])

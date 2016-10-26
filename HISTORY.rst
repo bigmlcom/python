@@ -3,6 +3,12 @@
 History
 -------
 
+4.6.10 (2016-10-26)
+~~~~~~~~~~~~~~~~~~~
+
+- Improving local cluster object to fill in missing numerics for clusters
+  with default numeric values.
+
 4.6.9 (2016-09-27)
 ~~~~~~~~~~~~~~~~~~
 

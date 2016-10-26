@@ -68,7 +68,7 @@ def i_create_a_proportional_prediction(step, data=None):
 
 def check_prediction(got, expected):
     if not isinstance(got, basestring):
-        nose.tools.assert_almost_equals(got, float(expected), 10)
+        nose.tools.assert_almost_equals(got, float(expected), 5)
     else:
         nose.tools.assert_equals(got, expected)
 

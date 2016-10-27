@@ -320,13 +320,13 @@ class TopicModel(ModelFields):
 
         return topic
 
-    def infer(self, list_of_indicies):
+    def infer(self, list_of_indices):
         """Infer a topic distribution for a document, presented as a list of
-           term indicies.
+           term indices.
 
         """
 
-        doc = sorted(list_of_indicies)
+        doc = sorted(list_of_indices)
         updates = 0
 
         if (len(doc) > 0):

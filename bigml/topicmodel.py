@@ -321,8 +321,8 @@ class TopicModel(ModelFields):
         return topic
 
     def infer(self, list_of_indicies):
-        """Infer a topic distribution for a document using `max_updates`
-           iterations of gibbs sampling
+        """Infer a topic distribution for a document, presented as a list of
+           term indicies.
 
         """
 

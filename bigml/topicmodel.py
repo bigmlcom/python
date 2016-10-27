@@ -53,7 +53,9 @@ from bigml.modelfields import ModelFields
 LOGGER = logging.getLogger('BigML')
 
 MAXIMUM_TERM_LENGTH = 30
-UPDATES = 128
+MIN_UPDATES = 16
+MAX_UPDATES = 512
+SAMPLES_PER_TOPIC = 128
 
 CODE_TO_NAME = {
     "da": u'danish',
@@ -90,8 +92,6 @@ class TopicModel(ModelFields):
         self.bigrams = False
         self.ntopics = None
         self.temp = None
-        self.uniform_doc_assignments = None
-        self.uniform_normalizer = None
         self.phi = None
         self.term_to_index = None
         self.topics = []
@@ -139,9 +139,6 @@ class TopicModel(ModelFields):
                 self.alpha = model['alpha']
                 self.ktimesalpha = self.ntopics * self.alpha
 
-                self.uniform_doc_assignments = [1] * self.ntopics
-                self.uniform_normalizer = self.ntopics + self.ktimesalpha
-
                 self.temp = [0] * self.ntopics
 
                 assignments = model['term_topic_assignments']
@@ -188,7 +185,7 @@ class TopicModel(ModelFields):
             astr = "\n\n".join(text)
 
         doc = self.tokenize(astr)
-        topics_probability = self.infer(doc, UPDATES)
+        topics_probability = self.infer(doc)
         return [{"name": self.topics[index]["name"], \
             "probability": probability} \
             for index, probability in enumerate(topics_probability)]
@@ -300,6 +297,7 @@ class TopicModel(ModelFields):
 
         while self.temp[topic] < random_value and topic < self.ntopics:
             topic += 1
+
         return topic
 
     def sample_uniform(self, term, rng):
@@ -308,32 +306,58 @@ class TopicModel(ModelFields):
            gibbs sampler.
 
         """
-        assignments = self.uniform_doc_assignments
-        norm = self.uniform_normalizer
+        for k in range(self.ntopics):
+            self.temp[k] = self.phi[k][term]
 
-        return self.sample_topic(term, assignments, norm, rng)
+        for k in range(1, self.ntopics):
+            self.temp[k] += self.temp[k - 1]
 
-    def infer(self, doc, max_updates):
+        random_value = rng.random() * self.temp[-1]
+        topic = 0
+
+        while self.temp[topic] < random_value and topic < self.ntopics:
+            topic += 1
+
+        return topic
+
+    def infer(self, list_of_indicies):
         """Infer a topic distribution for a document using `max_updates`
            iterations of gibbs sampling
 
         """
+
+        doc = sorted(list_of_indicies)
+        updates = 0
+
+        if (len(doc) > 0):
+            updates = SAMPLES_PER_TOPIC * self.ntopics / len(doc);
+            updates = min(MAX_UPDATES, max(MIN_UPDATES, updates));
+
         rng = random.Random(self.seed)
-        normalizer = len(doc) + self.ktimesalpha
-        doc_assignments = [0] * self.ntopics
 
+        uniform_counts = [0] * self.ntopics
+        burn_counts = [0] * self.ntopics
+        sample_counts = [0] * self.ntopics
 
-        for term in doc:
-            topic = self.sample_uniform(term, rng)
-            doc_assignments[topic] += 1
+        normalizer = (len(doc) * updates) + self.ktimesalpha
 
-        # Gibbs sampling
-        for _ in range(max_updates):
+        # Initialization
+        for _ in range(updates):
             for term in doc:
-                topic = self.sample_topic( \
-                    term, doc_assignments, normalizer, rng)
-                doc_assignments[topic] += 1
-                normalizer += 1
+                topic = self.sample_uniform(term, rng)
+                uniform_counts[topic] += 1
 
-        return [(doc_assignments[k] + self.alpha) / normalizer
+        # Burn-in
+        for _ in range(updates):
+            for term in doc:
+                topic = self.sample_topic(term, uniform_counts, normalizer, rng)
+                burn_counts[topic] += 1
+
+        # Sampling
+        for _ in range(updates):
+            for term in doc:
+                topic = self.sample_topic(term, burn_counts, normalizer, rng)
+                sample_counts[topic] += 1
+
+        return [(sample_counts[k] + self.alpha) / normalizer
                 for k in range(self.ntopics)]

@@ -41,7 +41,7 @@ DUMMY_MODEL = {
                                    [0, 1, 2, 0],
                                    [1, 2, 0, 0],
                                    [0, 0, 2, 0]],
-        "termset": ["cycling", "playing", "shouldn't", "unanimous court"],
+        "termset": [u"cycling", u"playing", u"shouldn't", u"uńąnimous court"],
         "options": {},
         "topics": [{"name": "Topic 1",
                     "id": "000000",
@@ -105,9 +105,9 @@ class TestTopicModel(object):
             # This example is a replication of a test in bigmlcom/streaming-lda
             [
                 DUMMY_MODEL,
-                {"TEST TEXT": "unanimous court 'UNANIMOUS COURT' "
-                              "play the plays PLAYing SHOULDN'T CYCLE "
-                              "cycling shouldn't unanimous or court's"},
+                {"TEST TEXT": u"uńąnimous court 'UŃĄNIMOUS COURT' "
+                 u"`play``the plays PLAYing SHOULDN'T CYCLE "
+                 u"cycling shouldn't uńąnimous or court's"},
                     [
                       {"name": 'Topic 1', "probability": 0.1647366},
                       {"name": 'Topic 2', "probability": 0.1885310},

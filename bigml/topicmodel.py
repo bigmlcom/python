@@ -199,13 +199,13 @@ class TopicModel(ModelFields):
         else:
             return self.stemmer.stemWord(term)
 
-    def append_bigram(self, out_terms, last_term, term_before):
+    def append_bigram(self, out_terms, first, second):
         """Takes two terms and appends the index of their concatenation to the
            provided list of output terms
 
         """
-        if self.bigrams and last_term is not None and term_before is not None:
-            bigram = self.stem(term_before + " " + last_term)
+        if self.bigrams and first is not None and second is not None:
+            bigram = self.stem(first + " " + second)
             if bigram in self.term_to_index:
                 out_terms.append(self.term_to_index[bigram])
 
@@ -227,7 +227,7 @@ class TopicModel(ModelFields):
         index = 0
 
         while index < len(text):
-            self.append_bigram(out_terms, last_term, term_before)
+            self.append_bigram(out_terms, term_before, last_term)
 
             char = text[index]
             buf = array.array('u')
@@ -274,51 +274,65 @@ class TopicModel(ModelFields):
 
                 index += 1
 
-        self.append_bigram(out_terms, last_term, term_before)
+        self.append_bigram(out_terms, term_before, last_term)
 
         return out_terms
 
-    def sample_topic(self, term, assignments, normalizer, rng):
-        """Samples a topic for the given `term`, given a set of topic
-           assigments for the current document and a normalizer term
-           derived from the dirichlet hyperparameters
+    def sample_topics(self, document, assignments, normalizer, updates, rng):
+        """Samples topic for the terms in the given `document` for `updates`
+           iterations, using the given set of topic `assigments` for
+           the current document and a `normalizer` term derived from
+           the dirichlet hyperparameters
 
         """
-        for k in range(self.ntopics):
-            topic_term = self.phi[k][term]
-            topic_document = (assignments[k] + self.alpha) / normalizer
-            self.temp[k] = topic_term * topic_document
+        counts = [0] * self.ntopics
 
-        for k in range(1, self.ntopics):
-            self.temp[k] += self.temp[k - 1]
+        for _ in range(updates):
+            for term in document:
+                for k in range(self.ntopics):
+                    topic_term = self.phi[k][term]
+                    topic_document = (assignments[k] + self.alpha) / normalizer
+                    self.temp[k] = topic_term * topic_document
 
-        random_value = rng.random() * self.temp[-1]
-        topic = 0
+                for k in range(1, self.ntopics):
+                    self.temp[k] += self.temp[k - 1]
 
-        while self.temp[topic] < random_value and topic < self.ntopics:
-            topic += 1
+                random_value = rng.random() * self.temp[-1]
+                topic = 0
 
-        return topic
+                while self.temp[topic] < random_value and topic < self.ntopics:
+                    topic += 1
 
-    def sample_uniform(self, term, rng):
-        """Samples a topic for the given term assuming uniform topic
-           assignments for the given document.  Used to initialize the
-           gibbs sampler.
+                counts[topic] += 1
+
+        return counts
+
+    def sample_uniform(self, document, updates, rng):
+        """Samples a topics for the terms in the given `document` assuming
+           uniform topic assignments for `updates` iterations.  Used
+           to initialize the gibbs sampler.
 
         """
-        for k in range(self.ntopics):
-            self.temp[k] = self.phi[k][term]
+        counts = [0] * self.ntopics
 
-        for k in range(1, self.ntopics):
-            self.temp[k] += self.temp[k - 1]
+        for _ in range(updates):
+            for term in document:
+                for k in range(self.ntopics):
+                    self.temp[k] = self.phi[k][term]
 
-        random_value = rng.random() * self.temp[-1]
-        topic = 0
+                for k in range(1, self.ntopics):
+                    self.temp[k] += self.temp[k - 1]
 
-        while self.temp[topic] < random_value and topic < self.ntopics:
-            topic += 1
+                random_value = rng.random() * self.temp[-1]
+                topic = 0
 
-        return topic
+                while self.temp[topic] < random_value and topic < self.ntopics:
+                    topic += 1
+
+                counts[topic] += 1
+
+        return counts
+
 
     def infer(self, list_of_indices):
         """Infer a topic distribution for a document, presented as a list of
@@ -334,30 +348,23 @@ class TopicModel(ModelFields):
             updates = min(MAX_UPDATES, max(MIN_UPDATES, updates));
 
         rng = random.Random(self.seed)
-
-        uniform_counts = [0] * self.ntopics
-        burn_counts = [0] * self.ntopics
-        sample_counts = [0] * self.ntopics
-
         normalizer = (len(doc) * updates) + self.ktimesalpha
 
         # Initialization
-        for _ in range(updates):
-            for term in doc:
-                topic = self.sample_uniform(term, rng)
-                uniform_counts[topic] += 1
+        uniform_counts = self.sample_uniform(doc, updates, rng)
 
         # Burn-in
-        for _ in range(updates):
-            for term in doc:
-                topic = self.sample_topic(term, uniform_counts, normalizer, rng)
-                burn_counts[topic] += 1
-
+        burn_counts = self.sample_topics(doc,
+                                        uniform_counts,
+                                        normalizer,
+                                        updates,
+                                        rng)
         # Sampling
-        for _ in range(updates):
-            for term in doc:
-                topic = self.sample_topic(term, burn_counts, normalizer, rng)
-                sample_counts[topic] += 1
+        sample_counts = self.sample_topics(doc,
+                                          burn_counts,
+                                          normalizer,
+                                          updates,
+                                          rng)
 
         return [(sample_counts[k] + self.alpha) / normalizer
                 for k in range(self.ntopics)]

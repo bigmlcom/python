@@ -279,7 +279,7 @@ class TopicModel(ModelFields):
         return out_terms
 
     def sample_topics(self, document, assignments, normalizer, updates, rng):
-        """Samples topic for the terms in the given `document` for `updates`
+        """Samples topics for the terms in the given `document` for `updates`
            iterations, using the given set of topic `assigments` for
            the current document and a `normalizer` term derived from
            the dirichlet hyperparameters
@@ -308,7 +308,7 @@ class TopicModel(ModelFields):
         return counts
 
     def sample_uniform(self, document, updates, rng):
-        """Samples a topics for the terms in the given `document` assuming
+        """Samples topics for the terms in the given `document` assuming
            uniform topic assignments for `updates` iterations.  Used
            to initialize the gibbs sampler.
 

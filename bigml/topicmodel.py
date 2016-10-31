@@ -344,8 +344,8 @@ class TopicModel(ModelFields):
         updates = 0
 
         if (len(doc) > 0):
-            updates = SAMPLES_PER_TOPIC * self.ntopics / len(doc);
-            updates = min(MAX_UPDATES, max(MIN_UPDATES, updates));
+            updates = SAMPLES_PER_TOPIC * self.ntopics / len(doc)
+            updates = min(MAX_UPDATES, max(MIN_UPDATES, updates))
 
         rng = random.Random(self.seed)
         normalizer = (len(doc) * updates) + self.ktimesalpha
@@ -355,16 +355,16 @@ class TopicModel(ModelFields):
 
         # Burn-in
         burn_counts = self.sample_topics(doc,
-                                        uniform_counts,
-                                        normalizer,
-                                        updates,
-                                        rng)
+                                         uniform_counts,
+                                         normalizer,
+                                         updates,
+                                         rng)
         # Sampling
         sample_counts = self.sample_topics(doc,
-                                          burn_counts,
-                                          normalizer,
-                                          updates,
-                                          rng)
+                                           burn_counts,
+                                           normalizer,
+                                           updates,
+                                           rng)
 
         return [(sample_counts[k] + self.alpha) / normalizer
                 for k in range(self.ntopics)]

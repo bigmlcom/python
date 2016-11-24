@@ -2302,6 +2302,282 @@ from the datasets as well as the configuration parameters described in
 the `developers section <https://bigml.com/developers/associations>`_ .
 
 
+Topic Models
+------------
+
+A topic model is an unsupervised machine learning method
+for unveiling all the different topics
+underlying a collection of documents.
+BigML uses Latent Dirichlet Allocation (LDA), one of the most popular
+probabilistic methods for topic modeling.
+In BigML, each instance (i.e. each row in your dataset) will
+be considered a document and the contents of all the text fields
+given as inputs will be automatically concatenated and considered the
+document bag of words.
+
+Topic model is based on the assumption that any document
+exhibits a mixture of topics. Each topic is composed of a set of words
+which are thematically related. The words from a given topic have different
+probabilities for that topic. At the same time, each word can be attributable
+to one or several topics. So for example the word "sea" may be found in
+a topic related with sea transport but also in a topic related to holidays.
+Topic model automatically discards stop words and high
+frequency words.
+
+Topic model's main applications include browsing, organizing and understanding
+large archives of documents. It can been applied for information retrieval,
+collaborative filtering, assessing document similarity among others.
+The topics found in the dataset can also be very useful new features
+before applying other models like classification, clustering, or
+anomaly detection.
+
+The JSON structure for a topic model is:
+
+.. code-block:: python
+
+    >>> api.pprint(topic['object'])
+    {   u'category': 0,
+        u'code': 200,
+        u'columns': 1,
+        u'configuration': None,
+        u'configuration_status': False,
+        u'created': u'2016-11-23T23:47:54.703000',
+        u'credits': 0.0,
+        u'credits_per_prediction': 0.0,
+        u'dataset': u'dataset/58362aa0983efc45a0000005',
+        u'dataset_field_types': {   u'categorical': 1,
+                                    u'datetime': 0,
+                                    u'effective_fields': 672,
+                                    u'items': 0,
+                                    u'numeric': 0,
+                                    u'preferred': 2,
+                                    u'text': 1,
+                                    u'total': 2},
+        u'dataset_status': True,
+        u'dataset_type': 0,
+        u'description': u'',
+        u'excluded_fields': [],
+        u'fields_meta': {   u'count': 1,
+                            u'limit': 1000,
+                            u'offset': 0,
+                            u'query_total': 1,
+                            u'total': 1},
+        u'input_fields': [u'000001'],
+        u'locale': u'en_US',
+        u'max_columns': 2,
+        u'max_rows': 656,
+        u'name': u"spam dataset's Topic Model ",
+        u'number_of_batchtopicdistributions': 0,
+        u'number_of_public_topicdistributions': 0,
+        u'number_of_topicdistributions': 0,
+        u'ordering': 0,
+        u'out_of_bag': False,
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'range': [1, 656],
+        u'replacement': False,
+        u'resource': u'topicmodel/58362aaa983efc45a1000007',
+        u'rows': 656,
+        u'sample_rate': 1.0,
+        u'shared': False,
+        u'size': 54740,
+        u'source': u'source/58362a69983efc459f000001',
+        u'source_status': True,
+        u'status': {   u'code': 5,
+                       u'elapsed': 3222,
+                       u'message': u'The topic model has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'topic_model': {   u'alpha': 4.166666666666667,
+                            u'beta': 0.1,
+                            u'bigrams': False,
+                            u'case_sensitive': False,
+                            u'fields': {   u'000001': {   u'column_number': 1,
+                                                          u'datatype': u'string',
+                                                          u'name': u'Message',
+                                                          u'optype': u'text',
+                                                          u'order': 0,
+                                                          u'preferred': True,
+                                                          u'summary': {   u'average_length': 78.14787,
+                                                                          u'missing_count': 0,
+                                                                          u'tag_cloud': [   [   u'call',
+                                                                                                72],
+                                                                                            [   u'ok',
+                                                                                                36],
+                                                                                            [   u'gt',
+                                                                                                34],
+    ...
+                                                                                            [   u'worse',
+                                                                                                2],
+                                                                                            [   u'worth',
+                                                                                                2],
+                                                                                            [   u'write',
+                                                                                                2],
+                                                                                            [   u'yest',
+                                                                                                2],
+                                                                                            [   u'yijue',
+                                                                                                2]],
+                                                                          u'term_forms': {   }},
+                                                          u'term_analysis': {   u'case_sensitive': False,
+                                                                                u'enabled': True,
+                                                                                u'language': u'en',
+                                                                                u'stem_words': False,
+                                                                                u'token_mode': u'all',
+                                                                                u'use_stopwords': False}}},
+                            u'hashed_seed': 62146850,
+                            u'language': u'en',
+                            u'number_of_topics': 12,
+                            u'term_limit': 4096,
+                            u'term_topic_assignments': [   [   0,
+                                                               5,
+                                                               0,
+                                                               1,
+                                                               0,
+                                                               19,
+                                                               0,
+                                                               0,
+                                                               19,
+                                                               0,
+                                                               1,
+                                                               0],
+                                                           [   0,
+                                                               0,
+                                                               0,
+                                                               13,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               5,
+                                                               0,
+                                                               0,
+                                                               0],
+    ...
+                                                           [   0,
+                                                               7,
+                                                               27,
+                                                               0,
+                                                               112,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               14,
+                                                               2]],
+                            u'termset': [   u'000',
+                                            u'03',
+                                            u'04',
+                                            u'06',
+                                            u'08000839402',
+                                            u'08712460324',
+    ...
+
+                                            u'yes',
+                                            u'yest',
+                                            u'yesterday',
+                                            u'yijue',
+                                            u'yo',
+                                            u'yr',
+                                            u'yup',
+                                            u'\xfc'],
+                            u'top_n_terms': 10,
+                            u'topicmodel_seed': u'26c386d781963ca1ea5c90dab8a6b023b5e1d180',
+                            u'topics': [   {   u'id': u'000000',
+                                               u'name': u'Topic 00',
+                                               u'probability': 0.09375,
+                                               u'top_terms': [   [   u'im',
+                                                                     0.04849],
+                                                                 [   u'hi',
+                                                                     0.04717],
+                                                                 [   u'love',
+                                                                     0.04585],
+                                                                 [   u'please',
+                                                                     0.02867],
+                                                                 [   u'tomorrow',
+                                                                     0.02867],
+                                                                 [   u'cos',
+                                                                     0.02823],
+                                                                 [   u'sent',
+                                                                     0.02647],
+                                                                 [   u'da',
+                                                                     0.02383],
+                                                                 [   u'meet',
+                                                                     0.02207],
+                                                                 [   u'dinner',
+                                                                     0.01898]]},
+                                           {   u'id': u'000001',
+                                               u'name': u'Topic 01',
+                                               u'probability': 0.08215,
+                                               u'top_terms': [   [   u'lt',
+                                                                     0.1015],
+                                                                 [   u'gt',
+                                                                     0.1007],
+                                                                 [   u'wish',
+                                                                     0.03958],
+                                                                 [   u'feel',
+                                                                     0.0272],
+                                                                 [   u'shit',
+                                                                     0.02361],
+                                                                 [   u'waiting',
+                                                                     0.02281],
+                                                                 [   u'stuff',
+                                                                     0.02001],
+                                                                 [   u'name',
+                                                                     0.01921],
+                                                                 [   u'comp',
+                                                                     0.01522],
+                                                                 [   u'forgot',
+                                                                     0.01482]]},
+    ...
+                                           {   u'id': u'00000b',
+                                               u'name': u'Topic 11',
+                                               u'probability': 0.0826,
+                                               u'top_terms': [   [   u'call',
+                                                                     0.15084],
+                                                                 [   u'min',
+                                                                     0.05003],
+                                                                 [   u'msg',
+                                                                     0.03185],
+                                                                 [   u'home',
+                                                                     0.02648],
+                                                                 [   u'mind',
+                                                                     0.02152],
+                                                                 [   u'lt',
+                                                                     0.01987],
+                                                                 [   u'bring',
+                                                                     0.01946],
+                                                                 [   u'camera',
+                                                                     0.01905],
+                                                                 [   u'set',
+                                                                     0.01905],
+                                                                 [   u'contact',
+                                                                     0.01781]]}],
+                            u'use_stopwords': False},
+        u'updated': u'2016-11-23T23:48:03.336000',
+        u'white_box': False}
+
+Note that the output in the snippet above has been abbreviated.
+
+
+The topic model returns a list of top terms for each topic found in the data.
+Note that topics are not labeled, so you have to infer their meaning according
+to the words they are composed of.
+
+Once you build the topic model you can calculate each topic probability
+for a given document by using Topic Distribution.
+This information can be useful to find documents similarities based
+on their thematic.
+
+As you see,
+the ``topic_model`` attribute stores the topics and termset and term to
+topic assignment,
+as well as the configuration parameters described in
+the `developers section <https://bigml.com/developers/topicmodels>`_ .
+
+
 Whizzml Resources
 -----------------
 
@@ -2629,6 +2905,9 @@ update the contents of the associated variable:
     api.status(logistic_regression)
     api.status(association)
     api.status(association_set)
+    api.status(topic_model)
+    api.status(topic_distribution)
+    api.status(batch_topic_distribution)
     api.status(script)
     api.status(execution)
     api.status(library)
@@ -2971,6 +3250,38 @@ list of ids as the first argument in the api call
         "name": "my association", "input_fields": ["000000", "000001"], \
         "range": [1, 10]})
 
+
+Creating topic models
+~~~~~~~~~~~~~~~~~~~~~
+
+To find which topics do your documents refer to you can create a topic model.
+The only required argument to create an association
+is a dataset id.
+You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Association section of the Developer's
+documentation <https://bigml.com/developers/topicmodels>`_.
+
+For example, to create a topic model including exactly 32 topics
+you can use the following
+invocation:
+
+.. code-block:: python
+
+    topic_model = api.create_topic_model(dataset, { \
+        "name": "my topics", "number_of_topics": 32})
+
+Again, the topic model is scheduled for creation, and you can retrieve its
+status at any time by means of ``api.status(topic_model)``.
+
+Topic models can also be created from lists of datasets. Just use the
+list of ids as the first argument in the api call
+
+.. code-block:: python
+
+    topic_model = api.create_topic_model([dataset1, dataset2], { \
+        "name": "my topics", "number_of_topics": 32})
+
 Creating predictions
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -3039,6 +3350,20 @@ ID or object and the next one is the input data.
         association, {"genres": "Action$Adventure"}, \
         args={"name": "my association set"})
 
+
+Creating topic distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To obtain the topic distributions associated to new input data, you
+can now use the ``create_topic_distribution`` method. Give
+the method a topic model identifier and the input data to obtain the score:
+
+.. code-block:: python
+
+    anomaly_score = api.create_topic_distribution( \
+        topic_model,
+        {"Message": "The bubble exploded in 2007."},
+        args={"name": "my topic distribution"})
 
 Creating evaluations
 ~~~~~~~~~~~~~~~~~~~~
@@ -3215,6 +3540,22 @@ anomaly detector to assign an anomaly score to each input data instance:
         "name": "my batch anomaly score", "all_fields": True,
         "header": True})
 
+Creating batch topic distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Input data can also be assigned a topic distribution in batch. You train a
+topic model with your training data and then build a dataset from your
+input data. The ``create_batch_topic_distribution`` call will need the id
+of the dataset and of the
+topic model to assign a topic distribution to each input data instance:
+
+.. code-block:: python
+
+    batch_anomaly_score = api.create_batch_topic_distribution( \
+        topic_model, dataset, {
+        "name": "my batch topic distribution", "all_fields": True,
+        "header": True})
+
 Reading Resources
 -----------------
 
@@ -3251,6 +3592,9 @@ You can list resources with the appropriate api method:
     api.list_logistic_regressions()
     api.list_associations()
     api.list_association_sets()
+    api.list_topic_models()
+    api.list_topic_distributions()
+    api.list_batch_topic_distributions()
     api.list_scripts()
     api.list_libraries()
     api.list_executions()
@@ -3388,6 +3732,10 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_logistic_regression(logistic_regression, {"name": "new name"})
     api.update_association(association, {"name": "new name"})
     api.update_association_set(association_set, {"name": "new name"})
+    api.update_topic_model(topic_model, {"name": "new name"})
+    api.update_topic_distribution(topic_distribution, {"name": "new name"})
+    api.update_batch_topic_distribution(\
+        batch_topic_distribution, {"name": "new name"})
     api.update_script(script, {"name": "new name"})
     api.update_library(library, {"name": "new name"})
     api.update_execution(execution, {"name": "new name"})
@@ -3435,6 +3783,9 @@ each type of resource.
     api.delete_logistic_regression(logistic_regression)
     api.delete_association(association)
     api.delete_association_set(association_set)
+    api.delete_topic_model(topic_model)
+    api.delete_topic_distribution(topic_distribution)
+    api.delete_batch_topic_distribution(batch_topic_distribution)
     api.delete_project(project)
     api.delete_script(script)
     api.delete_library(library)
@@ -4041,6 +4392,84 @@ related to an input data set:
 As in the local model predictions, producing local association sets can be done
 independently of BigML servers, so no cost or connection latencies are
 involved.
+
+Local Topic Model
+-----------------
+
+You can also instantiate a local version of a remote topic model.
+
+.. code-block:: python
+
+    from bigml.topicmodel import TopicModel
+    local_topic_model = TopicModel(
+        'topicmodel/502fdbcf15526876210042435')
+
+This will retrieve the remote topic model information,
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a ``TopicModel``
+object that you can use to obtain local topic distributions.
+If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.topicmodel import TopicModel
+    from bigml.api import BigML
+
+    local_topic_model = TopicModel(
+        'topicmodel/502fdbcf15526876210042435',
+        api=BigML(my_username, my_api_key))
+
+You can also reuse a remote topic model JSON structure
+as retrieved previously to build the
+local topic model object:
+
+.. code-block:: python
+
+    from bigml.topicmodel import TopicModel
+    from bigml.api import BigML
+    api = BigML()
+    topic_model = api.get_topic_model(
+        'topicmodel/502fdbcf15526876210042435',
+        query_string='limit=-1')
+
+    local_topic_model = TopicModel(topic_model)
+
+Note that in this example we used a ``limit=-1`` query string for the topic
+model retrieval. This ensures that all fields are retrieved by the get
+method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+Local Topic Distributions
+-------------------------
+
+Using the local topic model object, you can predict the local topic
+distribution for
+an input data set:
+
+.. code-block:: python
+
+    local_topic_model.distribution({"Message": "Our mobile phone is free"})
+    [   {   'name': u'Topic 00', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 01', 'probability': 0.003257671290458176},
+        {   'name': u'Topic 02', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 03', 'probability': 0.1968263976460698},
+        {   'name': u'Topic 04', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 05', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 06', 'probability': 0.13692728036990331},
+        {   'name': u'Topic 07', 'probability': 0.6419714165615805},
+        {   'name': u'Topic 08', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 09', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 10', 'probability': 0.002627154266498529},
+        {   'name': u'Topic 11', 'probability': 0.002627154266498529}]
+
+
+As you can see, the topic distribution contains the name of the
+possible topics in the model and the
+associated probabilities.
 
 
 Multi Models

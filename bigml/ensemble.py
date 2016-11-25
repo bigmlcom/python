@@ -286,7 +286,7 @@ class Ensemble(object):
                                options=options)
         if add_unused_fields:
             unused_fields = set(input_data.keys())
-            for index, prediction in enumerate(votes.predictions):
+            for prediction in votes.predictions:
                 unused_fields = unused_fields.intersection( \
                     set(prediction["unused_fields"]))
             if not isinstance(result, dict):

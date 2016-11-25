@@ -29,6 +29,7 @@ except ImportError:
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
+                                   get_resource_type,
                                    get_topic_distribution_id,
                                    check_resource, get_topic_model_id)
 from bigml.constants import (TOPIC_DISTRIBUTION_PATH, TINY_RESOURCE)
@@ -61,6 +62,7 @@ class TopicDistributionHandler(ResourceHandler):
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True, api=self)
         else:
+            resource_type = get_resource_type(topic_model)
             raise Exception("A topic model id is needed to create a"
                             " topic distribution. %s found." % resource_type)
 

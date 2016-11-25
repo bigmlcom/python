@@ -3551,7 +3551,7 @@ topic model to assign a topic distribution to each input data instance:
 
 .. code-block:: python
 
-    batch_anomaly_score = api.create_batch_topic_distribution( \
+    batch_topic_distribution = api.create_batch_topic_distribution( \
         topic_model, dataset, {
         "name": "my batch topic distribution", "all_fields": True,
         "header": True})

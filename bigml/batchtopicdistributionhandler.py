@@ -103,7 +103,7 @@ class BatchTopicDistributionHandler(ResourceHandler):
             batch_topic_distribution)
         if batch_topic_distribution_id:
             return self._download("%s%s%s" % \
-                (self.url, batch_topic_distribution_id, DOWNLOAD_DIR),
+                (self.url, batch_topic_distribution_id, DOWNLOAD_DIR), \
                 filename=filename)
 
     def list_batch_topic_distributions(self, query_string=''):

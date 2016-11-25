@@ -507,7 +507,7 @@ For regressions first level will contain these keys:
 
 where the detailed result objects include ``mean_absolute_error``,
 ``mean_squared_error`` and ``r_squared`` (refer to
-`developers documentation <https://bigml.com/developers/evaluations>`_ for
+`developers documentation <https://bigml.com/api/evaluations>`_ for
 more info on the meaning of these measures.
 
 Cluster
@@ -1683,7 +1683,7 @@ The JSON structure for a logistic regression is:
 Note that the output in the snippet above has been abbreviated. As you see,
 the ``logistic_regression`` attribute stores the coefficients used in the
 logistic function as well as the configuration parameters described in
-the `developers section <https://bigml.com/developers/logisticregressions>`_ .
+the `developers section <https://bigml.com/api/logisticregressions>`_ .
 
 
 Associations
@@ -1763,8 +1763,8 @@ For example, a numeric field with values ranging from 0 to 600 split
 into 3 segments:
 segment 1 → [0, 200), segment 2 → [200, 400), segment 3 → [400, 600].
 You can refine the behavior of the transformation using
-`discretization <https://bigml.com/developers/associations#ad_create_discretization>`_
-and `field_discretizations <https://bigml.com/developers/associations#ad_create_field_discretizations>`_.
+`discretization <https://bigml.com/api/associations#ad_create_discretization>`_
+and `field_discretizations <https://bigml.com/api/associations#ad_create_field_discretizations>`_.
 
 The JSON structure for an association resource is:
 
@@ -2299,7 +2299,7 @@ The JSON structure for an association resource is:
 Note that the output in the snippet above has been abbreviated. As you see,
 the ``associations`` attribute stores items, rules and metrics extracted
 from the datasets as well as the configuration parameters described in
-the `developers section <https://bigml.com/developers/associations>`_ .
+the `developers section <https://bigml.com/api/associations>`_ .
 
 
 Topic Models
@@ -2575,7 +2575,7 @@ As you see,
 the ``topic_model`` attribute stores the topics and termset and term to
 topic assignment,
 as well as the configuration parameters described in
-the `developers section <https://bigml.com/developers/topicmodels>`_ .
+the `developers section <https://bigml.com/api/topicmodels>`_ .
 
 
 Whizzml Resources
@@ -2666,7 +2666,7 @@ allow the user to set the remote file name as input:
 The ``script`` can also use a ``library`` resource (please, see the
 ``Libraries`` section below for more details) by including its id in the
 ``imports`` attribute. Other attributes can be checked at the
-`API Developers documentation for Scripts <https://bigml.com/developers/scripts#ws_script_arguments>`_.
+`API Developers documentation for Scripts <https://bigml.com/api/scripts#ws_script_arguments>`_.
 
 Executions
 ----------
@@ -2735,7 +2735,7 @@ As you can see, the execution resource contains information about the result
 of the execution, the resources that have been generated while executing and
 users can define some variables in the code to be exported as outputs. Please
 refer to the
-`Developers documentation for Executions<https://bigml.com/developers/executions#we_execution_arguments>`_
+`Developers documentation for Executions<https://bigml.com/api/executions#we_execution_arguments>`_
 for details on how to define execution outputs.
 
 Libraries
@@ -2791,7 +2791,7 @@ the second one adds two variables and increments the result by one.
 Libraries can be imported in scripts. The ``imports`` attribute of a ``script``
 can contain a list of ``library`` IDs whose defined functions
 and constants will be ready to be used throughout the ``script``. Please,
-refer to the `API Developers documentation for Libraries <https://bigml.com/developers/libraries#wl_library_arguments>`_
+refer to the `API Developers documentation for Libraries <https://bigml.com/api/libraries#wl_library_arguments>`_
 for more details.
 
 Creating Resources
@@ -2805,7 +2805,7 @@ keys:
    ``api.create_source`` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
    status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
-   documentation <https://bigml.com/developers/status_codes>`_.
+   documentation <https://bigml.com/api/status_codes>`_.
 -  **resource**: The identifier of the new resource.
 -  **location**: The location of the new resource.
 -  **object**: The resource itself, as computed by BigML.
@@ -2824,7 +2824,7 @@ of the resource can take from a few seconds to a few days, depending on
 the size of the resource and BigML's load. A resource is not fully
 created until its status is ``bigml.api.FINISHED``. See the
 `documentation on status
-codes <https://bigml.com/developers/status_codes>`_ for the listing of
+codes <https://bigml.com/api/status_codes>`_ for the listing of
 potential states and their semantics. So depending on your application
 you might need to import the following constants:
 
@@ -2978,7 +2978,7 @@ To create a source from a local data file, you can use the
 data file (or file-like object). You can use a second optional parameter
 to specify any of the
 options for source creation described in the `BigML API
-documentation <https://bigml.com/developers/sources>`_.
+documentation <https://bigml.com/api/sources>`_.
 
 Here's a sample invocation:
 
@@ -3062,7 +3062,7 @@ Once you have created a source, you can create a dataset. The only
 required argument to create a dataset is a source id. You can add all
 the additional arguments accepted by BigML and documented in the
 `Datasets section of the Developer's
-documentation <https://bigml.com/developers/datasets>`_.
+documentation <https://bigml.com/api/datasets>`_.
 
 For example, to create a dataset named "my dataset" with the first 1024
 bytes of a source, you can submit the following request:
@@ -3143,7 +3143,7 @@ field. The only required argument to create a model is a dataset id.
 You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Models section of the Developer's
-documentation <https://bigml.com/developers/models>`_.
+documentation <https://bigml.com/api/models>`_.
 
 For example, to create a model only including the first two fields and
 the first 10 instances in the dataset, you can use the following
@@ -3186,7 +3186,7 @@ some automatically chosen points (centroids). Again, the only required
 argument to create a cluster is the dataset id. You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Clusters section of the Developer's
-documentation <https://bigml.com/developers/clusters>`_.
+documentation <https://bigml.com/api/clusters>`_.
 
 Let's create a cluster from a given dataset:
 
@@ -3206,7 +3206,7 @@ anomalous records. Again, the only required
 argument to create an anomaly detector is the dataset id. You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Anomaly detectors section of the Developer's
-documentation <https://bigml.com/developers/anomalies>`_.
+documentation <https://bigml.com/api/anomalies>`_.
 
 Let's create an anomaly detector from a given dataset:
 
@@ -3226,7 +3226,7 @@ is a dataset id.
 You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Association section of the Developer's
-documentation <https://bigml.com/developers/associations>`_.
+documentation <https://bigml.com/api/associations>`_.
 
 For example, to create an association only including the first two fields and
 the first 10 instances in the dataset, you can use the following
@@ -3255,12 +3255,12 @@ Creating topic models
 ~~~~~~~~~~~~~~~~~~~~~
 
 To find which topics do your documents refer to you can create a topic model.
-The only required argument to create an association
+The only required argument to create a topic model
 is a dataset id.
 You can also
 include in the request all the additional arguments accepted by BigML
-and documented in the `Association section of the Developer's
-documentation <https://bigml.com/developers/topicmodels>`_.
+and documented in the `Topic Model section of the Developer's
+documentation <https://bigml.com/api/topicmodels>`_.
 
 For example, to create a topic model including exactly 32 topics
 you can use the following
@@ -3374,7 +3374,7 @@ field real values. Thus, the required arguments to create an evaluation are
 model id and a dataset id. You can also
 include in the request all the additional arguments accepted by BigML
 and documented in the `Evaluations section of the Developer's
-documentation <https://bigml.com/developers/evaluations>`_.
+documentation <https://bigml.com/api/evaluations>`_.
 
 For instance, to evaluate a previously created model using an existing dataset
 you can use the following call:
@@ -3447,7 +3447,7 @@ Particularly for categorical fields, there are four different available
 default coding). For a more detailed description of the
 ``field_codings`` attribute and its syntax, please see the `Developers API
 Documentation
-<https://bigml.com/developers/logisticregressions#lr_logistic_regression_arguments>`_.
+<https://bigml.com/api/logisticregressions#lr_logistic_regression_arguments>`_.
 
 
 Creating batch predictions
@@ -3604,7 +3604,7 @@ you will receive a dictionary with the following keys:
 -  **code**: If the request is successful you will get a
    ``bigml.api.HTTP_OK`` (200) status code. Otherwise, it will be one of
    the standard HTTP error codes. See `BigML documentation on status
-   codes <https://bigml.com/developers/status_codes>`_ for more info.
+   codes <https://bigml.com/api/status_codes>`_ for more info.
 -  **meta**: A dictionary including the following keys that can help you
    paginate listings:
 
@@ -3628,7 +3628,7 @@ Filtering Resources
 
 You can filter resources in listings using the syntax and fields labeled
 as *filterable* in the `BigML
-documentation <https://bigml.com/developers>`_ for each resource.
+documentation <https://bigml.com/api>`_ for each resource.
 
 A few examples:
 
@@ -3668,7 +3668,7 @@ Ordering Resources
 
 You can order resources in listings using the syntax and fields labeled
 as *sortable* in the `BigML
-documentation <https://bigml.com/developers>`_ for each resource.
+documentation <https://bigml.com/api>`_ for each resource.
 
 A few examples:
 
@@ -3754,7 +3754,7 @@ its type to ``categorical`` by calling:
 where ``000001`` is the field id that corresponds to the updated field.
 You will find detailed information about
 the updatable attributes of each resource in
-`BigML developer's documentation <https://bigml.com/developers>`_.
+`BigML developer's documentation <https://bigml.com/api>`_.
 
 Deleting Resources
 ------------------
@@ -3797,7 +3797,7 @@ keys:
 -  **code** If the request is successful, the code will be a
    ``bigml.api.HTTP_NO_CONTENT`` (204) status code. Otherwise, it wil be
    one of the standard HTTP error codes. See the `documentation on
-   status codes <https://bigml.com/developers/status_codes>`_ for more
+   status codes <https://bigml.com/api/status_codes>`_ for more
    info.
 -  **error** If the request does not succeed, it will contain a
    dictionary with an error code and a message. It will be ``None``
@@ -3889,7 +3889,7 @@ parameter:
                         api=BigML(my_username,
                                   my_api_key))
 
-or even use the remote model information retrieved previously to build the
+or even use the remote model information previously retrieved to build the
 local model object:
 
 .. code-block:: python
@@ -4059,7 +4059,7 @@ parameter:
                             api=BigML(my_username,
                                       my_api_key))
 
-or even use the remote cluster information retrieved previously to build the
+or even use the remote cluster information previously retrieved to build the
 local cluster object:
 
 .. code-block:: python
@@ -4198,7 +4198,7 @@ parameter:
         api=BigML(my_username, my_api_key))
 
 You can also reuse a remote logistic regression JSON structure
-as retrieved previously to build the
+as previously retrieved to build the
 local logistic regression object:
 
 .. code-block:: python
@@ -4333,7 +4333,7 @@ item names and by a user-given function:
 
 This will recover the ``Item`` objects found in the ``Cap Color`` field for
 the names in the list, with their properties as described in the
-`developers section <https://bigml.com/developers/associations#ad_retrieving_an_association>`_
+`developers section <https://bigml.com/api/associations#ad_retrieving_an_association>`_
 
 
 Local Association Sets
@@ -4423,7 +4423,7 @@ parameter:
         api=BigML(my_username, my_api_key))
 
 You can also reuse a remote topic model JSON structure
-as retrieved previously to build the
+as previously retrieved to build the
 local topic model object:
 
 .. code-block:: python
@@ -5184,4 +5184,4 @@ Additional Information
 ----------------------
 
 For additional information about the API, see the
-`BigML developer's documentation <https://bigml.com/developers>`_.
+`BigML developer's documentation <https://bigml.com/api>`_.

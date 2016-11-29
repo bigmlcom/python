@@ -345,7 +345,7 @@ class TopicModel(ModelFields):
 
         if (len(doc) > 0):
             updates = SAMPLES_PER_TOPIC * self.ntopics / len(doc)
-            updates = round(min(MAX_UPDATES, max(MIN_UPDATES, updates)))
+            updates = int(min(MAX_UPDATES, max(MIN_UPDATES, updates)))
 
         rng = random.Random(self.seed)
         normalizer = (len(doc) * updates) + self.ktimesalpha

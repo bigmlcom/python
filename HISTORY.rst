@@ -3,6 +3,13 @@
 History
 -------
 
+4.7.0 (2016-11-30)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods for the new resource types: Topic Model,
+  Topic Distribution, Batch Topic Distribution.
+- Adding local Topic Model object.
+
 4.6.10 (2016-10-26)
 ~~~~~~~~~~~~~~~~~~~
 

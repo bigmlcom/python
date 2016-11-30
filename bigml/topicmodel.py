@@ -225,8 +225,20 @@ class TopicModel(ModelFields):
 
         text = unicode(astr)
         index = 0
+        length = len(text)
 
-        while index < len(text):
+        def next_char(text, index):
+            """Auxiliary function to get next char and index with end check
+
+            """
+            index += 1
+            if index < length:
+                char = text[index]
+            else:
+                char = ''
+            return char, index
+
+        while index < length:
             self.append_bigram(out_terms, term_before, last_term)
 
             char = text[index]
@@ -236,21 +248,15 @@ class TopicModel(ModelFields):
             if not char.isalnum():
                 saw_char = True
 
-            while not char.isalnum() and index < len(text):
-                index += 1
-                char = text[index]
+            while not char.isalnum() and index < length:
+                char, index = next_char(text, index)
 
-            while (index < len(text) and
+            while (index < length and
                    (char.isalnum() or char == "'") and
                    len(buf) < MAXIMUM_TERM_LENGTH):
 
                 buf.append(char)
-                index += 1
-
-                if index < len(text):
-                    char = text[index]
-                else:
-                    char = None
+                char, index = next_char(text, index)
 
             if len(buf) > 0:
                 term_out = buf.tounicode()
@@ -277,6 +283,7 @@ class TopicModel(ModelFields):
         self.append_bigram(out_terms, term_before, last_term)
 
         return out_terms
+
 
     def sample_topics(self, document, assignments, normalizer, updates, rng):
         """Samples topics for the terms in the given `document` for `updates`

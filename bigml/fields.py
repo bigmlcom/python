@@ -51,13 +51,14 @@ from bigml.api import get_resource_type
 from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, PREDICTION_PATH, MODEL_PATH, CLUSTER_PATH,
     ANOMALY_PATH, SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
-    LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH)
+    LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH, TOPIC_MODEL_PATH)
 from bigml.io import UnicodeReader, UnicodeWriter
 
 RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
                          PREDICTION_PATH, CLUSTER_PATH, ANOMALY_PATH,
                          SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
-                         LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH]
+                         LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH,
+                         TOPIC_MODEL_PATH]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
@@ -110,6 +111,8 @@ def get_fields_structure(resource, errors=False):
             fields = resource['logistic_regression']['fields']
         elif resource_type == ASSOCIATION_PATH:
             fields = resource['associations']['fields']
+        elif resource_type == TOPIC_MODEL_PATH:
+            fields = resource['topic_model']['fields']
         elif resource_type == SAMPLE_PATH:
             fields = dict([(field['id'], field) for field in
                            resource['sample']['fields']])
@@ -167,7 +170,7 @@ class Fields(object):
     def __init__(self, resource_or_fields, missing_tokens=None,
                  data_locale=None, verbose=False,
                  objective_field=None, objective_field_present=False,
-                 include=None, errors=None):
+                 include=None, errors=None, ):
 
         # The constructor can be instantiated with resources or a fields
         # structure. The structure is checked and fields structure is returned

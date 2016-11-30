@@ -3,8 +3,15 @@
 History
 -------
 
+4.7.1 (2016-12-01)
+~~~~~~~~~~~~~~~~~~
+
+- Improving the Fields object: extracting fields structure from topic models.
+- Bug fixing: Local Topic Distributions failed when tokenizing inputs with
+  sequences of separators.
+
 4.7.0 (2016-11-30)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Adding REST methods for the new resource types: Topic Model,
   Topic Distribution, Batch Topic Distribution.

@@ -744,7 +744,8 @@ class TestComparePrediction(object):
         """
         print self.test_scenario15.__doc__
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01878, 0.00388, 0.00388, 0.00388, 0.20313, 0.47315, 0.00574, 0.05695, 0.00388, 0.19382, 0.00388, 0.02902]']]
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01878, 0.00388, 0.00388, 0.00388, 0.20313, 0.47315, 0.00574, 0.05695, 0.00388, 0.19382, 0.00388, 0.02902]'],
+            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Go until jurong point, crazy.. Available only in bugis n great world la e buffet... Cine there got amore wat..."}', '[0.00263, 0.01083, 0.00831, 0.06004, 0.33701, 0.00263, 0.01209, 0.44553, 0.0531, 0.00326, 0.06193, 0.00263]']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

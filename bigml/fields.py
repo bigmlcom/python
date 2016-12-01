@@ -170,7 +170,7 @@ class Fields(object):
     def __init__(self, resource_or_fields, missing_tokens=None,
                  data_locale=None, verbose=False,
                  objective_field=None, objective_field_present=False,
-                 include=None, errors=None, ):
+                 include=None, errors=None):
 
         # The constructor can be instantiated with resources or a fields
         # structure. The structure is checked and fields structure is returned

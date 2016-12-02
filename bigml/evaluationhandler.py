@@ -67,7 +67,7 @@ class EvaluationHandler(ResourceHandler):
             body = json.dumps(create_args)
             return self._create(self.evaluation_url, body)
 
-    def get_evaluation(self, evaluation):
+    def get_evaluation(self, evaluation, query_string=''):
         """Retrieves an evaluation.
 
            The evaluation parameter should be a string containing the
@@ -81,7 +81,8 @@ class EvaluationHandler(ResourceHandler):
                             message="An evaluation id is needed.")
         evaluation_id = get_evaluation_id(evaluation)
         if evaluation_id:
-            return self._get("%s%s" % (self.url, evaluation_id))
+            return self._get("%s%s" % (self.url, evaluation_id),
+                             query_string=query_string)
 
     def list_evaluations(self, query_string=''):
         """Lists all your evaluations.

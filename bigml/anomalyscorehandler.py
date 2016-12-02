@@ -81,7 +81,7 @@ class AnomalyScoreHandler(ResourceHandler):
         return self._create(self.anomaly_score_url, body,
                             verify=self.verify)
 
-    def get_anomaly_score(self, anomaly_score):
+    def get_anomaly_score(self, anomaly_score, query_string=''):
         """Retrieves an anomaly score.
 
         """
@@ -89,7 +89,8 @@ class AnomalyScoreHandler(ResourceHandler):
                             message="An anomaly score id is needed.")
         anomaly_score_id = get_anomaly_score_id(anomaly_score)
         if anomaly_score_id:
-            return self._get("%s%s" % (self.url, anomaly_score_id))
+            return self._get("%s%s" % (self.url, anomaly_score_id),
+                             query_string=query_string)
 
     def list_anomaly_scores(self, query_string=''):
         """Lists all your anomaly_scores.

@@ -80,7 +80,7 @@ class CentroidHandler(ResourceHandler):
         return self._create(self.centroid_url, body,
                             verify=self.verify)
 
-    def get_centroid(self, centroid):
+    def get_centroid(self, centroid, query_string=''):
         """Retrieves a centroid.
 
         """
@@ -88,7 +88,8 @@ class CentroidHandler(ResourceHandler):
                             message="A centroid id is needed.")
         centroid_id = get_centroid_id(centroid)
         if centroid_id:
-            return self._get("%s%s" % (self.url, centroid_id))
+            return self._get("%s%s" % (self.url, centroid_id),
+                             query_string=query_string)
 
     def list_centroids(self, query_string=''):
         """Lists all your centroids.

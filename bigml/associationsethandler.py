@@ -81,7 +81,7 @@ class AssociationSetHandler(ResourceHandler):
         return self._create(self.association_set_url, body,
                             verify=self.verify)
 
-    def get_association_set(self, association_set):
+    def get_association_set(self, association_set, query_string=''):
         """Retrieves an association set.
 
         """
@@ -89,7 +89,8 @@ class AssociationSetHandler(ResourceHandler):
                             message="An association set id is needed.")
         association_set_id = get_association_set_id(association_set)
         if association_set_id:
-            return self._get("%s%s" % (self.url, association_set_id))
+            return self._get("%s%s" % (self.url, association_set_id),
+                             query_string)
 
     def list_association_sets(self, query_string=''):
         """Lists all your association sets.

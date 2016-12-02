@@ -66,7 +66,7 @@ class BatchAnomalyScoreHandler(ResourceHandler):
             body = json.dumps(create_args)
             return self._create(self.batch_anomaly_score_url, body)
 
-    def get_batch_anomaly_score(self, batch_anomaly_score):
+    def get_batch_anomaly_score(self, batch_anomaly_score, query_string=''):
         """Retrieves a batch anomaly score.
 
            The batch_anomaly_score parameter should be a string containing the
@@ -82,7 +82,8 @@ class BatchAnomalyScoreHandler(ResourceHandler):
         batch_anomaly_score_id = get_batch_anomaly_score_id(
             batch_anomaly_score)
         if batch_anomaly_score_id:
-            return self._get("%s%s" % (self.url, batch_anomaly_score_id))
+            return self._get("%s%s" % (self.url, batch_anomaly_score_id),
+                             query_string=query_string)
 
     def download_batch_anomaly_score(self, batch_anomaly_score, filename=None):
         """Retrieves the batch anomaly score file.

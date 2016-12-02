@@ -70,7 +70,7 @@ class BatchPredictionHandler(ResourceHandler):
             body = json.dumps(create_args)
             return self._create(self.batch_prediction_url, body)
 
-    def get_batch_prediction(self, batch_prediction):
+    def get_batch_prediction(self, batch_prediction, query_string=''):
         """Retrieves a batch prediction.
 
            The batch_prediction parameter should be a string containing the
@@ -84,7 +84,8 @@ class BatchPredictionHandler(ResourceHandler):
                             message="A batch prediction id is needed.")
         batch_prediction_id = get_batch_prediction_id(batch_prediction)
         if batch_prediction_id:
-            return self._get("%s%s" % (self.url, batch_prediction_id))
+            return self._get("%s%s" % (self.url, batch_prediction_id),
+                             query_string=query_string)
 
     def download_batch_prediction(self, batch_prediction, filename=None):
         """Retrieves the batch predictions file.

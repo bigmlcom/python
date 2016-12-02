@@ -28,13 +28,6 @@ from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
 
-
-NO_QS = [c.EVALUATION_RE, c.PREDICTION_RE, c.BATCH_PREDICTION_RE,
-         c.CENTROID_RE, c.BATCH_CENTROID_RE, c.ANOMALY_SCORE_RE,
-         c.BATCH_ANOMALY_SCORE_RE, c.PROJECT_RE, c.ASSOCIATION_SET_RE,
-         c.TOPIC_DISTRIBUTION_RE, c.BATCH_PREDICTION_RE]
-
-
 # Resource status codes
 WAITING = 0
 QUEUED = 1
@@ -324,13 +317,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
        parameter.
 
     """
-    def get_kwargs(resource_id):
-        if not (any(resource_re.match(resource_id) for
-                    resource_re in NO_QS)):
-            return {'query_string': query_string}
-        return {}
 
-    kwargs = {}
     if isinstance(resource, basestring):
         resource_id = resource
     else:
@@ -338,7 +325,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     resource_id = get_resource_id(resource)
     if resource_id is None:
         raise ValueError("Failed to extract a valid resource id to check.")
-    kwargs = get_kwargs(resource_id)
+    kwargs = {'query_string': query_string}
 
     if get_method is None and hasattr(api, 'get_resource'):
         get_method = api.get_resource
@@ -414,8 +401,7 @@ class ResourceHandler(BigMLConnection):
         if resource_type is None:
             raise ValueError("A resource id or structure is needed.")
         resource_id = get_resource_id(resource)
-        if resource_type in NO_QS and 'query_string' in kwargs:
-            del kwargs['query_string']
+
         if resource_id:
             return self._get("%s%s" % (self.url, resource_id),
                              **kwargs)

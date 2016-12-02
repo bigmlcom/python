@@ -109,7 +109,7 @@ class PredictionHandler(ResourceHandler):
         return self._create(self.prediction_url, body,
                             verify=self.verify_prediction)
 
-    def get_prediction(self, prediction):
+    def get_prediction(self, prediction, query_string=''):
         """Retrieves a prediction.
 
         """
@@ -117,7 +117,8 @@ class PredictionHandler(ResourceHandler):
                             message="A prediction id is needed.")
         prediction_id = get_prediction_id(prediction)
         if prediction_id:
-            return self._get("%s%s" % (self.url, prediction_id))
+            return self._get("%s%s" % (self.url, prediction_id),
+                             query_string=query_string)
 
     def list_predictions(self, query_string=''):
         """Lists all your predictions.

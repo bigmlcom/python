@@ -66,7 +66,7 @@ class BatchCentroidHandler(ResourceHandler):
             body = json.dumps(create_args)
             return self._create(self.batch_centroid_url, body)
 
-    def get_batch_centroid(self, batch_centroid):
+    def get_batch_centroid(self, batch_centroid, query_string=''):
         """Retrieves a batch centroid.
 
            The batch_centroid parameter should be a string containing the
@@ -80,7 +80,8 @@ class BatchCentroidHandler(ResourceHandler):
                             message="A batch centroid id is needed.")
         batch_centroid_id = get_batch_centroid_id(batch_centroid)
         if batch_centroid_id:
-            return self._get("%s%s" % (self.url, batch_centroid_id))
+            return self._get("%s%s" % (self.url, batch_centroid_id),
+                             query_string=query_string)
 
     def download_batch_centroid(self, batch_centroid, filename=None):
         """Retrieves the batch centroid file.

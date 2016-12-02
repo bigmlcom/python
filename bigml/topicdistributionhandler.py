@@ -79,7 +79,7 @@ class TopicDistributionHandler(ResourceHandler):
         return self._create(self.topic_distribution_url, body,
                             verify=self.verify_prediction)
 
-    def get_topic_distribution(self, topic_distribution):
+    def get_topic_distribution(self, topic_distribution, query_string=''):
         """Retrieves a topic distribution.
 
         """
@@ -87,7 +87,8 @@ class TopicDistributionHandler(ResourceHandler):
                             message="A topic distribution id is needed.")
         topic_distribution_id = get_topic_distribution_id(topic_distribution)
         if topic_distribution_id:
-            return self._get("%s%s" % (self.url, topic_distribution_id))
+            return self._get("%s%s" % (self.url, topic_distribution_id),
+                             query_string=query_string)
 
     def list_topic_distributions(self, query_string=''):
         """Lists all your topic distributions.

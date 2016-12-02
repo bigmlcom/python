@@ -3,6 +3,11 @@
 History
 -------
 
+4.7.2 (2016-12-02)
+~~~~~~~~~~~~~~~~~~
+
+- Allowing a query string to be added to get calls for all the resource types.
+
 4.7.1 (2016-12-01)
 ~~~~~~~~~~~~~~~~~~
 

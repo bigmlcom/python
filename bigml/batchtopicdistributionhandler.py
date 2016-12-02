@@ -67,7 +67,8 @@ class BatchTopicDistributionHandler(ResourceHandler):
             body = json.dumps(create_args)
             return self._create(self.batch_topic_distribution_url, body)
 
-    def get_batch_topic_distribution(self, batch_topic_distribution):
+    def get_batch_topic_distribution(self, batch_topic_distribution,
+                                     query_string=''):
         """Retrieves a batch topic distribution.
 
            The batch_topic_distribution parameter should be a string
@@ -84,7 +85,8 @@ class BatchTopicDistributionHandler(ResourceHandler):
         batch_topic_distribution_id = get_batch_topic_distribution_id( \
             batch_topic_distribution)
         if batch_topic_distribution_id:
-            return self._get("%s%s" % (self.url, batch_topic_distribution_id))
+            return self._get("%s%s" % (self.url, batch_topic_distribution_id),
+                             query_string=query_string)
 
     def download_batch_topic_distribution(self,
                                           batch_topic_distribution,

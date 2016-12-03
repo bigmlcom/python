@@ -56,7 +56,7 @@ class ProjectHandler(ResourceHandler):
         body = json.dumps(args)
         return self._create(self.project_url, body)
 
-    def get_project(self, project):
+    def get_project(self, project, query_string=''):
         """Retrieves a project.
 
            The project parameter should be a string containing the
@@ -70,7 +70,8 @@ class ProjectHandler(ResourceHandler):
                             message="A project id is needed.")
         project_id = get_project_id(project)
         if project_id:
-            return self._get("%s%s" % (self.url, project_id))
+            return self._get("%s%s" % (self.url, project_id),
+                             query_string=query_string)
 
     def list_projects(self, query_string=''):
         """Lists all your projects.

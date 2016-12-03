@@ -3,6 +3,11 @@
 History
 -------
 
+4.7.3 (2016-12-03)
+~~~~~~~~~~~~~~~~~~
+
+- Bug fixing: query string is allowed also for project get calls.
+
 4.7.2 (2016-12-02)
 ~~~~~~~~~~~~~~~~~~
 

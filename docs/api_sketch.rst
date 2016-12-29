@@ -149,7 +149,7 @@ This can cause some of the fields to be marked as non-preferred if
 they are not expected to be useful for the model. For instance, a constant
 field will be marked as non-preferred. This feature will be a new property
 of the **fields** structure in the dataset JSON response. In order to change
-``preferred`` flag and the rest of updatable properties you'll need to go
+the ``preferred`` flag and the rest of updatable properties you'll need to go
 to the next
 step.
 
@@ -171,14 +171,15 @@ your bindings.
 Fifth step: creating your model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is compulsory: **Creating** a **Model** or **Cluster** or any
+This step is compulsory: **Creating** a **Model**, **Ensemble**,
+**Cluster** or any
 of the ML modeling resources available.
 
 The model can be created using the configuration options by default or
 customizing some values to improve its performance. The only mandatory
 argument for the **create model** call is the **dataset ID** to start from.
 The rest of arguments described in the
-`API Documentation <https://bigml.com/api/datasets#ds_dataset_properties>`_
+`API Documentation <https://bigml.com/api/models#md_model_properties>`_
 are optional.
 For instance, when
 building a classification model you might like to limit the number
@@ -190,6 +191,11 @@ when doing classification or regression is the **objective_field**, which
 chooses the field that will be predicted. Any of these properties cannot be
 updated. If you want to change them, you'll need to create a new model with
 the new configuration.
+
+Any other modeling resource will also have its particular configuration
+arguments (described in their corresponding API documentation section).
+Again, to use a different configuration you'll
+need to create a new resource with it.
 
 
 Preparing test data for predictions

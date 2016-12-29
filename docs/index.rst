@@ -276,6 +276,11 @@ If you set the ``storage`` argument in the ``api`` instantiation:
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
 
+For an overview of the steps that you will usually need to follow to model
+your data and obtain predictions, please see the `basic Workflow sketch
+<api_sketch.rst>`_
+document.
+
 Fields Structure
 ----------------
 

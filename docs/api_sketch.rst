@@ -1,11 +1,13 @@
 BigML Bindings: Description of the modeling and prediction process
 ==================================================================
 
-`BigML <https://bigml.com>`_ offers a wide set of resources to
+`BigML <https://bigml.com>`_ offers a wide set of resources (Sources,
+Datasets, Models, etc) to
 solve Machine Learning problems. When each of them is created, a
-default configuration is used and some decisions are taken for the user.
+default configuration is used.
 However, you might need to use different creation arguments or change
-some of the properties used to adapt to your own requirements.
+some of the properties used by default to adapt your resources
+to your own requirements.
 In this document,
 we'll explain where and how these properties can be set.
 

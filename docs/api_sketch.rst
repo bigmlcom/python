@@ -88,7 +88,8 @@ to identify the field uniquely. Keyed by this ID, there's a structure that
 contains all the field information, like its name, type, column number, etc.
 Its JSON would look like:
 
-```json
+.. code-block:: json
+
     "fields": {
             "000000": {
                 "column_number": 0,
@@ -102,7 +103,8 @@ Its JSON would look like:
                 "optype": "numeric",
                 "order": 1
             }}
-```
+
+
 In the example, there's two fields, **sepal length** and **label**
 which are both considered to be numeric.
 The type has been inferred from the contents of the
@@ -111,12 +113,13 @@ numeric field but a categorical one. In this case, we should need to change
 the field's type and this could only be done by **updating**  the **Source**
 object with the new information:
 
-```json
+.. code-block:: json
+
     "fields":{
             "000001": {
                 "optype": "categorical"
             }}
-```
+
 
 Mind that you'll need to know the ID of the field you intend to change. Some
 bindings have utilities that will help you produce these IDs given the field

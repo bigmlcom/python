@@ -236,8 +236,9 @@ These are the steps that you should follow to model and predict using BigML.
 Of course, this workflow can be more complex if you:
 
 - filter or extend your
-datasets to build new ones (feature engineering using `flatline
-<https://github.com/bigmlcom/flatline>`_)
+  datasets to build new ones (feature engineering using `flatline
+  <https://github.com/bigmlcom/flatline>`_)
+
 - compose different workflows to achieve your ML solution
 
 In both cases, you should run S1 - S4 to get a first dataset and then

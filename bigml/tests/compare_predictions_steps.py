@@ -25,6 +25,7 @@ from bigml.model import Model
 from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
+from bigml.association import Association
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
@@ -130,13 +131,14 @@ def i_create_a_local_anomaly_score(step, input_data):
 
 #@step(r'the local anomaly score is "(.*)"$')
 def the_local_anomaly_score_is(step, score):
-    if str(round(world.local_anomaly_score, 2)) == str(round(float(score), 2)):
-        assert True
-    else:
+    if str(round(world.local_anomaly_score, 2)) != str(round(float(score), 2)):
         assert False, ("Found: %s, expected: %s" %
                        (str(round(world.local_anomaly_score, 2)),
                         round(float(score), 2)))
 
+#@step(r'I create a local association')
+def i_create_a_local_association(step):
+    world.local_association = Association(world.association)
 
 #@step(r'I create a proportional missing strategy local prediction for "(.*)"')
 def i_create_a_proportional_local_prediction(step, data=None):
@@ -288,3 +290,34 @@ def the_local_topic_distribution_is(step, distribution):
     for index, topic_dist in enumerate(world.local_topic_distribution):
         assert_almost_equal(topic_dist["probability"], distribution[index],
                             places=5)
+
+#@step(r'the association set is like file "(.*)"')
+def the_association_set_is_like_file(step, filename):
+    filename = res_filename(filename)
+    from pprint import pprint
+    pprint(world.association_set)
+    result = world.association_set.get("association_set",{}).get("result", [])
+    """ Uncomment if different text settings are used
+    with open(filename, "w") as filehandler:
+        json.dump(result, filehandler)
+    """
+    with open(filename) as filehandler:
+        file_result = json.load(filehandler)
+    eq_(result, file_result)
+
+#@step(r'I create a local association set$')
+def i_create_a_local_association_set(step, data):
+    data = json.loads(data)
+    world.local_association_set = world.local_association.association_set( \
+        data)
+
+#@step(r'the local association set is like file "(.*)"')
+def the_local_association_set_is_like_file(step, filename):
+    filename = res_filename(filename)
+    """ Uncomment if different text settings are used
+    with open(filename, "w") as filehandler:
+        json.dump(result, filehandler)
+    """
+    with open(filename) as filehandler:
+        file_result = json.load(filehandler)
+    eq_(world.local_association_set, file_result)

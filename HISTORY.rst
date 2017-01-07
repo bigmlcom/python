@@ -3,6 +3,11 @@
 History
 -------
 
+4.8.0 (2017-01-08)
+~~~~~~~~~~~~~~~~~~
+
+- Adapting to final format of local association sets and adding tests.
+
 4.7.3 (2016-12-03)
 ~~~~~~~~~~~~~~~~~~
 

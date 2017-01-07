@@ -239,6 +239,9 @@ class Association(ModelFields):
                     predictions[rhs] = {"score": 0}
                 predictions[rhs]["score"] += cosine * getattr(
                     rule, score_by)
+                if not "rules" in predictions[rhs]:
+                    predictions[rhs]["rules"] = []
+                predictions[rhs]["rules"].append(rule.rule_id)
         # choose the best k predictions
         k = len(predictions.keys()) if k is None else k
         predictions = sorted(predictions.items(),
@@ -246,6 +249,9 @@ class Association(ModelFields):
         final_predictions = []
         for rhs, prediction in predictions:
             prediction["item"] = self.items[rhs[0]].to_json()
+            # adapting to association_set item format
+            for key in ["description", "bin_start", "bin_end"]:
+                del prediction["item"][key]
             final_predictions.append(prediction)
         return final_predictions
 

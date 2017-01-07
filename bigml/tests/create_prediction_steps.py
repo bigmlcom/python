@@ -157,6 +157,18 @@ def i_create_an_anomaly_score(step, data=None):
     world.anomaly_scores.append(resource['resource'])
 
 
+def i_create_an_association_set(step, data=None):
+    if data is None:
+        data = "{}"
+    association = world.association['resource']
+    data = json.loads(data)
+    resource = world.api.create_association_set(association, data)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.association_set = resource['object']
+    world.association_sets.append(resource['resource'])
+
 def the_anomaly_score_is(step, score):
     check_prediction(world.anomaly_score['score'], score)
 

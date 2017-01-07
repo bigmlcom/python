@@ -23,6 +23,7 @@ from world import world, setup_module, teardown_module
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
+import create_association_steps as association_create
 import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create
 import create_prediction_steps as prediction_create
@@ -760,3 +761,41 @@ class TestComparePrediction(object):
             prediction_compare.the_local_topic_distribution_is(self, example[6])
             topic_create.i_create_a_topic_distribution(self, example[5])
             prediction_compare.the_topic_distribution_is(self, example[6])
+
+    def test_scenario16(self):
+        """
+            Scenario: Successfully comparing association sets:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I update the source with params "<options>"
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the association is ready less than <time_3> secs
+                And I create a local association
+                When I create an association set for "<data_input>"
+                Then the association set is like the contents of "<association_set_file>"
+                And I create a local association set for "<data_input>"
+                Then the local association set is like the contents of "<association_set_file>"
+
+                Examples:
+                | ../data/groceries.csv | 20      | 20     | 30     | {"fields": {"000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}} | association_set.json       | {"field1": "water"}     |
+
+        """
+        print self.test_scenario16.__doc__
+        examples = [
+            ['data/groceries.csv', '20', '20', '30', '{"fields": {"00000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', 'data/associations/association_set.json', '{"field1": "cat food"}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, example[4])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            association_create.i_create_an_association_from_dataset(self)
+            association_create.the_association_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_association(self)
+            prediction_create.i_create_an_association_set(self, example[6])
+            prediction_compare.the_association_set_is_like_file(self, example[5])
+            prediction_compare.i_create_a_local_association_set(self, example[6])
+            prediction_compare.the_local_association_set_is_like_file(self, example[5])

@@ -1,31 +1,44 @@
-BigML Bindings: Description of the modeling and prediction process
-==================================================================
+BigML Bindings: Modeling and prediction process
+===============================================
 
-`BigML <https://bigml.com>`_ offers a wide set of resources (Sources,
-Datasets, Models, etc) to
-solve Machine Learning problems. When each of them is created, a
-default configuration is used.
-However, you might need to use different creation arguments or change
-some of the properties used by default to adapt your resources
-to your own requirements.
-In this document,
-we'll explain where and how these properties can be set.
+After going through our ``Quick Start`` section that introduced
+**BigML**’s set of ML resources, you may still be left with a few questions,
+such as:
 
-Each binding has its own syntax to build the REST API calls to BigML, so
+- how do I change my fields' types?
+- how do I change my preferred fields?
+- how do I configure my model?
+
+and even:
+
+- what am I doing exactly at each point of the code?
+
+This document will try to bridge that gap by explaining how you can
+use different creation arguments or change some of the properties used by
+default to adapt your resources to your own requirements.
+
+As general principles, let's remember that each
+binding has its own syntax to build the REST API calls to BigML, so
 from this moment on we'll use the common **create** and **update** words
 as placeholders for the corresponding methods in the binding of your choice.
 You'll need to check each binding documentation to know the specific names for
 these methods.
 
-Another thing to keep in mind is that resources in BigML are not
-totally mutable. In fact, once they are created
-there's a limited number of attributes
-(like names, labels, descriptions, etc.) that can be updated. Besides these
+Another thing to keep in mind is that resources in **BigML** are not
+totally mutable. They are mostly immutable, and once they are created
+there's only a limited subset of attributes
+(like names, labels, descriptions, etc.) that can always be updated.
+Besides those
 common updatable properties, each type of resource has a different subset
 of properties that can also be updated.
-The detail of these properties can be found
-in the `API Documentation <https://bigml.com/api>`_ descriptions of each
+In this document we'll guide you as to which are the most frequently used, but
+to learn about all of them and their allowed values
+you can always refer to
+the `API Documentation <https://bigml.com/api>`_ descriptions of each
 resource type.
+
+The detailed prediction workflow
+--------------------------------
 
 The process to create a model or to generate predictions in BigML goes through
 several steps. In each step, a new resource is generated or updated. Some are

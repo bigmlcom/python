@@ -1,8 +1,9 @@
 BigML Bindings: Modeling and prediction process
 ===============================================
 
-After going through our ``Quick Start`` section that introduced
-**BigML**’s set of ML resources, you may still be left with a few questions,
+After going through our ``Quick Start`` section that introduced some ML
+resources
+in **BigML**, you may still be left with a few questions,
 such as:
 
 - how do I change my fields' types?
@@ -37,6 +38,31 @@ you can always refer to
 the `API Documentation <https://bigml.com/api>`_ descriptions of each
 resource type.
 
+Finally, as resources in **BigML** are asynchronously created, when
+the bindings'
+**create** and **update** methods make a request to the **API** the
+response will not usually be a resource in its final complete form.
+The **API** response will always include a **resource ID** and some
+`status information <https://bigml.com/api/status_codes#sc_resource_status_code_summary>`_
+which keeps track of the evolution of your request. As for the rest,
+the resource information
+will be growing and evolving until
+the final resource status is reached. Resources in **BigML** are created
+using `*anytime
+algorithms* <https://en.wikipedia.org/wiki/Anytime_algorithm>`_
+so that they can be useful at any step of their construction process.
+This also means that, to use the complete information of the resource,
+you will need to repeatedly poll
+for it using
+the bindings **get** method till the status reaches one of the
+two possible terminal states: **finished** or **faulty**.
+Usually, the bindings provide an
+auxiliary function who takes care of this iterative
+polling procedure. You will need
+to call it always after the **create** or **update** calls
+to ensure that a fully
+formed resource is available for the next step.
+
 The detailed prediction workflow
 --------------------------------
 
@@ -50,8 +76,8 @@ some more detail.
 
 .. image:: images/steps.png
 
-Common pre-modeling steps (S1 - S4)
------------------------------------
+Common pre-modeling steps (**S1 - S4**)
+---------------------------------------
 
 These are the steps that must be run to upload a file in BigML and get its
 contents ready for modeling, so whatever the task you want to do in BigML,
@@ -60,7 +86,8 @@ you'll probably need to follow them.
 First step: uploading your data to create a **Source**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first step is compulsory: **Creating** a **Source** by uploading your data.
+The first step (**S1**) is compulsory:
+**Creating** a **Source** by uploading your data.
 
 This means that you'll need to use the **create source** method in your
 favourite bindings to create a **Source** object. The only mandatory argument
@@ -84,7 +111,7 @@ the API Documentation.
 Second step: updating your **Source** to change the inferred fields structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is optional: **Updating** a **Source**.
+This step (**S2**) is optional: **Updating** a **Source**.
 
 In BigML, only the properties marked as updatable
 in the previously mentioned table of the API Documentation
@@ -147,7 +174,7 @@ In order to **update** a **Source** the only compulsory arguments are the
 Third step: creating a **Dataset** to serialize the whole data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is compulsory: **Creating** a **Dataset**
+This step (**S3**) is compulsory: **Creating** a **Dataset**
 
 This will be achieved by using the **create dataset** method of your bindings
 and the only mandatory argument for this call is the **Source ID** which
@@ -172,7 +199,7 @@ step.
 Fourth step: updating your **Dataset** to prepare modeling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is optional: **Updating** a **Dataset**
+This step (**S4**) is optional: **Updating** a **Dataset**
 
 Here too, a small
 subset of properties can be updated (only the ones marked as such
@@ -187,9 +214,9 @@ your bindings.
 Fifth step: creating your model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is compulsory: **Creating** a **Model**, **Ensemble**,
+This step (**S5**) is compulsory: **Creating** a **Model**, **Ensemble**,
 **Cluster** or any
-of the ML modeling resources available.
+of the ML modeling available resources.
 
 The model can be created using the configuration options by default or
 customizing some values to improve its performance. The only mandatory
@@ -208,7 +235,8 @@ chooses the field that will be predicted. Any of these properties cannot be
 updated. If you want to change them, you'll need to create a new model with
 the new configuration.
 
-Any other modeling resource will also have its particular configuration
+Any other modeling resource (like clusters, anomaly detectors, etc.)
+will also have its particular configuration
 arguments (described in their corresponding API documentation section).
 Again, to use a different configuration you'll
 need to create a new resource with it.
@@ -218,9 +246,11 @@ Preparing test data for predictions
 -----------------------------------
 
 When your model is ready and you want to create predictions for a new bunch
-of test data, you will need to run through the S1 - S4 previously described
-steps so that this data is also ready for prediction.
-In the previous image, this process is labeled as S6 to S9.
+of test data, you will need to run through the **S1 - S4** previously described
+steps using your test data file.
+In the previous image, this process is labeled as **S6** to **S9**.
+After this process,
+your test data will be stored in a new **Dataset** and ready for prediction.
 
 Creating batch predictions
 --------------------------
@@ -231,7 +261,7 @@ predictions using both.
 Tenth step: creating batch predictions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This step is compulsory: **Creating batch predictions**
+This step (**S10**) is compulsory: **Creating batch predictions**
 
 The batch predictions can be created using the **create batch prediction**
 method in your bindings. The mandatory
@@ -254,13 +284,23 @@ Of course, this workflow can be more complex if you:
 
 - compose different workflows to achieve your ML solution
 
-In both cases, you should run S1 - S4 to get a first dataset and then
-add some more steps till you reach the dataset you like. If you are using
+In both cases, you should run **S1 - S4** to get a first **Dataset** and then
+add some more steps till you reach the **Dataset** you like.
+
+If you are using
 feature engineering, you'll call the **create dataset** having as mandatory
-argument the dataset ID that you start from. This will generate a new
-dataset and you'll resume from S5 using it. If you compose different workflows,
+argument the **dataset ID** that you start from and adding new fields to it
+with
+the transformations of your choice. This will generate a new
+**Dataset** and you'll resume from **S5** using it.
+
+If you compose different workflows,
 the final picture will be some composition of sketches like the one
-enclosed. For instance, a dataset generated in S10 can be used as origin
-for a different modeling task. Solving your problem can also involve
+enclosed. For instance, a **Dataset** generated in **S10** can be used
+as origin
+for a different modeling task.
+
+Solving your problem can also involve
 both feature engineering and workflow composition, so steps might grow in
-length and complexity but their parts will follow the depicted sketch.
+length and complexity, but in general their building blocks will
+be similar to the depicted sketch.

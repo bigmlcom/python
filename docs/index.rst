@@ -1,3 +1,8 @@
+.. toctree::
+   :hidden:
+
+   api_sketch
+
 BigML Python Bindings
 =====================
 

@@ -1,8 +1,3 @@
-.. toctree::
-   :hidden:
-
-   api_sketch
-
 BigML Python Bindings
 =====================
 
@@ -283,7 +278,7 @@ saved to the chosen directory.
 
 For an overview of the steps that you will usually need to follow to model
 your data and obtain predictions, please see the `basic Workflow sketch
-<api_sketch.rst>`_
+<api_sketch.html>`_
 document.
 
 Fields Structure

@@ -115,14 +115,12 @@ class Association(ModelFields):
         self.discretization = {}
         self.field_discretizations = {}
         self.items = []
-        self.k = None
+        self.max_k = None
         self.max_lhs = None
-        self.min_coverage = None
+        self.min_confidence = None
         self.min_leverage = None
-        self.min_strength = None
         self.min_support = None
         self.min_lift = None
-        self.prune = None
         self.search_strategy = DEFAULT_SEARCH_STRATEGY
         self.rules = []
         self.significance_level = None
@@ -157,14 +155,12 @@ class Association(ModelFields):
                     'field_discretizations', {})
                 self.items = [Item(index, item, fields) for index, item in
                               enumerate(associations.get('items', []))]
-                self.k = associations.get('k', 100)
+                self.max_k = associations.get('max_k', 100)
                 self.max_lhs = associations.get('max_lhs', 4)
-                self.min_coverage = associations.get('min_coverage', 0)
+                self.min_confidence = associations.get('min_confidence', 0)
                 self.min_leverage = associations.get('min_leverage', -1)
-                self.min_strength = associations.get('min_strength', 0)
                 self.min_support = associations.get('min_support', 0)
                 self.min_lift = associations.get('min_lift', 0)
-                self.prune = associations.get('prune', True)
                 self.search_strategy = associations.get('search_strategy', \
                     DEFAULT_SEARCH_STRATEGY)
                 self.rules = [AssociationRule(rule) for rule in

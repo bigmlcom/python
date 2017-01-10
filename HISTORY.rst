@@ -3,6 +3,11 @@
 History
 -------
 
+4.8.1 (2017-01-11)
+~~~~~~~~~~~~~~~~~~
+
+- Changing local association parameters to adapt to API docs specifications.
+
 4.8.0 (2017-01-08)
 ~~~~~~~~~~~~~~~~~~
 

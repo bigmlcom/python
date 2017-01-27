@@ -107,6 +107,20 @@ def i_create_an_ensemble_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+def i_create_an_ensemble_proportional_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    ensemble = world.ensemble['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction(ensemble,
+                                           data,
+                                           {"missing_strategy": 1})
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
@@ -138,9 +152,14 @@ def create_local_ensemble_prediction_with_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
         json.loads(input_data), with_confidence=True)
 
+def create_local_ensemble_proportional_prediction_with_confidence( \
+    step, input_data):
+    world.local_prediction = world.local_ensemble.predict( \
+        json.loads(input_data), with_confidence=True, missing_strategy=1)
 
-def create_local_ensemble_prediction_using_median_with_confidence(step, input_data):
-    world.local_prediction = world.local_ensemble.predict(
+def create_local_ensemble_prediction_using_median_with_confidence( \
+    step, input_data):
+    world.local_prediction = world.local_ensemble.predict( \
         json.loads(input_data), with_confidence=True, median=True)
 
 

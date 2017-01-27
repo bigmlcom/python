@@ -23,6 +23,7 @@ from world import world, setup_module, teardown_module
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
+import create_ensemble_steps as ensemble_create
 import create_association_steps as association_create
 import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create
@@ -762,6 +763,7 @@ class TestComparePrediction(object):
             topic_create.i_create_a_topic_distribution(self, example[5])
             prediction_compare.the_topic_distribution_is(self, example[6])
 
+
     def test_scenario16(self):
         """
             Scenario: Successfully comparing association sets:
@@ -800,9 +802,121 @@ class TestComparePrediction(object):
             prediction_compare.i_create_a_local_association_set(self, example[6])
             prediction_compare.the_local_association_set_is_like_file(self, example[5])
 
+
     def test_scenario17(self):
         """
+            Scenario: Successfully comparing predictions for ensembles:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an ensemble with "<params>"
+                And I wait until the ensemble is ready less than <time_3> secs
+                And I create a local ensemble
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5}                   | 000004    | Iris-setosa |{"number_of_models": 5}
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 6, "petal width": 2}  | 000004    | Iris-virginica | {"number_of_models": 5}
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 4, "petal width": 1.5}| 000004    | Iris-versicolor | {"number_of_models": 5}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}                      | 000005    | 46.69889      | {"number_of_models": 5}
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5}                   | 000004    | Iris-setosa | {"boosting": {"iterations": 5}}
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 6, "petal width": 2}  | 000004    | Iris-virginica | {"boosting": {"iterations": 5}}
+                | ../data/iris.csv | 10      | 10     | 10     | {"petal length": 4, "petal width": 1.5}| 000004    | Iris-versicolor | {"boosting": {"iterations": 5}}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}                      | 000005    | 46.69889      | {"boosting": {"iterations": 5}}
+
+        """
+        print self.test_scenario17.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '20', '{"petal width": 0.5}', '000004', 'Iris-versicolor', '{"number_of_models": 5}'],
+            ['data/iris.csv', '10', '10', '20', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"number_of_models": 5}'],
+            ['data/iris.csv', '10', '10', '20', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '20', '{"Midterm": 20}', '000005', 49.393906, '{"number_of_models": 5}'],
+            ['data/iris.csv', '10', '10', '20', '{"petal width": 0.5}', '000004', 'Iris-setosa', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
+            ['data/iris.csv', '10', '10', '20', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
+            ['data/iris.csv', '10', '10', '20', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '20', '{"Midterm": 20}', '000005', 46.69889, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            ensemble_create.i_create_an_ensemble_with_params(self, example[7])
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.create_local_ensemble(self)
+            prediction_create.i_create_an_ensemble_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_ensemble_prediction(self, example[4])
+            prediction_compare.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario18(self):
+        """
+            Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an esemble with "<params>"
+                And I wait until the ensemble is ready less than <time_3> secs
+                And I create a local ensemble
+                When I create a proportional missing strategy prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And the confidence for the prediction is "<confidence>"
+                And I create a proportional missing strategy local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+
+                Examples:
+                | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence | params
+                | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.2629     | {"number_of_models": 5}
+                | ../data/grades.csv | 10      | 10     | 10     | {}                   | 000005    | 68.62224       | 27.5358    | {"number_of_models": 5}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}      | 000005    | 46.69889      | 37.27594297134128   | {"number_of_models": 5}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20, "Tutorial": 90, "TakeHome": 100}     | 000005    | 28.06      | 24.86634   | {"number_of_models": 5}
+                | ../data/iris.csv   | 10      | 10     | 10     | {}                   | 000004    | Iris-setosa    | 0.2629     | {"boosting": {"iterations": 5}}
+                | ../data/grades.csv | 10      | 10     | 10     | {}                   | 000005    | 68.62224       | 27.5358    | {"boosting": {"iterations": 5}}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}      | 000005    | 46.69889      | 37.27594297134128   | {"boosting": {"iterations": 5}}
+                | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20, "Tutorial": 90, "TakeHome": 100}     | 000005    | 28.06      | 24.86634   | {"boosting": {"iterations": 5}}
+
+
+        """
+        print self.test_scenario18.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.2629', '{"boosting": {"iterations": 5}}'],
+            ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.62224', '27.5358', '{"boosting": {"iterations": 5}}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '46.69889', '37.27594297134128', '{"boosting": {"iterations": 5}}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '24.86634', '{"boosting": {"iterations": 5}}'],
+            ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-versicolor', '0.3174', '{"number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.56427', '28.61315', '{"number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '45.95785', '28.02725', '{"number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '43.55800', '47.49777', '{"number_of_models": 5}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            ensemble_create.i_create_an_ensemble_with_params(self, example[8])
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.create_local_ensemble(self)
+            prediction_create.i_create_an_ensemble_proportional_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_create.the_confidence_is(self, example[7])
+            prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4])
+            prediction_compare.the_local_ensemble_prediction_is(self, example[6])
+            prediction_compare.the_local_prediction_confidence_is(self, example[7])
+
+
+    def test_scenario19(self):
+        """
             Scenario: Successfully comparing logistic regression predictions with constant fields:
+
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -822,11 +936,10 @@ class TestComparePrediction(object):
                 | ../data/constant_field.csv | 10      | 10     | 10     |10    | {"a": 1, "b": 1, "c": 1}         | a | {"fields": {"000000": {"preferred": true}}}
 
         """
-        print self.test_scenario8.__doc__
+        print self.test_scenario19.__doc__
         examples = [
             ['data/constant_field.csv', '10', '10', '50', '10','{"a": 1, "b": 1, "c": 1}', 'a', '{"fields": {"000000": {"preferred": true}}}']]
-        for example in examples:
-            print "\nTesting with:\n", example
+
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

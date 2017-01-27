@@ -185,6 +185,13 @@ class MultiModel(object):
                 add_max=add_max,
                 add_unused_fields=add_unused_fields,
                 missing_strategy=missing_strategy)
+            if model.boosting is not None:
+                votes.boosting = True
+                prediction_info.update( \
+                    {"weight": model.boosting.get("weight")})
+                if model.boosting.get("objective_class") is not None:
+                    prediction_info.update( \
+                        {"class": model.boosting.get("objective_class")})
             votes.append(prediction_info)
         return votes
 

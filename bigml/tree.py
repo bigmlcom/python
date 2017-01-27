@@ -382,7 +382,8 @@ class Tree(object):
              d_min,
              d_max,
              last_node,
-             population) = self.predict_proportional(input_data, path=path)
+             population,
+             parent_node) = self.predict_proportional(input_data, path=path)
 
             if self.regression:
                 # singular case:
@@ -410,10 +411,19 @@ class Tree(object):
                 distribution = merge_bins(distribution, BINS_LIMIT)
                 total_instances = sum([instances
                                        for _, instances in distribution])
-                prediction = mean(distribution)
-                confidence = regression_error(
-                    unbiased_sample_variance(distribution, prediction),
-                    total_instances)
+                if len(distribution) == 1:
+                    # where there's only one bin, there will be no error, but
+                    # we use a correction derived from the parent's error
+
+                    if total_instances < 2:
+                        total_instances = 1
+                    confidence = parent_node.confidence / \
+                                 math.sqrt(total_instances)
+                else:
+                    prediction = mean(distribution)
+                    confidence = regression_error(
+                        unbiased_sample_variance(distribution, prediction),
+                        total_instances)
                 return Prediction(
                     prediction,
                     path,
@@ -460,7 +470,7 @@ class Tree(object):
                 d_max=None if not self.regression else self.max)
 
     def predict_proportional(self, input_data, path=None,
-                             missing_found=False, median=False):
+                             missing_found=False, median=False, parent=None):
         """Makes a prediction based on a number of field values averaging
            the predictions of the leaves that fall in a subtree.
 
@@ -480,7 +490,7 @@ class Tree(object):
                 self.weighted_distribution
             return (merge_distributions({}, dict((x[0], x[1])
                                                  for x in distribution)),
-                    self.min, self.max, self, self.count)
+                    self.min, self.max, self, self.count, parent)
         if one_branch(self.children, input_data) or \
                 self.fields[split(self.children)]["optype"] in \
                 ["text", "items"]:
@@ -490,7 +500,8 @@ class Tree(object):
                     if new_rule not in path and not missing_found:
                         path.append(new_rule)
                     return child.predict_proportional(input_data, path,
-                                                      missing_found, median)
+                                                      missing_found, median,
+                                                      parent=self)
         else:
             # missing value found, the unique path stops
             missing_found = True
@@ -499,9 +510,10 @@ class Tree(object):
             population = 0
             for child in self.children:
                 (subtree_distribution, subtree_min,
-                 subtree_max, _, subtree_pop) = \
+                 subtree_max, _, subtree_pop, _) = \
                     child.predict_proportional(input_data, path,
-                                               missing_found, median)
+                                               missing_found, median,
+                                               parent=self)
                 if subtree_min is not None:
                     minimums.append(subtree_min)
                 if subtree_max is not None:
@@ -511,7 +523,8 @@ class Tree(object):
                     final_distribution, subtree_distribution)
             return (final_distribution,
                     min(minimums) if minimums else None,
-                    max(maximums) if maximums else None, self, population)
+                    max(maximums) if maximums else None, self, population,
+                    self)
 
     def generate_rules(self, depth=0, ids_path=None, subtree=True):
         """Translates a tree model into a set of IF-THEN rules.

@@ -32,6 +32,7 @@ from bigml.model import Model
 from read_ensemble_steps import i_get_the_ensemble
 
 NO_MISSING_SPLITS = {'missing_splits': False}
+ENSEMBLE_SAMPLE = {'ensemble_sample': {"rate": 0.70, "seed": 'BigML'}}
 
 #@step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
 def i_create_an_ensemble(step, number_of_models, tlp):
@@ -40,11 +41,11 @@ def i_create_an_ensemble(step, number_of_models, tlp):
         number_of_models = int(number_of_models)
         tlp = int(tlp)
         args = {'number_of_models': number_of_models,
-                'tlp': tlp, 'ensemble_sample': {"rate": 0.70,
-                                                "seed": 'BigML'}}
+                'tlp': tlp}
     except:
         args = {}
     args.update(NO_MISSING_SPLITS)
+    args.update(ENSEMBLE_SAMPLE)
     resource = world.api.create_ensemble(dataset, args=args)
     world.status = resource['code']
     assert world.status == HTTP_CREATED
@@ -53,7 +54,8 @@ def i_create_an_ensemble(step, number_of_models, tlp):
     world.ensemble_id = resource['resource']
     world.ensembles.append(resource['resource'])
 
-#@step(r'I wait until the ensemble status code is either (\d) or (-\d) less than (\d+)')
+#@step(r'I wait until the ensemble status code is either (\d) or (-\d)
+# less than (\d+)')
 def wait_until_ensemble_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     i_get_the_ensemble(step, world.ensemble['resource'])
@@ -74,15 +76,17 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 #@step(r'I create a local Ensemble$')
 def create_local_ensemble(step):
     world.local_ensemble = Ensemble(world.ensemble_id, world.api)
-    world.local_model = Model(world.local_ensemble.model_ids[0])
+    world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
 
 #@step(r'I create a local Ensemble with the last (\d+) models$')
 def create_local_ensemble_with_list(step, number_of_models):
-    world.local_ensemble = Ensemble(world.models[-int(number_of_models):], world.api)
+    world.local_ensemble = Ensemble(world.models[-int(number_of_models):],
+                                    world.api)
 
 #@step(r'I create a local Ensemble with the last (\d+) local models$')
 def create_local_ensemble_with_list_of_local_models(step, number_of_models):
-    local_models = [Model(model) for model in world.models[-int(number_of_models):]]
+    local_models = [Model(model) for model in
+                    world.models[-int(number_of_models):]]
     world.local_ensemble = Ensemble(local_models, world.api)
 
 #@step(r'the field importance text is (.*?)$')
@@ -91,4 +95,21 @@ def field_importance_print(step, field_importance):
     if field_importance_data == json.loads(field_importance):
         assert True
     else:
-        assert False, "Found %s, expected %s" % (field_importance_data, field_importance)
+        assert False, "Found %s, expected %s" % (field_importance_data,
+                                                 field_importance)
+
+#@step(r'I create an ensemble with "(.*)"$')
+def i_create_an_ensemble_with_params(step, params):
+    dataset = world.dataset.get('resource')
+    try:
+        args = json.loads(params)
+    except:
+        args = {}
+    args.update(ENSEMBLE_SAMPLE)
+    resource = world.api.create_ensemble(dataset, args=args)
+    world.status = resource['code']
+    assert world.status == HTTP_CREATED
+    world.location = resource['location']
+    world.ensemble = resource['object']
+    world.ensemble_id = resource['resource']
+    world.ensembles.append(resource['resource'])

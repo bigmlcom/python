@@ -27,10 +27,12 @@ PLURALITY = 'plurality'
 CONFIDENCE = 'confidence weighted'
 PROBABILITY = 'probability weighted'
 THRESHOLD = 'threshold'
+BOOSTING = 'boosting'
 PLURALITY_CODE = 0
 CONFIDENCE_CODE = 1
 PROBABILITY_CODE = 2
 THRESHOLD_CODE = 3
+BOOSTING_CODE = 4
 
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']
@@ -38,20 +40,51 @@ COMBINATION_WEIGHTS = {
     PLURALITY: None,
     CONFIDENCE: 'confidence',
     PROBABILITY: 'probability',
-    THRESHOLD: None}
+    THRESHOLD: None,
+    BOOSTING: 'weight'}
 COMBINER_MAP = {
     PLURALITY_CODE: PLURALITY,
     CONFIDENCE_CODE: CONFIDENCE,
     PROBABILITY_CODE: PROBABILITY,
-    THRESHOLD_CODE: THRESHOLD}
+    THRESHOLD_CODE: THRESHOLD,
+    BOOSTING_CODE: BOOSTING}
 WEIGHT_KEYS = {
     PLURALITY: None,
     CONFIDENCE: ['confidence'],
     PROBABILITY: ['distribution', 'count'],
-    THRESHOLD: None}
+    THRESHOLD: None,
+    BOOSTING: ['weight']}
+BOOSTING_CLASS = 'class'
+CONFIDENCE_W = COMBINATION_WEIGHTS[CONFIDENCE]
 
 DEFAULT_METHOD = 0
 BINS_LIMIT = 32
+
+def weighted_sum(predictions, weight=None):
+    """Returns a weighted sum of the predictions
+
+    """
+    return sum([prediction["prediction"] * prediction[weight] for
+                prediction in predictions])
+
+
+def softmax(predictions):
+    """Returns the softmax values from a distribution given as a dictionary
+    like:
+        {"category": {"probability": probability, "order": order}}
+
+    """
+    total = 0.0
+    normalized = {}
+    for category, cat_info in predictions.items():
+        normalized[category] = { \
+            "probability": math.exp(cat_info["probability"]),
+            "order": cat_info["order"]}
+        total += normalized[category]["probability"]
+    return float('nan') if total == 0 else \
+        {category: {"probability": cat_info["probability"] / total,
+                    "order": cat_info["order"]}
+         for category, cat_info in normalized.items()}
 
 
 def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
@@ -167,7 +200,7 @@ class MultiVote(object):
            returned
         """
         if (instance.predictions and with_confidence and
-                not all(['confidence' in prediction
+                not all([CONFIDENCE_W in prediction
                          for prediction in instance.predictions])):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
@@ -184,7 +217,7 @@ class MultiVote(object):
             if add_median:
                 median_result += prediction['median']
             if with_confidence or add_confidence:
-                confidence += prediction['confidence']
+                confidence += prediction[CONFIDENCE_W]
             if add_count:
                 instances += prediction['count']
             if add_min and d_min > prediction['min']:
@@ -230,7 +263,7 @@ class MultiVote(object):
            predictions) is also returned
         """
         if (instance.predictions and with_confidence and
-                not all(['confidence' in prediction
+                not all([CONFIDENCE_W in prediction
                          for prediction in instance.predictions])):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
@@ -261,7 +294,7 @@ class MultiVote(object):
             if add_max and d_max < prediction['max']:
                 d_max = prediction['max']
             if with_confidence or add_confidence:
-                combined_error += (prediction['confidence'] *
+                combined_error += (prediction[CONFIDENCE_W] *
                                    prediction['_error_weight'])
             del prediction['_error_weight']
         if with_confidence:
@@ -293,14 +326,14 @@ class MultiVote(object):
         """Normalizes error to a [0, top_range] and builds probabilities
 
         """
-        if instance.predictions and not all(['confidence' in prediction
+        if instance.predictions and not all([CONFIDENCE_W in prediction
                                              for prediction
                                              in instance.predictions]):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
 
-        error_values = [prediction['confidence']
+        error_values = [prediction[CONFIDENCE_W]
                         for prediction in instance.predictions]
         max_error = max(error_values)
         min_error = min(error_values)
@@ -311,7 +344,7 @@ class MultiVote(object):
             # Then builds e^-[scaled error] and returns the normalization
             # factor to fit them between [0, 1]
             for prediction in instance.predictions:
-                delta = (min_error - prediction['confidence'])
+                delta = (min_error - prediction[CONFIDENCE_W])
                 prediction['_error_weight'] = math.exp(delta / error_range *
                                                        top_range)
                 normalize_factor += prediction['_error_weight']
@@ -321,15 +354,17 @@ class MultiVote(object):
             normalize_factor = len(instance.predictions)
         return normalize_factor
 
-    def __init__(self, predictions):
+    def __init__(self, predictions, boosting=False):
         """Init method, builds a MultiVote with a list of predictions
-
-           The constuctor expects a list of well formed predictions like:
-                {'prediction': 'Iris-setosa', 'confidence': 0.7}
-            Each prediction can also contain an 'order' key that is used
-            to break even in votations. The list order is used by default.
+        The constuctor expects a list of well formed predictions like:
+            {'prediction': 'Iris-setosa', 'confidence': 0.7}
+        Each prediction can also contain an 'order' key that is used
+        to break even in votations. The list order is used by default.
+        The second argument will be true if the predictions belong to
+        boosting models.
         """
         self.predictions = []
+        self.boosting = boosting
         if isinstance(predictions, list):
             self.predictions.extend(predictions)
         else:
@@ -342,6 +377,9 @@ class MultiVote(object):
         """Returns True if all the predictions are numbers
 
         """
+        if self.boosting:
+            return any(prediction.get('class') is None for
+                       prediction in self.predictions)
         return all([isinstance(prediction['prediction'], numbers.Number)
                     for prediction in self.predictions])
 
@@ -384,10 +422,42 @@ class MultiVote(object):
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
                                     " model anew.")
-        if self.is_regression():
+        if self.boosting:
+            grouped_predictions = {}
             for prediction in self.predictions:
-                if prediction['confidence'] is None:
-                    prediction['confidence'] = 0
+                if prediction[COMBINATION_WEIGHTS[BOOSTING]] is None:
+                    prediction[COMBINATION_WEIGHTS[BOOSTING]] = 0
+                if prediction.get(BOOSTING_CLASS) is not None:
+                    objective_class = prediction.get(BOOSTING_CLASS)
+                    if grouped_predictions.get(objective_class) is None:
+                        grouped_predictions[objective_class] = []
+                    grouped_predictions[objective_class].append(prediction)
+            # sum all gradients weighted by their "weight"
+            if self.is_regression():
+                return weighted_sum(self.predictions, weight="weight")
+            else:
+                # do the same per class and use the order of categories
+                # to decide in tie breaks
+                categories = options.get("categories", [])
+                predictions = {key: { \
+                    "probability": weighted_sum(value, weight="weight"),
+                    "order": categories.index(key)} for
+                               key, value in grouped_predictions.items()}
+                predictions = softmax(predictions)
+                prediction, prediction_info = sorted( \
+                    predictions.items(), key=lambda(x): \
+                    (- x[1]["probability"], x[1]["order"]))[0]
+                confidence = prediction_info["probability"]
+                if with_confidence:
+                    return prediction, confidence
+                elif add_confidence:
+                    return {"prediction": prediction, "confidence": confidence}
+                else:
+                    return prediction
+        elif self.is_regression():
+            for prediction in self.predictions:
+                if prediction[CONFIDENCE_W] is None:
+                    prediction[CONFIDENCE_W] = 0
             function = NUMERICAL_COMBINATION_METHODS.get(method,
                                                          self.__class__.avg)
             return function(self, with_confidence=with_confidence,
@@ -534,7 +604,7 @@ class MultiVote(object):
             if prediction['prediction'] == combined_prediction]
         if (weight_label is not None and
                 (not isinstance(weight_label, basestring) or
-                 any([not 'confidence' or weight_label not in prediction
+                 any([not CONFIDENCE_W or weight_label not in prediction
                       for prediction in predictions]))):
             raise ValueError("Not enough data to use the selected "
                              "prediction method. Lacks %s information." %
@@ -545,7 +615,7 @@ class MultiVote(object):
         for prediction in predictions:
             if weight_label is not None:
                 weight = prediction[weight_label]
-            final_confidence += weight * prediction['confidence']
+            final_confidence += weight * prediction[CONFIDENCE_W]
             total_weight += weight
         final_confidence = (final_confidence / total_weight
                             if total_weight > 0 else float('nan'))

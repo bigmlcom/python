@@ -71,6 +71,13 @@ def i_create_a_local_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data)
 
+#@step(r'I create a local ensemble prediction for "(.*)"$')
+def i_create_a_local_ensemble_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_ensemble.predict(data)
+
 
 #@step(r'I create a local prediction using median for "(.*)"$')
 def i_create_a_local_median_prediction(step, data=None):
@@ -207,16 +214,33 @@ def the_local_prediction_is(step, prediction):
         if not isinstance(world.local_model, LogisticRegression):
             if isinstance(local_model, MultiModel):
                 local_model = local_model.models[0]
-            if local_model.tree.regression:
+            if local_model.regression:
                 local_prediction = round(float(local_prediction), 4)
                 prediction = round(float(prediction), 4)
     except AttributeError:
-        local_model = world.local_ensemble.multi_model.models[0]
-        if local_model.tree.regression:
-            local_prediction = round(float(local_prediction), 4)
-            prediction = round(float(prediction), 4)
-
+        local_model = world.local_ensemble
+        if local_model.regression:
+            assert_almost_equal(local_prediction, float(prediction), places=5)
+    if local_prediction != prediction:
+        assert False, "found: %s, expected %s" % (local_prediction, prediction)
     eq_(local_prediction, prediction)
+
+
+#@step(r'the local ensemble prediction is "(.*)"')
+def the_local_ensemble_prediction_is(step, prediction):
+    if (isinstance(world.local_prediction, list) or
+        isinstance(world.local_prediction, tuple)):
+        local_prediction = world.local_prediction[0]
+    elif isinstance(world.local_prediction, dict):
+        local_prediction = world.local_prediction['prediction']
+    else:
+        local_prediction = world.local_prediction
+    local_model = world.local_ensemble
+    if local_model.regression:
+        assert_almost_equal(local_prediction, float(prediction), places=5)
+    elif local_prediction != prediction:
+        assert False, "found: %s, expected %s" % (local_prediction, prediction)
+
 
 #@step(r'the local probability is "(.*)"')
 def the_local_probability_is(step, probability):

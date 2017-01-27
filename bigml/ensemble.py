@@ -93,7 +93,10 @@ class Ensemble(object):
         self.distributions = None
         self.models_splits = []
         self.multi_model = None
+        self.boosting = None
         self.cache_get = None
+        self.regression = False
+        self.fields = None
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -113,9 +116,15 @@ class Ensemble(object):
             self.resource_id = get_ensemble_id(ensemble)
             self.ensemble_id = self.resource_id
             ensemble = retrieve_resource(self.api, self.resource_id)
+            self.boosting = ensemble['object'].get('boosting')
             models = ensemble['object']['models']
-            self.distributions = ensemble['object'].get('distributions', None)
+            self.distributions = ensemble['object'].get('distributions')
             self.model_ids = models
+            # new ensembles have the fields structure
+            if ensemble['object'].get('ensemble'):
+                self.fields = ensemble['object'].get( \
+                    'ensemble', {}).get("fields")
+                self.objective_id = ensemble['object'].get("objective_field")
 
         number_of_models = len(models)
         if max_models is None:
@@ -142,8 +151,12 @@ class Ensemble(object):
             self.multi_model = MultiModel(models, self.api)
         else:
             self.cache_get = cache_get
-        self.fields, self.objective_id = self.all_model_fields(
-            max_models=max_models)
+
+        if self.fields is None:
+            self.fields, self.objective_id = self.all_model_fields(
+                max_models=max_models)
+        self.regression = \
+            self.fields[self.objective_id].get('optype') == 'numeric'
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be
@@ -235,7 +248,7 @@ class Ensemble(object):
         if len(self.models_splits) > 1:
             # If there's more than one chunck of models, they must be
             # sequentially used to generate the votes for the prediction
-            votes = MultiVote([])
+            votes = MultiVote([], boosting=self.boosting is not None)
             for models_split in self.models_splits:
                 if not isinstance(models_split[0], Model):
                     if (self.cache_get is not None and
@@ -272,10 +285,16 @@ class Ensemble(object):
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
                 add_median=(add_median or median), add_min=add_min,
                 add_max=add_max, add_unused_fields=add_unused_fields)
-            votes = MultiVote(votes_split.predictions)
+            votes = MultiVote(votes_split.predictions,
+                              boosting=self.boosting is not None)
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']
+        if self.boosting is not None:
+            categories = [ \
+                d[0] for d in
+                self.fields[self.objective_id]["summary"]["categories"]]
+            options = {"categories": categories}
         result = votes.combine(method=method, with_confidence=with_confidence,
                                add_confidence=add_confidence,
                                add_distribution=add_distribution,

@@ -884,14 +884,14 @@ class TestComparePrediction(object):
                 | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20}      | 000005    | 46.69889      | 37.27594297134128   | {"boosting": {"iterations": 5}}
                 | ../data/grades.csv | 10      | 10     | 10     | {"Midterm": 20, "Tutorial": 90, "TakeHome": 100}     | 000005    | 28.06      | 24.86634   | {"boosting": {"iterations": 5}}
 
+            ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.62224', '27.5358', '{"boosting": {"iterations": 5}}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '46.69889', '37.27594297134128', '{"boosting": {"iterations": 5}}'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '24.86634', '{"boosting": {"iterations": 5}}'],
 
         """
         print self.test_scenario18.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.2629', '{"boosting": {"iterations": 5}}'],
-            ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.62224', '27.5358', '{"boosting": {"iterations": 5}}'],
-            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '46.69889', '37.27594297134128', '{"boosting": {"iterations": 5}}'],
-            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '24.86634', '{"boosting": {"iterations": 5}}'],
+            ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-versicolor', '0.33808', '{"boosting": {"iterations": 5}}'],
             ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-versicolor', '0.3174', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.56427', '28.61315', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '45.95785', '28.02725', '{"number_of_models": 5}'],

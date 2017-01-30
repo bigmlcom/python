@@ -101,16 +101,16 @@ class MultiModel(object):
 
     """
 
-    def __init__(self, models, api=None):
+    def __init__(self, models, api=None, fields=None):
         self.models = []
         if isinstance(models, list):
             if all([isinstance(model, Model) for model in models]):
                 self.models = models
             else:
                 for model in models:
-                    self.models.append(Model(model, api=api))
+                    self.models.append(Model(model, api=api, fields=fields))
         else:
-            self.models.append(Model(models, api=api))
+            self.models.append(Model(models, api=api, fields=fields))
 
     def list_models(self):
         """Lists all the model/ids that compound the multi model.

@@ -45,7 +45,7 @@ import json
 
 from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
-from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION
+from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
@@ -97,6 +97,8 @@ class Ensemble(object):
         self.cache_get = None
         self.regression = False
         self.fields = None
+        query_string = ONLY_MODEL
+        no_check_fields = False
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -125,6 +127,8 @@ class Ensemble(object):
                 self.fields = ensemble['object'].get( \
                     'ensemble', {}).get("fields")
                 self.objective_id = ensemble['object'].get("objective_field")
+                query_string = EXCLUDE_FIELDS
+                no_check_fields = True
 
         number_of_models = len(models)
         if max_models is None:
@@ -145,16 +149,21 @@ class Ensemble(object):
                                         ' function %s: %s' %
                                         (cache_get.__name__, str(exc)))
                 else:
-                    models = [retrieve_resource(self.api, model_id,
-                                                query_string=ONLY_MODEL)
+                    models = [retrieve_resource( \
+                        self.api,
+                        model_id,
+                        query_string=query_string,
+                        no_check_fields=no_check_fields)
                               for model_id in self.models_splits[0]]
-            self.multi_model = MultiModel(models, self.api)
         else:
             self.cache_get = cache_get
 
         if self.fields is None:
             self.fields, self.objective_id = self.all_model_fields(
                 max_models=max_models)
+        if len(self.models_splits) == 1:
+            self.multi_model = MultiModel(models, self.api, fields=self.fields)
+
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
 
@@ -267,7 +276,8 @@ class Ensemble(object):
                         models = [retrieve_resource(self.api, model_id,
                                                     query_string=ONLY_MODEL)
                                   for model_id in models_split]
-                multi_model = MultiModel(models, api=self.api)
+                multi_model = MultiModel(models, api=self.api,
+                                         fields=self.fields)
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
@@ -290,7 +300,7 @@ class Ensemble(object):
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']
-        if self.boosting is not None:
+        if self.boosting is not None and not self.regression:
             categories = [ \
                 d[0] for d in
                 self.fields[self.objective_id]["summary"]["categories"]]

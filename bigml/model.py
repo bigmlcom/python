@@ -66,7 +66,7 @@ from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.boostedtree import BoostedTree
 from bigml.predicate import Predicate
 from bigml.basemodel import BaseModel, retrieve_resource, print_importance
-from bigml.basemodel import ONLY_MODEL
+from bigml.basemodel import ONLY_MODEL, EXCLUDE_FIELDS
 from bigml.modelfields import check_model_fields
 from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
@@ -130,7 +130,7 @@ class Model(BaseModel):
 
     """
 
-    def __init__(self, model, api=None):
+    def __init__(self, model, api=None, fields=None):
         """The Model constructor can be given as first argument:
             - a model structure
             - a model id
@@ -170,6 +170,7 @@ class Model(BaseModel):
         # checks whether the information needed for local predictions is in
         # the first argument
         if isinstance(model, dict) and \
+                not fields and \
                 not check_model_fields(model):
             # if the fields used by the model are not
             # available, use only ID to retrieve it again
@@ -180,12 +181,15 @@ class Model(BaseModel):
                 model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
-            query_string = ONLY_MODEL
+            if fields is not None and isintance(fields, dict):
+                query_string = EXCLUDE_FIELDS
+            else:
+                query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
                                       query_string=query_string)
         else:
             self.resource_id = get_model_id(model)
-        BaseModel.__init__(self, model, api=api)
+        BaseModel.__init__(self, model, api=api, fields=fields)
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
 

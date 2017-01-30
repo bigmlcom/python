@@ -42,6 +42,7 @@ LOGGER = logging.getLogger('BigML')
 # (needed for the list of terms in text fields) and
 # no pagination (all the model fields)
 ONLY_MODEL = 'only_model=true;limit=-1;'
+EXCLUDE_FIELDS = 'exclude=fields;'
 
 
 def retrieve_resource(api, resource_id, query_string='',
@@ -100,7 +101,7 @@ class BaseModel(ModelFields):
 
     """
 
-    def __init__(self, model, api=None):
+    def __init__(self, model, api=None, fields=None):
 
         if check_model_structure(model):
             self.resource_id = model['resource']
@@ -114,7 +115,10 @@ class BaseModel(ModelFields):
                 raise Exception(api.error_message(model,
                                                   resource_type='model',
                                                   method='get'))
-            query_string = ONLY_MODEL
+            if fields is not None and isinstance(fields, dict):
+                query_string = EXCLUDE_FIELDS
+            else:
+                query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
                                       query_string=query_string)
             # Stored copies of the model structure might lack some necessary
@@ -129,8 +133,8 @@ class BaseModel(ModelFields):
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
-                if ('model_fields' in model['model'] or
-                        'fields' in model['model']):
+                if (fields is None and ('model_fields' in model['model'] or
+                        'fields' in model['model'])):
                     fields = model['model'].get('model_fields',
                                                 model['model'].get('fields',
                                                                    []))

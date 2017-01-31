@@ -34,8 +34,9 @@ from create_prediction_steps import check_prediction
 
 #@step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
-    world.list_of_models = [world.api.get_model(model['resource']) for model in
-                            world.api.list_models(query_string="tags__in=%s" % tag)['objects']]
+    world.list_of_models = [ \
+        world.api.get_model(model['resource']) for model in
+        world.api.list_models(query_string="tags__in=%s" % tag)['objects']]
 
 
 #@step(r'I create a local model from a "(.*)" file$')
@@ -61,7 +62,8 @@ def i_create_a_local_prediction_with_confidence(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data, add_confidence=True)
+    world.local_prediction = world.local_model.predict(data,
+                                                       add_confidence=True)
 
 
 #@step(r'I create a local prediction for "(.*)"$')
@@ -96,12 +98,14 @@ def i_create_a_local_mm_median_batch_prediction(self, data=None):
         [data], to_file=False, use_median=True)[0].predictions[0]['prediction']
 
 
-#@step(r'I create a proportional missing strategy local prediction using median for "(.*)"$')
+#@step(r'I create a proportional missing strategy local prediction
+# using median for "(.*)"$')
 def i_create_a_local_proportional_median_prediction(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data, missing_strategy=1, median=True)
+    world.local_prediction = world.local_model.predict( \
+        data, missing_strategy=1, median=True)
 
 
 #@step(r'I create a local cluster')
@@ -133,15 +137,14 @@ def i_create_a_local_anomaly(step):
 #@step(r'I create a local anomaly score for "(.*)"$')
 def i_create_a_local_anomaly_score(step, input_data):
     input_data = json.loads(input_data)
-    world.local_anomaly_score = world.local_anomaly.anomaly_score(input_data,
-                                                                  by_name=False)
+    world.local_anomaly_score = world.local_anomaly.anomaly_score( \
+        input_data, by_name=False)
 
 #@step(r'the local anomaly score is "(.*)"$')
 def the_local_anomaly_score_is(step, score):
-    if str(round(world.local_anomaly_score, 2)) != str(round(float(score), 2)):
-        assert False, ("Found: %s, expected: %s" %
-                       (str(round(world.local_anomaly_score, 2)),
-                        round(float(score), 2)))
+    eq_(str(round(world.local_anomaly_score, 2)),
+        str(round(float(score), 2)))
+
 
 #@step(r'I create a local association')
 def i_create_a_local_association(step):
@@ -172,6 +175,7 @@ def i_create_a_batch_prediction_from_a_multi_model(step, data=None):
     world.local_prediction = world.local_model.batch_predict(data,
                                                              to_file=False)
 
+
 #@step(r'the predictions are "(.*)"')
 def the_batch_mm_predictions_are(step, predictions):
     if predictions is None:
@@ -180,7 +184,15 @@ def the_batch_mm_predictions_are(step, predictions):
     for i in range(len(predictions)):
         multivote = world.local_prediction[i]
         for prediction in multivote.predictions:
+<<<<<<< a4bf372ca6d32b90472cf40f22cc46aa04aac59e
             eq_(prediction['prediction'], predictions[i])
+=======
+            if prediction['prediction'] != predictions[i]:
+                assert False, ("Prediction: %s, expected: %s" %
+                               (predictions[i], prediction['prediction']))
+                break
+    eq_(i, len(predictions))
+>>>>>>> Adding code review changes
 
 
 #@step(r'the multiple local prediction is "(.*)"')
@@ -188,6 +200,10 @@ def the_multiple_local_prediction_is(step, prediction):
     local_prediction = world.local_prediction
     prediction = json.loads(prediction)
     eq_(local_prediction, prediction)
+<<<<<<< a4bf372ca6d32b90472cf40f22cc46aa04aac59e
+=======
+
+>>>>>>> Adding code review changes
 
 #@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
@@ -221,8 +237,6 @@ def the_local_prediction_is(step, prediction):
         local_model = world.local_ensemble
         if local_model.regression:
             assert_almost_equal(local_prediction, float(prediction), places=5)
-    if local_prediction != prediction:
-        assert False, "found: %s, expected %s" % (local_prediction, prediction)
     eq_(local_prediction, prediction)
 
 
@@ -238,8 +252,8 @@ def the_local_ensemble_prediction_is(step, prediction):
     local_model = world.local_ensemble
     if local_model.regression:
         assert_almost_equal(local_prediction, float(prediction), places=5)
-    elif local_prediction != prediction:
-        assert False, "found: %s, expected %s" % (local_prediction, prediction)
+    else:
+        eq_(local_prediction, prediction)
 
 
 #@step(r'the local probability is "(.*)"')
@@ -275,7 +289,7 @@ def the_confidence_weighted_prediction(step, predictions):
     predictions = eval(predictions)
     for i in range(len(world.votes)):
         combined_prediction = world.votes[i].combine(1)
-        assert combined_prediction == predictions[i]
+        eq_(combined_prediction, predictions[i])
 
 #@step(r'I create a local logistic regression model$')
 def i_create_a_local_logistic_model(step):

@@ -423,37 +423,16 @@ class MultiVote(object):
                                     "prediction method. Try creating your"
                                     " model anew.")
         if self.boosting:
-            grouped_predictions = {}
             for prediction in self.predictions:
                 if prediction[COMBINATION_WEIGHTS[BOOSTING]] is None:
                     prediction[COMBINATION_WEIGHTS[BOOSTING]] = 0
-                if prediction.get(BOOSTING_CLASS) is not None:
-                    objective_class = prediction.get(BOOSTING_CLASS)
-                    if grouped_predictions.get(objective_class) is None:
-                        grouped_predictions[objective_class] = []
-                    grouped_predictions[objective_class].append(prediction)
-            # sum all gradients weighted by their "weight"
             if self.is_regression():
+                # sum all gradients weighted by their "weight"
                 return weighted_sum(self.predictions, weight="weight")
             else:
-                # do the same per class and use the order of categories
-                # to decide in tie breaks
-                categories = options.get("categories", [])
-                predictions = {key: { \
-                    "probability": weighted_sum(value, weight="weight"),
-                    "order": categories.index(key)} for
-                               key, value in grouped_predictions.items()}
-                predictions = softmax(predictions)
-                prediction, prediction_info = sorted( \
-                    predictions.items(), key=lambda(x): \
-                    (- x[1]["probability"], x[1]["order"]))[0]
-                confidence = prediction_info["probability"]
-                if with_confidence:
-                    return prediction, confidence
-                elif add_confidence:
-                    return {"prediction": prediction, "confidence": confidence}
-                else:
-                    return prediction
+                return self.classification_boosting_combiner( \
+                    options, with_confidence=with_confidence,
+                    add_confidence=add_confidence)
         elif self.is_regression():
             for prediction in self.predictions:
                 if prediction[CONFIDENCE_W] is None:
@@ -620,6 +599,39 @@ class MultiVote(object):
         final_confidence = (final_confidence / total_weight
                             if total_weight > 0 else float('nan'))
         return combined_prediction, final_confidence
+
+    def classification_boosting_combiner(self,
+                                         options,
+                                         with_confidence=False,
+                                         add_confidence=False):
+        """Combines the predictions for a boosted classification ensemble
+        Applies the regression boosting combiner, but per class. Tie breaks
+        use the order of the categories in the ensemble summary to decide.
+
+        """
+        grouped_predictions = {}
+        for prediction in self.predictions:
+            if prediction.get(BOOSTING_CLASS) is not None:
+                objective_class = prediction.get(BOOSTING_CLASS)
+                if grouped_predictions.get(objective_class) is None:
+                    grouped_predictions[objective_class] = []
+                grouped_predictions[objective_class].append(prediction)
+        categories = options.get("categories", [])
+        predictions = {key: { \
+            "probability": weighted_sum(value, weight="weight"),
+            "order": categories.index(key)} for
+                       key, value in grouped_predictions.items()}
+        predictions = softmax(predictions)
+        prediction, prediction_info = sorted( \
+            predictions.items(), key=lambda(x): \
+            (- x[1]["probability"], x[1]["order"]))[0]
+        confidence = prediction_info["probability"]
+        if with_confidence:
+            return prediction, confidence
+        elif add_confidence:
+            return {"prediction": prediction, "confidence": confidence}
+        else:
+            return prediction
 
     def append(self, prediction_info):
         """Adds a new prediction into a list of predictions

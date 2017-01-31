@@ -15,10 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A BasicModel resource.
+"""A ModelFields resource.
 
-This module defines a BasicModel to hold the main information of the model
-resource in BigML. It becomes the starting point for the Model class, that
+This module defines a ModelFields class to hold the information associated
+to the fields of the model resource in BigML.
+It becomes the starting point for the Model class, that
 is used for local predictions.
 
 """

@@ -86,7 +86,6 @@ class BoostedTree(object):
             path = []
         if missing_strategy == PROPORTIONAL:
             return self.predict_proportional(input_data, path=path)
-
         else:
             if self.children:
                 for child in self.children:
@@ -168,8 +167,8 @@ class BoostedTree(object):
                 'id': self.id,
                 'confidence': self.confidence,
                 'count': self.count,
-                'distribution': self.distribution,
-                'impurity': self.impurity,
+                'distribution': None,
+                'impurity': None,
                 'output': self.output,
                 'path': path}
             if (not hasattr(filter_function, '__call__')

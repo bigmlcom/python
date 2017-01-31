@@ -165,10 +165,9 @@ class BoostedTree(object):
         else:
             leaf = {
                 'id': self.id,
-                'confidence': self.confidence,
                 'count': self.count,
-                'distribution': None,
-                'impurity': None,
+                'g_sum': self.g_sum,
+                'h_sum': self.h_sum,
                 'output': self.output,
                 'path': path}
             if (not hasattr(filter_function, '__call__')

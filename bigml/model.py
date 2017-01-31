@@ -262,8 +262,8 @@ class Model(BaseModel):
         """Returns a list of leaves that are impure
 
         """
-        if self.regression:
-            raise AttributeError("This method is available for "
+        if self.regression or self.boosting:
+            raise AttributeError("This method is available for non-boosting"
                                  " categorization models only.")
         def is_impure(node, impurity_threshold=impurity_threshold):
             """Returns True if the gini impurity of the node distribution
@@ -467,6 +467,9 @@ class Model(BaseModel):
         `out` is file descriptor to write the rules.
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         ids_path = self.get_ids_path(filter_id)
         return self.tree.rules(out, ids_path=ids_path, subtree=subtree)
 
@@ -477,6 +480,9 @@ class Model(BaseModel):
         `out` is file descriptor to write the python code.
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         ids_path = self.get_ids_path(filter_id)
         if hadoop:
             return (self.hadoop_python_mapper(out=out,
@@ -494,6 +500,9 @@ class Model(BaseModel):
         `out` is file descriptor to write the tableau code.
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         ids_path = self.get_ids_path(filter_id)
         if hadoop:
             return "Hadoop output not available."
@@ -522,6 +531,9 @@ class Model(BaseModel):
                        - leaf predictions count
                        - confidence
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         groups = {}
         tree = self.tree
         distribution = tree.distribution
@@ -582,6 +594,9 @@ class Model(BaseModel):
         """Returns training data distribution
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         tree = self.tree
         distribution = tree.distribution
 
@@ -591,6 +606,9 @@ class Model(BaseModel):
         """Returns model predicted distribution
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         if groups is None:
             groups = self.group_prediction()
 
@@ -605,6 +623,9 @@ class Model(BaseModel):
         """Prints summary grouping distribution as class header and details
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         tree = self.tree
 
         def extract_common_path(groups):
@@ -707,6 +728,9 @@ class Model(BaseModel):
         """Returns a hadoop mapper header to make predictions in python
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         input_fields = [(value, key) for (key, value) in
                         sorted(self.inverted_fields.items(),
                                key=lambda x: x[1])]
@@ -926,6 +950,9 @@ if count > 0:
            running the training data through the model
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         total = 0.0
         cumulative_confidence = 0
         groups = self.group_prediction()
@@ -939,13 +966,18 @@ if count > 0:
         """Generator that yields the nodes information in a row format
 
         """
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         return self.tree.get_nodes_info(headers, leaves_only=leaves_only)
 
     def tree_csv(self, file_name=None, leaves_only=False):
         """Outputs the node structure to a CSV file or array
 
         """
-        # TODO: modify to add boosted trees' nodes
+        if self.boosting:
+            raise AttributeError("This method is not available for boosting"
+                                 " models.")
         headers_names = []
         if self.regression:
             headers_names.append(

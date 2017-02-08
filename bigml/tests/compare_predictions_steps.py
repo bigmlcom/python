@@ -172,13 +172,7 @@ def the_batch_mm_predictions_are(step, predictions):
     predictions = json.loads(predictions)
     for i in range(len(predictions)):
         multivote = world.local_prediction[i]
-        for prediction in multivote.predictions:
-            if prediction['prediction'] != predictions[i]:
-                assert False, ("Prediction: %s, expected: %s" %
-                               (predictions[i], prediction['prediction']))
-                break
-    if i == len(predictions):
-        assert True
+        eq_(prediction['prediction'], predictions[i])
 
 
 #@step(r'the multiple local prediction is "(.*)"')

@@ -176,7 +176,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.2629'],
             ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.62224', '27.5358'],
-            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '46.69889', '37.27594297134128'],
+            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '40.46667', '37.27594297134128'],
             ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '24.86634']]
         for example in examples:
             print "\nTesting with:\n", example
@@ -779,7 +779,7 @@ class TestComparePrediction(object):
                 Then the local association set is like the contents of "<association_set_file>"
 
                 Examples:
-                | ../data/groceries.csv | 20      | 20     | 30     | {"fields": {"000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}} | association_set.json       | {"field1": "water"}     |
+                | ../data/groceries.csv | 20      | 20     | 30     | {"fields": {"000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}} | association_set.json       | {"field1": "cat food"}     |
 
         """
         print self.test_scenario16.__doc__

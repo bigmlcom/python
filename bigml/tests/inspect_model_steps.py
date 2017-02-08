@@ -19,6 +19,7 @@ import io
 import os
 from bigml.tests.world import res_filename
 from world import world
+from nose.tools import eq_
 
 
 #@step(r'I translate the tree into IF-THEN rules$')
@@ -64,12 +65,7 @@ def i_check_the_model_summary_with(step, file):
 
 #@step(r'I check the output is like "(.*)" expected file')
 def i_check_if_the_output_is_like_expected_file(step, expected_file):
-
     file = open(res_filename(expected_file), "rb")
     expected_content = file.read()
     file.close()
-    if world.output.strip() == expected_content.strip():
-        assert True
-    else:
-        assert False, "Found:\n%s\n\nExpected:\n%s\n\n" % (world.output,
-                                                           expected_content)
+    eq_(world.output.strip(), expected_content.strip())

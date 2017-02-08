@@ -66,13 +66,13 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', 'data/model/if_then_rules_iris.txt'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/if_then_rules_iris_sp_chars.txt'],
-            ['data/spam.csv', '10', '10', '10', 'data/model/if_then_rules_spam.txt'],
-            ['data/grades.csv', '10', '10', '10', 'data/model/if_then_rules_grades.txt'],
-            ['data/diabetes.csv', '10', '10', '10', 'data/model/if_then_rules_diabetes.txt'],
-            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/if_then_rules_iris_missing2.txt'],
-            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/if_then_rules_tiny_kdd.txt']]
+            ['data/iris.csv', '30', '30', '30', 'data/model/if_then_rules_iris.txt'],
+            ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/if_then_rules_iris_sp_chars.txt'],
+            ['data/spam.csv', '30', '30', '30', 'data/model/if_then_rules_spam.txt'],
+            ['data/grades.csv', '30', '30', '30', 'data/model/if_then_rules_grades.txt'],
+            ['data/diabetes.csv', '30', '30', '30', 'data/model/if_then_rules_diabetes.txt'],
+            ['data/iris_missing2.csv', '30', '30', '30', 'data/model/if_then_rules_iris_missing2.txt'],
+            ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/if_then_rules_tiny_kdd.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -105,7 +105,7 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/if_then_rules_iris_missing2_MISSINGS.txt']]
+            ['data/iris_missing2.csv', '10', '10', '30', 'data/model/if_then_rules_iris_missing2_MISSINGS.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -144,12 +144,12 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario3.__doc__
         examples = [
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}','data/model/if_then_rules_spam_textanalysis_1.txt'],
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}}', 'data/model/if_then_rules_spam_textanalysis_2.txt'],
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_3.txt'],
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_4.txt'],
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_5.txt'],
-            ['data/spam.csv', '10', '10', '10', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_6.txt']]
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}','data/model/if_then_rules_spam_textanalysis_1.txt'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}}', 'data/model/if_then_rules_spam_textanalysis_2.txt'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": false, "use_stopwords": false, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_3.txt'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_4.txt'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_5.txt'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_6.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -190,13 +190,13 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario4.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', 'data/model/data_distribution_iris.txt'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/data_distribution_iris_sp_chars.txt'],
-            ['data/spam.csv', '10', '10', '10', 'data/model/data_distribution_spam.txt'],
-            ['data/grades.csv', '10', '10', '10', 'data/model/data_distribution_grades.txt'],
-            ['data/diabetes.csv', '10', '10', '10', 'data/model/data_distribution_diabetes.txt'],
-            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/data_distribution_iris_missing2.txt'],
-            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/data_distribution_tiny_kdd.txt']]
+            ['data/iris.csv', '30', '30', '30', 'data/model/data_distribution_iris.txt'],
+            ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/data_distribution_iris_sp_chars.txt'],
+            ['data/spam.csv', '30', '30', '30', 'data/model/data_distribution_spam.txt'],
+            ['data/grades.csv', '30', '30', '30', 'data/model/data_distribution_grades.txt'],
+            ['data/diabetes.csv', '30', '30', '30', 'data/model/data_distribution_diabetes.txt'],
+            ['data/iris_missing2.csv', '30', '30', '30', 'data/model/data_distribution_iris_missing2.txt'],
+            ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/data_distribution_tiny_kdd.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -235,13 +235,13 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', 'data/model/predictions_distribution_iris.txt'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/predictions_distribution_iris_sp_chars.txt'],
-            ['data/spam.csv', '10', '10', '10', 'data/model/predictions_distribution_spam.txt'],
-            ['data/grades.csv', '10', '10', '10', 'data/model/predictions_distribution_grades.txt'],
-            ['data/diabetes.csv', '10', '10', '10', 'data/model/predictions_distribution_diabetes.txt'],
-            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/predictions_distribution_iris_missing2.txt'],
-            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/predictions_distribution_tiny_kdd.txt']]
+            ['data/iris.csv', '30', '30', '30', 'data/model/predictions_distribution_iris.txt'],
+            ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/predictions_distribution_iris_sp_chars.txt'],
+            ['data/spam.csv', '30', '30', '30', 'data/model/predictions_distribution_spam.txt'],
+            ['data/grades.csv', '30', '30', '30', 'data/model/predictions_distribution_grades.txt'],
+            ['data/diabetes.csv', '30', '30', '30', 'data/model/predictions_distribution_diabetes.txt'],
+            ['data/iris_missing2.csv', '30', '30', '30', 'data/model/predictions_distribution_iris_missing2.txt'],
+            ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/predictions_distribution_tiny_kdd.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -280,13 +280,13 @@ class TestLocalModelOutputs(object):
         """
         print self.test_scenario6.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', 'data/model/summarize_iris.txt'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', 'data/model/summarize_iris_sp_chars.txt'],
-            ['data/spam.csv', '10', '10', '10', 'data/model/summarize_spam.txt'],
-            ['data/grades.csv', '10', '10', '10', 'data/model/summarize_grades.txt'],
-            ['data/diabetes.csv', '10', '10', '10', 'data/model/summarize_diabetes.txt'],
-            ['data/iris_missing2.csv', '10', '10', '10', 'data/model/summarize_iris_missing2.txt'],
-            ['data/tiny_kdd.csv', '10', '10', '10', 'data/model/summarize_tiny_kdd.txt']]
+            ['data/iris.csv', '30', '30', '30', 'data/model/summarize_iris.txt'],
+            ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/summarize_iris_sp_chars.txt'],
+            ['data/spam.csv', '30', '30', '30', 'data/model/summarize_spam.txt'],
+            ['data/grades.csv', '30', '30', '30', 'data/model/summarize_grades.txt'],
+            ['data/diabetes.csv', '30', '30', '30', 'data/model/summarize_diabetes.txt'],
+            ['data/iris_missing2.csv', '30', '30', '30', 'data/model/summarize_iris_missing2.txt'],
+            ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/summarize_tiny_kdd.txt']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

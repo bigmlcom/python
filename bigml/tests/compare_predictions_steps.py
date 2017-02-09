@@ -172,18 +172,15 @@ def the_batch_mm_predictions_are(step, predictions):
     predictions = json.loads(predictions)
     for i in range(len(predictions)):
         multivote = world.local_prediction[i]
-        eq_(prediction['prediction'], predictions[i])
+        for prediction in multivote.predictions:
+            eq_(prediction['prediction'], predictions[i])
 
 
 #@step(r'the multiple local prediction is "(.*)"')
 def the_multiple_local_prediction_is(step, prediction):
     local_prediction = world.local_prediction
     prediction = json.loads(prediction)
-    if local_prediction == prediction:
-        assert True
-    else:
-        assert False, "found: %s, expected %s" % (local_prediction, prediction)
-
+    eq_(local_prediction, prediction)
 
 #@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
@@ -194,11 +191,7 @@ def the_local_prediction_confidence_is(step, confidence):
         local_confidence = world.local_prediction['confidence']
     local_confidence = round(float(local_confidence), 4)
     confidence = round(float(confidence), 4)
-    if local_confidence == confidence:
-        assert True
-    else:
-        assert False, "found: %s, expected %s" % (local_confidence, confidence)
-
+    eq_(local_confidence, confidence)
 
 #@step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction):
@@ -223,10 +216,7 @@ def the_local_prediction_is(step, prediction):
             local_prediction = round(float(local_prediction), 4)
             prediction = round(float(prediction), 4)
 
-    if local_prediction == prediction:
-        assert True
-    else:
-        assert False, "found: %s, expected %s" % (local_prediction, prediction)
+    eq_(local_prediction, prediction)
 
 #@step(r'the local probability is "(.*)"')
 def the_local_probability_is(step, probability):

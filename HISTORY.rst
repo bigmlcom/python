@@ -3,6 +3,12 @@
 History
 -------
 
+4.8.2 (2017-02-09)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: Adapting to changes in Python 3.6 which cause the connection to
+  the API using SSL to fail.
+
 4.8.1 (2017-01-11)
 ~~~~~~~~~~~~~~~~~~
 

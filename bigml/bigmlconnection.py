@@ -41,7 +41,7 @@ except ImportError:
 
 from bigml.util import (check_dir,
                         maybe_save, get_exponential_wait)
-from bigml.util import DEFAULT_LOCALE
+from bigml.util import DEFAULT_LOCALE, PY3
 from bigml.domain import Domain
 from bigml.domain import DEFAULT_DOMAIN, BIGML_PROTOCOL
 
@@ -117,7 +117,10 @@ def json_load(content):
        create the JSON corresponding object.
 
     """
-    return json.loads(content.decode('utf-8'), 'utf-8')
+    args = [content.decode('utf-8')]
+    if not PY3:
+        args.append('utf-8')
+    return json.loads(*args)
 
 
 ##############################################################################

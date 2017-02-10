@@ -56,6 +56,7 @@ from bigml.bigmlconnection import (
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
     HTTP_TOO_MANY_REQUESTS, HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
+from bigml.bigmlconnection import json_load
 from bigml.resourcehandler import (check_resource_type,
                                    resource_is_ready,
                                    get_source_id)
@@ -228,7 +229,7 @@ class SourceHandler(ResourceHandler):
                 if code in [HTTP_CREATED]:
                     if 'location' in response.headers:
                         location = response.headers['location']
-                    resource = json.loads(response.content.decode(), 'utf-8')
+                    resource = json_load(response.content)
                     resource_id = resource['resource']
                     error = {}
                 elif code in [HTTP_BAD_REQUEST,
@@ -237,7 +238,7 @@ class SourceHandler(ResourceHandler):
                               HTTP_FORBIDDEN,
                               HTTP_NOT_FOUND,
                               HTTP_TOO_MANY_REQUESTS]:
-                    error = json.loads(response.content.decode(), 'utf-8')
+                    error = json_load(response.content)
                     LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
@@ -269,7 +270,7 @@ class SourceHandler(ResourceHandler):
                 if code == HTTP_CREATED:
                     location = response.headers['location']
                     content = response.read()
-                    resource = json.loads(content, 'utf-8')
+                    resource = json_load(content)
                     resource_id = resource['resource']
                     error = {}
             except ValueError:
@@ -282,7 +283,7 @@ class SourceHandler(ResourceHandler):
                             HTTP_NOT_FOUND,
                             HTTP_TOO_MANY_REQUESTS]:
                     content = exception.read()
-                    error = json.loads(content.decode(), 'utf-8')
+                    error = json_load(content)
                     LOGGER.error(self.error_message(error, method='create'))
                 else:
                     LOGGER.error("Unexpected error (%s)", code)
@@ -364,7 +365,7 @@ class SourceHandler(ResourceHandler):
             code = response.status_code
             if code == HTTP_CREATED:
                 location = response.headers['location']
-                resource = json.loads(response.content.decode(), 'utf-8')
+                resource = json_load(response.content)
                 resource_id = resource['resource']
                 error = None
             elif code in [HTTP_BAD_REQUEST,
@@ -372,7 +373,7 @@ class SourceHandler(ResourceHandler):
                           HTTP_PAYMENT_REQUIRED,
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
-                error = json.loads(response.content.decode(), 'utf-8')
+                error = json_load(response.content)
             else:
                 LOGGER.error("Unexpected error (%s)" % code)
                 code = HTTP_INTERNAL_SERVER_ERROR

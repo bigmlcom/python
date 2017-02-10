@@ -2873,7 +2873,7 @@ also use the ``check_resource`` function:
 that will constantly query the API until the resource gets to a FINISHED or
 FAULTY state, or can also be used with ``wait_time`` (in seconds)
 and ``retries``
-arguments to control the pulling:
+arguments to control the polling:
 
 .. code-block:: python
 
@@ -4803,7 +4803,7 @@ selectable as predictor), ``missing_count``, ``errors`` and a summary of
 the values found in each field. This is due to the fact that the ``source``
 object is built by inspecting the contents of a sample of the uploaded file,
 while the ``dataset`` resource really reads all the uploaded information. Thus,
-dataset's fields structure will always be more complete that source's.
+dataset's fields structure will always be more complete than source's.
 
 In both cases, you can extract the summarized information available using
 the ``summary_csv`` method:

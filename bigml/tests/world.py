@@ -52,6 +52,7 @@ RESOURCE_TYPES = [
     'deepnet',
     'association',
     'associationset',
+    'configuration',
     'topicmodel',
     'topicdistribution',
     'timeseries',

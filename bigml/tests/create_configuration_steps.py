@@ -47,7 +47,7 @@ def i_update_configuration(step, changes):
         world.configuration["resource"], changes)
     print resource
     world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.configuration = resource['object']
 
@@ -72,9 +72,9 @@ def the_configuration_is_finished_in_less_than(step, secs):
 
 #@step(r'the configuration name is "(.*)"$')
 def i_check_configuration_name(step, name):
-    eq_(world.configuration["name"], name)
+    eq_(world.configuration["name"], name["name"])
 
 
 #@step(r'the configuration contents are "(.*)"$')
-def i_check_configuration_name(step, confs):
-    eq_(world.configuration_conf["configurations"], confs)
+def i_check_configuration_conf(step, confs):
+    eq_(world.configuration["configurations"], confs)

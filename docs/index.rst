@@ -271,6 +271,28 @@ call is not followed by the ``api.ok`` method. Predictions are so quick to be
 generated that, unlike the
 rest of resouces, will be generated synchronously as a finished object.
 
+The example assumes that your objective field (the one you want to predict)
+is the last field in the dataset. If that's not he case, you can explicitly
+set the name of this field in the creation call using the ``objective_field``
+argument:
+
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create_source('./data/iris.csv')
+    api.ok(source)
+    dataset = api.create_dataset(source)
+    api.ok(dataset)
+    model = api.create_model(dataset, {"objective_field": "species"})
+    api.ok(model)
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
+
+
 You can also generate an evaluation for the model by using:
 
 .. code-block:: python

@@ -799,3 +799,44 @@ class TestComparePrediction(object):
             prediction_compare.the_association_set_is_like_file(self, example[5])
             prediction_compare.i_create_a_local_association_set(self, example[6])
             prediction_compare.the_local_association_set_is_like_file(self, example[5])
+
+    def test_scenario17(self):
+        """
+            Scenario: Successfully comparing logistic regression predictions with constant fields:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I update the dataset with "<params>"
+                And I wait until the dataset is ready less than <time_4> secs
+                And I create a logistic regression model
+                And I wait until the logistic regression model is ready less than <time_3> secs
+                And I create a local logistic regression model
+                When I create a logistic regression prediction for "<data_input>"
+                Then the logistic regression prediction is "<prediction>"
+                And I create a local logistic regression prediction for "<data_input>"
+                Then the local logistic regression prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 |time_4| data_input                                 | prediction  | field_id
+                | ../data/constant_field.csv | 10      | 10     | 10     |10    | {"a": 1, "b": 1, "c": 1}         | a | {"fields": {"000000": {"preferred": true}}}
+
+        """
+        print self.test_scenario8.__doc__
+        examples = [
+            ['data/constant_field.csv', '10', '10', '50', '10','{"a": 1, "b": 1, "c": 1}', 'a', '{"fields": {"000000": {"preferred": true}}}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.i_update_dataset_with(self, example[7])
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[4])
+            model_create.i_create_a_logistic_model(self)
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction(self, example[5])
+            prediction_create.the_logistic_prediction_is(self, example[6])
+            prediction_compare.i_create_a_local_prediction(self, example[5])
+            prediction_compare.the_local_prediction_is(self, example[6])

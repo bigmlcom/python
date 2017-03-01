@@ -150,3 +150,10 @@ def is_associated_to_centroid_id(step, centroid_id):
 #@step(r'I check that the dataset is created for the cluster and the centroid$')
 def i_check_dataset_from_cluster_centroid(step):
     is_associated_to_centroid_id(step, world.centroid['centroid_id'])
+
+#@step(r'I update the dataset with params "(.*)"')
+def i_update_dataset_with(step, data="{}"):
+    resource = world.api.update_dataset(world.dataset.get('resource'),
+                                        json.loads(data))
+    world.status = resource['code']
+    assert world.status == HTTP_ACCEPTED

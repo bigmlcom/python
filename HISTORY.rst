@@ -3,6 +3,12 @@
 History
 -------
 
+4.8.3 (2017-03-01)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local logistic regression predictions when a constant field is
+  forced as input field.
+
 4.8.2 (2017-02-09)
 ~~~~~~~~~~~~~~~~~~
 

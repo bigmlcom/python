@@ -277,7 +277,9 @@ class LogisticRegression(ModelFields):
                     mean = self.fields[field]['summary']['mean']
                     stddev = self.fields[field]['summary'][ \
                         'standard_deviation']
-                    input_data[field] = (input_data[field] - mean) / stddev
+                    # if stddev is not positive, we only substract the mean
+                    input_data[field] = input_data[field] - mean if \
+                        stddev <= 0 else (input_data[field] - mean) / stddev
 
         # Compute text and categorical field expansion
         unique_terms = self.get_unique_terms(input_data)
@@ -327,7 +329,6 @@ class LogisticRegression(ModelFields):
             coefficients = self.get_coefficients(category, field_id)
             probability += coefficients[0] * numeric_inputs[field_id]
             norm2 += math.pow(numeric_inputs[field_id], 2)
-
 
         # text, items and categories
         for field_id in unique_terms:
@@ -407,7 +408,6 @@ class LogisticRegression(ModelFields):
         probability += bias
         if self.bias:
             norm2 += 1
-
         if self.lr_normalize:
             try:
                 probability /= math.sqrt(norm2)

@@ -51,7 +51,7 @@ from bigml.multivote import PLURALITY_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 
-
+BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
 
 
@@ -118,7 +118,8 @@ class Ensemble(object):
             self.resource_id = get_ensemble_id(ensemble)
             self.ensemble_id = self.resource_id
             ensemble = retrieve_resource(self.api, self.resource_id)
-            self.boosting = ensemble['object'].get('boosting')
+            if ensemble['object'].get('type') == BOOSTING:
+                self.boosting = ensemble['object'].get('boosting')
             models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions')
             self.model_ids = models
@@ -155,6 +156,8 @@ class Ensemble(object):
                         query_string=query_string,
                         no_check_fields=no_check_fields)
                               for model_id in self.models_splits[0]]
+            if self.boosting is None:
+                self._add_models_attrs(models, max_models)
         else:
             self.cache_get = cache_get
 
@@ -166,6 +169,26 @@ class Ensemble(object):
 
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
+
+    def _add_models_attrs(self, models, max_models=None):
+        """ Adds the boosting and fields info when the ensemble is built from
+            a list of models. They can be either Model objects
+            or the model dictionary info structure.
+
+        """
+        if isinstance(models[0], Model):
+            self.boosting = models[0].boosting
+            self.objective_id = models[0].objective_id
+        else:
+            if models[0]['object']['boosted_ensemble']:
+                self.boosting = models[0]['object']['boosting']
+            if self.boosting:
+                self.objective_id = self.boosting['objective_field']
+            else:
+                self.objective_id = models[0]['object']['objective_field']
+            if self.fields is None:
+                self.fields, _ = self.all_model_fields( \
+                    max_models=max_models)
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be

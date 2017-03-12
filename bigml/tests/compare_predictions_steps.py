@@ -184,15 +184,7 @@ def the_batch_mm_predictions_are(step, predictions):
     for i in range(len(predictions)):
         multivote = world.local_prediction[i]
         for prediction in multivote.predictions:
-<<<<<<< a4bf372ca6d32b90472cf40f22cc46aa04aac59e
             eq_(prediction['prediction'], predictions[i])
-=======
-            if prediction['prediction'] != predictions[i]:
-                assert False, ("Prediction: %s, expected: %s" %
-                               (predictions[i], prediction['prediction']))
-                break
-    eq_(i, len(predictions))
->>>>>>> Adding code review changes
 
 
 #@step(r'the multiple local prediction is "(.*)"')
@@ -200,10 +192,6 @@ def the_multiple_local_prediction_is(step, prediction):
     local_prediction = world.local_prediction
     prediction = json.loads(prediction)
     eq_(local_prediction, prediction)
-<<<<<<< a4bf372ca6d32b90472cf40f22cc46aa04aac59e
-=======
-
->>>>>>> Adding code review changes
 
 #@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):

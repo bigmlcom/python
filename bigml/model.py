@@ -141,6 +141,7 @@ class Model(BaseModel):
         self.ids_map = {}
         self.terms = {}
         self.regression = False
+        self.boosting = None
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -199,17 +200,18 @@ class Model(BaseModel):
 
                 # boosting models are to be handled using the BoostedTree
                 # class
-                self.boosting = model.get('boosting')
+                if model.get("boosted_ensemble"):
+                    self.boosting = model.get('boosting')
                 if self.boosting == {}:
-                    self.boosting = None
+                    self.boosting = False
 
                 self.regression = \
-                    self.boosting is None and \
+                    not self.boosting and \
                     self.fields[self.objective_id]['optype'] == 'numeric' \
                     or (self.boosting and \
                     self.boosting.get("objective_class") is None)
 
-                if self.boosting is not None:
+                if self.boosting:
                     self.tree = BoostedTree(
                         model['model']['root'],
                         self.fields,
@@ -339,7 +341,7 @@ class Model(BaseModel):
         """
         # Checks if this is a regression model, using PROPORTIONAL
         # missing_strategy
-        if (self.boosting is None and
+        if (not self.boosting and
                 self.regression and missing_strategy == PROPORTIONAL and
                 not self.regression_ready):
             raise ImportError("Failed to find the numpy and scipy libraries,"
@@ -361,7 +363,7 @@ class Model(BaseModel):
         prediction = self.tree.predict(input_data,
                                        missing_strategy=missing_strategy)
 
-        if self.boosting is not None and missing_strategy == PROPORTIONAL:
+        if self.boosting and missing_strategy == PROPORTIONAL:
             # output has to be recomputed and comes in a different format
             g_sum, h_sum, population, path = prediction
             prediction = Prediction(
@@ -419,7 +421,7 @@ class Model(BaseModel):
                 if field is not None and field in self.fields:
                     field = self.fields[field]['name']
                 output.update({'next': field})
-            if self.boosting is None and self.regression:
+            if not self.boosting and self.regression:
                 if add_median:
                     output.update({'median': prediction.median})
                 if add_min:

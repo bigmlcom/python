@@ -90,6 +90,18 @@ def plural(resource_type):
     return IRREGULAR_PLURALS.get(resource_type, "%ss" % resource_type)
 
 
+def show_doc(self, examples=None):
+    """ Shows the name and documentation of the method passed as argument
+
+    """
+    print "%s:\n%s" % (self.__name__, self.__doc__)
+    if examples:
+        print "                |%s" % \
+            "\n                |".join(["|".join([str(item)
+                                                  for item in example]) for
+                                        example in examples])
+
+
 class World(object):
 
     def __init__(self):

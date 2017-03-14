@@ -71,6 +71,8 @@ def check_model_fields(model):
                 # we return True to avoid failing in this case
                 return True
         else:
+            if fields is None:
+                return False
             return all([field_id in fields.keys() \
                 for field_id in model_fields])
     return False

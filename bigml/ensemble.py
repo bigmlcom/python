@@ -178,17 +178,23 @@ class Ensemble(object):
         """
         if isinstance(models[0], Model):
             self.boosting = models[0].boosting
-            self.objective_id = models[0].objective_id
+            self.objective_id = models[0].objective_id if not self.boosting \
+                else self.boosting["objective_field"]
+            if self.boosting:
+                self.fields = {}
+                self.fields.update(models[0].fields)
+                del self.fields[models[0].objective_id]
         else:
             if models[0]['object']['boosted_ensemble']:
                 self.boosting = models[0]['object']['boosting']
-            if self.boosting:
-                self.objective_id = self.boosting['objective_field']
-            else:
-                self.objective_id = models[0]['object']['objective_field']
             if self.fields is None:
                 self.fields, _ = self.all_model_fields( \
                     max_models=max_models)
+            if self.boosting:
+                self.objective_id = self.boosting['objective_field']
+                del self.fields[models[0]['object']['objective_field']]
+            else:
+                self.objective_id = models[0]['object']['objective_field']
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be

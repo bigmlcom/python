@@ -3,6 +3,12 @@
 History
 -------
 
+
+4.9.0 (2017-03-21)
+~~~~~~~~~~~~~~~~~~
+
+- Adding boosted ensembles to the local Ensemble object.
+
 4.8.3 (2017-03-01)
 ~~~~~~~~~~~~~~~~~~
 

@@ -182,7 +182,7 @@ class Model(BaseModel):
                 model['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
-            if fields is not None and isintance(fields, dict):
+            if fields is not None and isinstance(fields, dict):
                 query_string = EXCLUDE_FIELDS
             else:
                 query_string = ONLY_MODEL

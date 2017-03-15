@@ -156,11 +156,29 @@ class Ensemble(object):
                         query_string=query_string,
                         no_check_fields=no_check_fields)
                               for model_id in self.models_splits[0]]
-            if self.boosting is None:
-                self._add_models_attrs(models, max_models)
+            model = models[0]
         else:
+            # only retrieving first model
             self.cache_get = cache_get
+            if not isinstance(models[0], Model):
+                if use_cache(cache_get):
+                    # retrieve the models from a cache get function
+                    try:
+                        model = cache_get(self.models_splits[0][0])
+                        self.cache_get = cache_get
+                    except Exception, exc:
+                        raise Exception('Error while calling the user-given'
+                                        ' function %s: %s' %
+                                        (cache_get.__name__, str(exc)))
+                else:
+                    model = retrieve_resource( \
+                        self.api,
+                        self.models_splits[0][0],
+                        query_string=query_string,
+                        no_check_fields=no_check_fields)
 
+        if self.boosting is None:
+            self._add_models_attrs(model, max_models)
         if self.fields is None:
             self.fields, self.objective_id = self.all_model_fields(
                 max_models=max_models)
@@ -170,31 +188,31 @@ class Ensemble(object):
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
 
-    def _add_models_attrs(self, models, max_models=None):
+    def _add_models_attrs(self, model, max_models=None):
         """ Adds the boosting and fields info when the ensemble is built from
             a list of models. They can be either Model objects
             or the model dictionary info structure.
 
         """
-        if isinstance(models[0], Model):
-            self.boosting = models[0].boosting
-            self.objective_id = models[0].objective_id if not self.boosting \
+        if isinstance(model, Model):
+            self.boosting = models.boosting
+            self.objective_id = models.objective_id if not self.boosting \
                 else self.boosting["objective_field"]
             if self.boosting:
                 self.fields = {}
-                self.fields.update(models[0].fields)
-                del self.fields[models[0].objective_id]
+                self.fields.update(model.fields)
+                del self.fields[model.objective_id]
         else:
-            if models[0]['object']['boosted_ensemble']:
-                self.boosting = models[0]['object']['boosting']
+            if model['object']['boosted_ensemble']:
+                self.boosting = model['object']['boosting']
             if self.fields is None:
                 self.fields, _ = self.all_model_fields( \
                     max_models=max_models)
             if self.boosting:
                 self.objective_id = self.boosting['objective_field']
-                del self.fields[models[0]['object']['objective_field']]
+                del self.fields[model['object']['objective_field']]
             else:
-                self.objective_id = models[0]['object']['objective_field']
+                self.objective_id = model['object']['objective_field']
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be
@@ -281,7 +299,6 @@ class Ensemble(object):
                        node as individual prediction for the specified
                        combination method.
         """
-
 
         if len(self.models_splits) > 1:
             # If there's more than one chunck of models, they must be

@@ -97,6 +97,7 @@ class Ensemble(object):
         self.cache_get = None
         self.regression = False
         self.fields = None
+        self.importance = {}
         query_string = ONLY_MODEL
         no_check_fields = False
         if isinstance(ensemble, list):
@@ -112,7 +113,7 @@ class Ensemble(object):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
-            self.distributions = None
+            self.distributions = []
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
@@ -121,7 +122,8 @@ class Ensemble(object):
             if ensemble['object'].get('type') == BOOSTING:
                 self.boosting = ensemble['object'].get('boosting')
             models = ensemble['object']['models']
-            self.distributions = ensemble['object'].get('distributions')
+            self.distributions = ensemble['object'].get('distributions', [])
+            self.importance = ensemble['object'].get('importance', {})
             self.model_ids = models
             # new ensembles have the fields structure
             if ensemble['object'].get('ensemble'):
@@ -376,6 +378,15 @@ class Ensemble(object):
         """
         field_importance = {}
         field_names = {}
+        if self.importance:
+            field_importance = self.importance
+            field_names = {field_id: {'name': self.fields[field_id]["name"] } \
+                           for field_id in field_importance.keys()}
+            print field_names
+            return [list(importance) for importance in \
+                sorted(field_importance.items(), key=lambda x: x[1],
+                       reverse=True)], field_names
+
         if (self.distributions is not None and
                 isinstance(self.distributions, list) and
                 all('importance' in item for item in self.distributions)):
@@ -423,6 +434,7 @@ class Ensemble(object):
         """
         ensemble_distribution = []
         categories = []
+        distribution = []
         for model_distribution in self.distributions:
             summary = model_distribution[distribution_type]
             if 'bins' in summary:
@@ -431,6 +443,8 @@ class Ensemble(object):
                 distribution = summary['counts']
             elif 'categories' in summary:
                 distribution = summary['categories']
+            else:
+                distribution = []
             for point, instances in distribution:
                 if point in categories:
                     ensemble_distribution[
@@ -447,15 +461,17 @@ class Ensemble(object):
         """
         distribution = self.get_data_distribution("training")
 
-        out.write(u"Data distribution:\n")
-        print_distribution(distribution, out=out)
-        out.write(u"\n\n")
+        if distribution:
+            out.write(u"Data distribution:\n")
+            print_distribution(distribution, out=out)
+            out.write(u"\n\n")
 
         predictions = self.get_data_distribution("predictions")
 
-        out.write(u"Predicted distribution:\n")
-        print_distribution(predictions, out=out)
-        out.write(u"\n\n")
+        if predictions:
+            out.write(u"Predicted distribution:\n")
+            print_distribution(predictions, out=out)
+            out.write(u"\n\n")
 
         out.write(u"Field importance:\n")
         self.print_importance(out=out)

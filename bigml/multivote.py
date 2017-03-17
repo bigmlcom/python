@@ -622,14 +622,20 @@ class MultiVote(object):
             "order": categories.index(key)} for
                        key, value in grouped_predictions.items()}
         predictions = softmax(predictions)
-        prediction, prediction_info = sorted( \
+        predictions = sorted( \
             predictions.items(), key=lambda(x): \
-            (- x[1]["probability"], x[1]["order"]))[0]
+            (- x[1]["probability"], x[1]["order"]))
+        prediction, prediction_info = predictions[0]
         confidence = prediction_info["probability"]
         if with_confidence:
             return prediction, confidence
         elif add_confidence:
-            return {"prediction": prediction, "confidence": confidence}
+            return {"prediction": prediction,
+                    "probability": confidence, \
+                "probabilities": [ \
+                    {"prediction": prediction,
+                     "probability": prediction_info["probability"]}
+                     for prediction, prediction_info in predictions]}
         else:
             return prediction
 

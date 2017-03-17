@@ -91,7 +91,8 @@ def the_centroid_is_ok(step):
 
 
 def the_confidence_is(step, confidence):
-    local_confidence = world.prediction['confidence']
+    local_confidence = world.prediction.get('confidence', \
+        world.prediction.get('probability'))
     assert_almost_equals(float(local_confidence),
                          float(confidence), 4)
 

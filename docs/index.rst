@@ -3411,18 +3411,69 @@ The only required argument to create an ensemble is the dataset id:
 
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972')
 
-but you can also specify the number of models to be built and the
-parallelism level for the task:
+BigML offers three kinds of ensembles. Two of them are known as ``Decision
+Forests`` because they are built as collections of ``Decision trees``
+whose predictions
+are aggregated using different combiners: ``plurality``,
+``confidence weighted``, ``probability weighted`` or setting a ``threshold``
+to issue the ensemble's
+prediction. All ``Decision Forests`` use bagging to sample the
+data used to build the underlying models.
+
+As an example of how to create a ``Decision Forest``
+with `20` models, you only need to provide the dataset ID that you want to
+build the ensemble from and the number of models:
 
 .. code-block:: python
 
-    args = {'number_of_models': 20, 'tlp': 3}
+    args = {'number_of_models': 20}
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
 
-``tlp`` (task-level parallelism) should be an integer between 1 and 5 (the
-number of models to be built in parallel). A higher ``tlp`` results in faster
-ensemble creation, but it will consume more credits. The default value for
-``number_of_models`` is 10 and for ``tlp`` is 1.
+If no ``number_of_models`` is provided, the ensemble will contain 10 models.
+
+``Random Decision Forests`` fall
+also into the ``Decision Forest`` category,
+but they also use a subset of the fields chosen
+at random at each split. To create this kind of ensemble, just use the
+``randomize`` option:
+
+.. code-block:: python
+
+    args = {'number_of_models': 20, 'randomize': True}
+    ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
+
+The third kind of ensemble is ``Boosted Trees``. This type of ensemble uses
+quite a different algorithm. The trees used in the ensemble don't have as
+objective field the one you want to predict, and they don't aggregate the
+underlying models' votes. Instead, the goal is adjusting the coefficients
+in a function, which will be used to predict. The
+models' objective is, therefore, the gradient
+that you need to improve the error
+between the real values and the function prediction. The process starts with
+some initial values and compute these gradients. Next step uses the previous
+fields plus the last computed gradient field as
+the new initial state for the next iteration.
+Finally, it stops when predictions
+match the
+expected results or iterations reach a user-defined limit.
+In classification problems, every category in the ensemble's objective field
+would be associated to a subset of the ``Boosted Trees``. The objective of
+each subset of trees
+would be adjustig the function to the probability of belonging
+to this particular category.
+
+In order to build
+an ensemble of ``Boosted Trees`` you need to provide the ``boosting``
+attributes. You can learn about the existing attributes in the `ensembles'
+section of the API documentation <https://bigml.com/api/ensembles#es_gradient_boosting>`_
+, but a typical attribute to be set would
+be the maximum number of iterations:
+
+.. code-block:: python
+
+    args = {'boosting': {'iterations': 20}}
+    ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
+
 
 Creating logistic regressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3746,7 +3797,8 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_execution(execution, {"name": "new name"})
 
 Updates can change resource general properties, such as the ``name`` or
-``description`` attributes of a dataset, or specific properties. As an example,
+``description`` attributes of a dataset, or specific properties, like
+the ``missing tokens`` (strings considered as missing values). As an example,
 let's say that your source has a certain field whose contents are
 numeric integers. BigML will assign a numeric type to the field, but you
 might want it to be used as a categorical field. You could change
@@ -3754,9 +3806,40 @@ its type to ``categorical`` by calling:
 
 .. code-block:: python
 
-    api.update_source(source, {"fields": {"000001": {"optype": "categorical"}}})
+    api.update_source(source, \
+        {"fields": {"000001": {"optype": "categorical"}}})
 
 where ``000001`` is the field id that corresponds to the updated field.
+
+Another usual update need is changing a fields' ``non-preferred`` attribute,
+so that it can be used in the modeling process:
+
+
+.. code-block:: python
+
+    api.update_dataset(dataset, {"fields": {"000001": {"preferred": True}}})
+
+where you would be setting as ``preferred`` the field whose id is ``000001``.
+
+You may also want to change the name of one of the clusters found in your
+clustering:
+
+
+.. code-block:: python
+
+    api.update_cluster(cluster, \
+        {"clusters": {"000001": {"name": "my cluster"}}})
+
+which is changing the name of the cluster whose centroid id is ``000001`` to
+``my_cluster``. Or, similarly, changing the name of one detected topic:
+
+
+.. code-block:: python
+
+    api.update_topic_model(topic_model, \
+        {"topics": {"000001": {"name": "my topic"}}})
+
+
 You will find detailed information about
 the updatable attributes of each resource in
 `BigML developer's documentation <https://bigml.com/api>`_.
@@ -4613,9 +4696,14 @@ predict locally is:
     ensemble.predict({"petal length": 3, "petal width": 1})
 
 This call will download all the ensemble related info and store it in a
-``./storage`` directory ready to be used to predict. As in
-``MultipleModel``, several prediction combination methods are available, and
-you can choose another storage directory or even avoid storing at all, for
+``./storage`` directory ready to be used to predict, but
+you can choose another storage directory or even avoid storing at all.
+
+The local ensemble object can be used to manage the
+three types of ensembles: ``Decision Forests`` (bagging or random) and
+the ones using ``Boosted Trees``. However, arguments like the predictions
+combiner (``method`` argument) will only apply to ``Decision Forests``. As in
+``MultipleModel``, several prediction combination methods are available, for
 instance:
 
 .. code-block:: python
@@ -4623,7 +4711,7 @@ instance:
     from bigml.api import BigML
     from bigml.ensemble import Ensemble
 
-    # api connection
+    # api connection using a user-selected storage
     api = BigML(storage='./my_storage')
 
     # creating ensemble
@@ -4711,10 +4799,13 @@ Local Ensemble's Predictions
 
 As in the local model's case, you can use the local ensemble to create
 new predictions for your test data, and set some arguments to configure
-the final output of the ``predict`` method. By default, it will
-issue just the ensemble's final prediction. You can add the confidence to it by
-setting
-the ``with_confidence`` argument to True.
+the final output of the ``predict`` method.
+
+The predictions' structure will vary depending on the kind of
+ensemble used. For ``Decision Forests`` local predictions will just contain
+the ensemble's final prediction if no other argument is used.
+You can add the confidence to it by
+setting the ``with_confidence`` argument to True.
 
 .. code-block:: python
 
@@ -4751,6 +4842,11 @@ And you can add more information to the predictions in a JSON format using:
      'confidence': 0.91519,
      'prediction': u'Iris-versicolor',
      'distribution_unit': 'counts'}
+
+However, ``Boosted Trees`` don't have an associated confidence measure, so
+only the prediction will be obtained when applied to regressions.
+In classifications, adding the ``add_confidence`` or ``with_confidence``
+argument will also provide the probability of the prediction.
 
 Fields
 ------
@@ -5117,7 +5213,8 @@ can also be retrieved in a CSV format using the method
 ``file_name`` argument or used as a list.
 
 Local ensembles have a ``local_ensemble.summarize()`` method too, the output
-in this case shows only the data distribution and field importance sections.
+in this case shows only the data distribution (only available in
+``Decision Forests``) and field importance sections.
 
 For local clusters, the ``local_cluster.summarize()`` method prints also the
 data distribution, the training data statistics per cluster and the basic

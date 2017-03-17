@@ -199,7 +199,8 @@ def the_local_prediction_confidence_is(step, confidence):
         isinstance(world.local_prediction, tuple)):
         local_confidence = world.local_prediction[1]
     else:
-        local_confidence = world.local_prediction['confidence']
+        local_confidence = world.local_prediction.get('confidence', \
+            world.local_prediction.get('probability'))
     local_confidence = round(float(local_confidence), 4)
     confidence = round(float(confidence), 4)
     eq_(local_confidence, confidence)

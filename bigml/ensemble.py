@@ -97,7 +97,7 @@ class Ensemble(object):
         self.cache_get = None
         self.regression = False
         self.fields = None
-        self.importance = {}
+        self.importance = []
         query_string = ONLY_MODEL
         no_check_fields = False
         if isinstance(ensemble, list):
@@ -113,7 +113,6 @@ class Ensemble(object):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
-            self.distributions = []
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
@@ -123,7 +122,7 @@ class Ensemble(object):
                 self.boosting = ensemble['object'].get('boosting')
             models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions', [])
-            self.importance = ensemble['object'].get('importance', {})
+            self.importance = ensemble['object'].get('importance', [])
             self.model_ids = models
             # new ensembles have the fields structure
             if ensemble['object'].get('ensemble'):
@@ -197,8 +196,8 @@ class Ensemble(object):
 
         """
         if isinstance(model, Model):
-            self.boosting = models.boosting
-            self.objective_id = models.objective_id if not self.boosting \
+            self.boosting = model.boosting
+            self.objective_id = model.objective_id if not self.boosting \
                 else self.boosting["objective_field"]
             if self.boosting:
                 self.fields = {}
@@ -382,7 +381,6 @@ class Ensemble(object):
             field_importance = self.importance
             field_names = {field_id: {'name': self.fields[field_id]["name"] } \
                            for field_id in field_importance.keys()}
-            print field_names
             return [list(importance) for importance in \
                 sorted(field_importance.items(), key=lambda x: x[1],
                        reverse=True)], field_names

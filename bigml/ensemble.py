@@ -257,7 +257,8 @@ class Ensemble(object):
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
                 add_min=False, add_max=False, add_unused_fields=False,
-                options=None, missing_strategy=LAST_PREDICTION, median=False):
+                options=None, missing_strategy=LAST_PREDICTION, median=False,
+                with_probability=False, add_probability=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
@@ -299,6 +300,12 @@ class Ensemble(object):
         :param median: Uses the median of each individual model's predicted
                        node as individual prediction for the specified
                        combination method.
+        :param with_probability: Adds the probability, distribution, and counts
+                                 information to the node prediction.
+                                 The result is given in a list format output.
+                                 (like with_confidence for Boosted Trees)
+        :param add_probability: Adds probability to the prediction (only
+                                available in Boosted Trees)
         """
 
         if len(self.models_splits) > 1:
@@ -352,8 +359,11 @@ class Ensemble(object):
                 d[0] for d in
                 self.fields[self.objective_id]["summary"]["categories"]]
             options = {"categories": categories}
-        result = votes.combine(method=method, with_confidence=with_confidence,
-                               add_confidence=add_confidence,
+        result = votes.combine(method=method,
+                               with_confidence=(with_confidence or
+                                                with_probability),
+                               add_confidence=(add_confidence or
+                                               add_probability),
                                add_distribution=add_distribution,
                                add_count=add_count,
                                add_median=add_median,

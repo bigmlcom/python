@@ -3414,8 +3414,8 @@ The only required argument to create an ensemble is the dataset id:
 BigML offers three kinds of ensembles. Two of them are known as ``Decision
 Forests`` because they are built as collections of ``Decision trees``
 whose predictions
-are aggregated using different combiners: ``plurality``,
-``confidence weighted``, ``probability weighted`` or setting a ``threshold``
+are aggregated using different combiners (``plurality``,
+``confidence weighted``, ``probability weighted``) or setting a ``threshold``
 to issue the ensemble's
 prediction. All ``Decision Forests`` use bagging to sample the
 data used to build the underlying models.
@@ -3433,7 +3433,7 @@ If no ``number_of_models`` is provided, the ensemble will contain 10 models.
 
 ``Random Decision Forests`` fall
 also into the ``Decision Forest`` category,
-but they also use a subset of the fields chosen
+but they only use a subset of the fields chosen
 at random at each split. To create this kind of ensemble, just use the
 ``randomize`` option:
 
@@ -3446,27 +3446,26 @@ The third kind of ensemble is ``Boosted Trees``. This type of ensemble uses
 quite a different algorithm. The trees used in the ensemble don't have as
 objective field the one you want to predict, and they don't aggregate the
 underlying models' votes. Instead, the goal is adjusting the coefficients
-in a function, which will be used to predict. The
-models' objective is, therefore, the gradient
-that you need to improve the error
-between the real values and the function prediction. The process starts with
-some initial values and compute these gradients. Next step uses the previous
+of a function that will be used to predict. The
+models' objective is, therefore, the gradient that minimizes the error
+of the predicting function (when comparing its output
+with the real values). The process starts with
+some initial values and computes these gradients. Next step uses the previous
 fields plus the last computed gradient field as
 the new initial state for the next iteration.
-Finally, it stops when predictions
-match the
-expected results or iterations reach a user-defined limit.
+Finally, it stops when the error is smaller than a certain threshold
+or iterations reach a user-defined limit.
 In classification problems, every category in the ensemble's objective field
-would be associated to a subset of the ``Boosted Trees``. The objective of
+would be associated with a subset of the ``Boosted Trees``. The objective of
 each subset of trees
-would be adjustig the function to the probability of belonging
+is adjustig the function to the probability of belonging
 to this particular category.
 
 In order to build
 an ensemble of ``Boosted Trees`` you need to provide the ``boosting``
 attributes. You can learn about the existing attributes in the `ensembles'
-section of the API documentation <https://bigml.com/api/ensembles#es_gradient_boosting>`_
-, but a typical attribute to be set would
+section of the API documentation <https://bigml.com/api/ensembles#es_gradient_boosting>`_,
+but a typical attribute to be set would
 be the maximum number of iterations:
 
 .. code-block:: python
@@ -3811,7 +3810,8 @@ its type to ``categorical`` by calling:
 
 where ``000001`` is the field id that corresponds to the updated field.
 
-Another usual update need is changing a fields' ``non-preferred`` attribute,
+Another usually needed update is changing a fields' ``non-preferred``
+attribute,
 so that it can be used in the modeling process:
 
 
@@ -4845,7 +4845,7 @@ And you can add more information to the predictions in a JSON format using:
 
 However, ``Boosted Trees`` don't have an associated confidence measure, so
 only the prediction will be obtained when applied to regressions.
-In classifications, adding the ``add_confidence`` or ``with_confidence``
+In classifications, adding the ``add_probability`` or ``with_probability``
 argument will also provide the probability of the prediction.
 
 Fields

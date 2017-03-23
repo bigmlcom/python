@@ -4167,7 +4167,8 @@ limited).
 
 Local clusters provide also methods for the significant operations that
 can be done using clusters: finding the centroid assigned to a certain data
-point, sorting centroids according to its distance to a data point, summarizing
+point, sorting centroids according to their distance to a data point,
+summarizing
 the centroids intra-distances and inter-distances and also finding the
 closest points to a given one. The `Local Centroids <#local-centroids>`_
 and the

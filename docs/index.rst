@@ -4169,8 +4169,9 @@ Local clusters provide also methods for the significant operations that
 can be done using clusters: finding the centroid assigned to a certain data
 point, sorting centroids according to its distance to a data point, summarizing
 the centroids intra-distances and inter-distances and also finding the
-closest points to a given one. The local-centroids_  and the
-Summary-generation_ sections will explain these methods.
+closest points to a given one. The `local-centroids<#local_centroids>`_
+and the
+`Summary generation<#summary-generation>`_ sections will explain these methods.
 
 Local Centroids
 ---------------

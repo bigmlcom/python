@@ -3,6 +3,12 @@
 History
 -------
 
+4.9.1 (2017-03-23)
+~~~~~~~~~~~~~~~~~~
+
+- Adding methods to local cluster: closest data points from a
+  reference point and centroids ordered from a reference point.
+- Modifying internal codes in MultiVote class.
 
 4.9.0 (2017-03-21)
 ~~~~~~~~~~~~~~~~~~

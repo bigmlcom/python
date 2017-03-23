@@ -24,6 +24,7 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
 import create_cluster_steps as cluster_create
+import compare_predictions_steps as prediction_compare
 
 class TestClusterDerived(object):
 
@@ -104,3 +105,40 @@ class TestClusterDerived(object):
             model_create.i_create_a_model_from_cluster(self, example[4])
             model_create.the_model_is_finished_in_less_than(self, example[5])
             model_create.is_associated_to_centroid_id(self, example[4])
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully getting the closest point in a cluster:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a cluster
+                And I wait until the cluster is ready less than <time_3> secs
+                And I create a local cluster
+                Then the data point in the cluster closest to "<reference>" is "<closest>"
+
+                Examples:
+                | data | time_1  | time_2 | time_3 | reference | closest |
+
+        """
+        print self.test_scenario3.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '40',
+             '{"petal length": 1.4, "petal width": 0.2,'
+             ' "sepal width": 3.0, "sepal length": 4.89,'
+             ' "species": "Iris-setosa"}',
+             '{"distance": 0.001894153207990619, "data":'
+             ' {"petal length": "1.4", "petal width": "0.2",'
+             ' "sepal width": "3.0", "sepal length": "4.9",'
+             ' "species": "Iris-setosa"}}']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            cluster_create.i_create_a_cluster(self)
+            cluster_create.the_cluster_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_cluster(self)
+            cluster_create.closest_in_cluster(self, example[4], example[5])

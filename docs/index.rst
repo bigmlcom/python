@@ -4165,6 +4165,13 @@ retrieval. This ensures that all fields are retrieved by the get method in the
 same call (unlike in the standard calls where the number of fields returned is
 limited).
 
+Local clusters provide also methods for the significant operations that
+can be done using clusters: finding the centroid assigned to a certain data
+point, sorting centroids according to its distance to a data point, summarizing
+the centroids intra-distances and inter-distances and also finding the
+closest points to a given one. The local-centroids_  and the
+Summary-generation_ sections will explain these methods.
+
 Local Centroids
 ---------------
 
@@ -4184,11 +4191,90 @@ an input data set:
 
 You must keep in mind, though, that to obtain a centroid prediction, input data
 must have values for all the numeric fields. No missing values for the numeric
-fields are allowed.
+fields are allowed unless you provided a ``default_numeric_value`` in the
+cluster construction configuration. If so, this value will be used to fill
+the missing numeric fields.
 
 As in the local model predictions, producing local centroids can be done
 independently of BigML servers, so no cost or connection latencies are
 involved.
+
+Another interesting method in the cluster object is
+``local_cluster.closests_in_cluster``, which given a reference data point
+will provide the rest of points that fall into the same cluster sorted
+in an ascending order according to their distance to this point. You can limit
+the maximum number of points returned by setting the ``number_of_points``
+argument to any positive integer.
+
+.. code-block:: python
+
+    local_cluster.closests_in_cluster( \
+        {"pregnancies": 0, "plasma glucose": 118,
+         "blood pressure": 84, "triceps skin thickness": 47,
+         "insulin": 230, "bmi": 45.8,
+         "diabetes pedigree": 0.551, "age": 31,
+         "diabetes": "true"}, number_of_points=2)
+
+The response will be a dictionary with the centroid id of the cluster an
+the list of closest points and their distances to the reference point.
+
+.. code-block:: python
+
+    {'closest': [ \
+        {'distance': 0.06912270988567025,
+         'data': {'plasma glucose': '115', 'blood pressure': '70',
+                  'triceps skin thickness': '30', 'pregnancies': '1',
+                  'bmi': '34.6', 'diabetes pedigree': '0.529',
+                  'insulin': '96', 'age': '32', 'diabetes': 'true'}},
+        {'distance': 0.10396456577958413,
+         'data': {'plasma glucose': '167', 'blood pressure': '74',
+         'triceps skin thickness': '17', 'pregnancies': '1', 'bmi': '23.4',
+         'diabetes pedigree': '0.447', 'insulin': '144', 'age': '33',
+         'diabetes': 'true'}}],
+    'reference': {'age': 31, 'bmi': 45.8, 'plasma glucose': 118,
+                  'insulin': 230, 'blood pressure': 84,
+                  'pregnancies': 0, 'triceps skin thickness': 47,
+                  'diabetes pedigree': 0.551, 'diabetes': 'true'},
+    'centroid_id': u'000000'}
+
+No missing numeric values are allowed either in the reference data point.
+If you want the data points to belong to a different cluster, you can
+provide the ``centroid_id`` for the cluster as an additional argument.
+
+Other utility methods are ``local_cluster.sorted_centroids`` which given
+a reference data point will provide the list of centroids sorted according
+to the distance to it
+
+.. code-block:: python
+
+    local_cluster.sorted_centroids( \
+    {'plasma glucose': '115', 'blood pressure': '70',
+     'triceps skin thickness': '30', 'pregnancies': '1',
+     'bmi': '34.6', 'diabetes pedigree': '0.529',
+     'insulin': '96', 'age': '32', 'diabetes': 'true'})
+    {'centroids': [{'distance': 0.31656890408929705,
+                    'data': {u'000006': 0.34571, u'000007': 30.7619,
+                             u'000000': 3.79592, u'000008': u'false'},
+                    'centroid_id': u'000000'},
+                   {'distance': 0.4424198506958207,
+                    'data': {u'000006': 0.77087, u'000007': 45.50943,
+                             u'000000': 5.90566, u'000008': u'true'},
+                    'centroid_id': u'000001'}],
+     'reference': {'age': '32', 'bmi': '34.6', 'plasma glucose': '115',
+                   'insulin': '96', 'blood pressure': '70',
+                   'pregnancies': '1', 'triceps skin thickness': '30',
+                   'diabetes pedigree': '0.529', 'diabetes': 'true'}}
+
+
+
+or ``points_in_cluster`` that returns the list of
+data points assigned to a certain cluster, given its ``centroid_id``.
+
+.. code-block:: python
+
+    centroid_id = "000000"
+    local_cluster.points_in_cluster(centroid_id)
+
 
 Local Anomaly Detector
 ----------------------

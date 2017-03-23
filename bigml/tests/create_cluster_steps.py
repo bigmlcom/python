@@ -20,6 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import eq_
 
 from read_cluster_steps import i_get_the_cluster
 
@@ -37,7 +38,7 @@ def i_create_a_cluster(step):
                   'cluster_seed': 'BigML',
                   'k': 8})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.cluster = resource['object']
     world.clusters.append(resource['resource'])
@@ -46,7 +47,7 @@ def i_create_a_cluster(step):
 def i_create_a_cluster_from_dataset_list(step):
     resource = world.api.create_cluster(world.dataset_ids)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.cluster = resource['object']
     world.clusters.append(resource['resource'])
@@ -62,7 +63,7 @@ def i_create_a_cluster_with_options(step, options):
     resource = world.api.create_cluster(
         dataset, options)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.cluster = resource['object']
     world.clusters.append(resource['resource'])
@@ -78,7 +79,7 @@ def wait_until_cluster_status_code_is(step, code1, code2, secs):
            assert datetime.utcnow() - start < timedelta(seconds=int(secs))
            i_get_the_cluster(step, world.cluster['resource'])
            status = get_status(world.cluster)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the cluster is ready less than (\d+)')
 def the_cluster_is_finished_in_less_than(step, secs):
@@ -101,7 +102,7 @@ def get_sharing_info(step):
 #@step(r'I check the cluster status using the model\'s shared url')
 def cluster_from_shared_url(step):
     world.cluster = world.api.get_cluster("shared/cluster/%s" % world.shared_hash)
-    assert get_status(world.cluster)['code'] == FINISHED
+    eq_(get_status(world.cluster)['code'], FINISHED)
 
 #@step(r'I check the cluster status using the model\'s shared key')
 def cluster_from_shared_key(step):
@@ -109,4 +110,14 @@ def cluster_from_shared_key(step):
     username = os.environ.get("BIGML_USERNAME")
     world.cluster = world.api.get_cluster(world.cluster['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
-    assert get_status(world.cluster)['code'] == FINISHED
+    eq_(get_status(world.cluster)['code'], FINISHED)
+
+#@step(r'the data point in the cluster closest to "(.*)" is "(.*)"')
+def closest_in_cluster(step, reference, closest):
+    local_cluster = world.local_cluster
+    reference = json.loads(reference)
+    closest = json.loads(closest)
+    result = local_cluster.closest_in_cluster( \
+        reference, number_of_points=1)["closest"][0]
+    result = json.loads(json.dumps(result))
+    eq_(closest, result)

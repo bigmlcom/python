@@ -32,7 +32,8 @@ PLURALITY_CODE = 0
 CONFIDENCE_CODE = 1
 PROBABILITY_CODE = 2
 THRESHOLD_CODE = 3
-BOOSTING_CODE = 4
+# negative combiner codes are meant for internal use only
+BOOSTING_CODE = -1
 
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']

@@ -43,6 +43,7 @@ import logging
 import sys
 import math
 import re
+import csv
 
 from bigml.api import FINISHED
 from bigml.api import BigML, get_cluster_id, get_status
@@ -139,6 +140,8 @@ class Cluster(ModelFields):
         self.term_analysis = {}
         self.item_analysis = {}
         self.items = {}
+        self.datasets = {}
+        self.api = api
 
         # checks whether the information needed for local predictions is in
         # the first argument
@@ -153,6 +156,7 @@ class Cluster(ModelFields):
                 cluster['resource'] is not None):
             if api is None:
                 api = BigML(storage=STORAGE)
+                self.api = api
             self.resource_id = get_cluster_id(cluster)
             if self.resource_id is None:
                 raise Exception(api.error_message(cluster,
@@ -172,6 +176,7 @@ class Cluster(ModelFields):
                 self.default_numeric_value = cluster.get( \
                     "default_numeric_value")
                 self.summary_fields = cluster.get("summary_fields", [])
+                self.datasets = cluster.get("cluster_datasets", {})
                 the_clusters = cluster['clusters']
                 cluster_global = the_clusters.get('global')
                 clusters = the_clusters['clusters']
@@ -237,22 +242,8 @@ class Cluster(ModelFields):
         """Returns the id of the nearest centroid
 
         """
-        # Checks and cleans input_data leaving the fields used in the model
-        clean_input_data = self.filter_input_data(input_data, by_name=by_name)
-
-        # Checks that all numeric fields are present in input data and
-        # fills them with the default average (if given) when otherwise
-        try:
-            self.fill_numeric_defaults(clean_input_data,
-                                       self.default_numeric_value)
-        except ValueError:
-            raise Exception("Failed to predict a centroid. Input"
-                            " data must contain values for all "
-                            "numeric fields to find a centroid.")
-        # Strips affixes for numeric values and casts to the final field type
-        cast(clean_input_data, self.fields)
-
-        unique_terms = self.get_unique_terms(clean_input_data)
+        clean_input_data, unique_terms = self._prepare_for_distance( \
+            input_data, by_name=by_name)
         nearest = {'centroid_id': None, 'centroid_name': None,
                    'distance': float('inf')}
         for centroid in self.centroids:
@@ -371,6 +362,137 @@ class Cluster(ModelFields):
         for measure, _ in INTERCENTROID_MEASURES:
             intercentroid_distance.append([measure, 'N/A'])
         return intercentroid_distance
+
+    def _prepare_for_distance(self, input_data, by_name=True):
+        """Prepares the fields to be able to compute the distance2
+
+        """
+        # Checks and cleans input_data leaving the fields used in the model
+        clean_input_data = self.filter_input_data(input_data, by_name=by_name)
+
+        # Checks that all numeric fields are present in input data and
+        # fills them with the default average (if given) when otherwise
+        try:
+            self.fill_numeric_defaults(clean_input_data,
+                                       self.default_numeric_value)
+        except ValueError:
+            raise Exception("Missing values in input data. Input"
+                            " data must contain values for all "
+                            "numeric fields to compute a distance.")
+        # Strips affixes for numeric values and casts to the final field type
+        cast(clean_input_data, self.fields)
+
+        unique_terms = self.get_unique_terms(clean_input_data)
+
+        return clean_input_data, unique_terms
+
+    def distances2_to_point(self, reference_point,
+                            list_of_points, by_name=True):
+        """Computes the cluster square of the distance to an arbitrary
+        reference point for a list of points.
+        reference_point: (dict) The field values for the point used as
+                                reference
+        list_of_points: (dict|Centroid) The field values or a Centroid object
+                                        which contains these values
+        by_name: (boolean) Set if the dict information is keyed by field name.
+                           Expects IDs as keys otherwise.
+
+        """
+        # Checks and cleans input_data leaving the fields used in the model
+        reference_point, _ = self._prepare_for_distance( \
+            reference_point, by_name=by_name)
+        # mimic centroid structure to use it in distance computation
+        point_info = {"center": reference_point}
+        reference = Centroid(point_info)
+        distances = []
+        for point in list_of_points:
+            centroid_id = None
+            if isinstance(point, Centroid):
+                centroid_id = point.centroid_id
+                point = point.center
+                by_name = False
+            clean_point, unique_terms = self._prepare_for_distance( \
+                point, by_name=by_name)
+            if clean_point != reference_point:
+                result = {"data": point, "distance": reference.distance2( \
+                    clean_point, unique_terms, self.scales)}
+                if centroid_id is not None:
+                    result.update({"centroid_id": centroid_id})
+                distances.append(result)
+        return distances
+
+    def points_in_cluster(self, centroid_id):
+        """Returns the list of data points that fall in one cluster.
+
+        """
+
+        cluster_datasets = self.datasets
+        centroid_dataset = cluster_datasets.get(centroid_id)
+        if self.api is None:
+            self.api = BigML(storage=STORAGE)
+        if centroid_dataset in [None, ""]:
+            centroid_dataset = self.api.create_dataset( \
+                self.resource_id, {"centroid": centroid_id})
+            self.api.ok(centroid_dataset)
+        else:
+            centroid_dataset = self.api.check_resource( \
+                "dataset/%s" % centroid_dataset)
+        # download dataset to compute local predictions
+        downloaded_data = self.api.download_dataset( \
+            centroid_dataset["resource"])
+        reader = csv.DictReader(downloaded_data)
+        points = []
+        for row in reader:
+            points.append(row)
+        return points
+
+    def closest_in_cluster(self, reference_point,
+                           number_of_points=None,
+                           centroid_id=None,
+                           by_name=True):
+        """Computes the list of data points closer to a reference point.
+        If no centroid_id information is provided, the points are chosen
+        from the same cluster as the reference point.
+        The points are returned in a list, sorted according
+        to their distance to the reference point. The number_of_points
+        parameter can be set to truncate the list to a maximum number of
+        results. The response is a dictionary that contains the
+        centroid id of the cluster plus the list of points
+        """
+        if centroid_id is not None and centroid_id not in \
+                [centroid.centroid_id for centroid in self.centroids]:
+            raise AttributeError( \
+                "Failed to find the provided centroid_id: %s" % centroid_id)
+        if centroid_id is None:
+            # finding the reference point cluster's centroid
+            centroid_info = self.centroid(reference_point, by_name=True)
+            centroid_id = centroid_info["centroid_id"]
+        # reading the points that fall in the same cluster
+        points = self.points_in_cluster(centroid_id)
+        # computing distance to reference point
+        points = self.distances2_to_point(reference_point, points)
+        points = sorted(points, key=lambda x: x["distance"])
+        if number_of_points is not None:
+            points = points[:number_of_points]
+        for point in points:
+            point["distance"] = math.sqrt(point["distance"])
+        return {"centroid_id": centroid_id, "reference": reference_point,
+                "closest": points}
+
+    def sorted_centroids(self, reference_point, by_name=True):
+        """ Gives the list of centroids sorted according to its distance to
+        an arbitrary reference point.
+
+        """
+        close_centroids = self.distances2_to_point( \
+            reference_point, self.centroids, by_name=by_name)
+        for centroid in close_centroids:
+            centroid["distance"] = math.sqrt(centroid["distance"])
+            centroid["center"] = centroid["data"]
+            del centroid["data"]
+        return {"reference": reference_point,
+                "centroids": sorted(close_centroids,
+                                    key=lambda x: x["distance"])}
 
     def centroid_features(self, centroid, field_ids):
         """Returns features defining the centroid according to the list

@@ -3,12 +3,10 @@ python:
   - "2.7"
   - "3.6"
 env:
-  - BML_TESTS="01 02 03"
-  - BML_TESTS="04"
   - BML_TESTS="05"
-  - BML_TESTS="06"
-  - BML_TESTS="07 08 09 10 11 12 13 14 15 16 17 18 19 20 21"
-  - BML_TESTS="22 23 24 22 25 26 27 28 29 30 31 32"
+  - BML_TESTS="01 02 03 04 06 07 08 09 10 11 12"
+  - BML_TESTS="13 14 15 16 17 18 19 20 21 22 23"
+  - BML_TESTS="24 25 26 27 28 29 30 31 32"
 install:
   - python setup.py develop
 script:

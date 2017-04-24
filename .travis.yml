@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.7"
+  - "3.6"
+env:
+  - BML_TESTS="01 02 03 04 05 06"
+  - BML_TESTS="07 08 09 10 11 12"
+  - BML_TESTS="13 14 15 16 17 18"
+  - BML_TESTS="19 20 21 22 23 24"
+  - BML_TESTS="25 26 27 28 29 30 31 32"
+install:
+  - python setup.py develop
+script:
+  - export TESTS=$(for t in $BML_TESTS; do ls bigml/tests/*$t*;done|paste -sd ",")
+  - echo $TESTS
+  - python setup.py nosetests --tests=$TESTS

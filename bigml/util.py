@@ -126,8 +126,11 @@ def slugify(name, reserved_keywords=None, prefix=''):
     """
     name = unidecode.unidecode(name).lower()
     name = re.sub(r'\W+', '_', name)
-    if name[0].isdigit():
-        name = "field_" + name
+    try:
+        if name[0].isdigit():
+            name = "field_" + name
+    except IndexError:
+        name = "unnamed_field"
     if reserved_keywords:
         if name in reserved_keywords:
             name = prefix + name

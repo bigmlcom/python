@@ -3,6 +3,11 @@
 History
 -------
 
+4.9.2 (2017-03-26)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: local model slugifying fails when fields have empty names.
+
 4.9.1 (2017-03-23)
 ~~~~~~~~~~~~~~~~~~
 

@@ -305,8 +305,6 @@ def the_local_topic_distribution_is(step, distribution):
 #@step(r'the association set is like file "(.*)"')
 def the_association_set_is_like_file(step, filename):
     filename = res_filename(filename)
-    from pprint import pprint
-    pprint(world.association_set)
     result = world.association_set.get("association_set",{}).get("result", [])
     """ Uncomment if different text settings are used
     with open(filename, "w") as filehandler:

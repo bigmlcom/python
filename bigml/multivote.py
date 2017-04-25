@@ -34,6 +34,9 @@ PROBABILITY_CODE = 2
 THRESHOLD_CODE = 3
 # negative combiner codes are meant for internal use only
 BOOSTING_CODE = -1
+# note that -2 and -3 codes are also used in BigMLer
+# COMBINATION = -2
+# AGGREGATION = -3
 
 PREDICTION_HEADERS = ['prediction', 'confidence', 'order', 'distribution',
                       'count']

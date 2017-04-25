@@ -199,7 +199,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/iris_missing2.csv', '10', '10', '10', '{"petal width": 1}', '000004', 'Iris-setosa', '0.8064'],
             ['data/iris_missing2.csv', '10', '10', '10', '{"petal width": 1, "petal length": 4}', '000004', 'Iris-versicolor', '0.7847']]
-        show_doc(self.test_scenario6, examples)
+        show_doc(self.test_scenario4, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -241,7 +241,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-setosa'],
             ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-versicolor'],
             ['data/price.csv', '10', '10', '50', '{"Price": 1200}', 'Product1']]
-        show_doc(self.test_scenario8, examples)
+        show_doc(self.test_scenario5, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -286,7 +286,7 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": false, "stem_words": true, "use_stopwords": true, "language": "en"}}}}', '{"Message": "A normal message"}', 'ham'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "FREE for 1st week! No1 Nokia tone 4 ur mob every week just txt NOKIA to 87077 Get txting and tell ur mates. zed POBox 36504 W45WQ norm150p/tone 16+"}', 'ham'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "Ok"}', 'ham']]
-        show_doc(self.test_scenario9, examples)
+        show_doc(self.test_scenario6, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -328,7 +328,7 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '180', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169, "000000"],
             ['data/spam.csv', '20', '20', '180', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'ham', 0.815, "000000"],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Under 18', '0.8393', '000002']]
-        show_doc(self.test_scenario10, examples)
+        show_doc(self.test_scenario7, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -368,7 +368,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/text_missing.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}, "000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{}', "000003",'swap'],
             ['data/text_missing.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}, "000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"category1": "a"}', "000003",'paperwork']]
-        show_doc(self.test_scenario11, examples)
+        show_doc(self.test_scenario8, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -409,7 +409,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
             ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
             ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0417, "000000", '{"bias": false}']]
-        show_doc(self.test_scenario12, examples)
+        show_doc(self.test_scenario9, examples)
 
         for example in examples:
             print "\nTesting with:\n", example
@@ -452,7 +452,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/iris_unbalanced.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.25284'],
             ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.7575']]
-        show_doc(self.test_scenario13, examples)
+        show_doc(self.test_scenario10, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -528,7 +528,7 @@ class TestComparePrediction(object):
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
                                                   '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2622, "000009", '{"balance_fields": true, "normalize": true}']]
-        show_doc(self.test_scenario14, examples)
+        show_doc(self.test_scenario11, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -570,7 +570,7 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/constant_field.csv', '10', '10', '50', '10','{"a": 1, "b": 1, "c": 1}', 'a', '{"fields": {"000000": {"preferred": true}}}']]
-        show_doc(self.test_scenario19, examples)
+        show_doc(self.test_scenario12, examples)
 
         for example in examples:
             print "\nTesting with:\n", example

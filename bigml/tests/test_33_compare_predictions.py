@@ -46,7 +46,7 @@ class TestComparePrediction(object):
         """
         print "\nEnd of tests in: %s\n-------------------\n" % __name__
 
-    def test_scenario4(self):
+    def test_scenario1(self):
         """
             Scenario: Successfully comparing centroids with or without text options:
                 Given I create a data source uploading a "<data>" file
@@ -80,7 +80,7 @@ class TestComparePrediction(object):
             ['data/diabetes.csv', '20', '20', '30', '{"fields": {}}', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": true}', 'Cluster 3', '0.5033378686559257'],
             ['data/iris_sp_chars.csv', '20', '20', '30', '{"fields": {}}', '{"pétal.length":1, "pétal&width\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}', 'Cluster 7', '0.8752380218327035'],
             ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "age_range": "18-24", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Cluster 1', '0.7294650227133437']]
-        show_doc(self.test_scenario4, examples)
+        show_doc(self.test_scenario1, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -96,7 +96,7 @@ class TestComparePrediction(object):
             prediction_compare.i_create_a_local_centroid(self, example[5])
             prediction_compare.the_local_centroid_is(self, example[6], example[7])
 
-    def test_scenario5(self):
+    def test_scenario2(self):
         """
             Scenario: Successfully comparing centroids with configuration options:
                 Given I create a data source uploading a "<data>" file
@@ -117,7 +117,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 2', '1.16436', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}'],
             ['data/iris.csv', '20', '20', '30', '{"default_numeric_value": "zero"}', '{"petal length": 1}', 'Cluster 4', '1.41215', '{"petal length": 1, "petal width": 0, "sepal length": 0, "sepal width": 0, "species": ""}']]
-        show_doc(self.test_scenario5, examples)
+        show_doc(self.test_scenario2, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -133,7 +133,7 @@ class TestComparePrediction(object):
             prediction_compare.the_local_centroid_is(self, example[6], example[7])
 
 
-    def test_scenario7(self):
+    def test_scenario3(self):
         """
             Scenario: Successfully comparing scores from anomaly detectors:
                 Given I create a data source uploading a "<data>" file
@@ -154,7 +154,7 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/tiny_kdd.csv', '20', '20', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802']]
-        show_doc(self.test_scenario7, examples)
+        show_doc(self.test_scenario3, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -170,7 +170,7 @@ class TestComparePrediction(object):
             prediction_compare.the_local_anomaly_score_is(self, example[5])
 
 
-    def test_scenario15(self):
+    def test_scenario4(self):
         """
             Scenario: Successfully comparing topic distributions:
                 Given I create a data source uploading a "<data>" file
@@ -193,7 +193,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.01878, 0.00388, 0.00388, 0.00388, 0.20313, 0.47315, 0.00574, 0.05695, 0.00388, 0.19382, 0.00388, 0.02902]'],
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Go until jurong point, crazy.. Available only in bugis n great world la e buffet... Cine there got amore wat..."}', '[0.00263, 0.01083, 0.00831, 0.06004, 0.33701, 0.00263, 0.01209, 0.44553, 0.0531, 0.00326, 0.06193, 0.00263]']]
-        show_doc(self.test_scenario15, examples)
+        show_doc(self.test_scenario4, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -210,7 +210,7 @@ class TestComparePrediction(object):
             prediction_compare.the_topic_distribution_is(self, example[6])
 
 
-    def test_scenario16(self):
+    def test_scenario5(self):
         """
             Scenario: Successfully comparing association sets:
                 Given I create a data source uploading a "<data>" file
@@ -229,7 +229,7 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/groceries.csv', '20', '20', '30', '{"fields": {"00000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', 'data/associations/association_set.json', '{"field1": "cat food"}']]
-        show_doc(self.test_scenario16, examples)
+        show_doc(self.test_scenario5, examples)
 
         for example in examples:
             print "\nTesting with:\n", example
@@ -247,7 +247,7 @@ class TestComparePrediction(object):
             prediction_compare.the_local_association_set_is_like_file(self, example[5])
 
 
-    def test_scenario17(self):
+    def test_scenario6(self):
         """
             Scenario: Successfully comparing predictions for ensembles:
                 Given I create a data source uploading a "<data>" file
@@ -275,7 +275,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '120', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
             ['data/iris.csv', '10', '10', '120', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '120', '{"Midterm": 20}', '000005', 57.6555, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
-        show_doc(self.test_scenario17, examples)
+        show_doc(self.test_scenario6, examples)
 
         for example in examples:
             print "\nTesting with:\n", example
@@ -292,7 +292,7 @@ class TestComparePrediction(object):
             prediction_compare.the_local_prediction_is(self, example[6])
 
 
-    def test_scenario18(self):
+    def test_scenario7(self):
         """
             Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
                 Given I create a data source uploading a "<data>" file
@@ -319,7 +319,7 @@ class TestComparePrediction(object):
             ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}']]
-        show_doc(self.test_scenario18, examples)
+        show_doc(self.test_scenario7, examples)
 
         for example in examples:
             print "\nTesting with:\n", example

@@ -175,7 +175,6 @@ def i_create_a_batch_prediction_from_a_multi_model(step, data=None):
     world.local_prediction = world.local_model.batch_predict(data,
                                                              to_file=False)
 
-
 #@step(r'the predictions are "(.*)"')
 def the_batch_mm_predictions_are(step, predictions):
     if predictions is None:
@@ -226,8 +225,16 @@ def the_local_prediction_is(step, prediction):
         local_model = world.local_ensemble
         if local_model.regression:
             assert_almost_equal(local_prediction, float(prediction), places=5)
+
     eq_(local_prediction, prediction)
 
+#@step(r'the local probabilities are "(.*)"')
+def the_local_probabilities_are(step, prediction):
+    local_probabilities = world.local_probabilities
+    expected_probabilities = [float(p) for p in json.loads(prediction)]
+
+    for local, expected in zip(local_probabilities, expected_probabilities):
+        assert_almost_equal(local, expected, places=4)
 
 #@step(r'the local ensemble prediction is "(.*)"')
 def the_local_ensemble_prediction_is(step, prediction):
@@ -243,7 +250,6 @@ def the_local_ensemble_prediction_is(step, prediction):
         assert_almost_equal(local_prediction, float(prediction), places=5)
     else:
         eq_(local_prediction, prediction)
-
 
 #@step(r'the local probability is "(.*)"')
 def the_local_probability_is(step, probability):

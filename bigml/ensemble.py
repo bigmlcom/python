@@ -47,7 +47,7 @@ from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE
+from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 
@@ -97,6 +97,7 @@ class Ensemble(object):
         self.cache_get = None
         self.regression = False
         self.fields = None
+        self.class_names = None
         self.importance = []
         query_string = ONLY_MODEL
         no_check_fields = False
@@ -113,6 +114,7 @@ class Ensemble(object):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
+
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
@@ -158,6 +160,7 @@ class Ensemble(object):
                         no_check_fields=no_check_fields)
                               for model_id in self.models_splits[0]]
             model = models[0]
+
         else:
             # only retrieving first model
             self.cache_get = cache_get
@@ -178,16 +181,39 @@ class Ensemble(object):
                         query_string=query_string,
                         no_check_fields=no_check_fields)
 
+                models = [model]
+
+        if self.distributions is None:
+            try:
+                self.distributions = [{'training': {'categories': m.tree.distribution}}
+                                      for m in models]
+            except:
+                self.distributions = [m['object']['model']['distribution']
+                                      for m in models]
+
         if self.boosting is None:
             self._add_models_attrs(model, max_models)
+
         if self.fields is None:
             self.fields, self.objective_id = self.all_model_fields(
                 max_models=max_models)
-        if len(self.models_splits) == 1:
-            self.multi_model = MultiModel(models, self.api, fields=self.fields)
 
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
+
+        if not self.regression and self.boosting is None:
+            classes = set()
+            for d in self.distributions:
+                for c in d['training']['categories']:
+                    classes.add(c[0])
+
+            self.class_names = sorted(classes)
+
+        if len(self.models_splits) == 1:
+            self.multi_model = MultiModel(models,
+                                          self.api,
+                                          fields=self.fields,
+                                          class_names=self.class_names)
 
     def _add_models_attrs(self, model, max_models=None):
         """ Adds the boosting and fields info when the ensemble is built from
@@ -199,6 +225,7 @@ class Ensemble(object):
             self.boosting = model.boosting
             self.objective_id = model.objective_id if not self.boosting \
                 else self.boosting["objective_field"]
+
             if self.boosting:
                 self.fields = {}
                 self.fields.update(model.fields)
@@ -253,12 +280,37 @@ class Ensemble(object):
         """
         return self.model_ids
 
+    def predict_probability(self, input_data, method=PROBABILITY_CODE,
+                            missing_strategy=LAST_PREDICTION):
+
+        if self.regression:
+            output = [self.predict(input_data,
+                                   method=method,
+                                   missing_strategy=missing_strategy)]
+        elif self.boosting is not None:
+            probabilities = self.predict(input_data,
+                                         method=method,
+                                         missing_strategy=missing_strategy,
+                                         add_probability=True)['probabilities']
+
+            probabilities.sort(key=lambda x: x['prediction'])
+            output = [p['probability'] for p in probabilities]
+        else:
+            output = self.predict(input_data,
+                                  method=method,
+                                  missing_strategy=missing_strategy,
+                                  probabilities_only=True)
+
+
+        return output
+
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
                 add_min=False, add_max=False, add_unused_fields=False,
                 options=None, missing_strategy=LAST_PREDICTION, median=False,
-                with_probability=False, add_probability=False):
+                with_probability=False, add_probability=False,
+                probabilities_only=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
@@ -309,9 +361,12 @@ class Ensemble(object):
         """
 
         if len(self.models_splits) > 1:
-            # If there's more than one chunck of models, they must be
+            # If there's more than one chunk of models, they must be
             # sequentially used to generate the votes for the prediction
-            votes = MultiVote([], boosting=self.boosting is not None)
+            votes = MultiVote([],
+                              boosting=self.boosting is not None,
+                              probabilities=probabilities_only)
+
             for models_split in self.models_splits:
                 if not isinstance(models_split[0], Model):
                     if (self.cache_get is not None and
@@ -330,14 +385,19 @@ class Ensemble(object):
                         models = [retrieve_resource(self.api, model_id,
                                                     query_string=ONLY_MODEL)
                                   for model_id in models_split]
-                multi_model = MultiModel(models, api=self.api,
-                                         fields=self.fields)
+
+                multi_model = MultiModel(models,
+                                         api=self.api,
+                                         fields=self.fields,
+                                         names=self.class_names)
+
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
                     add_median=(add_median or median),
                     add_min=add_min, add_max=add_max,
-                    add_unused_fields=add_unused_fields)
+                    add_unused_fields=add_unused_fields,
+                    method=method, probabilities_only=probabilities_only)
                 if median:
                     for prediction in votes_split.predictions:
                         prediction['prediction'] = prediction['median']
@@ -348,9 +408,12 @@ class Ensemble(object):
             votes_split = self.multi_model.generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
                 add_median=(add_median or median), add_min=add_min,
-                add_max=add_max, add_unused_fields=add_unused_fields)
+                add_max=add_max, add_unused_fields=add_unused_fields,
+                method=method, probabilities_only=probabilities_only)
+
             votes = MultiVote(votes_split.predictions,
-                              boosting=self.boosting is not None)
+                              boosting=self.boosting is not None,
+                              probabilities=probabilities_only)
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']
@@ -359,6 +422,7 @@ class Ensemble(object):
                 d[0] for d in
                 self.fields[self.objective_id]["summary"]["categories"]]
             options = {"categories": categories}
+
         result = votes.combine(method=method,
                                with_confidence=(with_confidence or
                                                 with_probability),
@@ -378,6 +442,7 @@ class Ensemble(object):
             if not isinstance(result, dict):
                 result = {"prediction": result}
             result['unused_fields'] = list(unused_fields)
+
         return result
 
     def field_importance_data(self):

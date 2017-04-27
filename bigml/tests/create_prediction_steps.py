@@ -144,14 +144,15 @@ def create_local_ensemble_prediction_add_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
         json.loads(input_data), add_confidence=True)
 
-
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
 
-
 def create_local_ensemble_prediction_with_confidence(step, input_data):
-    world.local_prediction = world.local_ensemble.predict(
+    world.local_prediction = world.local_ensemble.predict( \
         json.loads(input_data), with_confidence=True)
+
+    world.local_probabilities = world.local_ensemble.predict_probability( \
+        json.loads(input_data))
 
 def create_local_ensemble_proportional_prediction_with_confidence( \
     step, input_data):

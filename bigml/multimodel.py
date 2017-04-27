@@ -44,7 +44,7 @@ from bigml.model import Model
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE
+from bigml.multivote import PLURALITY_CODE, CONFIDENCE_CODE, PROBABILITY_CODE
 from bigml.io import UnicodeWriter, UnicodeReader
 
 
@@ -101,8 +101,10 @@ class MultiModel(object):
 
     """
 
-    def __init__(self, models, api=None, fields=None):
+    def __init__(self, models, api=None, fields=None, class_names=None):
         self.models = []
+        self.class_names = class_names
+
         if isinstance(models, list):
             if all([isinstance(model, Model) for model in models]):
                 self.models = models
@@ -138,7 +140,7 @@ class MultiModel(object):
               2 - probability weighted majority vote / average:
                   PROBABILITY_CODE
               3 - threshold filtered vote / doesn't apply:
-                  THRESHOLD_COD
+                  THRESHOLD_CODE
         """
 
         votes = self.generate_votes(input_data, by_name=by_name,
@@ -168,31 +170,46 @@ class MultiModel(object):
     def generate_votes(self, input_data, by_name=True,
                        missing_strategy=LAST_PREDICTION,
                        add_median=False, add_min=False, add_max=False,
-                       add_unused_fields=False):
+                       add_unused_fields=False, probabilities_only=False,
+                       method=PROBABILITY_CODE):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
         votes = MultiVote([])
         for order in range(0, len(self.models)):
             model = self.models[order]
-            prediction_info = model.predict( \
-                input_data, by_name=by_name,
-                add_confidence=True,
-                add_distribution=True,
-                add_count=True,
-                add_median=add_median,
-                add_min=add_min,
-                add_max=add_max,
-                add_unused_fields=add_unused_fields,
-                missing_strategy=missing_strategy)
-            if model.boosting is not None:
-                votes.boosting = True
-                prediction_info.update( \
-                    {"weight": model.boosting.get("weight")})
-                if model.boosting.get("objective_class") is not None:
+            model.class_names = self.class_names
+            if probabilities_only and not model.boosting:
+                votes.probabilities = True
+
+                try:
+                    prediction_info = model.predict_probability(
+                        input_data,
+                        method=method,
+                        missing_strategy=missing_strategy)
+                except KeyError:
+                    prediction_info = model.predict_probability(input_data)
+            else:
+                prediction_info = model.predict( \
+                    input_data, by_name=by_name,
+                    add_confidence=True,
+                    add_distribution=True,
+                    add_count=True,
+                    add_median=add_median,
+                    add_min=add_min,
+                    add_max=add_max,
+                    add_unused_fields=add_unused_fields,
+                    missing_strategy=missing_strategy)
+                if model.boosting is not None:
+                    votes.boosting = True
                     prediction_info.update( \
-                        {"class": model.boosting.get("objective_class")})
+                        {"weight": model.boosting.get("weight")})
+                    if model.boosting.get("objective_class") is not None:
+                        prediction_info.update( \
+                            {"class": model.boosting.get("objective_class")})
+
             votes.append(prediction_info)
+
         return votes
 
     def batch_predict(self, input_data_list, output_file_path=None,

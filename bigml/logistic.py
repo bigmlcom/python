@@ -238,6 +238,15 @@ class LogisticRegression(ModelFields):
                             logistic_regression)
 
     def predict_probability(self, input_data):
+        """Predicts a probabilistic "score" for each possible output class,
+        based on input values.  The input fields must be a dictionary
+        keyed by field name.  For classifications, the output is a
+        list with one floating point element for each possible class,
+        ordered in sorted class-name ordering.
+
+        :param input_data: Input data to be predicted
+
+        """
         distribution = self.predict(input_data)['distribution']
         distribution.sort(key=lambda x: x['category'])
 

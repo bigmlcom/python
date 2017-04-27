@@ -54,14 +54,15 @@ class TestEnsemblePrediction(object):
                 When I create a local ensemble prediction with confidence for "<data_input>"
                 Then the local prediction is "<prediction>"
                 And the local prediction's confidence is "<confidence>"
+                And the local probabilities are "<probabilities>"
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  | confidence
-                | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687
+                | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687 | [0.3403, 0.4150, 0.2447]
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.3687']]
+            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.3687', '["0.3403", "0.4150", "0.2447"]' ]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -74,6 +75,7 @@ class TestEnsemblePrediction(object):
             prediction_create.create_local_ensemble_prediction_with_confidence(self, example[6])
             compare_pred.the_local_prediction_is(self, example[7])
             compare_pred.the_local_prediction_confidence_is(self, example[8])
+            compare_pred.the_local_probabilities_are(self, example[9])
 
     def test_scenario2(self):
         """

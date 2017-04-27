@@ -283,6 +283,32 @@ class Ensemble(object):
     def predict_probability(self, input_data, method=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION):
 
+        """For classification problems, Predicts a probabilistic "score" for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name.  For
+        classifications, the output is a list with one floating point
+        element for each possible class, ordered in sorted class-name
+        ordering.
+
+        For regressions, the output is a single element vector
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param method: numeric key code indicating how the scores
+                       should be produced:
+              0 - majority vote - The sum of models predicting a given class
+                  divided by the total number of models
+                  PLURALITY_CODE
+              1 - Scores estimated from the class confidence at the leaves
+                  of each of the constituient models.
+                  CONFIDENCE_CODE
+              2 - Average Lapalace-smoothed probabilitiy of all models'
+                  leaf node distributions:
+                  PROBABILITY_CODE
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                                 missing fields
+
+        """
         if self.regression:
             output = [self.predict(input_data,
                                    method=method,

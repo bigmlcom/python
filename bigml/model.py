@@ -286,7 +286,30 @@ class Model(BaseModel):
 
     def predict_probability(self, input_data, method=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION):
+        """For classification problems, Predicts a probabilistic "score" for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name.  For
+        classifications, the output is a list with one floating point
+        element for each possible class, ordered in sorted class-name
+        ordering.
 
+        For regressions, the output is a single element vector
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param method: numeric key code indicating how the scores
+                       should be produced:
+              0 - majority vote - A 1.0 for the most likely class, 0 otherwise
+                  PLURALITY_CODE
+              1 - Scores estimated from the class confidence at the leaf;
+                  note that for this option the scores will sum to < 1
+                  CONFIDENCE_CODE
+              2 - Lapalace-smoothed probabilitiy of leaf node distribution:
+                  PROBABILITY_CODE
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                                 missing fields
+
+        """
         if self.regression:
             output = [self.predict(input_data,
                                    missing_strategy=missing_strategy)]
@@ -322,6 +345,9 @@ class Model(BaseModel):
                 class_name = self.predict(input_data,
                                           missing_strategy=missing_strategy)
                 output[class_name] = 1.0
+            else:
+                raise ValueError("Code %d is invalid for model prediction!"
+                                 % method)
 
             output = [output.get(name, 0.0) for name in self.class_names]
 

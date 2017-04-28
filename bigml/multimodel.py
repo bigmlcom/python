@@ -165,13 +165,38 @@ class MultiModel(object):
             if not isinstance(result, dict):
                 result = {"prediction": result}
             result['unused_fields'] = list(unused_fields)
+
         return result
+
+    def generate_probability_votes(self,
+                                   input_data,
+                                   by_name=True,
+                                   missing_strategy=LAST_PREDICTION,
+                                   voting_style=PROBABILITY_CODE):
+
+        votes = MultiVote([])
+        for order in range(0, len(self.models)):
+            model = self.models[order]
+            model.class_names = self.class_names
+            votes.probabilities = True
+
+            try:
+                prediction_info = model.predict_probability(
+                    input_data,
+                    by_name=by_name,
+                    voting_style=voting_style,
+                    missing_strategy=missing_strategy)
+            except TypeError:
+                prediction_info = model.predict_probability(input_data,
+                                                            by_name=by_name)
+            votes.append(prediction_info)
+
+        return votes
 
     def generate_votes(self, input_data, by_name=True,
                        missing_strategy=LAST_PREDICTION,
                        add_median=False, add_min=False, add_max=False,
-                       add_unused_fields=False, probabilities_only=False,
-                       method=PROBABILITY_CODE):
+                       add_unused_fields=False):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
@@ -179,34 +204,25 @@ class MultiModel(object):
         for order in range(0, len(self.models)):
             model = self.models[order]
             model.class_names = self.class_names
-            if probabilities_only and not model.boosting:
-                votes.probabilities = True
 
-                try:
-                    prediction_info = model.predict_probability(
-                        input_data,
-                        method=method,
-                        missing_strategy=missing_strategy)
-                except KeyError:
-                    prediction_info = model.predict_probability(input_data)
-            else:
-                prediction_info = model.predict( \
-                    input_data, by_name=by_name,
-                    add_confidence=True,
-                    add_distribution=True,
-                    add_count=True,
-                    add_median=add_median,
-                    add_min=add_min,
-                    add_max=add_max,
-                    add_unused_fields=add_unused_fields,
-                    missing_strategy=missing_strategy)
-                if model.boosting is not None:
-                    votes.boosting = True
+            prediction_info = model.predict( \
+                input_data, by_name=by_name,
+                add_confidence=True,
+                add_distribution=True,
+                add_count=True,
+                add_median=add_median,
+                add_min=add_min,
+                add_max=add_max,
+                add_unused_fields=add_unused_fields,
+                missing_strategy=missing_strategy)
+
+            if model.boosting is not None:
+                votes.boosting = True
+                prediction_info.update( \
+                    {"weight": model.boosting.get("weight")})
+                if model.boosting.get("objective_class") is not None:
                     prediction_info.update( \
-                        {"weight": model.boosting.get("weight")})
-                    if model.boosting.get("objective_class") is not None:
-                        prediction_info.update( \
-                            {"class": model.boosting.get("objective_class")})
+                        {"class": model.boosting.get("objective_class")})
 
             votes.append(prediction_info)
 

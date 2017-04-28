@@ -284,7 +284,8 @@ class Model(BaseModel):
         is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
         return self.get_leaves(filter_function=is_impure)
 
-    def predict_probability(self, input_data, method=PROBABILITY_CODE,
+    def predict_probability(self, input_data, by_name=True,
+                            method=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION):
         """For classification problems, Predicts a probabilistic "score" for
         each possible output class, based on input values.  The input
@@ -297,8 +298,11 @@ class Model(BaseModel):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param method: numeric key code indicating how the scores
-                       should be produced:
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param voting_style: numeric key code indicating how the scores
+                             should be produced:
               0 - majority vote - A 1.0 for the most likely class, 0 otherwise
                   PLURALITY_CODE
               1 - Scores estimated from the class confidence at the leaf;
@@ -306,8 +310,8 @@ class Model(BaseModel):
                   CONFIDENCE_CODE
               2 - Lapalace-smoothed probabilitiy of leaf node distribution:
                   PROBABILITY_CODE
-        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
-                                 missing fields
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
 
         """
         if self.regression:

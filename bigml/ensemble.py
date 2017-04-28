@@ -280,7 +280,8 @@ class Ensemble(object):
         """
         return self.model_ids
 
-    def predict_probability(self, input_data, method=PROBABILITY_CODE,
+    def predict_probability(self, input_data, by_name=True,
+                            voting_style=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION):
 
         """For classification problems, Predicts a probabilistic "score" for
@@ -294,8 +295,11 @@ class Ensemble(object):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param method: numeric key code indicating how the scores
-                       should be produced:
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param voting_style: numeric key code indicating how the scores
+                             should be produced:
               0 - majority vote - The sum of models predicting a given class
                   divided by the total number of models
                   PLURALITY_CODE
@@ -311,24 +315,72 @@ class Ensemble(object):
         """
         if self.regression:
             output = [self.predict(input_data,
-                                   method=method,
+                                   by_name=by_name,
+                                   method=voting_style,
                                    missing_strategy=missing_strategy)]
         elif self.boosting is not None:
             probabilities = self.predict(input_data,
-                                         method=method,
+                                         by_name=by_name,
                                          missing_strategy=missing_strategy,
                                          add_probability=True)['probabilities']
 
             probabilities.sort(key=lambda x: x['prediction'])
             output = [p['probability'] for p in probabilities]
         else:
-            output = self.predict(input_data,
-                                  method=method,
-                                  missing_strategy=missing_strategy,
-                                  probabilities_only=True)
+            if len(self.models_splits) > 1:
+                # If there's more than one chunk of models, they must be
+                # sequentially used to generate the votes for the prediction
+                votes = MultiVote([], boosting=False, probabilities=True)
 
+                for models_split in self.models_splits:
+                    models = self._get_models(models_split)
+                    multi_model = MultiModel(models,
+                                             api=self.api,
+                                             fields=self.fields,
+                                             class_names=self.class_names)
+
+                    votes_split = multi_model.generate_probability_votes(
+                        input_data, by_name=by_name,
+                        missing_strategy=missing_strategy,
+                        voting_style=voting_style)
+
+                    votes.extend(votes_split.predictions)
+            else:
+                # When only one group of models is found you use the
+                # corresponding multimodel to predict
+                votes_split = self.multi_model.generate_probability_votes(
+                    input_data, by_name=by_name,
+                    missing_strategy=missing_strategy,
+                    voting_style=voting_style)
+
+                votes = MultiVote(votes_split.predictions,
+                                  boosting=False,
+                                  probabilities=True)
+
+            output = votes.combine()
 
         return output
+
+    def _get_models(self, models_split):
+        if not isinstance(models_split[0], Model):
+            if (self.cache_get is not None and
+                hasattr(self.cache_get, '__call__')):
+                # retrieve the models from a cache get function
+                try:
+                    models = [self.cache_get(model_id) for model_id
+                              in models_split]
+                except Exception, exc:
+                    raise Exception('Error while calling the '
+                                    'user-given'
+                                    ' function %s: %s' %
+                                    (self.cache_get.__name__,
+                                     str(exc)))
+            else:
+                models = [retrieve_resource(self.api, model_id,
+                                            query_string=ONLY_MODEL)
+                          for model_id in models_split]
+
+        return models
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
@@ -389,41 +441,20 @@ class Ensemble(object):
         if len(self.models_splits) > 1:
             # If there's more than one chunk of models, they must be
             # sequentially used to generate the votes for the prediction
-            votes = MultiVote([],
-                              boosting=self.boosting is not None,
-                              probabilities=probabilities_only)
+            votes = MultiVote([], boosting=self.boosting is not None)
 
             for models_split in self.models_splits:
-                if not isinstance(models_split[0], Model):
-                    if (self.cache_get is not None and
-                            hasattr(self.cache_get, '__call__')):
-                        # retrieve the models from a cache get function
-                        try:
-                            models = [self.cache_get(model_id) for model_id
-                                      in models_split]
-                        except Exception, exc:
-                            raise Exception('Error while calling the '
-                                            'user-given'
-                                            ' function %s: %s' %
-                                            (self.cache_get.__name__,
-                                             str(exc)))
-                    else:
-                        models = [retrieve_resource(self.api, model_id,
-                                                    query_string=ONLY_MODEL)
-                                  for model_id in models_split]
-
+                models = self._get_models(models_split)
                 multi_model = MultiModel(models,
                                          api=self.api,
-                                         fields=self.fields,
-                                         class_names=self.class_names)
+                                         fields=self.fields)
 
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
                     add_median=(add_median or median),
                     add_min=add_min, add_max=add_max,
-                    add_unused_fields=add_unused_fields,
-                    method=method, probabilities_only=probabilities_only)
+                    add_unused_fields=add_unused_fields)
                 if median:
                     for prediction in votes_split.predictions:
                         prediction['prediction'] = prediction['median']
@@ -434,12 +465,10 @@ class Ensemble(object):
             votes_split = self.multi_model.generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
                 add_median=(add_median or median), add_min=add_min,
-                add_max=add_max, add_unused_fields=add_unused_fields,
-                method=method, probabilities_only=probabilities_only)
+                add_max=add_max, add_unused_fields=add_unused_fields)
 
             votes = MultiVote(votes_split.predictions,
-                              boosting=self.boosting is not None,
-                              probabilities=probabilities_only)
+                              boosting=self.boosting is not None)
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']

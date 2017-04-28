@@ -253,7 +253,7 @@ class LogisticRegression(ModelFields):
         distribution = self.predict(input_data, by_name=by_name)['distribution']
         distribution.sort(key=lambda x: x['category'])
 
-        return [d['probability'] for d in distribution]
+        return [category['probability'] for category in distribution]
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):
         """Returns the class prediction and the probability distribution

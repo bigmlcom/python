@@ -474,7 +474,6 @@ class Model(BaseModel):
             for index, [category, instances] in distribution:
                 if ((isinstance(multiple, basestring) and multiple == 'all') or
                         (isinstance(multiple, int) and index < multiple)):
-                    print(category)
                     prediction_dict = {
                         'prediction': category,
                         'confidence': ws_confidence(category,

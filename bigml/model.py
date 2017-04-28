@@ -316,6 +316,7 @@ class Model(BaseModel):
         """
         if self.regression:
             output = [self.predict(input_data,
+                                   by_name=by_name,
                                    missing_strategy=missing_strategy)]
         else:
             root_dist = self.tree.distribution
@@ -326,6 +327,7 @@ class Model(BaseModel):
                 instances = 1.0
 
                 prediction = self.predict(input_data,
+                                          by_name=by_name,
                                           missing_strategy=missing_strategy,
                                           add_distribution=True)
 
@@ -340,6 +342,7 @@ class Model(BaseModel):
             elif method == CONFIDENCE_CODE:
                 output = {d[0]: 0.0 for d in root_dist}
                 prediction = self.predict(input_data,
+                                          by_name=by_name,
                                           missing_strategy=missing_strategy,
                                           add_distribution=True)
 

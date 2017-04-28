@@ -203,8 +203,6 @@ class MultiModel(object):
         votes = MultiVote([])
         for order in range(0, len(self.models)):
             model = self.models[order]
-            model.class_names = self.class_names
-
             prediction_info = model.predict( \
                 input_data, by_name=by_name,
                 add_confidence=True,

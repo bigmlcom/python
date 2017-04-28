@@ -387,8 +387,7 @@ class Ensemble(object):
                 add_distribution=False, add_count=False, add_median=False,
                 add_min=False, add_max=False, add_unused_fields=False,
                 options=None, missing_strategy=LAST_PREDICTION, median=False,
-                with_probability=False, add_probability=False,
-                probabilities_only=False):
+                with_probability=False, add_probability=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input

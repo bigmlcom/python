@@ -47,7 +47,7 @@ from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
+from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 
@@ -187,7 +187,7 @@ class Ensemble(object):
             try:
                 self.distributions = [{'training': {'categories': m.tree.distribution}}
                                       for m in models]
-            except:
+            except AttributeError:
                 self.distributions = [m['object']['model']['distribution']
                                       for m in models]
 
@@ -203,9 +203,9 @@ class Ensemble(object):
 
         if not self.regression and self.boosting is None:
             classes = set()
-            for d in self.distributions:
-                for c in d['training']['categories']:
-                    classes.add(c[0])
+            for distribution in self.distributions:
+                for category in distribution['training']['categories']:
+                    classes.add(category[0])
 
             self.class_names = sorted(classes)
 
@@ -415,7 +415,7 @@ class Ensemble(object):
                 multi_model = MultiModel(models,
                                          api=self.api,
                                          fields=self.fields,
-                                         names=self.class_names)
+                                         class_names=self.class_names)
 
                 votes_split = multi_model.generate_votes(
                     input_data, by_name=by_name,
@@ -480,7 +480,7 @@ class Ensemble(object):
         field_names = {}
         if self.importance:
             field_importance = self.importance
-            field_names = {field_id: {'name': self.fields[field_id]["name"] } \
+            field_names = {field_id: {'name': self.fields[field_id]["name"]} \
                            for field_id in field_importance.keys()}
             return [list(importance) for importance in \
                 sorted(field_importance.items(), key=lambda x: x[1],

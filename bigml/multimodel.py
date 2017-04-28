@@ -44,7 +44,7 @@ from bigml.model import Model
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE, CONFIDENCE_CODE, PROBABILITY_CODE
+from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE
 from bigml.io import UnicodeWriter, UnicodeReader
 
 

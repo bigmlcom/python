@@ -325,23 +325,23 @@ class Model(BaseModel):
                                             missing_strategy=missing_strategy,
                                             multiple="all")
 
-                for d in distribution:
-                    class_count = d['count']
-                    output[d['prediction']] += class_count
+                for class_info in distribution:
+                    class_count = class_info['count']
+                    output[class_info['prediction']] += class_count
                     instances += class_count
 
                 for k in output:
                     output[k] /= instances
             elif method == CONFIDENCE_CODE:
-                output = { d[0]: 0.0 for d in root_dist }
+                output = {d[0]: 0.0 for d in root_dist}
                 distribution = self.predict(input_data,
                                             missing_strategy=missing_strategy,
                                             multiple="all")
 
-                for d in distribution:
-                    output[d['prediction']] += d['confidence']
+                for class_info in distribution:
+                    output[class_info['prediction']] += class_info['confidence']
             elif method == PLURALITY_CODE:
-                output = { d[0]: 0.0 for d in root_dist }
+                output = {d[0]: 0.0 for d in root_dist}
                 class_name = self.predict(input_data,
                                           missing_strategy=missing_strategy)
                 output[class_name] = 1.0

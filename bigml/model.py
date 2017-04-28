@@ -245,7 +245,8 @@ class Model(BaseModel):
                             self.regression_ready = False
                     else:
                         root_dist = self.tree.distribution
-                        self.class_names = sorted(d[0] for d in root_dist)
+                        self.class_names = sorted([category[0]
+                                                   for category in root_dist)
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -322,8 +323,9 @@ class Model(BaseModel):
             root_dist = self.tree.distribution
 
             if method == PROBABILITY_CODE:
-                total = float(sum([d[1] for d in root_dist]))
-                output = {d[0]: d[1] / total for d in root_dist}
+                total = float(sum([category[1] for category in root_dist]))
+                output = {category[0]: category[1] / total
+                          for category in root_dist}
                 instances = 1.0
 
                 prediction = self.predict(input_data,
@@ -340,7 +342,7 @@ class Model(BaseModel):
                 for k in output:
                     output[k] /= instances
             elif method == CONFIDENCE_CODE:
-                output = {d[0]: 0.0 for d in root_dist}
+                output = {category[0]: 0.0 for category in root_dist}
                 prediction = self.predict(input_data,
                                           by_name=by_name,
                                           missing_strategy=missing_strategy,
@@ -352,7 +354,7 @@ class Model(BaseModel):
                     name = class_info[0]
                     output[name] = ws_confidence(name, distribution)
             elif method == PLURALITY_CODE:
-                output = {d[0]: 0.0 for d in root_dist}
+                output = {category[0]: 0.0 for category in root_dist}
                 class_name = self.predict(input_data,
                                           missing_strategy=missing_strategy)
                 output[class_name] = 1.0

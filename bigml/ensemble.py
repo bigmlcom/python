@@ -328,7 +328,8 @@ class Ensemble(object):
                                          add_probability=True)['probabilities']
 
             probabilities.sort(key=lambda x: x['prediction'])
-            output = [p['probability'] for p in probabilities]
+            output = [probability['probability']
+                      for probability in probabilities]
         else:
             if len(self.models_splits) > 1:
                 # If there's more than one chunk of models, they must be

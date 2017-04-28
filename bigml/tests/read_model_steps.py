@@ -17,6 +17,7 @@
 
 import os
 from world import world
+from nose.tools import eq_
 
 from bigml.api import HTTP_OK
 
@@ -24,7 +25,7 @@ from bigml.api import HTTP_OK
 def i_get_the_model(step, model):
     resource = world.api.get_model(model)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.model = resource['object']
 
 
@@ -32,5 +33,5 @@ def i_get_the_model(step, model):
 def i_get_the_logistic_model(step, model):
     resource = world.api.get_logistic_regression(model)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.logistic_regression = resource['object']

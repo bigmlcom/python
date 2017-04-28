@@ -20,6 +20,7 @@ import time
 import json
 from datetime import datetime, timedelta
 from urllib import urlencode
+from nose.tools import eq_, assert_less
 from world import world
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -48,10 +49,10 @@ def wait_until_project_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_project(step, world.project['resource'])
         status = get_status(world.project)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 
 def the_project_is_finished(step, secs):
@@ -62,14 +63,10 @@ def i_update_project_name_with(step, name=""):
     resource = world.api.update_project(world.project.get('resource'),
                                         {"name": name})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.project = resource['object']
 
 
 def i_check_project_name(step, name=""):
     updated_name = world.project.get("name", "")
-    if updated_name == name:
-        assert True
-    else:
-        assert False, "Project name: %s, expected name: %s" % (updated_name,
-                                                               name)
+    eq_(updated_name, name)

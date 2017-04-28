@@ -20,6 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world, res_filename
+from nose.tools import eq_
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -57,27 +58,27 @@ def check_combined_prediction(step, prediction):
 
     if world.multivote.is_regression():
         try:
-            assert round(world.combined_prediction, 6) == round(float(prediction), 6)
+            eq_(round(world.combined_prediction, 6), round(float(prediction), 6))
         except ValueError, exc:
             assert False, str(exc)
     else:
-        assert world.combined_prediction == prediction
+        eq_(world.combined_prediction, prediction)
 
 #@step(r'the combined prediction without confidence is "(.*)"$')
 def check_combined_prediction_no_confidence(step, prediction):
 
     if world.multivote.is_regression():
         try:
-            assert round(world.combined_prediction_nc, 6) == round(
-                float(prediction), 6)
+            eq_(round(world.combined_prediction_nc, 6),
+                round(float(prediction), 6))
         except ValueError, exc:
             assert False, str(exc)
     else:
-        assert world.combined_prediction == prediction
+        eq_(world.combined_prediction, prediction)
 
 #@step(r'the confidence for the combined prediction is (.*)$')
 def check_combined_confidence(step, confidence):
     try:
-        assert round(world.combined_confidence, 6) == round(float(confidence), 6)
+        eq_(round(world.combined_confidence, 6), round(float(confidence), 6))
     except ValueError, exc:
         assert False, str(exc)

@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from nose.tools import eq_
 from world import world
 from bigml.api import HTTP_OK
 
@@ -22,5 +23,5 @@ from bigml.api import HTTP_OK
 def i_get_the_tst(step, resource):
     resource = world.api.get_statistical_test(resource)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.statistical_test = resource['object']

@@ -16,6 +16,7 @@
 # under the License.
 
 from world import world
+from nose.tools import ok_
 
 #@step(r'I store the dataset id in a list')
 def i_store_dataset_id(step):
@@ -24,10 +25,6 @@ def i_store_dataset_id(step):
 #@step(r'I check the model stems from the original dataset list')
 def i_check_model_datasets_and_datasets_ids(step):
     model = world.model
-    if 'datasets' in model and model['datasets'] == world.dataset_ids:
-        assert True
-    else:
-        assert False, ("The model contains only %s "
-                       "and the dataset ids are %s" %
-                       (",".join(model['datasets']),
-                        ",".join(world.dataset_ids)))
+    ok_('datasets' in model and model['datasets'] == world.dataset_ids,
+        ("The model contains only %s and the dataset ids are %s" %
+         (",".join(model['datasets']), ",".join(world.dataset_ids))))

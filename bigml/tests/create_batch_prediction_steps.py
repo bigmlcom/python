@@ -22,6 +22,7 @@ import csv
 import traceback
 from datetime import datetime, timedelta
 from world import world, res_filename
+from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
@@ -39,7 +40,7 @@ def i_create_a_batch_prediction(step):
     model = world.model.get('resource')
     resource = world.api.create_batch_prediction(model, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.batch_prediction = resource['object']
     world.batch_predictions.append(resource['resource'])
@@ -51,7 +52,7 @@ def i_create_a_batch_prediction_ensemble(step):
     ensemble = world.ensemble.get('resource')
     resource = world.api.create_batch_prediction(ensemble, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.batch_prediction = resource['object']
     world.batch_predictions.append(resource['resource'])
@@ -65,10 +66,10 @@ def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_batch_prediction(step, world.batch_prediction['resource'])
         status = get_status(world.batch_prediction)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
@@ -79,10 +80,10 @@ def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_batch_centroid(step, world.batch_centroid['resource'])
         status = get_status(world.batch_centroid)
-    assert status['code'] == int(code1)
+    assert(status['code'], int(code1))
 
 
 #@step(r'I wait until the batch anomaly score status code is either (\d) or (-\d) less than (\d+)')
@@ -93,10 +94,10 @@ def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
         status = get_status(world.batch_anomaly_score)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the batch prediction is ready less than (\d+)')
@@ -116,21 +117,21 @@ def the_batch_anomaly_score_is_finished_in_less_than(step, secs):
 def i_download_predictions_file(step, filename):
     file_object = world.api.download_batch_prediction(
         world.batch_prediction, filename=res_filename(filename))
-    assert file_object is not None
+    ok_(file_object is not None)
     world.output = file_object
 
 #@step(r'I download the created centroid file to "(.*)"')
 def i_download_centroid_file(step, filename):
     file_object = world.api.download_batch_centroid(
         world.batch_centroid, filename=res_filename(filename))
-    assert file_object is not None
+    ok_(file_object is not None)
     world.output = file_object
 
 #@step(r'I download the created anomaly score file to "(.*)"')
 def i_download_anomaly_score_file(step, filename):
     file_object = world.api.download_batch_anomaly_score(
         world.batch_anomaly_score, filename=res_filename(filename))
-    assert file_object is not None
+    ok_(file_object is not None)
     world.output = file_object
 
 def check_rows(prediction_rows, test_rows):
@@ -138,7 +139,7 @@ def check_rows(prediction_rows, test_rows):
     for row in prediction_rows:
         check_row = next(test_rows)
         row_num += 1
-        assert len(check_row) == len (row)
+        eq_(len(check_row), len (row))
         for index in range(len(row)):
             dot = row[index].find(".")
             if dot > 0:
@@ -148,8 +149,8 @@ def check_rows(prediction_rows, test_rows):
                     check_row[index] = round(float(check_row[index]), decs)
                 except ValueError:
                     pass
-            assert check_row[index] == row[index], ( \
-                "Got: %s/ Expected: %s in line %s" % (row, check_row, row_num))
+            eq_(check_row[index], row[index],
+                ("Got: %s/ Expected: %s in line %s" % (row, check_row, row_num)))
 
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):
@@ -167,11 +168,11 @@ def i_check_batch_anomaly_score(step, check_file):
 
 #@step(r'I check the batch centroid is ok')
 def i_check_batch_centroid_is_ok(step):
-    assert world.api.ok(world.batch_centroid)
+    ok_(world.api.ok(world.batch_centroid))
 
 #@step(r'I check the batch anomaly score is ok')
 def i_check_batch_anomaly_score_is_ok(step):
-    assert world.api.ok(world.batch_anomaly_score)
+    ok_(world.api.ok(world.batch_anomaly_score))
 
 
 #@step(r'I create a batch centroid for the dataset$')
@@ -180,7 +181,7 @@ def i_create_a_batch_prediction_with_cluster(step):
     cluster = world.cluster.get('resource')
     resource = world.api.create_batch_centroid(cluster, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.batch_centroid = resource['object']
     world.batch_centroids.append(resource['resource'])
@@ -191,7 +192,7 @@ def i_create_a_batch_prediction_with_anomaly(step):
     anomaly = world.anomaly.get('resource')
     resource = world.api.create_batch_anomaly_score(anomaly, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.batch_anomaly_score = resource['object']
     world.batch_anomaly_scores.append(resource['resource'])
@@ -202,7 +203,7 @@ def i_create_a_source_from_batch_prediction(step):
     batch_prediction = world.batch_prediction.get('resource')
     resource = world.api.source_from_batch_prediction(batch_prediction)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.source = resource['object']
     world.sources.append(resource['resource'])
@@ -214,7 +215,7 @@ def i_create_a_batch_prediction_logistic_model(step):
     logistic = world.logistic_regression.get('resource')
     resource = world.api.create_batch_prediction(logistic, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.batch_prediction = resource['object']
     world.batch_predictions.append(resource['resource'])

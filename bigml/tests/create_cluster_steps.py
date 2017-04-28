@@ -20,7 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world
-from nose.tools import eq_
+from nose.tools import eq_, assert_less
 
 from read_cluster_steps import i_get_the_cluster
 
@@ -76,7 +76,7 @@ def wait_until_cluster_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
            i_get_the_cluster(step, world.cluster['resource'])
            status = get_status(world.cluster)
     eq_(status['code'], int(code1))
@@ -90,7 +90,7 @@ def make_the_cluster_shared(step):
     resource = world.api.update_cluster(world.cluster['resource'],
                                       {'shared': True})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.cluster = resource['object']
 

@@ -17,7 +17,7 @@
 
 from bigml.topicmodel import TopicModel
 
-from nose.tools import assert_almost_equals
+from nose.tools import assert_almost_equals, eq_
 
 #@step(r'predict the topic distribution for the text "(.*)"$')
 def i_make_a_prediction(step, model, text, expected):
@@ -27,7 +27,7 @@ def i_make_a_prediction(step, model, text, expected):
     msg = ("Computed distribution is %s, but expected distribution is %s" %
            (str(distribution), str(expected)))
 
-    assert len(distribution) == len(expected), msg
+    eq_(len(distribution), len(expected), msg)
 
     for d, e in zip(distribution, expected):
         assert_almost_equals(d['probability'],

@@ -16,11 +16,12 @@
 # under the License.
 
 from world import world
+from nose.tools import eq_
 from bigml.api import HTTP_OK
 
 #@step(r'I get the library "(.*)"')
 def i_get_the_library(step, resource):
     resource = world.api.get_library(resource)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.library = resource['object']

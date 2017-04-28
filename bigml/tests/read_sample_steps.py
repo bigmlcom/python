@@ -16,11 +16,12 @@
 # under the License.
 
 from world import world
+from nose.tools import eq_
 from bigml.api import HTTP_OK
 
 #@step(r'I get the sample "(.*)"')
 def i_get_the_sample(step, resource):
     resource = world.api.get_sample(resource)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.sample = resource['object']

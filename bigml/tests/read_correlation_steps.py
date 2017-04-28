@@ -16,11 +16,12 @@
 # under the License.
 
 from world import world
+from nose.tools import eq_
 from bigml.api import HTTP_OK
 
 #@step(r'I get the correlation "(.*)"')
 def i_get_the_correlation(step, resource):
     resource = world.api.get_correlation(resource)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.correlation = resource['object']

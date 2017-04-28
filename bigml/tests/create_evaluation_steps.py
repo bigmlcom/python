@@ -19,6 +19,7 @@ import time
 import json
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import eq_, assert_less, assert_greater
 
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
@@ -33,7 +34,7 @@ def i_create_an_evaluation(step):
     model = world.model.get('resource')
     resource = world.api.create_evaluation(model, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
@@ -45,7 +46,7 @@ def i_create_an_evaluation_ensemble(step):
     ensemble = world.ensemble.get('resource')
     resource = world.api.create_evaluation(ensemble, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
@@ -56,7 +57,7 @@ def i_create_an_evaluation_logistic(step):
     logistic = world.logistic_regression.get('resource')
     resource = world.api.create_evaluation(logistic, dataset)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
@@ -69,10 +70,10 @@ def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_evaluation(step, world.evaluation['resource'])
         status = get_status(world.evaluation)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the evaluation is ready less than (\d+)')
 def the_evaluation_is_finished_in_less_than(step, secs):
@@ -81,9 +82,10 @@ def the_evaluation_is_finished_in_less_than(step, secs):
 #@step(r'the measured "(.*)" is (\d+\.*\d*)')
 def the_measured_measure_is_value(step, measure, value):
     ev = world.evaluation['result']['model'][measure] + 0.0
-    assert  ev == float(value), "The %s is: %s and %s is expected" % (
-        measure, ev, float(value))
+    eq_(ev, float(value), "The %s is: %s and %s is expected" % (
+        measure, ev, float(value)))
 
 #@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
 def the_measured_measure_is_greater_value(step, measure, value):
-    assert world.evaluation['result']['model'][measure] + 0.0 > float(value)
+    assert_greater(world.evaluation['result']['model'][measure] + 0.0,
+                   float(value))

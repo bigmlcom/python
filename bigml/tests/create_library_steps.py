@@ -20,6 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -33,19 +34,16 @@ from read_library_steps import i_get_the_library
 #@step(r'the library code is "(.*)" and the value of "(.*)" is "(.*)"')
 def the_library_code_and_attributes(step, source_code, param, param_value):
     res_param_value = world.library[param]
-    if res_param_value == param_value:
-        assert True
-    else:
-        assert False, ("The library %s is %s "
-                       "and the expected %s is %s" %
-                       (param, param_value, param, param_value))
+    eq_(res_param_value, param_value,
+        ("The library %s is %s and the expected %s is %s" %
+         (param, param_value, param, param_value)))
 
 
 #@step(r'I create a whizzml library from a excerpt of code "(.*)"$')
 def i_create_a_library(step, source_code):
     resource = world.api.create_library(source_code)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.library = resource['object']
     world.libraries.append(resource['resource'])
@@ -56,7 +54,7 @@ def i_update_a_library(step, param, param_value):
     resource = world.api.update_library(world.library['resource'],
                                         {param: param_value})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.library = resource['object']
 
@@ -70,10 +68,10 @@ def wait_until_library_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
            i_get_the_library(step, library_id)
            status = get_status(world.library)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the library is ready less than (\d+)')

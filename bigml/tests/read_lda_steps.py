@@ -17,6 +17,7 @@
 
 import os
 from world import world
+from nose.tools import eq_
 
 from bigml.api import HTTP_OK
 
@@ -24,12 +25,12 @@ from bigml.api import HTTP_OK
 def i_get_the_topic_model(step, topic_model):
     resource = world.api.get_topic_model(topic_model)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.topic_model = resource['object']
 
 #@step(r'I get the topic distribution "(.*)"')
 def i_get_the_topic_distribution(step, topic_distribution):
     resource = world.api.get_topic_distribution(topic_distribution)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.topic_distribution = resource['object']

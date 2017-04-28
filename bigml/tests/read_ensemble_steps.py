@@ -17,6 +17,7 @@
 
 import os
 from world import world
+from nose.tools import eq_
 
 from bigml.api import HTTP_OK
 
@@ -24,5 +25,5 @@ from bigml.api import HTTP_OK
 def i_get_the_ensemble(step, ensemble):
     resource = world.api.get_ensemble(ensemble)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.ensemble = resource['object']

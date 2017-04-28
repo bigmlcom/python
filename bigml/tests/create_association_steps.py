@@ -4,7 +4,7 @@ import os
 import StringIO
 from datetime import datetime, timedelta
 from world import world
-from nose.tools import eq_
+from nose.tools import eq_, assert_less
 
 from bigml.api import BigML
 from bigml.api import HTTP_CREATED
@@ -20,20 +20,14 @@ from read_association_steps import i_get_the_association
 #@step(r'the association name is "(.*)"')
 def i_check_association_name(step, name):
     association_name = world.association['name']
-    if name == association_name:
-        assert True
-    else:
-        assert False, ("The association name is %s "
-                       "and the expected name is %s" %
-                       (association_name, name))
-
+    eq_(name, association_name)
 
 #@step(r'I create an association from a dataset$')
 def i_create_an_association_from_dataset(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_association(dataset, {'name': 'new association'})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.association = resource['object']
     world.associations.append(resource['resource'])
@@ -45,7 +39,7 @@ def i_create_an_association_with_strategy_from_dataset(step, strategy):
     resource = world.api.create_association(
         dataset, {'name': 'new association', 'search_strategy': strategy})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.association = resource['object']
     world.associations.append(resource['resource'])
@@ -56,7 +50,7 @@ def i_update_association_name(step, name):
     resource = world.api.update_association(world.association['resource'],
                                             {'name': name})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.association = resource['object']
 
@@ -70,10 +64,10 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
            i_get_the_association(step, association_id)
            status = get_status(world.association)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the association is ready less than (\d+)')

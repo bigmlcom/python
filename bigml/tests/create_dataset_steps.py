@@ -19,6 +19,7 @@ import time
 import json
 from datetime import datetime, timedelta
 from world import world, res_filename
+from nose.tools import eq_, assert_less
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_ACCEPTED
@@ -32,7 +33,7 @@ import read_dataset_steps as read
 def i_create_a_dataset(step):
     resource = world.api.create_dataset(world.source['resource'])
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
@@ -48,7 +49,7 @@ def i_export_a_dataset(step, local_file):
 def files_equal(step, local_file, data):
     contents_local_file = open(res_filename(local_file)).read()
     contents_data = open(res_filename(data)).read()
-    assert contents_local_file == contents_data
+    eq_(contents_local_file, contents_data)
 
 
 #@step(r'I create a dataset with "(.*)"')
@@ -56,7 +57,7 @@ def i_create_a_dataset_with(step, data="{}"):
     resource = world.api.create_dataset(world.source['resource'],
                                         json.loads(data))
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
@@ -70,10 +71,10 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         read.i_get_the_dataset(step, world.dataset['resource'])
         status = get_status(world.dataset)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the dataset is ready less than (\d+)')
 def the_dataset_is_finished_in_less_than(step, secs):
@@ -84,7 +85,7 @@ def make_the_dataset_public(step):
     resource = world.api.update_dataset(world.dataset['resource'],
                                         {'private': False})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.dataset = resource['object']
 
@@ -95,7 +96,7 @@ def build_local_dataset_from_public_url(step):
 
 #@step(r'the dataset\'s status is FINISHED')
 def dataset_status_finished(step):
-    assert get_status(world.dataset)['code'] == FINISHED
+    eq_(get_status(world.dataset)['code'], FINISHED)
 
 #@step(r'I create a dataset extracting a (.*) sample$')
 def i_create_a_split_dataset(step, rate):
@@ -103,7 +104,7 @@ def i_create_a_split_dataset(step, rate):
     resource = world.api.create_dataset(world.dataset['resource'],
                                         {'sample_rate': float(rate)})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
@@ -115,13 +116,8 @@ def i_compare_datasets_instances(step):
 
 #@step(r'the proportion of instances between datasets is (.*)$')
 def proportion_datasets_instances(step, rate):
-    if (int(world.datasets_instances[1] * float(rate)) == world.datasets_instances[0]):
-        assert True
-    else:
-        assert False, (
-        "Instances in split: %s, expected %s" % (
-            world.datasets_instances[0],
-            int(world.datasets_instances[1] * float(rate))))
+    eq_(int(world.datasets_instances[1] * float(rate)),
+        world.datasets_instances[0])
 
 #@step(r'I create a dataset associated to centroid "(.*)"')
 def i_create_a_dataset_from_cluster(step, centroid_id):
@@ -129,7 +125,7 @@ def i_create_a_dataset_from_cluster(step, centroid_id):
         world.cluster['resource'],
         args={'centroid': centroid_id})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.dataset = resource['object']
     world.datasets.append(resource['resource'])
@@ -142,10 +138,9 @@ def i_create_a_dataset_from_cluster_centroid(step):
 def is_associated_to_centroid_id(step, centroid_id):
     cluster = world.api.get_cluster(world.cluster['resource'])
     world.status = cluster['code']
-    assert world.status == HTTP_OK
-    assert "dataset/%s" % (
-        cluster['object']['cluster_datasets'][
-            centroid_id]) == world.dataset['resource']
+    eq_(world.status, HTTP_OK)
+    eq_("dataset/%s" % (cluster['object']['cluster_datasets'][centroid_id]),
+        world.dataset['resource'])
 
 #@step(r'I check that the dataset is created for the cluster and the centroid$')
 def i_check_dataset_from_cluster_centroid(step):
@@ -156,4 +151,4 @@ def i_update_dataset_with(step, data="{}"):
     resource = world.api.update_dataset(world.dataset.get('resource'),
                                         json.loads(data))
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)

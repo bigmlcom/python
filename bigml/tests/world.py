@@ -132,8 +132,6 @@ class World(object):
                            " environment variables to authenticate the"
                            " connection, but they seem to be unset. Please,"
                            "set them before testing.")
-        else:
-            assert True
         self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
         print self.api.connection_info()
 

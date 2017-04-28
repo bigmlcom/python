@@ -16,10 +16,11 @@
 # under the License.
 
 from world import world
+from nose.tools import eq_
 from bigml.api import HTTP_OK
 
 def i_get_the_project(step, resource):
     resource = world.api.get_project(resource)
     world.status = resource['code']
-    assert world.status == HTTP_OK
+    eq_(world.status, HTTP_OK)
     world.project = resource['object']

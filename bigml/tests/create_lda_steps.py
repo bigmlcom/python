@@ -20,6 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from world import world
+from nose.tools import eq_, assert_less
 
 from read_lda_steps import i_get_the_topic_model
 
@@ -35,7 +36,7 @@ def i_create_a_topic_model(step):
     resource = world.api.create_topic_model(
         dataset, {'seed': 'BigML', 'topicmodel_seed': 'BigML'})
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.topic_model = resource['object']
     world.topic_models.append(resource['resource'])
@@ -44,7 +45,7 @@ def i_create_a_topic_model(step):
 def i_create_a_topic_model_from_dataset_list(step):
     resource = world.api.create_topic_model(world.dataset_ids)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.topic_model = resource['object']
     world.topic_models.append(resource['resource'])
@@ -59,7 +60,7 @@ def i_create_a_topic_model_with_options(step, options):
     resource = world.api.create_topic_model(
         dataset, options)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.topic_model = resource['object']
     world.topic_models.append(resource['resource'])
@@ -70,7 +71,7 @@ def i_update_topic_model_name(step, name):
     resource = world.api.update_topic_model(world.topic_model['resource'],
                                             {'name': name})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.topic_model = resource['object']
 
@@ -83,10 +84,10 @@ def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
            i_get_the_topic_model(step, world.topic_model['resource'])
            status = get_status(world.topic_model)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the topic model is ready less than (\d+)')
 def the_topic_model_is_finished_in_less_than(step, secs):
@@ -97,7 +98,7 @@ def make_the_topic_model_shared(step):
     resource = world.api.update_topic_model(world.topic_model['resource'],
                                             {'shared': True})
     world.status = resource['code']
-    assert world.status == HTTP_ACCEPTED
+    eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.topic_model = resource['object']
 
@@ -110,7 +111,7 @@ def get_sharing_info(step):
 def topic_model_from_shared_url(step):
     world.topic_model = world.api.get_topic_model("shared/topicmodel/%s" %
                                           world.shared_hash)
-    assert get_status(world.topic_model)['code'] == FINISHED
+    eq_(get_status(world.topic_model)['code'], FINISHED)
 
 #@step(r'I check the topic model status using the topic model\'s shared key')
 def topic_model_from_shared_key(step):
@@ -119,19 +120,13 @@ def topic_model_from_shared_key(step):
     world.topic_model = world.api.get_topic_model( \
         world.topic_model['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
-    assert get_status(world.topic_model)['code'] == FINISHED
+    eq_(get_status(world.topic_model)['code'], FINISHED)
 
 
 #@step(r'the topic model name is "(.*)"')
 def i_check_topic_model_name(step, name):
     topic_model_name = world.topic_model['name']
-    if name == topic_model_name:
-        assert True
-    else:
-        assert False, ("The topic model name is %s "
-                       "and the expected name is %s" %
-                       (topic_model_name, name))
-
+    eq_(name, topic_model_name)
 
 def i_create_a_topic_distribution(step, data=None):
     if data is None:
@@ -140,7 +135,7 @@ def i_create_a_topic_distribution(step, data=None):
     data = json.loads(data)
     resource = world.api.create_topic_distribution(topic_model, data)
     world.status = resource['code']
-    assert world.status == HTTP_CREATED
+    eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.topic_distribution = resource['object']
     world.topic_distributions.append(resource['resource'])

@@ -301,8 +301,8 @@ class Model(BaseModel):
         :param by_name: Boolean that is set to True if field_names (as
                         alternative to field ids) are used in the
                         input_data dict
-        :param voting_style: numeric key code indicating how the scores
-                             should be produced:
+        :param method: numeric key code indicating how the scores
+                       should be produced:
               0 - majority vote - A 1.0 for the most likely class, 0 otherwise
                   PLURALITY_CODE
               1 - Scores estimated from the class confidence at the leaf;

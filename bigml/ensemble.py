@@ -284,7 +284,7 @@ class Ensemble(object):
         return self.model_ids
 
     def predict_probability(self, input_data, by_name=True,
-                            voting_style=PROBABILITY_CODE,
+                            method=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION):
 
         """For classification problems, Predicts a probabilistic "score" for
@@ -301,8 +301,8 @@ class Ensemble(object):
         :param by_name: Boolean that is set to True if field_names (as
                         alternative to field ids) are used in the
                         input_data dict
-        :param voting_style: numeric key code indicating how the scores
-                             should be produced:
+        :param method: numeric key code indicating how the scores
+                       should be produced:
               0 - majority vote - The sum of models predicting a given class
                   divided by the total number of models
                   PLURALITY_CODE
@@ -319,7 +319,7 @@ class Ensemble(object):
         if self.regression:
             output = [self.predict(input_data,
                                    by_name=by_name,
-                                   method=voting_style,
+                                   method=method,
                                    missing_strategy=missing_strategy)]
         elif self.boosting is not None:
             probabilities = self.predict(input_data,
@@ -345,7 +345,7 @@ class Ensemble(object):
                     votes_split = multi_model.generate_probability_votes(
                         input_data, by_name=by_name,
                         missing_strategy=missing_strategy,
-                        voting_style=voting_style)
+                        method=method)
 
                     votes.extend(votes_split.predictions)
             else:
@@ -354,7 +354,7 @@ class Ensemble(object):
                 votes_split = self.multi_model.generate_probability_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
-                    voting_style=voting_style)
+                    method=method)
 
                 votes = MultiVote(votes_split.predictions,
                                   boosting=False,

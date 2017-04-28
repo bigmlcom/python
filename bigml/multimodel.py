@@ -172,7 +172,7 @@ class MultiModel(object):
                                    input_data,
                                    by_name=True,
                                    missing_strategy=LAST_PREDICTION,
-                                   voting_style=PROBABILITY_CODE):
+                                   method=PROBABILITY_CODE):
 
         votes = MultiVote([])
         for order in range(0, len(self.models)):
@@ -184,7 +184,7 @@ class MultiModel(object):
                 prediction_info = model.predict_probability(
                     input_data,
                     by_name=by_name,
-                    voting_style=voting_style,
+                    method=method,
                     missing_strategy=missing_strategy)
             except TypeError:
                 prediction_info = model.predict_probability(input_data,

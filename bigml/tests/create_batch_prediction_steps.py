@@ -83,7 +83,7 @@ def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
         assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
         i_get_the_batch_centroid(step, world.batch_centroid['resource'])
         status = get_status(world.batch_centroid)
-    assert(status['code'], int(code1))
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the batch anomaly score status code is either (\d) or (-\d) less than (\d+)')

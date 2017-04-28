@@ -150,7 +150,7 @@ def check_rows(prediction_rows, test_rows):
                 except ValueError:
                     pass
             eq_(check_row[index], row[index],
-                ("Got: %s/ Expected: %s in line %s" % (row, check_row, row_num)))
+                "Got: %s/ Expected: %s in line %s" % (row, check_row, row_num))
 
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):

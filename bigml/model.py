@@ -246,7 +246,7 @@ class Model(BaseModel):
                     else:
                         root_dist = self.tree.distribution
                         self.class_names = sorted([category[0]
-                                                   for category in root_dist)
+                                                   for category in root_dist])
             else:
                 raise Exception("The model isn't finished yet")
         else:

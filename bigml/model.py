@@ -321,25 +321,29 @@ class Model(BaseModel):
                 output = {d[0]: d[1] / total for d in root_dist}
                 instances = 1.0
 
-                distribution = self.predict(input_data,
-                                            missing_strategy=missing_strategy,
-                                            multiple="all")
+                prediction = self.predict(input_data,
+                                          missing_strategy=missing_strategy,
+                                          add_distribution=True)
+
+                distribution = prediction['distribution']
 
                 for class_info in distribution:
-                    class_count = class_info['count']
-                    output[class_info['prediction']] += class_count
-                    instances += class_count
+                    output[class_info[0]] += class_info[1]
+                    instances += class_info[1]
 
                 for k in output:
                     output[k] /= instances
             elif method == CONFIDENCE_CODE:
                 output = {d[0]: 0.0 for d in root_dist}
-                distribution = self.predict(input_data,
-                                            missing_strategy=missing_strategy,
-                                            multiple="all")
+                prediction = self.predict(input_data,
+                                          missing_strategy=missing_strategy,
+                                          add_distribution=True)
+
+                distribution = prediction['distribution']
 
                 for class_info in distribution:
-                    output[class_info['prediction']] += class_info['confidence']
+                    name = class_info[0]
+                    output[name] = ws_confidence(name, distribution)
             elif method == PLURALITY_CODE:
                 output = {d[0]: 0.0 for d in root_dist}
                 class_name = self.predict(input_data,
@@ -470,6 +474,7 @@ class Model(BaseModel):
             for index, [category, instances] in distribution:
                 if ((isinstance(multiple, basestring) and multiple == 'all') or
                         (isinstance(multiple, int) and index < multiple)):
+                    print(category)
                     prediction_dict = {
                         'prediction': category,
                         'confidence': ws_confidence(category,

@@ -205,10 +205,15 @@ class Ensemble(object):
             self.fields[self.objective_id].get('optype') == 'numeric'
 
         if not self.regression and self.boosting is None:
-            classes = set()
-            for distribution in self.distributions:
-                for category in distribution['training']['categories']:
-                    classes.add(category[0])
+            try:
+                objective_field = self.fields[self.objective_id]
+                categories = objective_field['summary']['categories']
+                classes = [category[0] for category in categories]
+            except (AttributeError, KeyError):
+                classes = set()
+                for distribution in self.distributions:
+                    for category in distribution['training']['categories']:
+                        classes.add(category[0])
 
             self.class_names = sorted(classes)
 

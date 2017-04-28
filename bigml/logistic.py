@@ -116,6 +116,7 @@ class LogisticRegression(ModelFields):
         self.lr_normalize = None
         self.balance_fields = None
         self.regularization = None
+
         old_coefficients = False
 
         # checks whether the information needed for local predictions is in
@@ -236,6 +237,21 @@ class LogisticRegression(ModelFields):
                             " in the resource:\n\n%s" %
                             logistic_regression)
 
+    def predict_probability(self, input_data):
+        """Predicts a probabilistic "score" for each possible output class,
+        based on input values.  The input fields must be a dictionary
+        keyed by field name.  For classifications, the output is a
+        list with one floating point element for each possible class,
+        ordered in sorted class-name ordering.
+
+        :param input_data: Input data to be predicted
+
+        """
+        distribution = self.predict(input_data)['distribution']
+        distribution.sort(key=lambda x: x['category'])
+
+        return [d['probability'] for d in distribution]
+
     def predict(self, input_data, by_name=True, add_unused_fields=False):
         """Returns the class prediction and the probability distribution
         By default the input fields must be keyed by field name but you can use
@@ -268,6 +284,7 @@ class LogisticRegression(ModelFields):
                                     " data must contain values for all numeric"
                                     " fields to get a logistic regression"
                                     " prediction.")
+
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 

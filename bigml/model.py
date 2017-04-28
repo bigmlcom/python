@@ -69,6 +69,7 @@ from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL, EXCLUDE_FIELDS
 from bigml.modelfields import check_model_fields
 from bigml.multivote import ws_confidence
+from bigml.multivote import PROBABILITY_CODE, CONFIDENCE_CODE, PLURALITY_CODE
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
@@ -142,6 +143,8 @@ class Model(BaseModel):
         self.terms = {}
         self.regression = False
         self.boosting = None
+        self.class_names = None
+
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -229,7 +232,9 @@ class Model(BaseModel):
                         parent_id=None,
                         ids_map=self.ids_map,
                         tree_info=tree_info)
+
                     self.tree.regression = tree_info['regression']
+
                     if self.tree.regression:
                         try:
                             import numpy
@@ -238,7 +243,9 @@ class Model(BaseModel):
                             self.regression_ready = True
                         except ImportError:
                             self.regression_ready = False
-
+                    else:
+                        root_dist = self.tree.distribution
+                        self.class_names = sorted(d[0] for d in root_dist)
             else:
                 raise Exception("The model isn't finished yet")
         else:
@@ -276,6 +283,75 @@ class Model(BaseModel):
 
         is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
         return self.get_leaves(filter_function=is_impure)
+
+    def predict_probability(self, input_data, method=PROBABILITY_CODE,
+                            missing_strategy=LAST_PREDICTION):
+        """For classification problems, Predicts a probabilistic "score" for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name.  For
+        classifications, the output is a list with one floating point
+        element for each possible class, ordered in sorted class-name
+        ordering.
+
+        For regressions, the output is a single element vector
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param method: numeric key code indicating how the scores
+                       should be produced:
+              0 - majority vote - A 1.0 for the most likely class, 0 otherwise
+                  PLURALITY_CODE
+              1 - Scores estimated from the class confidence at the leaf;
+                  note that for this option the scores will sum to < 1
+                  CONFIDENCE_CODE
+              2 - Lapalace-smoothed probabilitiy of leaf node distribution:
+                  PROBABILITY_CODE
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                                 missing fields
+
+        """
+        if self.regression:
+            output = [self.predict(input_data,
+                                   missing_strategy=missing_strategy)]
+        else:
+            root_dist = self.tree.distribution
+
+            if method == PROBABILITY_CODE:
+                total = float(sum([d[1] for d in root_dist]))
+                output = {d[0]: d[1] / total for d in root_dist}
+                instances = 1.0
+
+                distribution = self.predict(input_data,
+                                            missing_strategy=missing_strategy,
+                                            multiple="all")
+
+                for d in distribution:
+                    class_count = d['count']
+                    output[d['prediction']] += class_count
+                    instances += class_count
+
+                for k in output:
+                    output[k] /= instances
+            elif method == CONFIDENCE_CODE:
+                output = { d[0]: 0.0 for d in root_dist }
+                distribution = self.predict(input_data,
+                                            missing_strategy=missing_strategy,
+                                            multiple="all")
+
+                for d in distribution:
+                    output[d['prediction']] += d['confidence']
+            elif method == PLURALITY_CODE:
+                output = { d[0]: 0.0 for d in root_dist }
+                class_name = self.predict(input_data,
+                                          missing_strategy=missing_strategy)
+                output[class_name] = 1.0
+            else:
+                raise ValueError("Code %d is invalid for model prediction!"
+                                 % method)
+
+            output = [output.get(name, 0.0) for name in self.class_names]
+
+        return output
 
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,

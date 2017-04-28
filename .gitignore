@@ -18,7 +18,10 @@ build
 set_credentials.sh
 docs/_build/*
 *~
+/storage/
 /tests/storage/
+/bigml/storage/
+/bigml/tests/storage
 /tmp
 .noseids
 fields_summary.csv

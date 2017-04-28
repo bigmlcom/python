@@ -358,7 +358,7 @@ class MultiVote(object):
             normalize_factor = len(instance.predictions)
         return normalize_factor
 
-    def __init__(self, predictions, boosting=False):
+    def __init__(self, predictions, boosting=False, probabilities=False):
         """Init method, builds a MultiVote with a list of predictions
         The constuctor expects a list of well formed predictions like:
             {'prediction': 'Iris-setosa', 'confidence': 0.7}
@@ -369,11 +369,16 @@ class MultiVote(object):
         """
         self.predictions = []
         self.boosting = boosting
+        self.probabilities = probabilities
+
         if isinstance(predictions, list):
             self.predictions.extend(predictions)
         else:
             self.predictions.append(predictions)
-        if not all(['order' in prediction for prediction in predictions]):
+
+        if (not self.probabilities and
+            not all(['order' in prediction for prediction in predictions])):
+
             for i in range(len(self.predictions)):
                 self.predictions[i]['order'] = i
 
@@ -419,7 +424,7 @@ class MultiVote(object):
         method = COMBINER_MAP.get(method, COMBINER_MAP[DEFAULT_METHOD])
         keys = WEIGHT_KEYS.get(method, None)
         # and all predictions should have the weight-related keys
-        if keys is not None:
+        if keys is not None and not self.probabilities:
             for key in keys:
                 if not all([key in prediction for prediction
                             in self.predictions]):
@@ -437,6 +442,19 @@ class MultiVote(object):
                 return self.classification_boosting_combiner( \
                     options, with_confidence=with_confidence,
                     add_confidence=add_confidence)
+        elif self.probabilities:
+            total = 0.0
+            output = [0.0] * len(self.predictions[0])
+
+            for distribution in self.predictions:
+                for i, vote_value in enumerate(distribution):
+                    output[i] += vote_value
+                    total += vote_value
+
+            for i, value in enumerate(output):
+                output[i] = value / total
+
+            return output
         elif self.is_regression():
             for prediction in self.predictions:
                 if prediction[CONFIDENCE_W] is None:
@@ -659,15 +677,20 @@ class MultiVote(object):
            - count: the total number of instances of the training set in the
                     node
         """
-        if (isinstance(prediction_info, dict) and
-                'prediction' in prediction_info):
-            order = self.next_order()
-            prediction_info['order'] = order
-            self.predictions.append(prediction_info)
-        else:
-            LOGGER.warning("Failed to add the prediction.\n"
-                           "The minimal key for the prediction is 'prediction'"
-                           ":\n{'prediction': 'Iris-virginica'")
+        if isinstance(prediction_info, dict):
+            if 'prediction' in prediction_info:
+                order = self.next_order()
+                prediction_info['order'] = order
+                self.predictions.append(prediction_info)
+            else:
+                LOGGER.warning("Failed to add the prediction.\n"
+                               "The minimal key for the prediction is "
+                               "'prediction': "
+                               "\n{'prediction': 'Iris-virginica'")
+
+        elif isinstance(prediction_info, list):
+            if self.probabilities:
+                self.predictions.append(prediction_info)
 
     def single_out_category(self, options):
         """Singles out the votes for a chosen category and returns a prediction

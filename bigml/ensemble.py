@@ -185,11 +185,14 @@ class Ensemble(object):
 
         if self.distributions is None:
             try:
-                self.distributions = [{'training': {'categories': m.tree.distribution}}
-                                      for m in models]
+                self.distributions = []
+                for model in models:
+                    self.distributions.append({
+                        'training': {'categories': model.tree.distribution}
+                    })
             except AttributeError:
-                self.distributions = [m['object']['model']['distribution']
-                                      for m in models]
+                self.distributions = [model['object']['model']['distribution']
+                                      for model in models]
 
         if self.boosting is None:
             self._add_models_attrs(model, max_models)

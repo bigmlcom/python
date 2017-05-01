@@ -290,16 +290,14 @@ class Ensemble(object):
 
     def predict_probability(self, input_data, by_name=True,
                             method=PROBABILITY_CODE,
-                            missing_strategy=LAST_PREDICTION):
+                            missing_strategy=LAST_PREDICTION,
+                            compact=False):
 
-        """For classification problems, Predicts a probabilistic "score" for
+        """For classification models, Predicts a probability for
         each possible output class, based on input values.  The input
-        fields must be a dictionary keyed by field name.  For
-        classifications, the output is a list with one floating point
-        element for each possible class, ordered in sorted class-name
-        ordering.
+        fields must be a dictionary keyed by field name or field ID.
 
-        For regressions, the output is a single element vector
+        For regressions, the output is a single element list
         containing the prediction.
 
         :param input_data: Input data to be predicted
@@ -319,13 +317,22 @@ class Ensemble(object):
                   PROBABILITY_CODE
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
                                  missing fields
-
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "probability"
+                        mapped to the name of the class and it's probability,
+                        respectively.  If True, returns a list of probabilities
+                        ordered by the sorted order of the class names.
         """
         if self.regression:
-            output = [self.predict(input_data,
-                                   by_name=by_name,
-                                   method=method,
-                                   missing_strategy=missing_strategy)]
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      method=method,
+                                      missing_strategy=missing_strategy)
+
+            if compact:
+                output = [prediction]
+            else:
+                output = {'prediction': prediction}
         elif self.boosting is not None:
             probabilities = self.predict(input_data,
                                          by_name=by_name,
@@ -333,8 +340,12 @@ class Ensemble(object):
                                          add_probability=True)['probabilities']
 
             probabilities.sort(key=lambda x: x['prediction'])
-            output = [probability['probability']
-                      for probability in probabilities]
+
+            if compact:
+                output = [probability['probability']
+                          for probability in probabilities]
+            else:
+                output = probabilities
         else:
             if len(self.models_splits) > 1:
                 # If there's more than one chunk of models, they must be
@@ -367,6 +378,11 @@ class Ensemble(object):
                                   probabilities=True)
 
             output = votes.combine()
+
+            if not compact:
+                names_probabilities = zip(self.class_names, output)
+                output = [{'prediction': class_name, 'probability': probability}
+                          for class_name, probability in names_probabilities]
 
         return output
 

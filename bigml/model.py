@@ -69,7 +69,6 @@ from bigml.basemodel import BaseModel, retrieve_resource, print_importance
 from bigml.basemodel import ONLY_MODEL, EXCLUDE_FIELDS
 from bigml.modelfields import check_model_fields
 from bigml.multivote import ws_confidence
-from bigml.multivote import PROBABILITY_CODE, CONFIDENCE_CODE, PLURALITY_CODE
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
@@ -285,84 +284,115 @@ class Model(BaseModel):
         is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
         return self.get_leaves(filter_function=is_impure)
 
-    def predict_probability(self, input_data, by_name=True,
-                            method=PROBABILITY_CODE,
-                            missing_strategy=LAST_PREDICTION):
-        """For classification problems, Predicts a probabilistic "score" for
-        each possible output class, based on input values.  The input
-        fields must be a dictionary keyed by field name.  For
-        classifications, the output is a list with one floating point
-        element for each possible class, ordered in sorted class-name
-        ordering.
+    def _to_final_output(self, output_map, compact):
+        if compact:
+            return [output_map.get(name, 0.0) for name in self.class_names]
+        else:
+            output = []
+            for name in self.class_names:
+                output.append({
+                    'prediction': name,
+                    'probability': output_map.get(name, 0.0)
+                })
+            return output
 
-        For regressions, the output is a single element vector
+    def predict_confidence(self, input_data, by_name=True,
+                            missing_strategy=LAST_PREDICTION,
+                            compact=False):
+        """For classification models, Predicts a one-vs.-rest confidence value
+        for each possible output class, based on input values.  This
+        confidence value is a lower confidence bound on the predicted
+        probability of the given class.  The input fields must be a
+        dictionary keyed by field name for field ID.
+
+        For regressions, the output is a single element list
         containing the prediction.
 
         :param input_data: Input data to be predicted
         :param by_name: Boolean that is set to True if field_names (as
                         alternative to field ids) are used in the
                         input_data dict
-        :param method: numeric key code indicating how the scores
-                       should be produced:
-              0 - majority vote - A 1.0 for the most likely class, 0 otherwise
-                  PLURALITY_CODE
-              1 - Scores estimated from the class confidence at the leaf;
-                  note that for this option the scores will sum to < 1
-                  CONFIDENCE_CODE
-              2 - Lapalace-smoothed probabilitiy of leaf node distribution:
-                  PROBABILITY_CODE
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "probability"
+                        mapped to the name of the class and it's probability,
+                        respectively.  If True, returns a list of probabilities
+                        ordered by the sorted order of the class names.
 
         """
+        if self.regression or self.boosting:
+            raise AttributeError("This method is available for non-boosting"
+                                 " categorization models only.")
+
+        root_dist = self.tree.distribution
+        category_distribution = {category[0]: 0.0 for category in root_dist}
+        prediction = self.predict(input_data,
+                                  by_name=by_name,
+                                  missing_strategy=missing_strategy,
+                                  add_distribution=True)
+
+        distribution = prediction['distribution']
+
+        for class_info in distribution:
+            name = class_info[0]
+            category_distribution[name] = ws_confidence(name, distribution)
+
+        return self._to_final_output(category_distribution, compact)
+
+    def predict_probability(self, input_data, by_name=True,
+                            missing_strategy=LAST_PREDICTION,
+                            compact=False):
+        """For classification models, Predicts a probability for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name for field ID.
+
+        For regressions, the output is a single element list
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "probability"
+                        mapped to the name of the class and it's probability,
+                        respectively.  If True, returns a list of probabilities
+                        ordered by the sorted order of the class names.
+        """
         if self.regression:
-            output = [self.predict(input_data,
-                                   by_name=by_name,
-                                   missing_strategy=missing_strategy)]
-        else:
-            root_dist = self.tree.distribution
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      missing_strategy=missing_strategy)
 
-            if method == PROBABILITY_CODE:
-                total = float(sum([category[1] for category in root_dist]))
-                output = {category[0]: category[1] / total
-                          for category in root_dist}
-                instances = 1.0
-
-                prediction = self.predict(input_data,
-                                          by_name=by_name,
-                                          missing_strategy=missing_strategy,
-                                          add_distribution=True)
-
-                distribution = prediction['distribution']
-
-                for class_info in distribution:
-                    output[class_info[0]] += class_info[1]
-                    instances += class_info[1]
-
-                for k in output:
-                    output[k] /= instances
-            elif method == CONFIDENCE_CODE:
-                output = {category[0]: 0.0 for category in root_dist}
-                prediction = self.predict(input_data,
-                                          by_name=by_name,
-                                          missing_strategy=missing_strategy,
-                                          add_distribution=True)
-
-                distribution = prediction['distribution']
-
-                for class_info in distribution:
-                    name = class_info[0]
-                    output[name] = ws_confidence(name, distribution)
-            elif method == PLURALITY_CODE:
-                output = {category[0]: 0.0 for category in root_dist}
-                class_name = self.predict(input_data,
-                                          missing_strategy=missing_strategy)
-                output[class_name] = 1.0
+            if compact:
+                output = [prediction]
             else:
-                raise ValueError("Code %d is invalid for model prediction!"
-                                 % method)
+                output = {'prediction': prediction}
+        else:
+            instances = 1.0
+            root_dist = self.tree.distribution
+            total = float(sum([category[1] for category in root_dist]))
+            category_distribution = {category[0]: category[1] / total
+                                     for category in root_dist}
 
-            output = [output.get(name, 0.0) for name in self.class_names]
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      missing_strategy=missing_strategy,
+                                      add_distribution=True)
+
+            distribution = prediction['distribution']
+
+            for class_info in distribution:
+                category_distribution[class_info[0]] += class_info[1]
+                instances += class_info[1]
+
+            for k in category_distribution:
+                category_distribution[k] /= instances
+
+            output = self._to_final_output(category_distribution, compact)
 
         return output
 

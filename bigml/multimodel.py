@@ -44,7 +44,7 @@ from bigml.model import Model
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE
+from bigml.multivote import PLURALITY_CODE, CONFIDENCE_CODE, PROBABILITY_CODE
 from bigml.io import UnicodeWriter, UnicodeReader
 
 
@@ -181,14 +181,38 @@ class MultiModel(object):
             votes.probabilities = True
 
             try:
-                prediction_info = model.predict_probability(
-                    input_data,
-                    by_name=by_name,
-                    method=method,
-                    missing_strategy=missing_strategy)
-            except TypeError:
-                prediction_info = model.predict_probability(input_data,
-                                                            by_name=by_name)
+                if method == PROBABILITY_CODE:
+                    prediction_info = model.predict_probability(
+                        input_data,
+                        by_name=by_name,
+                        compact=True,
+                        missing_strategy=missing_strategy)
+                elif method == CONFIDENCE_CODE:
+                    prediction_info = model.predict_confidence(
+                        input_data,
+                        by_name=by_name,
+                        compact=True,
+                        missing_strategy=missing_strategy)
+                elif method == PLURALITY_CODE:
+                    prediction_info = [0.0] * len(self.class_names)
+                    prediction = model.predict(
+                        input_data,
+                        by_name=by_name,
+                        missing_strategy=missing_strategy)
+                    prediction_info[self.class_names.index(prediction)] = 1.0
+                else:
+                    raise ValueError('%d is not a valid "method"' % method)
+            except (AttributeError, TypeError):
+                if method == PLURALITY_CODE:
+                    prediction_info = [0.0] * len(self.class_names)
+                    prediction = model.predict(input_data, by_name=by_name)
+                    prediction_info[self.class_names.index(prediction)] = 1.0
+                else:
+                    prediction_info = model.predict_probability(
+                        input_data,
+                        by_name=by_name,
+                        compact=True)
+
             votes.append(prediction_info)
 
         return votes

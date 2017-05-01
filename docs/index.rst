@@ -4093,21 +4093,20 @@ The argument can be set to ``all`` to obtain the complete
 list or to an integer``n``, in which case you will obtain the top ``n``
 predictions.
 
-When your test data has missing values, you can choose between
-``last prediction``
-or ``proportional`` strategy to compute the prediction. The `last prediction`
-strategy is the one used by default. To compute a prediction, the algorithm
-goes down the model's decision tree and checks the condition it finds at
-each node (e.g.: 'sepal length' > 2). If the field checked is missing in your
-input data you have two options: by default (``last prediction`` strategy)
-the algorithm will stop and issue the last prediction
-it computed in the previous node. If you chose ``proportional`` strategy
-instead, the algorithm will continue to go down the tree considering both
-branches from that node on. Thus, it will store a list of possible predictions
-from then on,
-one per valid node. In this case, the final prediction will be the majority
-(for categorical models) or the average (for regressions) of values predicted
-by the list of predicted values.
+When your test data has missing values, you can choose between ``last
+prediction`` or ``proportional`` strategy to compute the
+prediction. The ``last prediction`` strategy is the one used by
+default. To compute a prediction, the algorithm goes down the model's
+decision tree and checks the condition it finds at each node (e.g.:
+'sepal length' > 2). If the field checked is missing in your input
+data you have two options: by default (``last prediction`` strategy)
+the algorithm will stop and issue the last prediction it computed in
+the previous node. If you chose ``proportional`` strategy instead, the
+algorithm will continue to go down the tree considering both branches
+from that node on. Thus, it will store a list of possible predictions
+from then on, one per valid node. In this case, the final prediction
+will be the majority (for categorical models) or the average (for
+regressions) of values predicted by the list of predicted values.
 
 You can set this strategy by using the ``missing_strategy``
 argument with code ``0`` to use ``last prediction`` and ``1`` for
@@ -4120,6 +4119,52 @@ argument with code ``0`` to use ``last prediction`` and ``1`` for
     local_model.predict({"petal length": 3, "petal width": 1},
                         missing_strategy=PROPORTIONAL)
 
+If you would like a per-class prediction of the confidence or
+probability for each class in the model, you can use the
+``predict_probability`` and ``predict_confidence`` methods
+respectively.  Each of these methods takes the ``by_name`` and
+``missing_strategy`` arguments that function as in ``predict``, and
+one additional argument, ``compact``.
+
+If ``compact`` is ``False`` (the default), the output of these
+functions is a list of maps, each with the keys ``prediction`` and
+``probability`` mapped to the class name and its associated
+probability.
+
+So, for example, the following:
+
+.. code-block:: python
+
+    local_model.predict_probability({"petal length": 3})
+
+would result in
+
+.. code-block:: python
+
+    [{'prediction': u'Iris-setosa',
+      'probability': 0.0033003300330033},
+     {'prediction': u'Iris-versicolor',
+      'probability': 0.4983498349834984},
+     {'prediction': u'Iris-virginica',
+      'probability': 0.4983498349834984}]
+
+If ``compact`` is ``True``, only the probabilities themselves are
+returned, as a list in class name order.  So this:
+
+So, for example, the following:
+
+.. code-block:: python
+
+    local_model.predict_probability({"petal length": 3}, compact=True)
+
+would result in
+
+.. code-block:: python
+
+    [0.0033003300330033, 0.4983498349834984, 0.4983498349834984]
+
+The output of ``predict_confidence`` is the same, except that the
+output maps are keyed with ``confidence`` instead of ``probability``.
 
 Local Clusters
 --------------
@@ -4389,11 +4434,10 @@ local logistic regression object:
 
     local_log_regression = LogisticRegression(logistic_regression)
 
-Note that in this example we used a ``limit=-1`` query string for the logistic
-regression retrieval. This ensures that all fields are retrieved by the get
-method in the
-same call (unlike in the standard calls where the number of fields returned is
-limited).
+Note that in this example we used a ``limit=-1`` query string for the
+logistic regression retrieval. This ensures that all fields are
+retrieved by the get method in the same call (unlike in the standard
+calls where the number of fields returned is limited).
 
 Local Logistic Regression Predictions
 -------------------------------------
@@ -4419,6 +4463,32 @@ You must keep in mind, though, that to obtain a logistic regression
 prediction, input data
 must have values for all the numeric fields. No missing values for the numeric
 fields are allowed.
+
+For consistency of interface with the ``Model`` class, logistic
+regressions again have a ``predict_probability`` method, which takes
+two of the same arguments as ``Model.predict``: ``by_name`` and
+``compact``.  As stated above, missing values are not allowed, and so
+there is no ``missing_strategy`` argument.
+
+As with local Models, if ``compact`` is ``False`` (the default), the
+output is a list of maps, each with the keys ``prediction`` and
+``probability`` mapped to the class name and its associated
+probability.
+
+So, for example
+
+.. code-block:: python
+
+    local_log_regression.predict_probability({"petal length": 2, "sepal length": 1.5,
+                                              "petal width": 0.5, "sepal width": 0.7})
+
+    [{'prediction': u'Iris-setosa', 'probability': 0.02659013168639014},
+     {'prediction': u'Iris-versicolor', 'probability': 0.46926542042788333},
+     {'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}]
+
+If ``compact`` is ``True``, only the probabilities themselves are
+returned, as a list in class name order, again, as is the case with
+local Models.
 
 Local Association
 -----------------
@@ -4936,6 +5006,42 @@ However, ``Boosted Trees`` don't have an associated confidence measure, so
 only the prediction will be obtained when applied to regressions.
 In classifications, adding the ``add_probability`` or ``with_probability``
 argument will also provide the probability of the prediction.
+
+For consistency of interface with the ``Model`` class, as well as
+between boosted and non-boosted ensembles, local Ensembles again have a
+``predict_probability`` method.  This takes same optional arguments as
+``Model.predict``: ``by_name``, ``missing_strategy`` and ``compact``,
+as well as a fourth optional argument, ``method``, which describes
+whether or not the probabilities are a function of the raw model votes
+(``method=0``), the confidence-weghted votes (``method=1``) or the
+averaged probabilities of each individual model prediction
+(``method=2``).
+
+As with local Models, if ``compact`` is ``False`` (the default), the
+output is a list of maps, each with the keys ``prediction`` and
+``probability`` mapped to the class name and its associated
+probability.
+
+So, for example:
+
+.. code-block:: python
+
+    ensemble.predict_probability({"petal length": 3, "petal width": 1})
+
+    [{'prediction': u'Iris-setosa', 'probability': 0.006733220044732548},
+     {'prediction': u'Iris-versicolor', 'probability': 0.9824478534614787},
+     {'prediction': u'Iris-virginica', 'probability': 0.0108189264937886}]
+
+    ensemble.predict_probability({"petal length": 3, "petal width": 1}, \
+                                 method=0)
+
+    [{'prediction': u'Iris-setosa', 'probability': 0.0},
+     {'prediction': u'Iris-versicolor', 'probability': 1.0},
+     {'prediction': u'Iris-virginica', 'probability': 0.0}]
+
+If ``compact`` is ``True``, only the probabilities themselves are
+returned, as a list in class name order, again, as is the case with
+local Models.
 
 Fields
 ------

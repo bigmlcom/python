@@ -152,7 +152,7 @@ def create_local_ensemble_prediction_with_confidence(step, input_data):
         json.loads(input_data), with_confidence=True)
 
     world.local_probabilities = world.local_ensemble.predict_probability( \
-        json.loads(input_data))
+        json.loads(input_data), compact=True)
 
 def create_local_ensemble_proportional_prediction_with_confidence( \
     step, input_data):

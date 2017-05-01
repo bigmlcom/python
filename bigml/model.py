@@ -284,7 +284,7 @@ class Model(BaseModel):
         is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
         return self.get_leaves(filter_function=is_impure)
 
-    def _to_final_output(self, output_map, compact):
+    def _to_output(self, output_map, compact, value_key):
         if compact:
             return [output_map.get(name, 0.0) for name in self.class_names]
         else:
@@ -292,7 +292,7 @@ class Model(BaseModel):
             for name in self.class_names:
                 output.append({
                     'prediction': name,
-                    'probability': output_map.get(name, 0.0)
+                    value_key: output_map.get(name, 0.0)
                 })
             return output
 
@@ -326,7 +326,7 @@ class Model(BaseModel):
                                  " categorization models only.")
 
         root_dist = self.tree.distribution
-        category_distribution = {category[0]: 0.0 for category in root_dist}
+        category_map = {category[0]: 0.0 for category in root_dist}
         prediction = self.predict(input_data,
                                   by_name=by_name,
                                   missing_strategy=missing_strategy,
@@ -336,9 +336,9 @@ class Model(BaseModel):
 
         for class_info in distribution:
             name = class_info[0]
-            category_distribution[name] = ws_confidence(name, distribution)
+            category_map[name] = ws_confidence(name, distribution)
 
-        return self._to_final_output(category_distribution, compact)
+        return self._to_output(category_map, compact, "confidence")
 
     def predict_probability(self, input_data, by_name=True,
                             missing_strategy=LAST_PREDICTION,
@@ -375,7 +375,7 @@ class Model(BaseModel):
             instances = 1.0
             root_dist = self.tree.distribution
             total = float(sum([category[1] for category in root_dist]))
-            category_distribution = {category[0]: category[1] / total
+            category_map = {category[0]: category[1] / total
                                      for category in root_dist}
 
             prediction = self.predict(input_data,
@@ -386,13 +386,13 @@ class Model(BaseModel):
             distribution = prediction['distribution']
 
             for class_info in distribution:
-                category_distribution[class_info[0]] += class_info[1]
+                category_map[class_info[0]] += class_info[1]
                 instances += class_info[1]
 
-            for k in category_distribution:
-                category_distribution[k] /= instances
+            for k in category_map:
+                category_map[k] /= instances
 
-            output = self._to_final_output(category_distribution, compact)
+            output = self._to_output(category_map, compact, "probability")
 
         return output
 

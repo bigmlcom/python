@@ -4089,9 +4089,12 @@ will result in
       'prediction': u'Iris-virginica',
       'probability': 0.3333333333333333}]
 
-The argument can be set to ``all`` to obtain the complete
-list or to an integer``n``, in which case you will obtain the top ``n``
-predictions.
+The argument can be set to ``all`` to obtain the complete list or to
+an integer``n``, in which case you will obtain the top ``n``
+predictions.  **Note importantly that the ``multiple`` argument is
+scheduled for deprecation in a future iteration.  Similar
+functionality is available using the ``predict_probability`` and
+``predict_confidence`` functions described below.**
 
 When your test data has missing values, you can choose between ``last
 prediction`` or ``proportional`` strategy to compute the
@@ -4119,17 +4122,21 @@ argument with code ``0`` to use ``last prediction`` and ``1`` for
     local_model.predict({"petal length": 3, "petal width": 1},
                         missing_strategy=PROPORTIONAL)
 
-If you would like a per-class prediction of the confidence or
-probability for each class in the model, you can use the
-``predict_probability`` and ``predict_confidence`` methods
-respectively.  Each of these methods takes the ``by_name`` and
-``missing_strategy`` arguments that function as in ``predict``, and
-one additional argument, ``compact``.
+For classification models, it is sometimes useful to obtain a
+probability or confidence prediction for each possible class of the
+objective field.  To do this, you can use the ``predict_probability``
+and ``predict_confidence`` methods respectively.  The former gives a
+prediction based a on the distribution of instances at the appropriate
+leaf node, with a Laplace correction based on the root node
+distribution.  The latter returns a lower confidence bound on the leaf
+node probability based on the Wilson score interval.
 
-If ``compact`` is ``False`` (the default), the output of these
-functions is a list of maps, each with the keys ``prediction`` and
-``probability`` mapped to the class name and its associated
-probability.
+Each of these methods takes the ``by_name`` and ``missing_strategy``
+arguments that function as in ``predict``, and one additional
+argument, ``compact``.  If ``compact`` is ``False`` (the default), the
+output of these functions is a list of maps, each with the keys
+``prediction`` and ``probability`` mapped to the class name and its
+associated probability.
 
 So, for example, the following:
 
@@ -4149,9 +4156,11 @@ would result in
       'probability': 0.4983498349834984}]
 
 If ``compact`` is ``True``, only the probabilities themselves are
-returned, as a list in class name order.  So this:
+returned, as a list in class name order.  Note that, for reference,
+the attribute ``Model.class_names`` contains the class names in the
+appropriate ordering.
 
-So, for example, the following:
+To illustrate, the following:
 
 .. code-block:: python
 
@@ -5008,14 +5017,14 @@ In classifications, adding the ``add_probability`` or ``with_probability``
 argument will also provide the probability of the prediction.
 
 For consistency of interface with the ``Model`` class, as well as
-between boosted and non-boosted ensembles, local Ensembles again have a
-``predict_probability`` method.  This takes same optional arguments as
-``Model.predict``: ``by_name``, ``missing_strategy`` and ``compact``,
-as well as a fourth optional argument, ``method``, which describes
-whether or not the probabilities are a function of the raw model votes
-(``method=0``), the confidence-weghted votes (``method=1``) or the
-averaged probabilities of each individual model prediction
-(``method=2``).
+between boosted and non-boosted ensembles, local Ensembles again have
+a ``predict_probability`` method.  This takes the same optional
+arguments as ``Model.predict``: ``by_name``, ``missing_strategy`` and
+``compact``, as well as a fourth optional argument, ``method``, which
+describes whether or not the probabilities are a function of the raw
+model votes (``method=0``), the confidence-weghted votes
+(``method=1``) or the averaged probabilities of each individual model
+prediction (``method=2``).
 
 As with local Models, if ``compact`` is ``False`` (the default), the
 output is a list of maps, each with the keys ``prediction`` and

@@ -315,9 +315,9 @@ class Model(BaseModel):
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
-                        per class, with the keys "prediction" and "probability"
-                        mapped to the name of the class and it's probability,
-                        respectively.  If True, returns a list of probabilities
+                        per class, with the keys "prediction" and "confidence"
+                        mapped to the name of the class and its confidence,
+                        respectively.  If True, returns a list of confidences
                         ordered by the sorted order of the class names.
 
         """

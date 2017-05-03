@@ -4091,10 +4091,10 @@ will result in
 
 The argument can be set to ``all`` to obtain the complete list or to
 an integer``n``, in which case you will obtain the top ``n``
-predictions.  **Note importantly that the ``multiple`` argument is
-scheduled for deprecation in a future iteration.  Similar
-functionality is available using the ``predict_probability`` and
-``predict_confidence`` functions described below.**
+predictions.  **Note importantly that the** ``multiple`` **argument is
+scheduled for deprecation in a future version.  Similar functionality
+is available using the** ``predict_probability`` **and**
+``predict_confidence`` **functions described below.**
 
 When your test data has missing values, you can choose between ``last
 prediction`` or ``proportional`` strategy to compute the

@@ -4126,17 +4126,17 @@ For classification models, it is sometimes useful to obtain a
 probability or confidence prediction for each possible class of the
 objective field.  To do this, you can use the ``predict_probability``
 and ``predict_confidence`` methods respectively.  The former gives a
-prediction based a on the distribution of instances at the appropriate
+prediction based on the distribution of instances at the appropriate
 leaf node, with a Laplace correction based on the root node
 distribution.  The latter returns a lower confidence bound on the leaf
 node probability based on the Wilson score interval.
 
-Each of these methods takes the ``by_name`` and ``missing_strategy``
-arguments that function as in ``predict``, and one additional
+Each of these methods take the ``by_name`` and ``missing_strategy``
+arguments that function as they do in ``predict``, and one additional
 argument, ``compact``.  If ``compact`` is ``False`` (the default), the
 output of these functions is a list of maps, each with the keys
-``prediction`` and ``probability`` mapped to the class name and its
-associated probability.
+``prediction`` and ``probability`` (or ``confidence``) mapped to the
+class name and its associated probability (or confidence).
 
 So, for example, the following:
 
@@ -5022,7 +5022,7 @@ a ``predict_probability`` method.  This takes the same optional
 arguments as ``Model.predict``: ``by_name``, ``missing_strategy`` and
 ``compact``, as well as a fourth optional argument, ``method``, which
 describes whether or not the probabilities are a function of the raw
-model votes (``method=0``), the confidence-weghted votes
+model votes (``method=0``), the confidence-weighted votes
 (``method=1``) or the averaged probabilities of each individual model
 prediction (``method=2``).
 

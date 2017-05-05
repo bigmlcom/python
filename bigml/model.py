@@ -143,7 +143,8 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
-
+        if not hasattr(self, 'tree_class'):
+            self.tree_class = Tree
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -223,7 +224,7 @@ class Model(BaseModel):
                     # will store global information in the tree: regression and
                     # max_bins number
                     tree_info = {'max_bins': 0}
-                    self.tree = Tree(
+                    self.tree = self.tree_class(
                         model['model']['root'],
                         self.fields,
                         objective_field=self.objective_id,

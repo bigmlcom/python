@@ -37,18 +37,10 @@ from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
 from bigml.util import sort_fields, slugify, split, utf8
 from bigml.multivote import ws_confidence, merge_distributions, merge_bins
 from bigml.multivote import BINS_LIMIT
-
-
-# Map operator str to its corresponding python operator
-PYTHON_OPERATOR = {
-    "<": "<",
-    "<=": "<=",
-    "=": "==",
-    "!=": "!=",
-    "/=": "!=",
-    ">=": ">=",
-    ">": ">"
-}
+from bigml.tree_utils import tableau_string, filter_nodes, missing_branch, \
+    none_value, one_branch
+from bigml.tree_utils import PYTHON_OPERATOR, MAX_ARGS_LENGTH, INDENT, \
+    TERM_OPTIONS, ITEM_OPTIONS
 
 MISSING_OPERATOR = {
     "=": "is",
@@ -59,14 +51,6 @@ T_MISSING_OPERATOR = {
     "=": "ISNULL(",
     "!=": "NOT ISNULL("
 }
-
-
-MAX_ARGS_LENGTH = 10
-
-INDENT = u'    '
-
-TERM_OPTIONS = ["case_sensitive", "token_mode"]
-ITEM_OPTIONS = ["separator", "separator_regexp"]
 
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
@@ -127,58 +111,6 @@ def regression_error(distribution_variance, population, r_z=1.96):
     return float('nan')
 
 
-def tableau_string(text):
-    """Transforms to a string representation in Tableau
-
-    """
-    value = repr(text)
-    if isinstance(text, unicode):
-        return value[1:]
-    return value
-
-
-def filter_nodes(nodes_list, ids=None, subtree=True):
-    """Filters the contents of a nodes_list. If any of the nodes is in the
-       ids list, the rest of nodes are removed. If none is in the ids list
-       we include or exclude the nodes depending on the subtree flag.
-
-    """
-    if not nodes_list:
-        return None
-    nodes = nodes_list[:]
-    if ids is not None:
-        for node in nodes:
-            if node.id in ids:
-                nodes = [node]
-                return nodes
-    if not subtree:
-        nodes = []
-    return nodes
-
-
-def missing_branch(children):
-    """Checks if the missing values are assigned to a special branch
-
-    """
-    return any([child.predicate.missing for child in children])
-
-
-def none_value(children):
-    """Checks if the predicate has a None value
-
-    """
-    return any([child.predicate.value is None for child in children])
-
-
-def one_branch(children, input_data):
-    """Check if there's only one branch to be followed
-
-    """
-    missing = split(children) in input_data
-    return (missing or missing_branch(children)
-            or none_value(children))
-
-
 def extract_distribution(summary):
     """Extracts the distribution info from the objective_summary structure
        in any of its grouping units: bins, counts or categories
@@ -237,7 +169,7 @@ class Tree(object):
         children = []
         if 'children' in tree:
             for child in tree['children']:
-                children.append(Tree(child,
+                children.append(self.__class__(child,
                                      self.fields,
                                      objective_field=objective_field,
                                      parent_id=self.id,

@@ -3,17 +3,13 @@
 History
 -------
 
-4.10.1 (2017-05-05)
-~~~~~~~~~~~~~~~~~~~
-
-- Internal refactoring of local model classes preparing for extensions
-  in BigMLer.
-
-4.10.0 (2017-05-03)
+4.10.0 (2017-05-05)
 ~~~~~~~~~~~~~~~~~~~
 
 - Adding predic_probability and predict_confidence methods to local model and
   ensemble.
+- Internal refactoring of local model classes preparing for extensions
+  in BigMLer.
 
 4.9.2 (2017-03-26)
 ~~~~~~~~~~~~~~~~~~

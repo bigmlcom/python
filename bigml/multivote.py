@@ -376,8 +376,8 @@ class MultiVote(object):
         else:
             self.predictions.append(predictions)
 
-        if (not self.probabilities and
-            not all(['order' in prediction for prediction in predictions])):
+        if not self.probabilities and \
+                not all(['order' in prediction for prediction in predictions]):
 
             for i in range(len(self.predictions)):
                 self.predictions[i]['order'] = i
@@ -657,7 +657,7 @@ class MultiVote(object):
                 "probabilities": [ \
                     {"prediction": prediction,
                      "probability": prediction_info["probability"]}
-                     for prediction, prediction_info in predictions]}
+                    for prediction, prediction_info in predictions]}
         else:
             return prediction
 

@@ -169,13 +169,14 @@ class Tree(object):
         children = []
         if 'children' in tree:
             for child in tree['children']:
-                children.append(self.__class__(child,
-                                     self.fields,
-                                     objective_field=objective_field,
-                                     parent_id=self.id,
-                                     ids_map=ids_map,
-                                     subtree=subtree,
-                                     tree_info=tree_info))
+                children.append(self.__class__( \
+                    child,
+                    self.fields,
+                    objective_field=objective_field,
+                    parent_id=self.id,
+                    ids_map=ids_map,
+                    subtree=subtree,
+                    tree_info=tree_info))
 
         self.children = children
         self.regression = self.is_regression()

@@ -26,7 +26,7 @@ from bigml.predicate import Predicate
 from bigml.prediction import Prediction
 from bigml.util import sort_fields, utf8, split
 from bigml.tree import LAST_PREDICTION, PROPORTIONAL
-from bigml.tree import missing_branch, none_value, one_branch
+from bigml.tree import one_branch
 
 
 class BoostedTree(object):

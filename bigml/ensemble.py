@@ -388,8 +388,8 @@ class Ensemble(object):
 
     def _get_models(self, models_split):
         if not isinstance(models_split[0], Model):
-            if (self.cache_get is not None and
-                hasattr(self.cache_get, '__call__')):
+            if self.cache_get is not None and \
+                    hasattr(self.cache_get, '__call__'):
                 # retrieve the models from a cache get function
                 try:
                     models = [self.cache_get(model_id) for model_id

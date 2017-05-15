@@ -21,12 +21,12 @@ This module stores auxiliar functions used in tree traversal and
 code generators for the body of the local model plugins
 """
 
-from unidecode import unidecode
 import re
 import locale
 import sys
 
 from urlparse import urlparse
+from unidecode import unidecode
 
 from bigml.util import split
 
@@ -36,6 +36,8 @@ TM_FULL_TERM = 'full_terms_only'
 TM_ALL = 'all'
 TERM_OPTIONS = ["case_sensitive", "token_mode"]
 ITEM_OPTIONS = ["separator", "separator_regexp"]
+COMPOSED_FIELDS = ["text", "items"]
+NUMERIC_VALUE_FIELDS = ["text", "items", "numeric"]
 
 MAX_ARGS_LENGTH = 10
 
@@ -55,7 +57,8 @@ PYTHON_OPERATOR = {
 
 # reserved keywords
 
-CS_KEYWORDS = ["abstract", "as", "base", "bool", "break", "byte", "case",
+CS_KEYWORDS = [
+    "abstract", "as", "base", "bool", "break", "byte", "case",
     "catch", "char", "checked", "class", "const", "continue", "decimal",
     "default", "delegate", "do", "double", "else", "enum", "event", "explicit",
     "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto",
@@ -94,242 +97,49 @@ VB_KEYWORDS = [
 ]
 
 JAVA_KEYWORDS = [
-    "abstract",
-    "continue",
-    "for",
-    "new",
-    "switch",
-    "assert",
-    "default",
-    "goto",
-    "package",
-    "synchronized",
-    "boolean",
-    "do",
-    "if",
-    "private",
-    "this",
-    "break",
-    "double",
-    "implements",
-    "protected",
-    "throw",
-    "byte",
-    "else",
-    "import",
-    "public",
-    "throws",
-    "case",
-    "enum",
-    "instanceof",
-    "return",
-    "transient",
-    "catch",
-    "extends",
-    "int",
-    "short",
-    "try",
-    "char",
-    "final",
-    "interface",
-    "static",
-    "void",
-    "class",
-    "finally",
-    "long",
-    "strictfp",
-    "volatile",
-    "const",
-    "float",
-    "native",
-    "super",
-    "while"
+    "abstract", "continue", "for", "new", "switch", "assert", "default",
+    "goto", "package", "synchronized", "boolean", "do", "if", "private",
+    "this", "break", "double", "implements", "protected", "throw",
+    "byte", "else", "import", "public", "throws", "case", "enum",
+    "instanceof", "return", "transient", "catch", "extends", "int",
+    "short", "try", "char", "final", "interface", "static", "void",
+    "class", "finally", "long", "strictfp", "volatile", "const",
+    "float", "native", "super", "while"
 ]
 
 OBJC_KEYWORDS = [
-    "auto",
-    "BOOL",
-    "break",
-    "Class",
-    "case",
-    "bycopy",
-    "char",
-    "byref",
-    "const",
-    "id",
-    "continue",
-    "IMP",
-    "default",
-    "in",
-    "do",
-    "inout",
-    "double",
-    "nil",
-    "else",
-    "NO",
-    "enum",
-    "NULL",
-    "extern",
-    "oneway",
-    "float",
-    "out",
-    "for",
-    "Protocol",
-    "goto",
-    "SEL",
-    "if",
-    "self",
-    "inline",
-    "super",
-    "int",
-    "YES",
-    "long",
-    "@interface",
-    "register",
-    "@end",
-    "restrict",
-    "@implementation",
-    "return",
-    "@protocol",
-    "short",
-    "@class",
-    "signed",
-    "@public",
-    "sizeof",
-    "@protected",
-    "static",
-    "@private",
-    "struct",
-    "@property",
-    "switch",
-    "@try",
-    "typedef",
-    "@throw",
-    "union",
-    "@catch()",
-    "unsigned",
-    "@finally",
-    "void",
-    "@synthesize",
-    "volatile",
-    "@dynamic",
-    "while",
-    "@selector",
-    "_Bool",
-    "atomic",
-    "_Complex",
-    "nonatomic",
-    "_Imaginery",
-    "retain"
+    "auto", "BOOL", "break", "Class", "case", "bycopy", "char", "byref",
+    "const", "id", "continue", "IMP", "default", "in", "do", "inout",
+    "double", "nil", "else", "NO", "enum", "NULL", "extern", "oneway",
+    "float", "out", "for", "Protocol", "goto", "SEL", "if", "self",
+    "inline", "super", "int", "YES", "long", "@interface", "register",
+    "@end", "restrict", "@implementation", "return", "@protocol",
+    "short", "@class", "signed", "@public", "sizeof", "@protected",
+    "static", "@private", "struct", "@property", "switch", "@try",
+    "typedef", "@throw", "union", "@catch()", "unsigned", "@finally",
+    "void", "@synthesize", "volatile", "@dynamic", "while", "@selector",
+    "_Bool", "atomic", "_Complex", "nonatomic", "_Imaginery", "retain"
 ]
 
 JS_KEYWORDS = [
-    "break",
-    "case",
-    "catch",
-    "continue",
-    "debugger",
-    "default",
-    "delete",
-    "do",
-    "else",
-    "finally",
-    "for",
-    "function",
-    "if",
-    "in",
-    "instanceof",
-    "new",
-    "return",
-    "switch",
-    "this",
-    "throw",
-    "try",
-    "typeof",
-    "var",
-    "void",
-    "while",
-    "with",
-    "class",
-    "enum",
-    "export",
-    "extends",
-    "import",
-    "super",
-    "implements",
-    "interface",
-    "let",
-    "package",
-    "private",
-    "protected",
-    "public",
-    "static",
-    "yield",
-    "null",
-    "true",
-    "const",
-    "false"
+    "break", "case", "catch", "continue", "debugger", "default", "delete",
+    "do", "else", "finally", "for", "function", "if", "in", "instanceof",
+    "new", "return", "switch", "this", "throw", "try", "typeof", "var",
+    "void", "while", "with", "class", "enum", "export", "extends",
+    "import", "super", "implements", "interface", "let", "package",
+    "private", "protected", "public", "static", "yield", "null",
+    "true", "const", "false"
 ]
 
 
 PYTHON_KEYWORDS = [
-    "and",
-    "assert",
-    "break",
-    "class",
-    "continue",
-    "def",
-    "del",
-    "elif",
-    "else",
-    "except",
-    "exec",
-    "finally",
-    "for",
-    "from",
-    "global",
-    "if",
-    "import",
-    "in",
-    "is",
-    "lambda",
-    "not",
-    "or",
-    "pass",
-    "print",
-    "raise",
-    "return",
-    "try",
-    "while ",
-    "Data",
-    "Float",
-    "Int",
-    "Numeric",
-    "Oxphys",
-    "array",
-    "close",
-    "float",
-    "int",
-    "input",
-    "open",
-    "range",
-    "type",
-    "write",
-    "zeros",
-    "acos",
-    "asin",
-    "atan",
-    "cos",
-    "e",
-    "exp",
-    "fabs",
-    "floor",
-    "log",
-    "log10",
-    "pi",
-    "sin",
-    "sqrt",
-    "tan"
+    "and", "assert", "break", "class", "continue", "def", "del", "elif",
+    "else", "except", "exec", "finally", "for", "from", "global", "if",
+    "import", "in", "is", "lambda", "not", "or", "pass", "print", "raise",
+    "return", "try", "while ", "Data", "Float", "Int", "Numeric", "Oxphys",
+    "array", "close", "float", "int", "input", "open", "range", "type",
+    "write", "zeros", "acos", "asin", "atan", "cos", "e", "exp", "fabs",
+    "floor", "log", "log10", "pi", "sin", "sqrt", "tan"
 ]
 
 
@@ -364,11 +174,11 @@ def sort_fields(fields):
     """
     fathers = [(key, val) for key, val in
                sorted(fields.items(),
-                      key=lambda k:k[1]['column_number'])
+                      key=lambda k: k[1]['column_number'])
                if not 'auto_generated' in val]
     children = [(key, val) for key, val in
                 sorted(fields.items(),
-                       key=lambda k:k[1]['column_number'])
+                       key=lambda k: k[1]['column_number'])
                 if 'auto_generated' in val]
     children.reverse()
     fathers_keys = [father[0] for father in fathers]
@@ -494,7 +304,7 @@ def docstring_comment(model):
         model.tree.fields[model.tree.objective_id]['name'],
         model.resource_id))
     model.description = (unicode( \
-        model.description).strip()
+        model.description).strip() \
         or u'Predictive model by BigML - Machine Learning Made Easy')
     return docstring
 
@@ -538,7 +348,7 @@ def signature_name_vb(text, model):
 """ % (model.tree.fields[model.tree.objective_id]['name'],
        model.resource_id,
        model.description if model.description else default_description)
-    return ("Predict{0}".format(obj_field_for_name) , header)
+    return ("Predict{0}".format(obj_field_for_name), header)
 
 
 def localize(number):
@@ -564,10 +374,11 @@ def print_distribution(distribution, out=sys.stdout):
                    [group[1] for group in distribution])
     output = u""
     for group in distribution:
-        output += u"    %s: %.2f%% (%d instance%s)\n" % (group[0],
-                  round(group[1] * 1.0 / total, 4) * 100,
-                  group[1],
-                  "" if group[1] == 1 else "s")
+        output += u"    %s: %.2f%% (%d instance%s)\n" % ( \
+            group[0],
+            round(group[1] * 1.0 / total, 4) * 100,
+            group[1],
+            "" if group[1] == 1 else "s")
     out.write(output)
     out.flush()
 

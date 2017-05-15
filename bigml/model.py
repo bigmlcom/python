@@ -298,8 +298,8 @@ class Model(BaseModel):
             return output
 
     def predict_confidence(self, input_data, by_name=True,
-                            missing_strategy=LAST_PREDICTION,
-                            compact=False):
+                           missing_strategy=LAST_PREDICTION,
+                           compact=False):
         """For classification models, Predicts a one-vs.-rest confidence value
         for each possible output class, based on input values.  This
         confidence value is a lower confidence bound on the predicted
@@ -377,7 +377,7 @@ class Model(BaseModel):
             root_dist = self.tree.distribution
             total = float(sum([category[1] for category in root_dist]))
             category_map = {category[0]: category[1] / total
-                                     for category in root_dist}
+                            for category in root_dist}
 
             prediction = self.predict(input_data,
                                       by_name=by_name,

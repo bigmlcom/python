@@ -87,6 +87,22 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     return terms_set.items()
 
 
+def balance_input(input_data, fields):
+    """Balancing the values in the input_data using the corresponding
+    field scales
+
+    """
+
+    for field in input_data:
+        if fields[field]['optype'] == 'numeric':
+            mean = fields[field]['summary']['mean']
+            stddev = fields[field]['summary'][ \
+                'standard_deviation']
+            # if stddev is not positive, we only substract the mean
+            input_data[field] = input_data[field] - mean if \
+                stddev <= 0 else (input_data[field] - mean) / stddev
+
+
 class LogisticRegression(ModelFields):
     """ A lightweight wrapper around a logistic regression model.
 
@@ -175,7 +191,7 @@ class LogisticRegression(ModelFields):
                 self.coefficients.update(logistic_regression_info.get( \
                     'coefficients', []))
                 if not isinstance(self.coefficients.values()[0][0], list):
-                  old_coefficients = True
+                    old_coefficients = True
                 self.bias = logistic_regression_info.get('bias', True)
                 self.c = logistic_regression_info.get('c')
                 self.eps = logistic_regression_info.get('eps')
@@ -228,7 +244,7 @@ class LogisticRegression(ModelFields):
                              self.field_codings[field_id]})
                         del self.field_codings[field_id]
                 if old_coefficients:
-                  self.map_coefficients()
+                    self.map_coefficients()
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:
@@ -297,20 +313,14 @@ class LogisticRegression(ModelFields):
         cast(input_data, self.fields)
 
         if self.balance_fields:
-            for field in input_data:
-                if self.fields[field]['optype'] == 'numeric':
-                    mean = self.fields[field]['summary']['mean']
-                    stddev = self.fields[field]['summary'][ \
-                        'standard_deviation']
-                    # if stddev is not positive, we only substract the mean
-                    input_data[field] = input_data[field] - mean if \
-                        stddev <= 0 else (input_data[field] - mean) / stddev
+            balance_input(input_data, self.fields)
 
-        # Compute text and categorical field expansion
+        # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(input_data)
 
         probabilities = {}
         total = 0
+        # Computes the contributions for each category
         for category in self.coefficients:
             probability = self.category_probability( \
                 input_data, unique_terms, category)
@@ -319,13 +329,16 @@ class LogisticRegression(ModelFields):
                                        "probability": probability,
                                        "order": order}
             total += probabilities[category]["probability"]
+        # Normalizes the contributions to get a probability
         for category in probabilities:
             probabilities[category]["probability"] /= total
+
+        # Chooses the most probable category as prediction
         predictions = sorted(probabilities.items(),
                              key=lambda x: (x[1]["probability"],
                                             - x[1]["order"]), reverse=True)
         for prediction, probability in predictions:
-          del probability['order']
+            del probability['order']
         prediction, probability = predictions[0]
 
         result = {
@@ -345,15 +358,13 @@ class LogisticRegression(ModelFields):
         """
         probability = 0
         norm2 = 0
-        # the bias term is the last in the coefficients list
-        bias = self.coefficients[category][\
-            len(self.coefficients[category]) - 1][0]
 
         # numeric input data
         for field_id in numeric_inputs:
             coefficients = self.get_coefficients(category, field_id)
             probability += coefficients[0] * numeric_inputs[field_id]
-            norm2 += math.pow(numeric_inputs[field_id], 2)
+            if self.lr_normalize:
+                norm2 += math.pow(numeric_inputs[field_id], 2)
 
         # text, items and categories
         for field_id in unique_terms:
@@ -389,48 +400,50 @@ class LogisticRegression(ModelFields):
                         pass
 
         # missings
-        for field_id in self.numeric_fields:
-            if field_id in self.input_fields:
-                coefficients = self.get_coefficients(category, field_id)
-                if field_id not in numeric_inputs:
-                    probability += coefficients[1]
-                    norm2 += 1
-        for field_id in self.tag_clouds:
-            if field_id in self.input_fields:
-                coefficients = self.get_coefficients(category, field_id)
-                if field_id not in unique_terms or not unique_terms[field_id]:
-                    norm2 += 1
+        for field_id in self.input_fields:
+            contribution = False
+            coefficients = self.get_coefficients(category, field_id)
+            if field_id in self.numeric_fields and \
+                    field_id not in numeric_inputs:
+                probability += coefficients[1]
+                contribution = True
+            elif field_id in self.tag_clouds and (field_id not in \
+                    unique_terms \
+                    or not unique_terms[field_id]):
+                probability += coefficients[ \
+                    len(self.tag_clouds[field_id])]
+                contribution = True
+            elif field_id in self.items and (field_id not in \
+                    unique_terms \
+                    or not unique_terms[field_id]):
+                probability += coefficients[len(self.items[field_id])]
+                contribution = True
+            elif field_id in self.categories and \
+                    field_id != self.objective_id and \
+                    field_id not in unique_terms:
+                if field_id not in self.field_codings or \
+                        self.field_codings[field_id].keys()[0] == "dummy":
                     probability += coefficients[ \
-                        len(self.tag_clouds[field_id])]
-        for field_id in self.items:
-            if field_id in self.input_fields:
-                coefficients = self.get_coefficients(category, field_id)
-                if field_id not in unique_terms or not unique_terms[field_id]:
-                    norm2 += 1
-                    probability += coefficients[len(self.items[field_id])]
-        for field_id in self.categories:
-            if field_id in self.input_fields:
-                coefficients = self.get_coefficients(category, field_id)
-                if field_id != self.objective_id and field_id \
-                        not in unique_terms:
-                    norm2 += 1
-                    if field_id not in self.field_codings or \
-                            self.field_codings[field_id].keys()[0] == "dummy":
-                        probability += coefficients[ \
-                            len(self.categories[field_id])]
-                    else:
-                        """ codings are given as arrays of coefficients. The
-                        last one is for missings and the previous ones are
-                        one per category as found in summary
-                        """
-                        coeff_index = 0
-                        for contribution in \
-                                self.field_codings[field_id].values()[0]:
-                            probability += coefficients[coeff_index] * \
-                                contribution[-1]
-                            coeff_index += 1
+                        len(self.categories[field_id])]
+                else:
+                    """ codings are given as arrays of coefficients. The
+                    last one is for missings and the previous ones are
+                    one per category as found in summary
+                    """
+                    coeff_index = 0
+                    for contribution in \
+                            self.field_codings[field_id].values()[0]:
+                        probability += coefficients[coeff_index] * \
+                            contribution[-1]
+                        coeff_index += 1
+                contribution = True
+            if contribution and self.lr_normalize:
+                norm2 += 1
 
-        probability += bias
+        # the bias term is the last in the coefficients list
+        probability += self.coefficients[category][\
+            len(self.coefficients[category]) - 1][0]
+
         if self.bias:
             norm2 += 1
         if self.lr_normalize:

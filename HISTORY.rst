@@ -3,6 +3,11 @@
 History
 -------
 
+4.10.1 (2017-05-15)
+~~~~~~~~~~~~~~~~~~~
+
+- Internal refactoring preparing for extensions in BigMLer.
+
 4.10.0 (2017-05-05)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -95,9 +95,13 @@ def balance_input(input_data, fields):
 
     for field in input_data:
         if fields[field]['optype'] == 'numeric':
-            mean = fields[field]['summary']['mean']
-            stddev = fields[field]['summary'][ \
-                'standard_deviation']
+            mean = fields[field]['summary'].get('mean', 0)
+            stddev = fields[field]['summary'].get( \
+                'standard_deviation', 0)
+            if mean is None:
+                mean = 0
+            if stddev is None:
+                stddev = 0
             # if stddev is not positive, we only substract the mean
             input_data[field] = input_data[field] - mean if \
                 stddev <= 0 else (input_data[field] - mean) / stddev

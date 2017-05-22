@@ -3,6 +3,12 @@
 History
 -------
 
+4.10.2 (2017-05-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug: local Model object failed when retrieving old JSON models from
+  local storage.
+
 4.10.1 (2017-05-15)
 ~~~~~~~~~~~~~~~~~~~
 

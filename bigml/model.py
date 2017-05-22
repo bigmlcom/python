@@ -204,7 +204,7 @@ class Model(BaseModel):
                 # boosting models are to be handled using the BoostedTree
                 # class
                 if model.get("boosted_ensemble"):
-                    self.boosting = model.get('boosting')
+                    self.boosting = model.get('boosting', False)
                 if self.boosting == {}:
                     self.boosting = False
 

@@ -239,7 +239,7 @@ class Ensemble(object):
                 self.fields.update(model.fields)
                 del self.fields[model.objective_id]
         else:
-            if model['object']['boosted_ensemble']:
+            if model['object'].get('boosted_ensemble'):
                 self.boosting = model['object']['boosting']
             if self.fields is None:
                 self.fields, _ = self.all_model_fields( \

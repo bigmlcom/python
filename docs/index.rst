@@ -4894,7 +4894,8 @@ folder. Then this information is used to predict locally using the
 ``confidence weighted`` method.
 
 Similarly, local ensembles can also be created by giving a list of models to be
-combined to issue the final prediction:
+combined to issue the final prediction (note: only random decision forests and
+bagging ensembles can be built using this method):
 
 .. code-block:: python
 

@@ -358,17 +358,19 @@ class MultiVote(object):
             normalize_factor = len(instance.predictions)
         return normalize_factor
 
-    def __init__(self, predictions, boosting=False, probabilities=False):
+    def __init__(self, predictions, boosting_offsets=None,
+                 probabilities=False):
         """Init method, builds a MultiVote with a list of predictions
         The constuctor expects a list of well formed predictions like:
             {'prediction': 'Iris-setosa', 'confidence': 0.7}
         Each prediction can also contain an 'order' key that is used
         to break even in votations. The list order is used by default.
-        The second argument will be true if the predictions belong to
-        boosting models.
+        The boosting_offsets can contain the offset used in boosting models, so
+        whenever is not None votes will be considered from boosting models.
         """
         self.predictions = []
-        self.boosting = boosting
+        self.boosting = boosting_offsets is not None
+        self.boosting_offsets = boosting_offsets
         self.probabilities = probabilities
 
         if isinstance(predictions, list):
@@ -436,8 +438,10 @@ class MultiVote(object):
                 if prediction[COMBINATION_WEIGHTS[BOOSTING]] is None:
                     prediction[COMBINATION_WEIGHTS[BOOSTING]] = 0
             if self.is_regression():
-                # sum all gradients weighted by their "weight"
-                return weighted_sum(self.predictions, weight="weight")
+                # sum all gradients weighted by their "weight" plus the
+                # boosting offset
+                return weighted_sum(self.predictions, weight="weight") + \
+                    self.boosting_offsets
             else:
                 return self.classification_boosting_combiner( \
                     options, with_confidence=with_confidence,
@@ -640,7 +644,8 @@ class MultiVote(object):
                 grouped_predictions[objective_class].append(prediction)
         categories = options.get("categories", [])
         predictions = {key: { \
-            "probability": weighted_sum(value, weight="weight"),
+            "probability": weighted_sum(value, weight="weight") + \
+                self.boosting_offsets.get(key, 0),
             "order": categories.index(key)} for
                        key, value in grouped_predictions.items()}
         predictions = softmax(predictions)

@@ -265,8 +265,6 @@ class TestComparePrediction(object):
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params
 
-        """
-        examples = [
             ['data/iris.csv', '10', '10', '120', '{"petal width": 0.5}', '000004', 'Iris-versicolor', '{"number_of_models": 5}'],
             ['data/iris.csv', '10', '10', '120', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"number_of_models": 5}'],
             ['data/iris.csv', '10', '10', '120', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"number_of_models": 5}'],
@@ -274,7 +272,12 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '120', '{"petal width": 0.5}', '000004', 'Iris-setosa', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
             ['data/iris.csv', '10', '10', '120', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
             ['data/iris.csv', '10', '10', '120', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '120', '{"Midterm": 20}', '000005', 57.6555, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
+
+
+        """
+        examples = [
+            ['data/iris_unbalanced.csv', '10', '10', '120', '{"petal width": 4}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
+            ['data/grades.csv', '10', '10', '120', '{"Midterm": 20}', '000005', 61.61036, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
@@ -314,7 +317,7 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33793', '{"boosting": {"iterations": 5}}'],
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}'],
             ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.3174', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}'],
             ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}'],

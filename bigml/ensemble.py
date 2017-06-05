@@ -63,6 +63,16 @@ def use_cache(cache_get):
     return cache_get is not None and hasattr(cache_get, '__call__')
 
 
+def boosted_list_error(boosting):
+    """The local ensemble cannot be built from a list of boosted models
+
+    """
+    if boosting:
+        raise ValueError("Failed to build the local ensemble. Boosted"
+                         " ensembles cannot be built from a list"
+                         " of boosting models.")
+
+
 class Ensemble(object):
     """A local predictive Ensemble.
 
@@ -94,6 +104,7 @@ class Ensemble(object):
         self.models_splits = []
         self.multi_model = None
         self.boosting = None
+        self.boosting_offsets = None
         self.cache_get = None
         self.regression = False
         self.fields = None
@@ -203,6 +214,11 @@ class Ensemble(object):
 
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
+        if self.boosting:
+            self.boosting_offsets = ensemble['object'].get('initial_offset',
+                                                           0) \
+                if self.regression else dict(ensemble['object'].get( \
+                    'initial_offsets', []))
 
         if not self.regression and self.boosting is None:
             try:
@@ -231,23 +247,15 @@ class Ensemble(object):
         """
         if isinstance(model, Model):
             self.boosting = model.boosting
-            self.objective_id = model.objective_id if not self.boosting \
-                else self.boosting["objective_field"]
-
-            if self.boosting:
-                self.fields = {}
-                self.fields.update(model.fields)
-                del self.fields[model.objective_id]
+            boosted_list_error(self.boosting)
+            self.objective_id = model.objective_id
         else:
             if model['object'].get('boosted_ensemble'):
                 self.boosting = model['object']['boosting']
+            boosted_list_error(self.boosting)
             if self.fields is None:
                 self.fields, _ = self.all_model_fields( \
                     max_models=max_models)
-            if self.boosting:
-                self.objective_id = self.boosting['objective_field']
-                del self.fields[model['object']['objective_field']]
-            else:
                 self.objective_id = model['object']['objective_field']
 
     def get_ensemble_resource(self, ensemble):
@@ -315,8 +323,8 @@ class Ensemble(object):
               2 - Average Lapalace-smoothed probabilitiy of all models'
                   leaf node distributions:
                   PROBABILITY_CODE
-        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
-                                 missing fields
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
                         per class, with the keys "prediction" and "probability"
                         mapped to the name of the class and it's probability,
@@ -350,7 +358,8 @@ class Ensemble(object):
             if len(self.models_splits) > 1:
                 # If there's more than one chunk of models, they must be
                 # sequentially used to generate the votes for the prediction
-                votes = MultiVote([], boosting=False, probabilities=True)
+                votes = MultiVote([], boosting_offsets=None,
+                                  probabilities=True)
 
                 for models_split in self.models_splits:
                     models = self._get_models(models_split)
@@ -374,14 +383,15 @@ class Ensemble(object):
                     method=method)
 
                 votes = MultiVote(votes_split.predictions,
-                                  boosting=False,
+                                  boosting_offsets=None,
                                   probabilities=True)
 
             output = votes.combine()
 
             if not compact:
                 names_probabilities = zip(self.class_names, output)
-                output = [{'prediction': class_name, 'probability': probability}
+                output = [{'prediction': class_name,
+                           'probability': probability}
                           for class_name, probability in names_probabilities]
 
         return output
@@ -461,11 +471,10 @@ class Ensemble(object):
         :param add_probability: Adds probability to the prediction (only
                                 available in Boosted Trees)
         """
-
         if len(self.models_splits) > 1:
             # If there's more than one chunk of models, they must be
             # sequentially used to generate the votes for the prediction
-            votes = MultiVote([], boosting=self.boosting is not None)
+            votes = MultiVote([], boosting_offsets=self.boosting_offsets)
 
             for models_split in self.models_splits:
                 models = self._get_models(models_split)
@@ -492,7 +501,7 @@ class Ensemble(object):
                 add_max=add_max, add_unused_fields=add_unused_fields)
 
             votes = MultiVote(votes_split.predictions,
-                              boosting=self.boosting is not None)
+                              boosting_offsets=self.boosting_offsets)
             if median:
                 for prediction in votes.predictions:
                     prediction['prediction'] = prediction['median']

@@ -3,6 +3,12 @@
 History
 -------
 
+4.10.3 (2017-06-07)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing boosted local ensembles predictions to match the improvements in
+  API.
+
 4.10.2 (2017-05-23)
 ~~~~~~~~~~~~~~~~~~~
 

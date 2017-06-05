@@ -23,7 +23,6 @@ from world import world, setup_module, teardown_module, show_doc
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
 import create_association_steps as association_create
 import create_cluster_steps as cluster_create
 import create_anomaly_steps as anomaly_create

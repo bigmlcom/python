@@ -38,6 +38,7 @@ association.rules()
 import sys
 import math
 import logging
+import csv
 
 
 from bigml.api import FINISHED
@@ -402,7 +403,7 @@ class Association(ModelFields):
         if file_name is None:
             raise ValueError("A valid file name is required to store the "
                              "rules.")
-        with UnicodeWriter(file_name) as writer:
+        with UnicodeWriter(file_name, quoting=csv.QUOTE_NONNUMERIC) as writer:
             writer.writerow(RULE_HEADERS)
             for rule in rules:
                 writer.writerow([item if not isinstance(item, basestring)

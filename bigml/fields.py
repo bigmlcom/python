@@ -43,6 +43,7 @@ fields =  Fields(prediction['object']['fields'])
 """
 import sys
 import json
+import csv
 
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
@@ -455,7 +456,8 @@ class Fields(object):
         summary = []
         writer = None
         if filename is not None:
-            writer = UnicodeWriter(filename).open_writer()
+            writer = UnicodeWriter(filename,
+                                   quoting=csv.QUOTE_NONNUMERIC).open_writer()
             writer.writerow(SUMMARY_HEADERS)
         else:
             summary.append(SUMMARY_HEADERS)

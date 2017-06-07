@@ -82,14 +82,14 @@ class Item(object):
                 self.bin_start
             end = self.bin_start if self.complement else \
                 self.bin_end
-            if start and end:
+            if start is not None and end is not None:
                 if start < end:
                     flatline = u"(and (< %s (f %s)) (<= (f %s) %s))" % \
                         (start, self.field_id, self.field_id, end)
                 else:
                     flatline = u"(or (> (f %s) %s) (<= (f %s) %s))" % \
                         (self.field_id, start, self.field_id, end)
-            elif start:
+            elif start is not None:
                 flatline = u"(> (f %s) %s)" % (self.field_id, start)
             else:
                 flatline = u"(<= (f %s) %s)" % (self.field_id, end)
@@ -128,7 +128,7 @@ class Item(object):
                 self.bin_start
             end = self.bin_start if self.complement else \
                 self.bin_end
-            if start and end:
+            if start is not None and end is not None:
                 if start < end:
                     description = "%s < %s <= %s" % (start,
                                                      field_name,
@@ -137,7 +137,7 @@ class Item(object):
                     description = "%s > %s or <= %s" % (field_name,
                                                         start,
                                                         end)
-            elif start:
+            elif start is not None:
                 description = "%s > %s" % (field_name, start)
             else:
                 description = "%s <= %s" % (field_name, end)

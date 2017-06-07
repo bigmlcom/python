@@ -8,6 +8,8 @@ History
 
 - Changing boosted local ensembles predictions to match the improvements in
   API.
+- Fixing bug in association rules export to CSV and lisp for rules with numeric
+  attributes.
 
 4.10.2 (2017-05-23)
 ~~~~~~~~~~~~~~~~~~~

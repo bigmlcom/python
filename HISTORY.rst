@@ -3,6 +3,11 @@
 History
 -------
 
+4.11.0 (2017-06-20)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods for managing timeseries.
+
 4.10.5 (2017-07-13)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -45,6 +45,8 @@ ASSOCIATION_SET_PATH = 'associationset'
 TOPIC_MODEL_PATH = 'topicmodel'
 TOPIC_DISTRIBUTION_PATH = 'topicdistribution'
 BATCH_TOPIC_DISTRIBUTION_PATH = 'batchtopicdistribution'
+TIME_SERIES_PATH = 'timeseries'
+FORECAST_PATH = 'forecast'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -95,6 +97,10 @@ TOPIC_DISTRIBUTION_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
 BATCH_TOPIC_DISTRIBUTION_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     BATCH_TOPIC_DISTRIBUTION_PATH, ID_PATTERN, BATCH_TOPIC_DISTRIBUTION_PATH,
     SHARED_PATTERN))
+TIME_SERIES_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (TIME_SERIES_PATH, ID_PATTERN, TIME_SERIES_PATH, SHARED_PATTERN))
+FORECAST_RE = re.compile(r'^%s/%s$' % \
+    (FORECAST_PATH, ID_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -126,6 +132,8 @@ RESOURCE_RE = {
     TOPIC_MODEL_PATH: TOPIC_MODEL_RE,
     TOPIC_DISTRIBUTION_PATH: TOPIC_DISTRIBUTION_RE,
     BATCH_TOPIC_DISTRIBUTION_PATH: BATCH_TOPIC_DISTRIBUTION_RE,
+    TIME_SERIES_PATH: TIME_SERIES_RE,
+    FORECAST_PATH: FORECAST_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}
@@ -142,6 +150,7 @@ RENAMED_RESOURCES = {
     TOPIC_MODEL_PATH: 'topic_model',
     TOPIC_DISTRIBUTION_PATH: 'topic_distribution',
     BATCH_TOPIC_DISTRIBUTION_PATH: 'batch_topic_distribution',
+    TIME_SERIES_PATH: 'time_series'
 }
 
 

@@ -261,6 +261,20 @@ def get_batch_topic_distribution_id(batch_topic_distribution):
                         batch_topic_distribution)
 
 
+def get_time_series_id(time_series):
+    """Returns a timeseries/id.
+
+    """
+    return get_resource(c.TIME_SERIES_PATH, time_series)
+
+
+def get_forecast_id(forecast):
+    """Returns a forecast/id.
+
+    """
+    return get_resource(c.FORECAST_PATH, forecast)
+
+
 def get_script_id(script):
     """Returns a script/id.
 

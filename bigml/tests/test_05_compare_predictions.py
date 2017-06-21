@@ -443,14 +443,16 @@ class TestComparePrediction(object):
                 And I create a proportional missing strategy local prediction for "<data_input>"
                 Then the local prediction is "<prediction>"
                 And the local prediction's confidence is "<confidence>"
+                And I create local probabilities for "<data_input>"
+                Then the local probabilities are "<probabilities>"
 
                 Examples:
                 | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence |
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.25284'],
-            ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.7575']]
+            ['data/iris_unbalanced.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.25284', '[0.33333, 0.33333, 0.33333]'],
+            ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.7575', '[1.0, 0.0, 0.0]']]
         show_doc(self.test_scenario10, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -467,6 +469,8 @@ class TestComparePrediction(object):
             prediction_compare.the_local_prediction_is(self, example[6])
             prediction_create.the_confidence_is(self, example[7])
             prediction_compare.the_local_prediction_confidence_is(self, example[7])
+            prediction_compare.i_create_local_probabilities(self, example[4])
+            prediction_compare.the_local_probabilities_are(self, example[8])
 
     def test_scenario11(self):
         """

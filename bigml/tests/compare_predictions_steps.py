@@ -73,6 +73,15 @@ def i_create_a_local_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data)
 
+#@step(r'I create local probabilities for "(.*)"$')
+def i_create_local_probabilities(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+
+    model = world.local_model
+    world.local_probabilities = model.predict_probability(data, compact=True)
+
 #@step(r'I create a local ensemble prediction for "(.*)"$')
 def i_create_a_local_ensemble_prediction(step, data=None):
     if data is None:

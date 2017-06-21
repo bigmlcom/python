@@ -375,14 +375,14 @@ class Model(BaseModel):
         else:
             root_dist = self.tree.distribution
 
-            if not self.tree.weighted:
+            if self.tree.weighted:
+                category_map = {category[0]: 0.0 for category in root_dist}
+                instances = 0.0
+            else:
                 total = float(sum([category[1] for category in root_dist]))
                 category_map = {category[0]: category[1] / total
                             for category in root_dist}
                 instances = 1.0
-            else:
-                category_map = {category[0]: 0.0 for category in root_dist}
-                instances = 0.0
 
             prediction = self.predict(input_data,
                                       by_name=by_name,

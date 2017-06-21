@@ -390,14 +390,21 @@ class Tree(object):
                         path.append(child.predicate.to_rule(self.fields))
                         return child.predict(input_data, path=path)
 
+            if self.weighted:
+                output_distribution = self.weighted_distribution
+                output_unit = self.weighted_distribution_unit
+            else:
+                output_distribution = self.distribution
+                output_unit = self.distribution_unit
+
             return Prediction(
                 self.output,
                 path,
                 self.confidence,
-                distribution=self.distribution,
-                count=get_instances(self.distribution),
+                distribution=output_distribution,
+                count=get_instances(output_distribution),
                 median=None if not self.regression else self.median,
-                distribution_unit=self.distribution_unit,
+                distribution_unit=output_unit,
                 children=self.children,
                 d_min=None if not self.regression else self.min,
                 d_max=None if not self.regression else self.max)

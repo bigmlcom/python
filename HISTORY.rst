@@ -3,6 +3,13 @@
 History
 -------
 
+4.10.4 (2017-06-21)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in the local model predicted distributions for weighted models.
+- Fixing bug in predicted probability for local model predictions
+  using weighted models.
+
 4.10.3 (2017-06-07)
 ~~~~~~~~~~~~~~~~~~~
 

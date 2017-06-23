@@ -46,7 +46,7 @@ class ForecastHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.forecast_url = self.forecast_url + FORECAST_PATH
+        self.forecast_url = self.url + FORECAST_PATH
 
     def create_forecast(self, time_series, input_data=None,
                         args=None, wait_time=3, retries=10):
@@ -72,7 +72,7 @@ class ForecastHandler(ResourceHandler):
             "input_data": input_data})
         if time_series_id is not None:
             create_args.update({
-                "timeseries": timeseries_id})
+                "timeseries": time_series_id})
 
         body = json.dumps(create_args)
         return self._create(self.forecast_url, body,

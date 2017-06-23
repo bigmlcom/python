@@ -3,10 +3,11 @@
 History
 -------
 
-4.11.0 (2017-06-20)
+4.11.0 (2017-06-23)
 ~~~~~~~~~~~~~~~~~~~
 
-- Adding REST methods for managing timeseries.
+- Adding REST methods for managing time-series and local time-series object
+  to create forecasts.
 
 4.10.5 (2017-07-13)
 ~~~~~~~~~~~~~~~~~~~

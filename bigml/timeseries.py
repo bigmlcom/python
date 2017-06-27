@@ -58,7 +58,6 @@ LOGGER = logging.getLogger('BigML')
 
 REQUIRED_INPUT = "horizon"
 SUBMODEL_KEYS = ["indices", "names", "criterion", "limit"]
-SUBMODEL_ADD = SUBMODEL_KEYS[0:1]
 DEFAULT_SUBMODEL = {"criterion": "aic", "limit": 1}
 
 
@@ -78,7 +77,7 @@ def compute_forecasts(submodels, horizon):
             args = [submodel, horizon]
 
         forecasts.append( \
-            {"submodel": submodel["name"],
+            {"submodel": name,
              "point_forecast": SUBMODELS[name](*args)})
     return forecasts
 
@@ -91,7 +90,7 @@ def filter_submodels(submodels, filter_info):
     """
     field_submodels = []
     submodel_names = []
-    # filtering by indices
+    # filtering by indices and/or names
     indices = filter_info.get(SUBMODEL_KEYS[0], [])
     names = filter_info.get(SUBMODEL_KEYS[1], [])
     if indices:
@@ -100,8 +99,9 @@ def filter_submodels(submodels, filter_info):
         field_submodels = [submodel for index, submodel in \
             enumerate(submodels) if index in indices]
 
-    # union by filtering by names
+    # union with filtered by names
     if names:
+        print type(names).__name__
         pattern  = r'|'.join(names)
         # only adding the submodels if they have not been included by using
         # indices
@@ -276,7 +276,6 @@ class TimeSeries(ModelFields):
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
-
             if by_name:
                 # We only remove the keys that are not
                 # used as objective fields in the model
@@ -301,7 +300,6 @@ class TimeSeries(ModelFields):
                         "Input data cannot be empty.")
                 if not isinstance(value, dict):
                     raise ValueError( \
-                        "Failed to find the correct type of data. "
                         "Each field input data needs to be specified "
                         "as a dictionary. Found %s for field %s." % ( \
                             type(value).name, key))

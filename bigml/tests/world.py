@@ -52,6 +52,8 @@ RESOURCE_TYPES = [
     'associationset',
     'topicmodel',
     'topicdistribution',
+    'timeseries',
+    'forecast',
     'script',
     'execution',
     'library'
@@ -67,6 +69,7 @@ IRREGULAR_PLURALS = {
     'associationset': 'association_sets',
     'topicmodel': 'topic_models',
     'topicdistribution': 'topic_distributions',
+    'timeseries': 'time_series_set',
     'library': 'libraries'
 }
 
@@ -79,7 +82,8 @@ TRANSLATED_RESOURCES = {
     'logisticregression': 'logistic_regression',
     'associationset': 'association_set',
     'topicmodel': 'topic_model',
-    'topicdistribution': 'topic_distribution'
+    'topicdistribution': 'topic_distribution',
+    'timeseries': 'time_series'
 }
 
 

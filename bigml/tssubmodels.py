@@ -15,16 +15,35 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Auxiliary module to store the functions to compute time-series forecasts.
-
+"""Auxiliary module to store the functions to compute time-series forecasts
+following the formulae in
+https://www.otexts.org/sites/default/files/fpp/images/Table7-8.png
+as explained in
+https://www.otexts.org/fpp/7/6
 """
+
 import inspect
 import sys
 
 
-OPERATORS = {"A": lambda x, y: x + y,
-             "M": lambda x, y: x * y,
-             "N": lambda x, y: x}
+OPERATORS = {"A": lambda x, s: x + s,
+             "M": lambda x, s: x * s,
+             "N": lambda x, s: x}
+
+
+def season_contribution(s_list, period, step):
+    """Chooses the seasonal contribution from the list in the period
+
+    s_list: The list of contributions per season
+    period: The period length
+    step: The actual prediction step
+
+    """
+    if period > 0 and isinstance(s_list, list) and len(s_list) == period:
+        index = abs(- period + 1 + step % period)
+        return s_list[index]
+    else:
+        return 0
 
 def naive_forecast(submodel, horizon):
     """Computing the forecast for the naive model
@@ -52,46 +71,52 @@ def drift_forecast(submodel, horizon):
     """
     points = []
     for h in range(horizon):
-        points.append(submodel["value"] + submodel["slope"] * (h + 1)
+        points.append(submodel["value"] + submodel["slope"] * (h + 1))
     return points
 
 
 def N_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=N models
     ŷ_t+h|t = l_t
-    ŷ_t+h|t = l_t + s (if seasonality = "A")
-    ŷ_t+h|t = l_t * s (if seasonality = "M")
+    ŷ_t+h|t = l_t + s_f(m, h) (if seasonality = "A")
+    ŷ_t+h|t = l_t * s_f(m, h) (if seasonality = "M")
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     s = final_state.get("s", 0)
-    for _ in range(horizon):
-        points.append(OPERATORS[seasonality](l, s))
+    m = submodel.get("period", 0)
+    for h in range(horizon):
+        # each season has a different contribution
+        s_i = season_contribution(s, m, h)
+        points.append(OPERATORS[seasonality](l, s_i))
     return points
 
 
 def A_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=A models
     ŷ_t+h|t = l_t + h * b_t
-    ŷ_t+h|t = l_t + h * b_t + s (if seasonality = "A")
-    ŷ_t+h|t = (l_t + h * b_t) * s (if seasonality = "M")
+    ŷ_t+h|t = l_t + h * b_t + s_f(m, h) (if seasonality = "A")
+    ŷ_t+h|t = (l_t + h * b_t) * s_f(m,h) (if seasonality = "M")
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
+    m = submodel.get("period", 0)
     for h in range(horizon):
-        points.append(OPERATORS[seasonality](l + b * (h + 1), s))
+        # each season has a different contribution
+        s_i = season_contribution(s, m, h)
+        points.append(OPERATORS[seasonality](l + b * (h + 1), s_i))
     return points
 
 
 def Ad_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=Ad model
     ŷ_t+h|t = l_t + phi_h * b_t
-    ŷ_t+h|t = l_t + phi_h * b_t + s (if seasonality = "A")
-    ŷ_t+h|t = (l_t + phi_h * b_t) * s (if seasonality = "M")
+    ŷ_t+h|t = l_t + phi_h * b_t + s_f(m, h) (if seasonality = "A")
+    ŷ_t+h|t = (l_t + phi_h * b_t) * s_f(m, h) (if seasonality = "M")
     with phi_h = phi + phi^2 + ... + phi^h
     """
     points = []
@@ -99,10 +124,13 @@ def Ad_forecast(submodel, horizon, seasonality):
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     phi = final_state.get("phi", 0)
-    s = submodel.get("s", 0)
+    s = final_state.get("s", 0)
+    m = submodel.get("period", 0)
     phi_h = phi
     for h in range(horizon):
-        points.append(OPERATORS[seasonality](l + phi_h * b, s))
+        # each season has a different contribution
+        s_i = season_contribution(s, m, h)
+        points.append(OPERATORS[seasonality](l + phi_h * b, s_i))
         phi_h = phi_h + pow(phi, h + 1)
     return points
 
@@ -110,24 +138,27 @@ def Ad_forecast(submodel, horizon, seasonality):
 def M_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=M model
     ŷ_t+h|t = l_t * b_t^h
-    ŷ_t+h|t = l_t * b_t^h + s (if seasonality = "A")
-    ŷ_t+h|t = (l_t * b_t^h) * s (if seasonality = "M")
+    ŷ_t+h|t = l_t * b_t^h + s_f(m, h) (if seasonality = "A")
+    ŷ_t+h|t = (l_t * b_t^h) * s_f(m, h) (if seasonality = "M")
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
+    m = submodel.get("period", 0)
     for h in range(horizon):
-        points.append(OPERATORS[seasonality](l * pow(b, h + 1), s))
+        # each season has a different contribution
+        s_i = season_contribution(s, m, h)
+        points.append(OPERATORS[seasonality](l * pow(b, h + 1), s_i))
     return points
 
 
 def Md_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=Md model
     ŷ_t+h|t = l_t + b_t^(phi_h)
-    ŷ_t+h|t = l_t + b_t^(phi_h) + s (if seasonality = "A")
-    ŷ_t+h|t = (l_t + b_t^(phi_h)) * s (if seasonality = "M")
+    ŷ_t+h|t = l_t + b_t^(phi_h) + s_f(m, h) (if seasonality = "A")
+    ŷ_t+h|t = (l_t + b_t^(phi_h)) * s_f(m, h) (if seasonality = "M")
     with phi_h = phi + phi^2 + ... + phi^h
     """
     points = []
@@ -135,10 +166,13 @@ def Md_forecast(submodel, horizon, seasonality):
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
+    m = submodel.get("period", 0)
     phi = final_state.get("phi", 0)
     phi_h = phi
     for h in range(horizon):
-        points.append(OPERATORS[seasonality](l * pow(b, phi_h), s))
+        # each season has a different contribution
+        s_i = season_contribution(s, m, h)
+        points.append(OPERATORS[seasonality](l * pow(b, phi_h), s_i))
         phi_h = phi_h + pow(phi, h + 1)
     return points
 

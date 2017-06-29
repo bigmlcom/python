@@ -68,17 +68,17 @@ def compute_forecasts(submodels, horizon):
     forecasts = []
     for submodel in submodels:
         name = submodel["name"]
+        trend = name
         seasonality = None
         if "," in name:
             error, trend, seasonality = name.split(",")
-            name = trend
             args = [submodel, horizon, seasonality]
         else:
             args = [submodel, horizon]
 
         forecasts.append( \
             {"submodel": name,
-             "point_forecast": SUBMODELS[name](*args)})
+             "point_forecast": SUBMODELS[trend](*args)})
     return forecasts
 
 
@@ -101,7 +101,6 @@ def filter_submodels(submodels, filter_info):
 
     # union with filtered by names
     if names:
-        print type(names).__name__
         pattern  = r'|'.join(names)
         # only adding the submodels if they have not been included by using
         # indices

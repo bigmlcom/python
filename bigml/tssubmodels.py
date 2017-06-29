@@ -31,15 +31,15 @@ OPERATORS = {"A": lambda x, s: x + s,
              "N": lambda x, s: x}
 
 
-def season_contribution(s_list, period, step):
+def season_contribution(s_list, step):
     """Chooses the seasonal contribution from the list in the period
 
     s_list: The list of contributions per season
-    period: The period length
     step: The actual prediction step
 
     """
-    if period > 0 and isinstance(s_list, list) and len(s_list) == period:
+    if isinstance(s_list, list):
+        period = len(s_list)
         index = abs(- period + 1 + step % period)
         return s_list[index]
     else:
@@ -78,17 +78,16 @@ def drift_forecast(submodel, horizon):
 def N_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=N models
     ŷ_t+h|t = l_t
-    ŷ_t+h|t = l_t + s_f(m, h) (if seasonality = "A")
-    ŷ_t+h|t = l_t * s_f(m, h) (if seasonality = "M")
+    ŷ_t+h|t = l_t + s_f(s, h) (if seasonality = "A")
+    ŷ_t+h|t = l_t * s_f(s, h) (if seasonality = "M")
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     s = final_state.get("s", 0)
-    m = submodel.get("period", 0)
     for h in range(horizon):
         # each season has a different contribution
-        s_i = season_contribution(s, m, h)
+        s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l, s_i))
     return points
 
@@ -96,18 +95,17 @@ def N_forecast(submodel, horizon, seasonality):
 def A_forecast(submodel, horizon, seasonality):
     """Computing the forecast for the trend=A models
     ŷ_t+h|t = l_t + h * b_t
-    ŷ_t+h|t = l_t + h * b_t + s_f(m, h) (if seasonality = "A")
-    ŷ_t+h|t = (l_t + h * b_t) * s_f(m,h) (if seasonality = "M")
+    ŷ_t+h|t = l_t + h * b_t + s_f(s, h) (if seasonality = "A")
+    ŷ_t+h|t = (l_t + h * b_t) * s_f(s,h) (if seasonality = "M")
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
-    m = submodel.get("period", 0)
     for h in range(horizon):
         # each season has a different contribution
-        s_i = season_contribution(s, m, h)
+        s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l + b * (h + 1), s_i))
     return points
 
@@ -117,19 +115,20 @@ def Ad_forecast(submodel, horizon, seasonality):
     ŷ_t+h|t = l_t + phi_h * b_t
     ŷ_t+h|t = l_t + phi_h * b_t + s_f(m, h) (if seasonality = "A")
     ŷ_t+h|t = (l_t + phi_h * b_t) * s_f(m, h) (if seasonality = "M")
-    with phi_h = phi + phi^2 + ... + phi^h
+    with phi_0 = phi
+         phi_1 = phi + phi
+         phi_h = phi + phi + phi^2 + ... + phi^h (for h > 1)
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
-    phi = final_state.get("phi", 0)
+    phi = submodel.get("phi", 0)
     s = final_state.get("s", 0)
-    m = submodel.get("period", 0)
     phi_h = phi
     for h in range(horizon):
         # each season has a different contribution
-        s_i = season_contribution(s, m, h)
+        s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l + phi_h * b, s_i))
         phi_h = phi_h + pow(phi, h + 1)
     return points
@@ -146,10 +145,9 @@ def M_forecast(submodel, horizon, seasonality):
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
-    m = submodel.get("period", 0)
     for h in range(horizon):
         # each season has a different contribution
-        s_i = season_contribution(s, m, h)
+        s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l * pow(b, h + 1), s_i))
     return points
 
@@ -159,19 +157,20 @@ def Md_forecast(submodel, horizon, seasonality):
     ŷ_t+h|t = l_t + b_t^(phi_h)
     ŷ_t+h|t = l_t + b_t^(phi_h) + s_f(m, h) (if seasonality = "A")
     ŷ_t+h|t = (l_t + b_t^(phi_h)) * s_f(m, h) (if seasonality = "M")
-    with phi_h = phi + phi^2 + ... + phi^h
+    with phi_0 = phi
+         phi_1 = phi + phi
+         phi_h = phi + phi + phi^2 + ... + phi^h (for h > 1)
     """
     points = []
     final_state = submodel.get("final_state", {})
     l = final_state.get("l", 0)
     b = final_state.get("b", 0)
     s = final_state.get("s", 0)
-    m = submodel.get("period", 0)
-    phi = final_state.get("phi", 0)
+    phi = submodel.get("phi", 0)
     phi_h = phi
     for h in range(horizon):
         # each season has a different contribution
-        s_i = season_contribution(s, m, h)
+        s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l * pow(b, phi_h), s_i))
         phi_h = phi_h + pow(phi, h + 1)
     return points

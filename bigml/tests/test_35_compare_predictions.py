@@ -190,12 +190,12 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}']]
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [61.39, 61.39, 61.39, 61.39, 61.39], "submodel": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [78.89, 61.39, 78.89, 61.39, 78.89], "submodel": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [68.48369, 68.48369, 68.48369, 68.48369, 68.48369], "submodel": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [65.16813, 71.79925, 65.16813, 71.79925, 65.16813], "submodel": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "submodel": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "submodel": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}']]
         show_doc(self.test_scenario4, examples)
 
         for example in examples:

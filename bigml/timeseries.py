@@ -93,6 +93,10 @@ def filter_submodels(submodels, filter_info):
     # filtering by indices and/or names
     indices = filter_info.get(SUBMODEL_KEYS[0], [])
     names = filter_info.get(SUBMODEL_KEYS[1], [])
+
+    if not indices and not names:
+        return []
+
     if indices:
         # adding all submodels by index if they are not also in the names
         # list
@@ -109,10 +113,6 @@ def filter_submodels(submodels, filter_info):
             if re.search(pattern, submodel["name"]) is not None and \
             submodel["name"] not in submodel_names]
         field_submodels.extend(named_submodels)
-
-    if not indices and not names:
-        field_submodels = []
-        field_submodels.extend(submodels)
 
     # filtering the resulting set by criterion and limit
     criterion = filter_info.get(SUBMODEL_KEYS[2])
@@ -206,7 +206,7 @@ class TimeSeries(ModelFields):
                 self.submodels = time_series_info.get('submodels', {})
                 self.error = time_series_info.get('error')
                 self.damped_trend = time_series_info.get('damped_trend')
-                self.seasonality = time_series_info.get('seanonality')
+                self.seasonality = time_series_info.get('seasonality')
                 self.trend = time_series_info.get('trend')
                 self.time_range = time_series_info.get('time_range')
                 self.field_parameters = time_series_info.get( \

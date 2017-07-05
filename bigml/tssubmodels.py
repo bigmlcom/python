@@ -45,24 +45,35 @@ def season_contribution(s_list, step):
     else:
         return 0
 
+
+def trivial_forecast(submodel, horizon):
+    """Computing the forecast for the trivial models
+
+    """
+    points = []
+    submodel_points = submodel["value"]
+    period = len(submodel_points)
+    if period > 1:
+        # when a period is used, the points in the model are repeated
+        for h in range(horizon):
+            points.append(submodel_points[h % period])
+    else:
+        for _ in range(horizon):
+            points.append(submodel_points[0])
+    return points
+
+
 def naive_forecast(submodel, horizon):
     """Computing the forecast for the naive model
 
     """
-    points = []
-    for _ in range(horizon):
-        points.append(submodel["value"][0])
-    return points
-
+    return trivial_forecast(submodel, horizon)
 
 def mean_forecast(submodel, horizon):
     """Computing the forecast for the mean model
 
     """
-    points = []
-    for _ in range(horizon):
-        points.append(submodel["value"][0])
-    return points
+    return trivial_forecast(submodel, horizon)
 
 
 def drift_forecast(submodel, horizon):

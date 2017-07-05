@@ -168,3 +168,46 @@ class TestComparePrediction(object):
             forecast_create.the_forecast_is(self, example[5])
             forecast_compare.i_create_a_local_forecast(self, example[4])
             forecast_compare.the_local_forecast_is(self, example[5])
+
+
+    def test_scenario4(self):
+        """
+            Scenario: Successfully comparing forecasts from time-series with trivial models
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a time-series with "<params>"
+                And I wait until the time-series is ready less than <time_3> secs
+                And I create a local time series
+                When I create a forecast for "<input_data>"
+                Then the forecast is "<forecasts>"
+                And I create a local forecast for "<data_input>"
+                Then the local forecast is "<forecasts>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | input_data  | forecasts | params
+
+        """
+        examples = [
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"], "criterion": "aic", "limit": 3}}}', '{}', '{"objective_fields": ["000001", "000005"], "period": 2}']]
+        show_doc(self.test_scenario4, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            time_series_create.i_create_a_time_series_with_params(self, example[6])
+            time_series_create.the_time_series_is_finished_in_less_than(self, example[3])
+            time_series_create.create_local_time_series(self)
+            forecast_create.i_create_a_forecast(self, example[4])
+            forecast_create.the_forecast_is(self, example[5])
+            forecast_compare.i_create_a_local_forecast(self, example[4])
+            forecast_compare.the_local_forecast_is(self, example[5])

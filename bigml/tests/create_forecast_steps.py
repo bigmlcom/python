@@ -41,7 +41,7 @@ def i_create_a_forecast(step, data=None):
 
 def the_forecast_is(step, predictions):
     predictions = json.loads(predictions)
-    attrs = ["point_forecast", "submodel"]
+    attrs = ["point_forecast", "model"]
     for field_id in predictions:
         forecast = world.forecast['forecast']['result'][field_id]
         prediction = predictions[field_id]

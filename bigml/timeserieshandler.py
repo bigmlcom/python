@@ -86,7 +86,7 @@ class TimeSeriesHandler(ResourceHandler):
                              shared_api_key=shared_api_key)
 
     def time_series_is_ready(self, time_series, **kwargs):
-        """Checks whether a time_series's status is FINISHED.
+        """Checks whether a time series's status is FINISHED.
 
         """
         check_resource_type(time_series, TIME_SERIES_PATH,

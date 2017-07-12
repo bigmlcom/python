@@ -33,7 +33,7 @@ from bigml.timeseries import TimeSeries
 import read_time_series_steps as read
 
 
-#@step(r'I create a time-series$')
+#@step(r'I create a time series$')
 def i_create_a_time_series(step):
     dataset = world.dataset.get('resource')
     resource = world.api.create_time_series(dataset)
@@ -44,7 +44,7 @@ def i_create_a_time_series(step):
     world.time_series_set.append(resource['resource'])
 
 
-#@step(r'I create a time-series with params "(.*)"')
+#@step(r'I create a time series with params "(.*)"')
 def i_create_a_time_series_with_params(step, data="{}"):
     args = json.loads(data)
     resource = world.api.create_time_series(world.dataset.get('resource'),
@@ -56,7 +56,7 @@ def i_create_a_time_series_with_params(step, data="{}"):
     world.time_series_set.append(resource['resource'])
 
 
-#@step(r'I wait until the time-series status code is either (\d) or (-\d) less than (\d+)')
+#@step(r'I wait until the time series status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_time_series_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     read.i_get_the_time_series(step, world.time_series['resource'])
@@ -69,7 +69,7 @@ def wait_until_time_series_status_code_is(step, code1, code2, secs):
            status = get_status(world.time_series)
     eq_(status['code'], int(code1))
 
-#@step(r'I wait until the time_series is ready less than (\d+)')
+#@step(r'I wait until the time series is ready less than (\d+)')
 def the_time_series_is_finished_in_less_than(step, secs):
     wait_until_time_series_status_code_is(step, FINISHED, FAULTY, secs)
 
@@ -80,7 +80,7 @@ def create_local_time_series(step):
                                          world.api)
 
 
-#@step(r'I update the time-series name to "(.*)"$')
+#@step(r'I update the time series name to "(.*)"$')
 def i_update_time_series_name(step, name):
     resource = world.api.update_time_series(world.time_series['resource'],
                                             {'name': name})
@@ -89,7 +89,7 @@ def i_update_time_series_name(step, name):
     world.location = resource['location']
     world.time_series = resource['object']
 
-#@step(r'the time-series name is "(.*)"')
+#@step(r'the time series name is "(.*)"')
 def i_check_time_series_name(step, name):
     time_series_name = world.time_series['name']
     eq_(name, time_series_name)

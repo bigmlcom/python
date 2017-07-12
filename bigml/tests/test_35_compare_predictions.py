@@ -45,13 +45,13 @@ class TestComparePrediction(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully comparing forecasts from time-series:
+            Scenario: Successfully comparing forecasts from time series:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a time-series with "<params>"
-                And I wait until the time-series is ready less than <time_3> secs
+                And I create a time series with "<params>"
+                And I wait until the time series is ready less than <time_3> secs
                 And I create a local time series
                 When I create a forecast for "<input_data>"
                 Then the forecast is "<forecasts>"
@@ -62,13 +62,14 @@ class TestComparePrediction(object):
                 | data             | time_1  | time_2 | time_3 | input_data  | forecasts | params
 
 
+
         """
         examples = [
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.47247, 68.47247, 68.47247, 68.47247, 68.47247], "submodel": "A,N,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,N,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [68.46668, 68.46668, 68.46668, 68.46668, 68.46668], "submodel": "M,N,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["A,A,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [74.80144, 75.09977, 75.3981, 75.69643, 75.99476], "submodel": "A,A,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["A,Ad,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [72.51858, 72.77388, 73.02355, 73.26771, 73.50647], "submodel": "A,Ad,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}, "000001": {"horizon": 3, "submodels": {"criterion": "aic", "limit": 2}}}', '{"000005": [{"point_forecast": [68.47247, 68.47247, 68.47247, 68.47247, 68.47247], "submodel": "A,N,N"}], "000001": [{"point_forecast": [84.71132, 84.71132, 84.71132], "submodel": "M,N,N"}, {"point_forecast": [84.71756, 84.71756, 84.71756], "submodel": "A,N,N"}]}', '{"objective_fields": ["000001", "000005"]}']]
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.50243, 68.50243, 68.50243, 68.50243, 68.50243], "model": "A,N,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,N,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [68.4726, 68.4726, 68.4726, 68.4726, 68.4726], "model": "M,N,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["A,A,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [78.30154, 79.43494, 80.56834, 81.70174, 82.83514], "model": "A,A,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["A,Ad,N"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [73.24041, 73.30553, 73.36935, 73.43189, 73.49318], "model": "A,Ad,N"}]}', '{"objective_fields": ["000001", "000005"]}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}, "000001": {"horizon": 3, "ets_models": {"criterion": "aic", "limit": 2}}}', '{"000005": [{"point_forecast": [68.50243, 68.50243, 68.50243, 68.50243, 68.50243], "model": "A,N,N"}], "000001": [{"point_forecast": [84.71215, 84.71215, 84.71215], "model": "M,N,N"}, {"point_forecast": [84.71842, 84.71842, 84.71842], "model": "A,N,N"}]}', '{"objective_fields": ["000001", "000005"]}']]
         show_doc(self.test_scenario1, examples)
 
         for example in examples:
@@ -88,13 +89,13 @@ class TestComparePrediction(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully comparing forecasts from time-series with "A" seasonality
+            Scenario: Successfully comparing forecasts from time series with "A" seasonality
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a time-series with "<params>"
-                And I wait until the time-series is ready less than <time_3> secs
+                And I create a time series with "<params>"
+                And I wait until the time series is ready less than <time_3> secs
                 And I create a local time series
                 When I create a forecast for "<input_data>"
                 Then the forecast is "<forecasts>"
@@ -107,10 +108,10 @@ class TestComparePrediction(object):
         """
         examples = [
 
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.51, 68.51, 68.51, 68.51, 68.51], "submodel": "M,N,N"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,N,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [67.48942, 65.12405, 66.98087, 68.41619, 72.63298], "submodel": "M,N,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["A,A,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [74.72557, 70.48612, 74.41286, 75.18915, 79.59162], "submodel": "A,A,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["A,Ad,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [72.12127, 69.46876, 73.2959, 73.35428, 77.65995], "submodel": "A,Ad,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}']]
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.50243, 68.50243, 68.50243, 68.50243, 68.50243], "model": "A,N,N"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,N,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [67.33993, 65.56501, 67.35921, 67.45622, 72.67582], "model": "M,N,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["A,A,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [75.75439, 70.5471, 74.44553, 74.23406, 79.61495], "model": "A,A,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["A,Ad,A"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":[71.86203, 69.63101, 74.03271, 72.20512, 77.51355], "model": "A,Ad,A"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}']]
         show_doc(self.test_scenario2, examples)
 
         for example in examples:
@@ -130,13 +131,13 @@ class TestComparePrediction(object):
 
     def test_scenario3(self):
         """
-            Scenario: Successfully comparing forecasts from time-series with "M" seasonality
+            Scenario: Successfully comparing forecasts from time series with "M" seasonality
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a time-series with "<params>"
-                And I wait until the time-series is ready less than <time_3> secs
+                And I create a time series with "<params>"
+                And I wait until the time series is ready less than <time_3> secs
                 And I create a local time series
                 When I create a forecast for "<input_data>"
                 Then the forecast is "<forecasts>"
@@ -148,11 +149,11 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,N,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [68.3539, 65.92057, 67.50413, 65.06311, 73.84044], "submodel": "M,N,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,A,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [74.04313, 72.60152, 75.2858, 72.89616, 81.46613], "submodel": "M,A,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,Ad,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [71.53393, 70.68648, 73.31447, 70.02045, 79.37915], "submodel": "M,Ad,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,M,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [72.68165, 72.24785, 77.51945, 73.03358, 80.58091], "submodel": "M,M,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["M,Md,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [72.06899, 70.8975, 73.56051, 70.91369, 79.49001], "submodel": "M,Md,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}']]
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,N,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast":  [68.89268, 66.75495, 68.9379, 66.05173, 74.70658], "model": "M,N,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,A,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [74.05616, 72.22785, 76.35103, 72.45758, 81.60411], "model": "M,A,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,Ad,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [71.33721, 70.93937, 73.78299, 70.56123, 79.1128], "model": "M,Ad,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,M,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [73.78021, 71.82572, 75.11851, 72.59416, 81.2843], "model": "M,M,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["M,Md,M"], "criterion": "aic", "limit": 3}}}', '{"000005": [{"point_forecast": [71.72127, 71.12783, 73.98116, 70.72066, 79.6831], "model": "M,Md,M"}]}', '{"objective_fields": ["000001", "000005"], "period": 12}']]
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
@@ -172,13 +173,13 @@ class TestComparePrediction(object):
 
     def test_scenario4(self):
         """
-            Scenario: Successfully comparing forecasts from time-series with trivial models
+            Scenario: Successfully comparing forecasts from time series with trivial models
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a time-series with "<params>"
-                And I wait until the time-series is ready less than <time_3> secs
+                And I create a time series with "<params>"
+                And I wait until the time series is ready less than <time_3> secs
                 And I create a local time series
                 When I create a forecast for "<input_data>"
                 Then the forecast is "<forecasts>"
@@ -190,12 +191,12 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [61.39, 61.39, 61.39, 61.39, 61.39], "submodel": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [78.89, 61.39, 78.89, 61.39, 78.89], "submodel": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [68.48369, 68.48369, 68.48369, 68.48369, 68.48369], "submodel": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [65.16813, 71.79925, 65.16813, 71.79925, 65.16813], "submodel": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "submodel": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
-            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "submodels": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "submodel": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}']]
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [61.39, 61.39, 61.39, 61.39, 61.39], "model": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["naive"]}}}', '{"000005": [{"point_forecast": [78.89, 61.39, 78.89, 61.39, 78.89], "model": "naive"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [68.48369, 68.48369, 68.48369, 68.48369, 68.48369], "model": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["mean"]}}}', '{"000005": [{"point_forecast": [65.16813, 71.79925, 65.16813, 71.79925, 65.16813], "model": "mean"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "model": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 1}'],
+            ['data/grades.csv', '10', '10', '120', '{"000005": {"horizon": 5, "ets_models": {"names": ["drift"]}}}', '{"000005": [{"point_forecast": [61.50113, 61.61226, 61.72339, 61.83452, 61.94565], "model": "drift"}]}', '{"objective_fields": ["000001", "000005"], "period": 2}']]
         show_doc(self.test_scenario4, examples)
 
         for example in examples:

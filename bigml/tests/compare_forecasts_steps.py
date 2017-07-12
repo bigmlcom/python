@@ -33,7 +33,7 @@ def i_create_a_local_forecast(step, input_data):
 #@step(r'the local forecast is "(.*)"')
 def the_local_forecast_is(step, local_forecasts):
     local_forecasts = json.loads(local_forecasts)
-    attrs = ["point_forecast", "submodel"]
+    attrs = ["point_forecast", "model"]
     for field_id in local_forecasts:
         forecast = world.local_forecast[field_id]
         local_forecast = local_forecasts[field_id]

@@ -15,9 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A local Predictive Time-Series model object
+"""A local Predictive Time Series model object
 
-This module defines a Time-Series model to make predictions locally or
+This module defines a Time Series model to make predictions locally or
 embedded into your application without needing to send requests to
 BigML.io.
 
@@ -36,7 +36,7 @@ api = BigML()
 
 time_series = TimeSeries(
     'timeseries/5026965515526876630001b2')
-time_series.predict({"results": 10)
+time_series.forecast({"price": {"horizon": 10}})
 
 """
 import logging
@@ -77,7 +77,7 @@ def compute_forecasts(submodels, horizon):
             args = [submodel, horizon]
 
         forecasts.append( \
-            {"submodel": name,
+            {"model": name,
              "point_forecast": SUBMODELS[trend](*args)})
     return forecasts
 
@@ -93,9 +93,6 @@ def filter_submodels(submodels, filter_info):
     # filtering by indices and/or names
     indices = filter_info.get(SUBMODEL_KEYS[0], [])
     names = filter_info.get(SUBMODEL_KEYS[1], [])
-
-    if not indices and not names:
-        return []
 
     if indices:
         # adding all submodels by index if they are not also in the names
@@ -113,6 +110,9 @@ def filter_submodels(submodels, filter_info):
             if re.search(pattern, submodel["name"]) is not None and \
             submodel["name"] not in submodel_names]
         field_submodels.extend(named_submodels)
+
+    if not indices and not names:
+        field_submodels.extend(submodels)
 
     # filtering the resulting set by criterion and limit
     criterion = filter_info.get(SUBMODEL_KEYS[2])
@@ -147,11 +147,12 @@ class TimeSeries(ModelFields):
         self.trend = None
         self.time_range = {}
         self.field_parameters = {}
+        self._forecast = []
 
         # checks whether the information needed for local predictions is in
         # the first argument
         if isinstance(time_series, dict) and \
-                not check_model_fields(ltime_series):
+                not check_model_fields(time_series):
             # if the fields used by the logistic regression are not
             # available, use only ID to retrieve it again
             time_series = get_time_series_id( \
@@ -180,6 +181,7 @@ class TimeSeries(ModelFields):
             time_series = time_series['object']
         try:
             self.input_fields = time_series.get("input_fields", [])
+            self._forecast = time_series.get("forecast")
             self.objective_fields = time_series.get(
                 "objective_fields", [])
             objective_field = time_series['objective_field'] if \
@@ -203,7 +205,7 @@ class TimeSeries(ModelFields):
                 self.all_numeric_objectives = time_series_info.get( \
                     'all_numeric_objectives')
                 self.period = time_series_info.get('period', 1)
-                self.submodels = time_series_info.get('submodels', {})
+                self.ets_models = time_series_info.get('ets_models', {})
                 self.error = time_series_info.get('error')
                 self.damped_trend = time_series_info.get('damped_trend')
                 self.seasonality = time_series_info.get('seasonality')
@@ -224,7 +226,7 @@ class TimeSeries(ModelFields):
                             " in the resource:\n\n%s" %
                             time_series)
 
-    def forecast(self, input_data, by_name=True, add_unused_fields=False):
+    def forecast(self, input_data=None, by_name=True, add_unused_fields=False):
         """Returns the class prediction and the confidence
         By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.
@@ -236,6 +238,18 @@ class TimeSeries(ModelFields):
                            objective fields in the model
 
         """
+        if not input_data:
+            forecasts = {}
+            for field_id, value in self._forecast.items():
+                forecasts[field_id] = []
+                for forecast in value:
+                    local_forecast = {}
+                    local_forecast.update( \
+                        {"point_forecast": forecast["point_forecast"]})
+                    local_forecast.update( \
+                        {"model": forecast["model"]})
+                    forecasts[field_id].append(local_forecast)
+            return forecasts
 
         # Checks and cleans input_data leaving only the fields used as
         # objective fields in the model
@@ -248,14 +262,13 @@ class TimeSeries(ModelFields):
 
         # filter submodels: filtering the submodels in the time-series
         # model to be used in the prediction
-
         filtered_submodels = {}
         for field_id, field_input in input_data.items():
-            filter_info = field_input.get("submodels", {})
+            filter_info = field_input.get("ets_models", {})
             if not filter_info:
                 filter_info = DEFAULT_SUBMODEL
             filtered_submodels[field_id] = filter_submodels( \
-                self.submodels[field_id], filter_info)
+                self.ets_models[field_id], filter_info)
 
         forecasts = {}
         for field_id, submodels in filtered_submodels.items():
@@ -294,9 +307,6 @@ class TimeSeries(ModelFields):
             # raise error if no horizon is provided
             for key, value in input_data.items():
                 value = self.normalize(value)
-                if value is None:
-                    raise ValueError( \
-                        "Input data cannot be empty.")
                 if not isinstance(value, dict):
                     raise ValueError( \
                         "Each field input data needs to be specified "
@@ -307,7 +317,7 @@ class TimeSeries(ModelFields):
                         "Each field in input data must contain at"
                         "least a \"horizon\" attribute.")
                 if any(key not in SUBMODEL_KEYS for key in \
-                        value.get("submodel", {}).keys()):
+                        value.get("ets_models", {}).keys()):
                     raise ValueError( \
                         "Only %s allowed as keys in each fields submodel"
                         " filter." % ", ".join(SUBMODEL_KEYS))

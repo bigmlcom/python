@@ -16,7 +16,7 @@
 # under the License.
 
 
-""" Creating time-series forecasts
+""" Creating time series forecasts
 
 """
 from world import world, setup_module, teardown_module
@@ -48,10 +48,10 @@ class TestTimeSeries(object):
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
                 And I create time-series from a dataset
-                And I wait until the time-series is ready less than <time_3> secs
-                And I update the time-series name to "<time_series_name>"
-                When I wait until the time_series is ready less than <time_4> secs
-                Then the time_series name is "<time_series_name>"
+                And I wait until the time series is ready less than <time_3> secs
+                And I update the time series name to "<time_series_name>"
+                When I wait until the time series is ready less than <time_4> secs
+                Then the time series name is "<time_series_name>"
                 And I create a forecast for "<input_data>"
                 Then the forecasts are "<forecast_points>"
 
@@ -63,7 +63,7 @@ class TestTimeSeries(object):
         print self.test_scenario1.__doc__
         examples = [
             ['data/grades.csv', '10', '10', '20', '50', 'my new time series name',
-             '{"000005": {"horizon": 5}}', '[{"field": "000005", "point_forecast": [68.48298, 68.48298, 68.48298, 68.48298, 68.48298], "submodel": "M,N,N"}]']]
+             '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.50243, 68.50243, 68.50243, 68.50243, 68.50243], "model": "A,N,N"}]}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -76,4 +76,4 @@ class TestTimeSeries(object):
             time_series_create.the_time_series_is_finished_in_less_than(self, example[4])
             time_series_create.i_check_time_series_name(self, example[5])
             forecast_create.i_create_a_forecast(self, example[6])
-            forecast_create.the_forecast_is(self, example[6], example[7])
+            forecast_create.the_forecast_is(self, example[7])

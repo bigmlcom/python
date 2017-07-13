@@ -41,11 +41,12 @@ PYTHON_VERSION = sys.version_info[0:3]
 PYTHON_REQUESTS_CHANGE = (2, 7, 9)
 REQUESTS_VERSION = "requests==2.5.3" if \
     PYTHON_VERSION < PYTHON_REQUESTS_CHANGE else "requests"
-INSTALL_REQUIRES = [REQUESTS_VERSION, "unidecode", "pystemmer"]
+INSTALL_REQUIRES = ["unidecode", "pystemmer"]
 if PYTHON_VERSION[0] < 3:
     INSTALL_REQUIRES.append('poster')
 else:
     INSTALL_REQUIRES.append('requests-toolbelt')
+INSTALL_REQUIRES.append(REQUESTS_VERSION)
 
 setuptools.setup(
     name="bigml",

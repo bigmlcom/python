@@ -3,6 +3,12 @@
 History
 -------
 
+4.10.5 (2017-07-13)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in the sources upload using Python3. Server changes need the
+  content-type of the file to be sent.
+
 4.10.4 (2017-06-21)
 ~~~~~~~~~~~~~~~~~~~
 

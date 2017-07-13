@@ -48,6 +48,9 @@ if PYTHON_2_7_9:
     from bigml.sslposter import StreamingHTTPSHandler, register_openers
 elif PYTHON_2:
     from poster.streaminghttp import StreamingHTTPSHandler, register_openers
+else:
+    from requests_toolbelt import MultipartEncoder
+    import mimetypes
 
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
@@ -327,9 +330,11 @@ class SourceHandler(ResourceHandler):
         try:
 
             if isinstance(file_name, basestring):
-                files = {os.path.basename(file_name): open(file_name, "rb")}
+                name = os.path.basename(file_name)
+                file_handler = open(file_name, "rb")
             else:
-                files = {'stdin': file_name}
+                name = 'stdin'
+                file_hander = file_name
         except IOError:
             sys.exit("ERROR: cannot read training set")
 
@@ -340,7 +345,7 @@ class SourceHandler(ResourceHandler):
                     'method': urlfetch.POST,
                     'headers': SEND_JSON,
                     'data': create_args,
-                    'files': files,
+                    'files': {name: file_hander},
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
@@ -351,9 +356,16 @@ class SourceHandler(ResourceHandler):
                                   location, resource, error)
         else:
             try:
-                response = requests.post(self.source_url + self.auth,
-                                         files=files,
-                                         data=create_args, verify=self.verify)
+                files = {"file": (name,
+                                  file_handler,
+                                  mimetypes.guess_type(name))}
+                files.update(create_args)
+                m = MultipartEncoder(
+                    fields=files)
+                response = requests.post( \
+                    self.source_url + self.auth,
+                    headers={'Content-Type': m.content_type},
+                    data=m, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException), exc:

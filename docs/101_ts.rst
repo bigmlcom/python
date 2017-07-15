@@ -1,0 +1,46 @@
+BigML Bindings: 101 - Using a Time Series
+=========================================
+
+Following the schema described in the `prediction workflow <api_sketch.html>`_,
+document, this is the code snippet that shows the minimal workflow to
+create a time series and produce a forecast.
+
+.. code-block:: python
+
+
+    from bigml.api import BigML
+    # step 0: creating a connection to the service (default credentials)
+    api = BigML()
+    # step 1: creating a source from the data in your local "data/grades.csv" file
+    source = api.create_source("data/grades.csv")
+    # waiting for the source to be finished. Results will be stored in `source`
+    api.ok(source)
+    # step 3: creating a dataset from the previously created `source`
+    dataset = api.create_dataset(source)
+    # waiting for the dataset to be finished
+    api.ok(dataset)
+    # step 5: creating a time series to forecast any numeric field in the dataset
+    time_series = api.create_time_series(dataset)
+    # waiting for the time series to be finished
+    api.ok(time_series) # finished time series
+    input_data = {"000005": {"horizon": 10}} # 10 points forecast for field ID 000005
+    forecast = api.create_forecast(time_series, {"000005": {"horizon": 10}})
+
+To learn more about the arguments that can be set in the `forecast` and
+`timeseries` creation calls and the response properties, please have a look
+at the `API documentation <https://bigml.com/api/>`_
+
+If you want to produce your forecasts locally, you can use the `TimeSeries`
+class in the `timeseries` module. A simple example of that is:
+
+.. code-block:: python
+
+    from bigml.timeseries import TimeSeries
+    local_time_series = TimeSeries("timeseries/5968ec46983efc21b000001b")
+    # 10 points forecast for field "Final" and 5 points for field "Assignment"
+    local_time_series.forecast({"Final": {"horizon": 10},
+                                "Assignment": {"horizon": 5}})
+
+Every modeling resource in BigML has its corresponding local class. Check
+the `Local resources <index.html#local_resources>`_ section of the
+documentation to learn more about them.

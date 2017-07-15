@@ -276,10 +276,13 @@ If you set the ``storage`` argument in the ``api`` instantiation:
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
 
-For an overview of the steps that you will usually need to follow to model
+For a descriptive overview of the steps that you will usually need to
+follow to model
 your data and obtain predictions, please see the `basic Workflow sketch
 <api_sketch.html>`_
-document.
+document. You can also check other simple examples in the
+`model 101 <101_model.html>`_, `anomaly detector 101 <101_anomaly.html>`_,
+and `time series 101 <101_ts.html>`_ documents.
 
 Fields Structure
 ----------------
@@ -2583,6 +2586,168 @@ as well as the configuration parameters described in
 the `developers section <https://bigml.com/api/topicmodels>`_ .
 
 
+Time Series
+-----------
+
+A time series model is a supervised learning method to forecast the future
+values of a field based on its previously observed values.
+It is used to analyze time based data when historical patterns can explain
+the future behavior such as stock prices, sales forecasting,
+website traffic, production and inventory analysis, weather forecasting, etc.
+A time series model needs to be trained with time series data,
+i.e., a field containing a sequence of equally distributed data points in time.
+
+BigML implements exponential smoothing to train time series models.
+Time series data is modeled as a level component and it can optionally
+include a trend (damped or not damped) and a seasonality
+components. You can learn more about how to include these components and their
+use in the `API documentation page <https://bigml.io/api/>`_.
+
+You can create a time series model selecting one or several fields from
+your dataset, that will be the ojective fields. The forecast will compute
+their future values.
+
+
+The JSON structure for a time series is:
+
+.. code-block:: python
+
+    >>> api.pprint(time_series['object'])
+    {   u'category': 0,
+        u'clones': 0,
+        u'code': 200,
+        u'columns': 1,
+        u'configuration': None,
+        u'configuration_status': False,
+        u'created': u'2017-07-15T12:49:42.601000',
+        u'credits': 0.0,
+        u'dataset': u'dataset/5968ec42983efc21b0000016',
+        u'dataset_field_types': {   u'categorical': 0,
+                                    u'datetime': 0,
+                                    u'effective_fields': 6,
+                                    u'items': 0,
+                                    u'numeric': 6,
+                                    u'preferred': 6,
+                                    u'text': 0,
+                                    u'total': 6},
+        u'dataset_status': True,
+        u'dataset_type': 0,
+        u'description': u'',
+        u'fields_meta': {   u'count': 1,
+                            u'limit': 1000,
+                            u'offset': 0,
+                            u'query_total': 1,
+                            u'total': 1},
+        u'forecast': {   u'000005': [   {   u'lower_bound': [   30.14111,
+                                                                30.14111,
+                                                                ...
+                                                                30.14111],
+                                            u'model': u'A,N,N',
+                                            u'point_forecast': [   68.53181,
+                                                                   68.53181,
+                                                                   ...
+                                                                   68.53181,
+                                                                   68.53181],
+                                            u'time_range': {   u'end': 129,
+                                                               u'interval': 1,
+                                                               u'interval_unit': u'milliseconds',
+                                                               u'start': 80},
+                                            u'upper_bound': [   106.92251,
+                                                                106.92251,
+                                                                ...
+                                                                106.92251,
+                                                                106.92251]},
+                                        {   u'lower_bound': [   35.44118,
+                                                                35.5032,
+                                                                ...
+                                                                35.28083],
+                                            u'model': u'A,Ad,N',
+                            ...
+                                                                   66.83537,
+                                                                   66.9465],
+                                            u'time_range': {   u'end': 129,
+                                                               u'interval': 1,
+                                                               u'interval_unit': u'milliseconds',
+                                                               u'start': 80}}]},
+        u'horizon': 50,
+        u'locale': u'en_US',
+        u'max_columns': 6,
+        u'max_rows': 80,
+        u'name': u'my_ts_data',
+        u'name_options': u'period=1, range=[1, 80]',
+        u'number_of_evaluations': 0,
+        u'number_of_forecasts': 0,
+        u'number_of_public_forecasts': 0,
+        u'objective_field': u'000005',
+        u'objective_field_name': u'Final',
+        u'objective_field_type': u'numeric',
+        u'objective_fields': [u'000005'],
+        u'objective_fields_names': [u'Final'],
+        u'price': 0.0,
+        u'private': True,
+        u'project': None,
+        u'range': [1, 80],
+        u'resource': u'timeseries/596a0f66983efc53f3000000',
+        u'rows': 80,
+        u'shared': False,
+        u'short_url': u'',
+        u'size': 2691,
+        u'source': u'source/5968ec3c983efc218c000006',
+        u'source_status': True,
+        u'status': {   u'code': 5,
+                       u'elapsed': 8358,
+                       u'message': u'The time series has been created',
+                       u'progress': 1.0},
+        u'subscription': True,
+        u'tags': [],
+        u'time_series': {   u'all_numeric_objectives': False,
+                            u'datasets': {   u'000005': u'dataset/596a0f70983efc53f3000003'},
+                            u'ets_models': {   u'000005': [   {   u'aic': 831.30903,
+                                                                  u'aicc': 831.84236,
+                                                                  u'alpha': 0.00012,
+                                                                  u'beta': 0,
+                                                                  u'bic': 840.83713,
+                                                                  u'final_state': {   u'b': 0,
+                                                                                      u'l': 68.53181,
+                                                                                      u's': [   0]},
+                                                                  u'gamma': 0,
+                                                                  u'initial_state': {   u'b': 0,
+                                                                                        u'l': 68.53217,
+                                                                                        u's': [   0]},
+                                                                  u'name': u'A,N,N',
+                                                                  u'period': 1,
+                                                                  u'phi': 1,
+                                                                  u'r_squared': -0.0187,
+                                                                  u'sigma': 19.19535},
+                                                              {   u'aic': 834.43049,
+                                                                  ...
+                                                                  u'slope': 0.11113,
+                                                                  u'value': 61.39}]},
+                            u'fields': {   u'000005': {   u'column_number': 5,
+                                                          u'datatype': u'double',
+                                                          u'name': u'Final',
+                                                          u'optype': u'numeric',
+                                                          u'order': 0,
+                                                          u'preferred': True,
+                                                          u'summary': {   u'bins': [   [   28.06,
+                                                                                           1],
+                                                                                       [   34.44,
+                                                                                        ...
+                                                                                       [   108.335,
+                                                                                           2]],
+                                                                          ...
+                                                                          u'sum_squares': 389814.3944,
+                                                                          u'variance': 380.73315}}},
+                            u'period': 1,
+                            u'time_range': {   u'end': 79,
+                                               u'interval': 1,
+                                               u'interval_unit': u'milliseconds',
+                                               u'start': 0}},
+        u'type': 0,
+        u'updated': u'2017-07-15T12:49:52.549000',
+        u'white_box': False}
+
+
 Whizzml Resources
 -----------------
 
@@ -2913,6 +3078,8 @@ update the contents of the associated variable:
     api.status(topic_model)
     api.status(topic_distribution)
     api.status(batch_topic_distribution)
+    api.status(time_series)
+    api.status(forecast)
     api.status(script)
     api.status(execution)
     api.status(library)
@@ -3287,6 +3454,40 @@ list of ids as the first argument in the api call
     topic_model = api.create_topic_model([dataset1, dataset2], { \
         "name": "my topics", "number_of_topics": 32})
 
+
+Creating time series
+~~~~~~~~~~~~~~~~~~~~
+
+To forecast the behaviour of any numeric variable that depends on its
+historical records you can use a time series.
+The only required argument to create a time series
+is a dataset id.
+You can also
+include in the request all the additional arguments accepted by BigML
+and documented in the `Time Series section of the Developer's
+documentation <https://bigml.com/api/timeseries>`_.
+
+For example, to create a time series including a forecast of 10 points
+for the numeric values you can use the following
+invocation:
+
+.. code-block:: python
+
+    time_series = api.create_time_series(dataset, { \
+        "name": "my time series", "horizon": 10})
+
+Again, the time series is scheduled for creation, and you can retrieve its
+status at any time by means of ``api.status(time_series)``.
+
+Time series also be created from lists of datasets. Just use the
+list of ids as the first argument in the api call
+
+.. code-block:: python
+
+    time_series = api.create_time_series([dataset1, dataset2], { \
+        "name": "my time series", "horizon": 10})
+
+
 Creating predictions
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -3365,15 +3566,31 @@ the method a topic model identifier and the input data to obtain the score:
 
 .. code-block:: python
 
-    anomaly_score = api.create_topic_distribution( \
+    topic_distribution = api.create_topic_distribution( \
         topic_model,
         {"Message": "The bubble exploded in 2007."},
         args={"name": "my topic distribution"})
 
+
+Creating forecasts
+~~~~~~~~~~~~~~~~~~
+
+To obtain the forecast associated to a numeric variable, you
+can now use the ``create_forecast`` method. Give
+the method a time series identifier and the input data to obtain the forecast:
+
+.. code-block:: python
+
+    forecast = api.create_forecast( \
+        time_series,
+        {"Final": {"horizon": 10}})
+
+
 Creating evaluations
 ~~~~~~~~~~~~~~~~~~~~
 
-Once you have created a model, you can measure its perfomance by running a
+Once you have created a supervised learning model,
+you can measure its perfomance by running a
 dataset of test data through it and comparing its predictions to the objective
 field real values. Thus, the required arguments to create an evaluation are
 model id and a dataset id. You can also
@@ -3650,6 +3867,8 @@ You can list resources with the appropriate api method:
     api.list_topic_models()
     api.list_topic_distributions()
     api.list_batch_topic_distributions()
+    api.list_time_series()
+    api.list_forecasts()
     api.list_scripts()
     api.list_libraries()
     api.list_executions()
@@ -3791,6 +4010,10 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_topic_distribution(topic_distribution, {"name": "new name"})
     api.update_batch_topic_distribution(\
         batch_topic_distribution, {"name": "new name"})
+    api.update_time_series(\
+        time_series, {"name": "new name"})
+    api.update_forecast(\
+        time_series, {"name": "new name"})
     api.update_script(script, {"name": "new name"})
     api.update_library(library, {"name": "new name"})
     api.update_execution(execution, {"name": "new name"})
@@ -3874,6 +4097,8 @@ each type of resource.
     api.delete_topic_model(topic_model)
     api.delete_topic_distribution(topic_distribution)
     api.delete_batch_topic_distribution(batch_topic_distribution)
+    api.delete_time_series(time_series)
+    api.delete_forecast(forecast)
     api.delete_project(project)
     api.delete_script(script)
     api.delete_library(library)
@@ -3950,6 +4175,10 @@ model:
 
 Only users with the share link or credentials information will be able to
 access your shared models.
+
+
+.. _local_resources:
+
 
 Local Models
 ------------
@@ -4716,6 +4945,77 @@ an input data set:
 As you can see, the topic distribution contains the name of the
 possible topics in the model and the
 associated probabilities.
+
+Local Time Series
+-----------------
+
+You can also instantiate a local version of a remote time series.
+
+.. code-block:: python
+
+    from bigml.timeseries import TimeSeries
+    local_time_series = TimeSeries(
+        'timeseries/502fdbcf15526876210042435')
+
+This will create a series of models from the
+the remote time series information,
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a ``TimeSeries``
+object that you can use to obtain local forecasts.
+If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.timeseries import TimeSeries
+    from bigml.api import BigML
+
+    local_time_series = TimeSeries( \
+        'timeseries/502fdbcf15526876210042435',
+        api=BigML(my_username, my_api_key))
+
+You can also reuse a remote time series JSON structure
+as previously retrieved to build the
+local time series object:
+
+.. code-block:: python
+
+    from bigml.timeseries import TimeSeries
+    from bigml.api import BigML
+    api = BigML()
+    time_series = api.get_time_series( \
+        'timeseries/502fdbcf15526876210042435',
+        query_string='limit=-1')
+
+    local_time_series = TimeSeries(time_series)
+
+Note that in this example we used a ``limit=-1`` query string for the topic
+model retrieval. This ensures that all fields are retrieved by the get
+method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+
+Local Forecasts
+---------------
+
+Using the local time series object, you can forecast any of the objective
+field values:
+
+.. code-block:: python
+
+    local_time_series.forecast({"Final": {"horizon": 5}, "Assignment": { \
+        "horizon": 10, "ets_models": {"criterion": "aic", "limit": 2}}}
+
+
+TODO: add result
+
+As you can see, the forecast contains the ID of the forecasted field, the
+computed points and the name of the models meeting the criterion.
+For more details about the available parameters, please check the `API
+documentation <https://bigml.com/api/forecasts>`_.
 
 
 Multi Models

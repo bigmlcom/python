@@ -312,7 +312,6 @@ class BigMLConnection(object):
                     return maybe_save(resource_id, self.storage, code,
                                       location, resource, error)
             try:
-                print response.content
                 code = response.status_code
                 if code in [HTTP_CREATED, HTTP_OK]:
                     if 'location' in response.headers:

@@ -127,8 +127,8 @@ def Ad_forecast(submodel, horizon, seasonality):
     ŷ_t+h|t = l_t + phi_h * b_t + s_f(m, h) (if seasonality = "A")
     ŷ_t+h|t = (l_t + phi_h * b_t) * s_f(m, h) (if seasonality = "M")
     with phi_0 = phi
-         phi_1 = phi + phi
-         phi_h = phi + phi + phi^2 + ... + phi^h (for h > 1)
+         phi_1 = phi + phi^2
+         phi_h = phi + phi^2 + ... + phi^(h + 1) (for h > 0)
     """
     points = []
     final_state = submodel.get("final_state", {})
@@ -137,11 +137,14 @@ def Ad_forecast(submodel, horizon, seasonality):
     phi = submodel.get("phi", 0)
     s = final_state.get("s", 0)
     phi_h = phi
+    print "*** b, l, s", b, l, s
     for h in range(horizon):
+        print "*** h, phi, phi_h", h, phi, phi_h
         # each season has a different contribution
         s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l + phi_h * b, s_i))
-        phi_h = phi_h + pow(phi, h + 1)
+        phi_h = phi_h + pow(phi, h + 2)
+        print "*** points ", points
     return points
 
 
@@ -169,8 +172,8 @@ def Md_forecast(submodel, horizon, seasonality):
     ŷ_t+h|t = l_t + b_t^(phi_h) + s_f(m, h) (if seasonality = "A")
     ŷ_t+h|t = (l_t + b_t^(phi_h)) * s_f(m, h) (if seasonality = "M")
     with phi_0 = phi
-         phi_1 = phi + phi
-         phi_h = phi + phi + phi^2 + ... + phi^h (for h > 1)
+         phi_1 = phi + phi ^ 2
+         phi_h = phi + phi^2 + ... + phi^h (for h > 1)
     """
     points = []
     final_state = submodel.get("final_state", {})
@@ -183,7 +186,7 @@ def Md_forecast(submodel, horizon, seasonality):
         # each season has a different contribution
         s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l * pow(b, phi_h), s_i))
-        phi_h = phi_h + pow(phi, h + 1)
+        phi_h = phi_h + pow(phi, h + 2)
     return points
 
 

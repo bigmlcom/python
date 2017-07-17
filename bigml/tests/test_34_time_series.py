@@ -63,7 +63,7 @@ class TestTimeSeries(object):
         print self.test_scenario1.__doc__
         examples = [
             ['data/grades.csv', '10', '10', '20', '50', 'my new time series name',
-             '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.50243, 68.50243, 68.50243, 68.50243, 68.50243], "model": "A,N,N"}]}']]
+             '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [68.53181, 68.53181, 68.53181, 68.53181, 68.53181], "model": "A,N,N"}]}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

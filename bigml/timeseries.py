@@ -43,22 +43,27 @@ import logging
 import math
 import copy
 import re
+import sys
+import StringIO
+import pprint
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_time_series_id, get_status)
-from bigml.util import cast
+from bigml.util import cast, utf8
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
 from bigml.modelfields import ModelFields, check_model_fields
 from bigml.tssubmodels import SUBMODELS
-
+from bigml.tsoutconstants import SUBMODELS_CODE, TRIVIAL_MODEL, \
+    SEASONAL_CODE, FORECAST_FUNCTION, USAGE_DOC
 
 LOGGER = logging.getLogger('BigML')
 
 REQUIRED_INPUT = "horizon"
 SUBMODEL_KEYS = ["indices", "names", "criterion", "limit"]
 DEFAULT_SUBMODEL = {"criterion": "aic", "limit": 1}
+INDENT = " " * 4
 
 
 def compute_forecasts(submodels, horizon):
@@ -140,7 +145,7 @@ class TimeSeries(ModelFields):
         self.objective_fields = []
         self.all_numeric_objectives = False
         self.period = 1
-        self.submodels = {}
+        self.ets_models = {}
         self.error = None
         self.damped_trend = None
         self.seasonality = None
@@ -329,3 +334,55 @@ class TimeSeries(ModelFields):
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
             return ({}, []) if add_unused_fields else {}
+
+    def python(self, out=sys.stdout):
+        """Generates the code in python that creates the forecasts
+
+        """
+        attributes = [u"l", u"b", u"s", u"phi", u"value", u"slope"]
+        components = {}
+        model_components = {}
+        model_names = []
+        out.write(utf8(USAGE_DOC % (self.resource_id,
+                                    self.fields[self.objective_id]["name"])))
+        output = [u"COMPONENTS = \\"]
+        for field_id, models in self.ets_models.items():
+            for model in models:
+                final_state = model.get("final_state", {})
+                attrs = {}
+                for attribute in attributes:
+                    if attribute in model:
+                        attrs.update({attribute: model[attribute]})
+                    elif attribute in final_state:
+                        attrs.update( \
+                            {attribute: final_state[attribute]})
+                model_names.append(model["name"])
+                model_components[model["name"]] = attrs
+            field_name = self.fields[field_id]["name"]
+            if field_name not in components:
+                components[field_name] = model_components
+        partial_output = StringIO.StringIO()
+        pprint.pprint(components, stream=partial_output)
+        for line in partial_output.getvalue().split("\n"):
+            output.append(u"%s%s" % (INDENT, line))
+
+        out.write(utf8(u"\n".join(output)))
+
+        model_names = set(model_names)
+        if (any(name in model_names for name in ["naive", "mean"])):
+            out.write(utf8(TRIVIAL_MODEL))
+        if (any("," in name and name.split(",")[2] in ["A", "M"] for \
+                name in model_names)):
+            out.write(utf8(SEASONAL_CODE))
+        trends = [name.split(",")[1] for name in model_names if "," in name]
+        trends.extend([name for name in model_names if "," not in name])
+        trends = set(trends)
+        models_function = []
+        for trend in trends:
+            models_function.append("\"%s\": _%s_forecast" % (trend, trend))
+            out.write(utf8(SUBMODELS_CODE[trend]))
+        out.write(utf8(u"\n\nMODELS = \\\n"))
+        out.write(utf8("%s%s%s" % \
+            (u"    {", u",\n     ".join(models_function), u"}")))
+
+        out.write(utf8(FORECAST_FUNCTION))

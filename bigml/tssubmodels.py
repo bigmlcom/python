@@ -137,14 +137,11 @@ def Ad_forecast(submodel, horizon, seasonality):
     phi = submodel.get("phi", 0)
     s = final_state.get("s", 0)
     phi_h = phi
-    print "*** b, l, s", b, l, s
     for h in range(horizon):
-        print "*** h, phi, phi_h", h, phi, phi_h
         # each season has a different contribution
         s_i = season_contribution(s, h)
         points.append(OPERATORS[seasonality](l + phi_h * b, s_i))
         phi_h = phi_h + pow(phi, h + 2)
-        print "*** points ", points
     return points
 
 

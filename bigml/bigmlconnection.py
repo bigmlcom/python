@@ -300,7 +300,6 @@ class BigMLConnection(object):
                                       location, resource, error)
             else:
                 try:
-                    print body
                     response = requests.post(url + self.auth,
                                              headers=SEND_JSON,
                                              data=body, verify=verify)

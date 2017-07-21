@@ -221,7 +221,10 @@ def forecast(field, model_name, horizon=50):
 """
 
 USAGE_DOC = \
-u"""\"\"\"Local Time Series for %s.
+u"""\"\"\"Local forecast for BigML's Time Series %s.
+
+Time Series Forecast by BigML - Machine Learning Made Easy
+
 Add this code to your project and use the `forecast` function to make
 your forecasts:
 

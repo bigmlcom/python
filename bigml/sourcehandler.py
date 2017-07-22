@@ -176,7 +176,7 @@ class SourceHandler(ResourceHandler):
                                     open(file_name, "rb")})
             else:
                 create_args = create_args.items()
-                name = '<none>'
+                name = 'Stdin input'
                 create_args.append(MultipartParam(name, filename=name,
                                                   fileobj=file_name))
 
@@ -333,7 +333,7 @@ class SourceHandler(ResourceHandler):
                 name = os.path.basename(file_name)
                 file_handler = open(file_name, "rb")
             else:
-                name = 'stdin'
+                name = 'Stdin input'
                 file_hander = file_name
         except IOError:
             sys.exit("ERROR: cannot read training set")

@@ -101,6 +101,7 @@ class Ensemble(object):
         self.ensemble_id = None
         self.objective_id = None
         self.distributions = None
+        self.distribution = None
         self.models_splits = []
         self.multi_model = None
         self.boosting = None
@@ -211,6 +212,19 @@ class Ensemble(object):
         if self.fields is None:
             self.fields, self.objective_id = self.all_model_fields(
                 max_models=max_models)
+
+
+        if self.fields:
+            summary = self.fields[self.objective_id]['summary']
+            if 'bins' in summary:
+                distribution = summary['bins']
+            elif 'counts' in summary:
+                distribution = summary['counts']
+            elif 'categories' in summary:
+                distribution = summary['categories']
+            else:
+                distribution = []
+            self.distribution = distribution
 
         self.regression = \
             self.fields[self.objective_id].get('optype') == 'numeric'
@@ -596,6 +610,10 @@ class Ensemble(object):
         ensemble_distribution = []
         categories = []
         distribution = []
+        # ensembles have now the field information
+        if self.distribution:
+            return sorted(self.distribution, key=lambda x: x[0])
+
         for model_distribution in self.distributions:
             summary = model_distribution[distribution_type]
             if 'bins' in summary:
@@ -627,12 +645,13 @@ class Ensemble(object):
             print_distribution(distribution, out=out)
             out.write(u"\n\n")
 
-        predictions = self.get_data_distribution("predictions")
+        if not self.boosting:
+            predictions = self.get_data_distribution("predictions")
 
-        if predictions:
-            out.write(u"Predicted distribution:\n")
-            print_distribution(predictions, out=out)
-            out.write(u"\n\n")
+            if predictions:
+                out.write(u"Predicted distribution:\n")
+                print_distribution(predictions, out=out)
+                out.write(u"\n\n")
 
         out.write(u"Field importance:\n")
         self.print_importance(out=out)

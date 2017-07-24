@@ -611,7 +611,7 @@ class Ensemble(object):
         categories = []
         distribution = []
         # ensembles have now the field information
-        if self.distribution and distribution_type == "training":
+        if self.distribution and self.boosting:
             return sorted(self.distribution, key=lambda x: x[0])
 
         for model_distribution in self.distributions:

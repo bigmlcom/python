@@ -4957,7 +4957,7 @@ You can also instantiate a local version of a remote time series.
     local_time_series = TimeSeries(
         'timeseries/502fdbcf15526876210042435')
 
-This will create a series of models from the
+This will create a series of models from
 the remote time series information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
@@ -5007,10 +5007,22 @@ field values:
 .. code-block:: python
 
     local_time_series.forecast({"Final": {"horizon": 5}, "Assignment": { \
-        "horizon": 10, "ets_models": {"criterion": "aic", "limit": 2}}}
+        "horizon": 10, "ets_models": {"criterion": "aic", "limit": 2}}})
+    {u'000005': [
+        {'point_forecast': [68.53181, 68.53181, 68.53181, 68.53181, 68.53181],
+         'model': u'A,N,N'}],
+     u'000001': [{'point_forecast': [54.776650000000004, 90.00943000000001,
+                                     83.59285000000001, 85.72403000000001,
+                                     72.87196, 93.85872, 84.80786, 84.65522,
+                                     92.52545, 88.78403],
+                  'model': u'A,N,A'},
+                 {'point_forecast': [55.882820120000005, 90.5255466567616,
+                                     83.44908577909621, 87.64524353046498,
+                                     74.32914583152592, 95.12372848262932,
+                                     86.69298716626228, 85.31630744944385,
+                                     93.62385478607113, 89.06905451921818],
+                  'model': u'A,Ad,A'}]}
 
-
-TODO: add result
 
 As you can see, the forecast contains the ID of the forecasted field, the
 computed points and the name of the models meeting the criterion.

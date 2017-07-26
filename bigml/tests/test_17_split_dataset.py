@@ -40,7 +40,7 @@ class TestSplitDataset(object):
     def test_scenario1(self):
         """
             Scenario: Successfully creating a split dataset:
-                Given I create a data source uploading a "<data>" file
+                Given I create a data source with "<params>" uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
@@ -55,10 +55,10 @@ class TestSplitDataset(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '0.8']]
+            ['data/iris.csv', '10', '10', '10', '0.8', '{"category": 12}']]
         for example in examples:
             print "\nTesting with:\n", example
-            source_create.i_upload_a_file(self, example[0])
+            source_create.i_upload_a_file_with_args(self, example[0], example[5])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self,

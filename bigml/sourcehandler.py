@@ -22,6 +22,7 @@
 import sys
 import os
 import urllib2
+import numbers
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -179,7 +180,6 @@ class SourceHandler(ResourceHandler):
                 name = 'Stdin input'
                 create_args.append(MultipartParam(name, filename=name,
                                                   fileobj=file_name))
-
         except IOError, exception:
             raise IOError("Error: cannot read training set. %s" %
                           str(exception))
@@ -317,6 +317,10 @@ class SourceHandler(ResourceHandler):
             if value is not None and (isinstance(value, list) or
                                       isinstance(value, dict)):
                 create_args[key] = json.dumps(value)
+            elif value is not None and isinstance(value, numbers.Number):
+                # the multipart encoder only accepts strings and files
+                create_args[key] = str(value)
+
 
         code = HTTP_INTERNAL_SERVER_ERROR
         resource_id = None
@@ -358,7 +362,7 @@ class SourceHandler(ResourceHandler):
             try:
                 files = {"file": (name,
                                   file_handler,
-                                  mimetypes.guess_type(name))}
+                                  mimetypes.guess_type(name)[0])}
                 files.update(create_args)
                 m = MultipartEncoder(
                     fields=files)

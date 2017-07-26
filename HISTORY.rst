@@ -3,6 +3,11 @@
 History
 -------
 
+4.11.1 (2017-06-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in source uploads using Python3 when a category is set.
+
 4.11.0 (2017-06-23)
 ~~~~~~~~~~~~~~~~~~~
 

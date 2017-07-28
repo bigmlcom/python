@@ -58,7 +58,7 @@ class TestPublicDataset(object):
             ['data/iris.csv', '10', '10', '10']]
         for example in examples:
             print "\nTesting with:\n", example
-            source_create.i_upload_a_file(self, example[0])
+            source_create.i_upload_a_file_from_stdin(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])

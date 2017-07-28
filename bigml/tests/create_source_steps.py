@@ -19,6 +19,8 @@ import time
 import json
 import csv
 import sys
+
+
 from datetime import datetime, timedelta
 from world import world, res_filename
 from nose.tools import eq_, assert_less
@@ -28,6 +30,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import UPLOADING
 from bigml.api import get_status
+
 
 import read_source_steps as read
 
@@ -41,6 +44,20 @@ def i_upload_a_file(step, file):
     world.source = resource['object']
     # save reference
     world.sources.append(resource['resource'])
+
+
+#@step(r'I create a data source from stdin uploading a "(.*)" file$')
+def i_upload_a_file_from_stdin(step, file):
+    file_name = res_filename(file)
+    with open(file_name, 'rb') as file_handler:
+        resource = world.api.create_source(file_handler, \
+            {'project': world.project_id})
+        # update status
+        world.status = resource['code']
+        world.location = resource['location']
+        world.source = resource['object']
+        # save reference
+        world.sources.append(resource['resource'])
 
 
 #@step(r'I create a data source uploading a "(.*)" file with args "(.*)"$')

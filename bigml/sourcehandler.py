@@ -338,7 +338,7 @@ class SourceHandler(ResourceHandler):
                 file_handler = open(file_name, "rb")
             else:
                 name = 'Stdin input'
-                file_hander = file_name
+                file_handler = file_name
         except IOError:
             sys.exit("ERROR: cannot read training set")
 

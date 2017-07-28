@@ -3,6 +3,11 @@
 History
 -------
 
+4.11.2 (2017-07-29)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in source uploads using Python3 when reading data from stdin.
+
 4.11.1 (2017-06-23)
 ~~~~~~~~~~~~~~~~~~~
 

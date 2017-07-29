@@ -412,6 +412,97 @@ class Ensemble(object):
 
         return output
 
+    def predict_confidence(self, input_data, by_name=True,
+                           method=PROBABILITY_CODE,
+                           missing_strategy=LAST_PREDICTION,
+                           compact=False):
+
+        """For classification models, Predicts a confidence for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name or field ID.
+
+        For regressions, the output is a single element list
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param method: numeric key code indicating how the scores
+                       should be produced:
+              0 - majority vote - The sum of models predicting a given class
+                  divided by the total number of models
+                  PLURALITY_CODE
+              1 - Scores estimated from the class confidence at the leaves
+                  of each of the constituient models.
+                  CONFIDENCE_CODE
+              2 - Average Lapalace-smoothed probabilitiy of all models'
+                  leaf node distributions:
+                  PROBABILITY_CODE
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "probability"
+                        mapped to the name of the class and it's probability,
+                        respectively.  If True, returns a list of probabilities
+                        ordered by the sorted order of the class names.
+        """
+        if self.regression:
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      method=method,
+                                      missing_strategy=missing_strategy)
+
+            if compact:
+                output = [prediction]
+            else:
+                output = {'prediction': prediction}
+        elif self.boosting is not None:
+            raise ValueError("Confidence cannot be computed for boosted"
+                             " ensembles.")
+        else:
+            if len(self.models_splits) > 1:
+                # If there's more than one chunk of models, they must be
+                # sequentially used to generate the votes for the prediction
+                votes = MultiVote([], boosting_offsets=None,
+                                  probabilities=True)
+
+                for models_split in self.models_splits:
+                    models = self._get_models(models_split)
+                    multi_model = MultiModel(models,
+                                             api=self.api,
+                                             fields=self.fields,
+                                             class_names=self.class_names)
+
+                    votes_split = multi_model.generate_confidence_votes(
+                        input_data, by_name=by_name,
+                        missing_strategy=missing_strategy,
+                        method=method)
+
+                    votes.extend(votes_split.predictions)
+            else:
+                # When only one group of models is found you use the
+                # corresponding multimodel to predict
+                votes_split = self.multi_model.generate_confidence_votes(
+                    input_data, by_name=by_name,
+                    missing_strategy=missing_strategy,
+                    method=method)
+
+                votes = MultiVote(votes_split.predictions,
+                                  boosting_offsets=None,
+                                  probabilities=True)
+
+            output = votes.combine()
+
+            if not compact:
+                names_confidences = zip(self.class_names, output)
+                output = [{'prediction': class_name,
+                           'confidence': confidence}
+                          for class_name, confidence in names_confidences]
+
+        return output
+
+
     def _get_models(self, models_split):
         if not isinstance(models_split[0], Model):
             if self.cache_get is not None and \
@@ -433,12 +524,55 @@ class Ensemble(object):
 
         return models
 
+    def predict_operating(self, input_data, by_name=True,
+                          method=PLURALITY_CODE,
+                          missing_strategy=LAST_PREDICTION,
+                          operating_point=None, compact=False):
+        if "positive_class" not in operating_point:
+            raise ValueError("The operating point needs to have a"
+                             " positive_class attribute.")
+        else:
+            positive_class = operating_point["positive_class"]
+            if positive_class not in self.class_names:
+                raise ValueError("The positive class must be one of the"
+                                 "objective field classes: %s." %
+                                 ", ".join(self.class_names))
+
+        if "probability_threshold" in operating_point:
+            predictions = self.predict_probability(input_data, by_name, method,
+                                                   missing_strategy, compact)
+            attribute = "probability"
+        elif "confidence_threshold" in operating_point:
+            predictions = self.predict_confidence(input_data, by_name, method,
+                                                  missing_strategy, compact)
+            attribute = "confidence"
+        else:
+            raise ValueError("The operating point needs to have a"
+                             "probability_threshold or a "
+                             "confidence_threshold attribute.")
+        positive_class = operating_point["positive_class"]
+        threshold = operating_point["%s_threshold" % attribute]
+        position = self.class_names.index(positive_class)
+        if predictions[position][attribute] < threshold:
+            # if the threshold is not met, the alternative class with
+            # highest probability or confidence is returned
+            prediction = sorted(predictions,
+                                key=lambda x: - x[attribute])[0 : 2]
+            if prediction[0]["prediction"] == positive_class:
+                prediction = prediction[1]
+            else:
+                prediction = prediction[0]
+        else:
+            prediction = predictions[position]
+        return prediction
+
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
                 with_confidence=False, add_confidence=False,
                 add_distribution=False, add_count=False, add_median=False,
                 add_min=False, add_max=False, add_unused_fields=False,
                 options=None, missing_strategy=LAST_PREDICTION, median=False,
-                with_probability=False, add_probability=False):
+                with_probability=False, add_probability=False,
+                operating_point=None):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
@@ -486,7 +620,42 @@ class Ensemble(object):
                                  (like with_confidence for Boosted Trees)
         :param add_probability: Adds probability to the prediction (only
                                 available in Boosted Trees)
+        :param operating_point: In classification models, this is the point of
+                                the ROC curve where the model will be used at.
+                                The operating point can be defined in terms of:
+                                  - the positive_class, the class that is
+                                    important to predict accurately
+                                  - the probability_threshold
+                                    (or confidence_threshold),
+                                    the probability (or confidence) that is
+                                    stablished as minimum for the
+                                    positive_class to be predicted.
+                                    The operating_point is then defined as a
+                                    map with two attributes, e.g.:
+                                       {"positive_class": "Iris-setosa",
+                                        "probability_threshold": 0.5}
+                                     or
+                                       {"positive_class": "Iris-setosa",
+                                        "confidence_threshold": 0.5}
         """
+
+        if operating_point:
+            if self.regression:
+                raise ValueError("The operating_point argument can only be"
+                                 " used in classifications.")
+            if self.boosting and "confidence_threshold" in operating_point:
+                raise ValueError("Confidence thresholds cannot be applied to"
+                                 "boosted ensembles. "
+                                 "Try probability_threshold.")
+            prediction = self.predict_operating( \
+                input_data, by_name=by_name, method=method,
+                missing_strategy=missing_strategy,
+                operating_point=operating_point)
+            if with_confidence or add_confidence or add_probability:
+                return prediction
+            else:
+                return prediction["prediction"]
+
         if len(self.models_splits) > 1:
             # If there's more than one chunk of models, they must be
             # sequentially used to generate the votes for the prediction

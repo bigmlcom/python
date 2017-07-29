@@ -402,6 +402,48 @@ class Model(BaseModel):
 
         return output
 
+    def predict_operating(self, input_data, by_name=True,
+                          missing_strategy=LAST_PREDICTION,
+                          operating_point=None, compact=False):
+        if "positive_class" not in operating_point:
+            raise ValueError("The operating point needs to have a"
+                             " positive_class attribute.")
+        else:
+            positive_class = operating_point["positive_class"]
+            if positive_class not in self.class_names:
+                raise ValueError("The positive class must be one of the"
+                                 "objective field classes: %s." %
+                                 ", ".join(self.class_names))
+
+        if "probability_threshold" in operating_point:
+            predictions = self.predict_probability(input_data, by_name,
+                                                   missing_strategy, compact)
+            attribute = "probability"
+        elif "confidence_threshold" in operating_point:
+            predictions = self.predict_confidence(input_data, by_name,
+                                                  missing_strategy, compact)
+            attribute = "confidence"
+        else:
+            raise ValueError("The operating point needs to have a"
+                             "probability_threshold or a "
+                             "confidence_threshold attribute.")
+        positive_class = operating_point["positive_class"]
+        threshold = operating_point["%s_threshold" % attribute]
+        position = self.class_names.index(positive_class)
+        if predictions[position][attribute] < threshold:
+            # if the threshold is not met, the alternative class with
+            # highest probability or confidence is returned
+            prediction = sorted(predictions,
+                                key=lambda x: - x[attribute])[0 : 2]
+            if prediction[0]["prediction"] == positive_class:
+                prediction = prediction[1]
+            else:
+                prediction = prediction[0]
+        else:
+            prediction = predictions[position]
+        return prediction
+
+
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
                 missing_strategy=LAST_PREDICTION,
@@ -414,7 +456,8 @@ class Model(BaseModel):
                 add_min=False,
                 add_max=False,
                 add_unused_fields=False,
-                multiple=None):
+                add_probability=False,
+                operating_point=None):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -430,7 +473,8 @@ class Model(BaseModel):
                          is returned in a list format
         missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
                           missing fields
-        add_confidence: Boolean, if True adds confidence to the dict output
+        add_confidence: Boolean, if True adds confidence (or probability)
+                        to the dict output
         add_path: Boolean, if True adds path to the dict output
         add_distribution: Boolean, if True adds distribution info to the
                           dict output
@@ -447,23 +491,40 @@ class Model(BaseModel):
         add_unused_fields: Boolean, if True adds the information about the
                            fields in the input_data that are not being used
                            in the model as predictors.
-        multiple: For categorical fields, it will return the categories
-                  in the distribution of the predicted node as a
-                  list of dicts:
-                    [{'prediction': 'Iris-setosa',
-                      'confidence': 0.9154
-                      'probability': 0.97
-                      'count': 97},
-                     {'prediction': 'Iris-virginica',
-                      'confidence': 0.0103
-                      'probability': 0.03,
-                      'count': 3}]
-                  The value of this argument can either be an integer
-                  (maximum number of categories to be returned), or the
-                  literal 'all', that will cause the entire distribution
-                  in the node to be returned.
-
+        add_probability: Boolean, if True adds probability
+                         to the dict output (only if operating_point is used)
+        operating_point: In classification models, this is the point of the
+                         ROC curve where the model will be used at. The
+                         operating point can be defined in terms of:
+                         - the positive_class, the class that is important to
+                           predict accurately
+                         - the probability_threshold (or confidence_threshold),
+                           the probability (or confidence) that is stablished
+                           as minimum for the positive_class to be predicted.
+                         The operating_point is then defined as a map with
+                         two attributes, e.g.:
+                           {"positive_class": "Iris-setosa",
+                            "probability_threshold": 0.5}
+                         or
+                           {"positive_class": "Iris-setosa",
+                            "confidence_threshold": 0.5}
         """
+
+        # When operating_point is used, we need the probabilities
+        # (or confidences) of all possible classes to decide, so se use
+        # the `predict_probability` or `predict_confidence` methods
+        if operating_point:
+            if self.regression:
+                raise ValueError("The operating_point argument can only be"
+                                 " used in classifications.")
+            prediction = self.predict_operating( \
+                input_data, by_name=by_name,
+                missing_strategy=missing_strategy,
+                operating_point=operating_point)
+            if with_confidence or add_confidence or add_probability:
+                return prediction
+            else:
+                return prediction["prediction"]
         # Checks if this is a regression model, using PROPORTIONAL
         # missing_strategy
         if (not self.boosting and
@@ -512,21 +573,7 @@ class Model(BaseModel):
                       prediction.distribution,
                       prediction.count,
                       prediction.median]
-        if multiple is not None and not self.regression:
-            output = []
-            total_instances = float(prediction.count)
-            distribution = enumerate(prediction.distribution)
-            for index, [category, instances] in distribution:
-                if ((isinstance(multiple, basestring) and multiple == 'all') or
-                        (isinstance(multiple, int) and index < multiple)):
-                    prediction_dict = {
-                        'prediction': category,
-                        'confidence': ws_confidence(category,
-                                                    prediction.distribution),
-                        'probability': instances / total_instances,
-                        'count': instances}
-                    output.append(prediction_dict)
-        elif (add_confidence or add_path or add_distribution or add_count or
+        if (add_confidence or add_path or add_distribution or add_count or
               add_median or add_next or add_min or add_max or
               add_unused_fields):
             output = {'prediction': prediction.output}

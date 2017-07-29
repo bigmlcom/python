@@ -4335,40 +4335,6 @@ that leads to the prediction. For regression models, ``add_min`` and
 ``add_max`` will add the limit values for the data that supports the
 prediction.
 
-In classification models, the prediction is always the most frequent category
-amongst the ones that form the distribution in the predicted node. However, you
-might want to get the complete list of the categories in the predicted node,
-together with their confidence. Using the ``multiple`` argument you will get
-the list of categories with their associated information.
-
-.. code-block:: python
-
-    local_model.predict({"petal length": 3}, multiple='all')
-
-will result in
-
-.. code-block:: python
-
-    [{'count': 50,
-      'confidence': 0.2628864565745068,
-      'prediction': u'Iris-setosa',
-      'probability': 0.3333333333333333},
-     {'count': 50,
-      'confidence': 0.2628864565745068,
-      'prediction': u'Iris-versicolor',
-      'probability': 0.3333333333333333},
-     {'count': 50,
-      'confidence': 0.2628864565745068,
-      'prediction': u'Iris-virginica',
-      'probability': 0.3333333333333333}]
-
-The argument can be set to ``all`` to obtain the complete list or to
-an integer``n``, in which case you will obtain the top ``n``
-predictions.  **Note importantly that the** ``multiple`` **argument is
-scheduled for deprecation in a future version.  Similar functionality
-is available using the** ``predict_probability`` **and**
-``predict_confidence`` **functions described below.**
-
 When your test data has missing values, you can choose between ``last
 prediction`` or ``proportional`` strategy to compute the
 prediction. The ``last prediction`` strategy is the one used by
@@ -4409,7 +4375,9 @@ arguments that function as they do in ``predict``, and one additional
 argument, ``compact``.  If ``compact`` is ``False`` (the default), the
 output of these functions is a list of maps, each with the keys
 ``prediction`` and ``probability`` (or ``confidence``) mapped to the
-class name and its associated probability (or confidence).
+class name and its associated probability (or confidence). Note that these
+methods substitute the deprecated ``multiple`` parameter in the ``predict``
+method functionallity.
 
 So, for example, the following:
 

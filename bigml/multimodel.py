@@ -212,10 +212,58 @@ class MultiModel(object):
                         input_data,
                         by_name=by_name,
                         compact=True)
-
             votes.append(prediction_info)
 
         return votes
+
+    def generate_confidence_votes(self,
+                                  input_data,
+                                  by_name=True,
+                                  missing_strategy=LAST_PREDICTION,
+                                  method=CONFIDENCE_CODE):
+
+        votes = MultiVote([])
+        for order in range(0, len(self.models)):
+            model = self.models[order]
+            model.class_names = self.class_names
+            votes.probabilities = True
+
+            try:
+                if method == PROBABILITY_CODE:
+                    prediction_info = model.predict_probability(
+                        input_data,
+                        by_name=by_name,
+                        compact=True,
+                        missing_strategy=missing_strategy)
+                elif method == CONFIDENCE_CODE:
+                    prediction_info = model.predict_confidence(
+                        input_data,
+                        by_name=by_name,
+                        compact=True,
+                        missing_strategy=missing_strategy)
+                elif method == PLURALITY_CODE:
+                    prediction_info = [0.0] * len(self.class_names)
+                    prediction = model.predict(
+                        input_data,
+                        by_name=by_name,
+                        missing_strategy=missing_strategy)
+                    prediction_info[self.class_names.index(prediction)] = 1.0
+                else:
+                    raise ValueError('%d is not a valid "method"' % method)
+            except (AttributeError, TypeError):
+                if method == PLURALITY_CODE:
+                    prediction_info = [0.0] * len(self.class_names)
+                    prediction = model.predict(input_data, by_name=by_name)
+                    prediction_info[self.class_names.index(prediction)] = 1.0
+                else:
+                    prediction_info = model.predict_confidence(
+                        input_data,
+                        by_name=by_name,
+                        compact=True)
+            votes.append(prediction_info)
+
+        return votes
+
 
     def generate_votes(self, input_data, by_name=True,
                        missing_strategy=LAST_PREDICTION,

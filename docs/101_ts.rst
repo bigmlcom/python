@@ -42,5 +42,5 @@ class in the `timeseries` module. A simple example of that is:
                                 "Assignment": {"horizon": 5}})
 
 Every modeling resource in BigML has its corresponding local class. Check
-the `Local resources <index.html#local_resources>`_ section of the
+the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

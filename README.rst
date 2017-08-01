@@ -36,8 +36,11 @@ Python 2.7 and Python 3 are currently supported by these bindings.
 
 The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
-`poster <http://atlee.ca/software/poster/#download>`_ and
-`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ libraries. These
+`poster <http://atlee.ca/software/poster/#download>`_,
+`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_,
+`pystemmer <https://pypi.python.org/pypi/PyStemmer>`_, and
+`requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
+libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package
 instead of `requests`.
@@ -238,6 +241,16 @@ If you set the ``storage`` argument in the ``api`` instantiation:
 
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
+You can also check other simple examples in the following documents:
+
+- `model 101 <docs/101_model.html>`_
+- `logistic regression 101 <docs/101_logistic_regression.html>`_
+- `ensemble 101 <docs/101_ensemble.html>`_
+- `cluster 101 <docs/101_cluster>`_
+- `anomaly detector 101 <docs/101_anomaly.html>`_
+- `association 101 <docs/101_association.html>`_
+- `topic model 101 <docs/101_topic_model.html>`_
+- `time series 101 <docs/101_ts.html>`_
 
 
 Additional Information

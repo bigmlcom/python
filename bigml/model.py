@@ -443,7 +443,6 @@ class Model(BaseModel):
             prediction = predictions[position]
         return prediction
 
-
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
                 missing_strategy=LAST_PREDICTION,

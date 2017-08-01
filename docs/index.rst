@@ -280,9 +280,16 @@ For a descriptive overview of the steps that you will usually need to
 follow to model
 your data and obtain predictions, please see the `basic Workflow sketch
 <api_sketch.html>`_
-document. You can also check other simple examples in the
-`model 101 <101_model.html>`_, `anomaly detector 101 <101_anomaly.html>`_,
-and `time series 101 <101_ts.html>`_ documents.
+document. You can also check other simple examples in the following documents:
+
+- `model 101 <101_model.html>`_
+- `logistic regression 101 <101_logistic_regression.html>`_
+- `ensemble 101 <101_ensemble.html>`_
+- `cluster 101 <101_cluster>`_
+- `anomaly detector 101 <101_anomaly.html>`_
+- `association 101 <101_association.html>`_
+- `topic model 101 <101_topic_model.html>`_
+- `time series 101 <101_ts.html>`_
 
 Fields Structure
 ----------------

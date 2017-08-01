@@ -45,6 +45,7 @@ from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, CONFIDENCE_CODE, PROBABILITY_CODE
+from bigml.multivotelist import MultiVoteList
 from bigml.io import UnicodeWriter, UnicodeReader
 
 
@@ -168,135 +169,33 @@ class MultiModel(object):
 
         return result
 
-    def generate_probability_votes(self,
-                                   input_data,
-                                   by_name=True,
-                                   missing_strategy=LAST_PREDICTION,
-                                   method=PROBABILITY_CODE):
-
-        votes = MultiVote([])
-        for order in range(0, len(self.models)):
-            model = self.models[order]
+    def generate_votes_distribution(self,
+                                    input_data,
+                                    by_name=True,
+                                    missing_strategy=LAST_PREDICTION,
+                                    method=PROBABILITY_CODE):
+        votes = []
+        for model in self.models:
             model.class_names = self.class_names
-            votes.probabilities = True
-
-            try:
-                if method == PROBABILITY_CODE:
-                    prediction_info = model.predict_probability(
-                        input_data,
-                        by_name=by_name,
-                        compact=True,
-                        missing_strategy=missing_strategy)
-                elif method == CONFIDENCE_CODE:
-                    prediction_info = model.predict_confidence(
-                        input_data,
-                        by_name=by_name,
-                        compact=True,
-                        missing_strategy=missing_strategy)
-                elif method == PLURALITY_CODE:
-                    prediction_info = [0.0] * len(self.class_names)
-                    prediction = model.predict(
-                        input_data,
-                        by_name=by_name,
-                        missing_strategy=missing_strategy)
-                    prediction_info[self.class_names.index(prediction)] = 1.0
-                else:
-                    raise ValueError('%d is not a valid "method"' % method)
-            except (AttributeError, TypeError):
-                if method == PLURALITY_CODE:
-                    prediction_info = [0.0] * len(self.class_names)
-                    prediction = model.predict(input_data, by_name=by_name)
-                    prediction_info[self.class_names.index(prediction)] = 1.0
-                else:
-                    prediction_info = model.predict_probability(
-                        input_data,
-                        by_name=by_name,
-                        compact=True)
+            if method == PLURALITY_CODE:
+                prediction_info = [0.0] * len(self.class_names)
+                prediction = model.predict(
+                    input_data,
+                    by_name=by_name,
+                    missing_strategy=missing_strategy)
+                prediction_info[self.class_names.index(prediction)] = 1.0
+            else:
+                predict_method = model.predict_confidence \
+                    if method == CONFIDENCE_CODE \
+                    else model.predict_probability
+                prediction_info = predict_method(
+                    input_data,
+                    by_name=by_name,
+                    compact=True,
+                    missing_strategy=missing_strategy)
             votes.append(prediction_info)
 
-        return votes
-
-    def generate_confidence_votes(self,
-                                  input_data,
-                                  by_name=True,
-                                  missing_strategy=LAST_PREDICTION,
-                                  method=CONFIDENCE_CODE):
-
-        votes = MultiVote([])
-        for order in range(0, len(self.models)):
-            model = self.models[order]
-            model.class_names = self.class_names
-            votes.probabilities = True
-
-            try:
-                if method == PROBABILITY_CODE:
-                    prediction_info = model.predict_probability(
-                        input_data,
-                        by_name=by_name,
-                        compact=True,
-                        missing_strategy=missing_strategy)
-                elif method == CONFIDENCE_CODE:
-                    prediction_info = model.predict_confidence(
-                        input_data,
-                        by_name=by_name,
-                        compact=True,
-                        missing_strategy=missing_strategy)
-                elif method == PLURALITY_CODE:
-                    prediction_info = [0.0] * len(self.class_names)
-                    prediction = model.predict(
-                        input_data,
-                        by_name=by_name,
-                        missing_strategy=missing_strategy)
-                    prediction_info[self.class_names.index(prediction)] = 1.0
-                else:
-                    raise ValueError('%d is not a valid "method"' % method)
-            except (AttributeError, TypeError):
-                if method == PLURALITY_CODE:
-                    prediction_info = [0.0] * len(self.class_names)
-                    prediction = model.predict(input_data, by_name=by_name)
-                    prediction_info[self.class_names.index(prediction)] = 1.0
-                else:
-                    prediction_info = model.predict_confidence(
-                        input_data,
-                        by_name=by_name,
-                        compact=True)
-            votes.append(prediction_info)
-
-        return votes
-
-
-    def generate_votes(self, input_data, by_name=True,
-                       missing_strategy=LAST_PREDICTION,
-                       add_median=False, add_min=False, add_max=False,
-                       add_unused_fields=False):
-        """ Generates a MultiVote object that contains the predictions
-            made by each of the models.
-        """
-        votes = MultiVote([])
-        for order in range(0, len(self.models)):
-            model = self.models[order]
-            prediction_info = model.predict( \
-                input_data, by_name=by_name,
-                add_confidence=True,
-                add_distribution=True,
-                add_count=True,
-                add_median=add_median,
-                add_min=add_min,
-                add_max=add_max,
-                add_unused_fields=add_unused_fields,
-                missing_strategy=missing_strategy)
-
-            if model.boosting is not None:
-                votes.boosting = True
-                prediction_info.update( \
-                    {"weight": model.boosting.get("weight")})
-                if model.boosting.get("objective_class") is not None:
-                    prediction_info.update( \
-                        {"class": model.boosting.get("objective_class")})
-
-            votes.append(prediction_info)
-
-        return votes
+        return MultiVoteList(votes)
 
     def batch_predict(self, input_data_list, output_file_path=None,
                       by_name=True, reuse=False,

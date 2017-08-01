@@ -47,13 +47,13 @@ from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
-from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE
+from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
-
+THRESHOLD_ATTRIBUTES = ["probability", "confidence", "k"]
 
 def use_cache(cache_get):
     """Checks whether the user has provided a cache get function to retrieve
@@ -313,7 +313,6 @@ class Ensemble(object):
         return self.model_ids
 
     def predict_probability(self, input_data, by_name=True,
-                            method=PROBABILITY_CODE,
                             missing_strategy=LAST_PREDICTION,
                             compact=False):
 
@@ -328,17 +327,6 @@ class Ensemble(object):
         :param by_name: Boolean that is set to True if field_names (as
                         alternative to field ids) are used in the
                         input_data dict
-        :param method: numeric key code indicating how the scores
-                       should be produced:
-              0 - majority vote - The sum of models predicting a given class
-                  divided by the total number of models
-                  PLURALITY_CODE
-              1 - Scores estimated from the class confidence at the leaves
-                  of each of the constituient models.
-                  CONFIDENCE_CODE
-              2 - Average Lapalace-smoothed probabilitiy of all models'
-                  leaf node distributions:
-                  PROBABILITY_CODE
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -371,38 +359,10 @@ class Ensemble(object):
             else:
                 output = probabilities
         else:
-            if len(self.models_splits) > 1:
-                # If there's more than one chunk of models, they must be
-                # sequentially used to generate the votes for the prediction
-                votes = MultiVote([], boosting_offsets=None,
-                                  probabilities=True)
-
-                for models_split in self.models_splits:
-                    models = self._get_models(models_split)
-                    multi_model = MultiModel(models,
-                                             api=self.api,
-                                             fields=self.fields,
-                                             class_names=self.class_names)
-
-                    votes_split = multi_model.generate_probability_votes(
-                        input_data, by_name=by_name,
-                        missing_strategy=missing_strategy,
-                        method=method)
-
-                    votes.extend(votes_split.predictions)
-            else:
-                # When only one group of models is found you use the
-                # corresponding multimodel to predict
-                votes_split = self.multi_model.generate_probability_votes(
-                    input_data, by_name=by_name,
-                    missing_strategy=missing_strategy,
-                    method=method)
-
-                votes = MultiVote(votes_split.predictions,
-                                  boosting_offsets=None,
-                                  probabilities=True)
-
-            output = votes.combine()
+            output = self._combine_distributions( \
+                input_data,
+                by_name,
+                missing_strategy)
 
             if not compact:
                 names_probabilities = zip(self.class_names, output)
@@ -413,7 +373,6 @@ class Ensemble(object):
         return output
 
     def predict_confidence(self, input_data, by_name=True,
-                           method=PROBABILITY_CODE,
                            missing_strategy=LAST_PREDICTION,
                            compact=False):
 
@@ -428,17 +387,6 @@ class Ensemble(object):
         :param by_name: Boolean that is set to True if field_names (as
                         alternative to field ids) are used in the
                         input_data dict
-        :param method: numeric key code indicating how the scores
-                       should be produced:
-              0 - majority vote - The sum of models predicting a given class
-                  divided by the total number of models
-                  PLURALITY_CODE
-              1 - Scores estimated from the class confidence at the leaves
-                  of each of the constituient models.
-                  CONFIDENCE_CODE
-              2 - Average Lapalace-smoothed probabilitiy of all models'
-                  leaf node distributions:
-                  PROBABILITY_CODE
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -461,39 +409,11 @@ class Ensemble(object):
             raise ValueError("Confidence cannot be computed for boosted"
                              " ensembles.")
         else:
-            if len(self.models_splits) > 1:
-                # If there's more than one chunk of models, they must be
-                # sequentially used to generate the votes for the prediction
-                votes = MultiVote([], boosting_offsets=None,
-                                  probabilities=True)
-
-                for models_split in self.models_splits:
-                    models = self._get_models(models_split)
-                    multi_model = MultiModel(models,
-                                             api=self.api,
-                                             fields=self.fields,
-                                             class_names=self.class_names)
-
-                    votes_split = multi_model.generate_confidence_votes(
-                        input_data, by_name=by_name,
-                        missing_strategy=missing_strategy,
-                        method=method)
-
-                    votes.extend(votes_split.predictions)
-            else:
-                # When only one group of models is found you use the
-                # corresponding multimodel to predict
-                votes_split = self.multi_model.generate_confidence_votes(
-                    input_data, by_name=by_name,
-                    missing_strategy=missing_strategy,
-                    method=method)
-
-                votes = MultiVote(votes_split.predictions,
-                                  boosting_offsets=None,
-                                  probabilities=True)
-
-            output = votes.combine()
-
+            output= self._combine_distributions( \
+                input_data,
+                by_name,
+                missing_strategy,
+                method=CONFIDENCE_CODE)
             if not compact:
                 names_confidences = zip(self.class_names, output)
                 output = [{'prediction': class_name,
@@ -502,6 +422,90 @@ class Ensemble(object):
 
         return output
 
+    def predict_plurality(self, input_data, by_name=True,
+                           missing_strategy=LAST_PREDICTION,
+                           compact=False):
+
+        """For classification models, Predicts the votes for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name or field ID.
+
+        For regressions, the output is a single element list
+        containing the prediction.
+
+        :param input_data: Input data to be predicted
+        :param by_name: Boolean that is set to True if field_names (as
+                        alternative to field ids) are used in the
+                        input_data dict
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "probability"
+                        mapped to the name of the class and it's probability,
+                        respectively.  If True, returns a list of probabilities
+                        ordered by the sorted order of the class names.
+        """
+        if self.regression:
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      method=method,
+                                      missing_strategy=missing_strategy)
+
+            if compact:
+                output = [prediction]
+            else:
+                output = {'prediction': prediction}
+        elif self.boosting is not None:
+            raise ValueError("Plurality cannot be computed for boosted"
+                             " ensembles.")
+        else:
+            output = self._combine_distributions( \
+                input_data,
+                by_name,
+                missing_strategy,
+                method=PLURALITY_CODE)
+            if not compact:
+                names_votes = zip(self.class_names, output)
+                output = [{'prediction': class_name,
+                           'k': k}
+                          for class_name, k in names_votes]
+
+        return output
+
+    def _combine_distributions(self, input_data, by_name, missing_strategy,
+                               method=PROBABILITY_CODE):
+        """Computes the predicted distributions and combines them to give the
+        final predicted distribution. Depending on the method parameter
+        probability, plurality or the confidence are used to weight the models.
+
+        """
+
+        if len(self.models_splits) > 1:
+            # If there's more than one chunk of models, they must be
+            # sequentially used to generate the votes for the prediction
+            votes = MultiVoteList([])
+
+            for models_split in self.models_splits:
+                models = self._get_models(models_split)
+                multi_model = MultiModel(models,
+                                         api=self.api,
+                                         fields=self.fields,
+                                         class_names=self.class_names)
+
+                votes_split = multi_model.generate_votes_distribution( \
+                    input_data, by_name=by_name,
+                    missing_strategy=missing_strategy,
+                    method=method)
+
+                votes.extend(votes_split)
+        else:
+            # When only one group of models is found you use the
+            # corresponding multimodel to predict
+            votes = self.multi_model.generate_votes_distribution( \
+                input_data, by_name=by_name,
+                missing_strategy=missing_strategy, method=method)
+
+        return votes.combine_to_distribution()
 
     def _get_models(self, models_split):
         if not isinstance(models_split[0], Model):
@@ -525,7 +529,6 @@ class Ensemble(object):
         return models
 
     def predict_operating(self, input_data, by_name=True,
-                          method=PLURALITY_CODE,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None, compact=False):
         if "positive_class" not in operating_point:
@@ -537,22 +540,26 @@ class Ensemble(object):
                 raise ValueError("The positive class must be one of the"
                                  "objective field classes: %s." %
                                  ", ".join(self.class_names))
+        try:
+            predict_method = None
+            for attribute in THRESHOLD_ATTRIBUTES:
+                if "%s_threshold" % attribute in operating_point:
+                    predict_method = getattr(self, "predict_%s" % attribute)
+                    break
+            if predict_method is None:
+                raise ValueError("The operating point needs to have a"
+                                 "k_threshold, a "
+                                 "probability_threshold or a "
+                                 "confidence_threshold attribute.")
 
-        if "probability_threshold" in operating_point:
-            predictions = self.predict_probability(input_data, by_name, method,
-                                                   missing_strategy, compact)
-            attribute = "probability"
-        elif "confidence_threshold" in operating_point:
-            predictions = self.predict_confidence(input_data, by_name, method,
-                                                  missing_strategy, compact)
-            attribute = "confidence"
-        else:
-            raise ValueError("The operating point needs to have a"
-                             "probability_threshold or a "
-                             "confidence_threshold attribute.")
-        positive_class = operating_point["positive_class"]
-        threshold = operating_point["%s_threshold" % attribute]
-        position = self.class_names.index(positive_class)
+            predictions = predict_method(input_data, by_name,
+                                         missing_strategy, compact)
+            positive_class = operating_point["positive_class"]
+            threshold = operating_point["%s_threshold" % attribute]
+            position = self.class_names.index(positive_class)
+        except KeyError:
+            raise ValueError("The operating point needs to contain a valid"
+                             " positive class and a threshold.")
         if predictions[position][attribute] < threshold:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned

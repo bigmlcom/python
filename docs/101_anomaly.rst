@@ -9,6 +9,7 @@ create an anomaly detector to produce a single anomaly score.
 
     from bigml.api import BigML
     # step 0: creating a connection to the service (default credentials)
+    # check how to set your credentials in the Authentication section
     api = BigML()
     # step 1: creating a source from the data in your local "data/iris.csv" file
     source = api.create_source("data/iris.csv")
@@ -19,7 +20,7 @@ create an anomaly detector to produce a single anomaly score.
     # waiting for the dataset to be finished
     api.ok(dataset)
     # step 5: creating an anomaly detector
-    model = api.create_model(anomaly)
+    anomaly = api.create_anomaly(dataset)
     # waiting for the anomaly detector to be finished
     api.ok(anomaly)
     # the input data to score
@@ -29,7 +30,7 @@ create an anomaly detector to produce a single anomaly score.
     anomaly_score = api.create_anomaly_score(anomaly, input_data)
 
 If you want to assign scores to the original dataset (or a different dataset),
-you can do so creating
+you can do so by creating
 a `batch_anomaly_score` resource. In the example, we'll be assuming you already
 created an `anomaly` following the steps 0 to 5 in the previous snippet and
 that you want to score the same data you used in the anomaly detector.
@@ -47,6 +48,14 @@ that you want to score the same data you used in the anomaly detector.
 
 The batch anomaly score output (as well as any of the resources created)
 can be configured using additional arguments in the corresponding create calls.
+For instance, to include all the information in the original dataset in the
+output you would change `step 10` to:
+
+.. code-block:: python
+
+    batch_anomaly_score = api.create_batch_anomaly_score(anomaly, test_dataset,
+                                                         {"all_fields": True})
+
 Check the `API documentation <https://bigml.com/api/>`_ to learn about the
 available configuration options for any BigML resource.
 
@@ -58,9 +67,9 @@ class in the `anomaly` module. A simple example of that is:
     from bigml.anomaly import Anomaly
     local_anomaly = Anomaly("anomaly/5968ec46983efc21b000001b")
     # assigning the anomaly score to some input data
-    local_time_series.anomaly_score({"petal length": 4, "sepal length": 2,
-                                     "petal width": 1, "sepal witdh": 3})
+    local_anomaly.anomaly_score({"petal length": 4, "sepal length": 2,
+                                 "petal width": 1, "sepal witdh": 3})
 
 Every modeling resource in BigML has its corresponding local class. Check
-the `Local resources <index.html#local_resources>`_ section of the
+the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

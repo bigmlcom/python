@@ -359,8 +359,7 @@ class MultiVote(object):
             normalize_factor = len(instance.predictions)
         return normalize_factor
 
-    def __init__(self, predictions, boosting_offsets=None,
-                 probabilities=False):
+    def __init__(self, predictions, boosting_offsets=None):
         """Init method, builds a MultiVote with a list of predictions
         The constuctor expects a list of well formed predictions like:
             {'prediction': 'Iris-setosa', 'confidence': 0.7}
@@ -372,7 +371,6 @@ class MultiVote(object):
         self.predictions = []
         self.boosting = boosting_offsets is not None
         self.boosting_offsets = boosting_offsets
-        self.probabilities = probabilities
 
         if isinstance(predictions, list):
             self.predictions.extend(predictions)
@@ -447,19 +445,6 @@ class MultiVote(object):
                 return self.classification_boosting_combiner( \
                     options, with_confidence=with_confidence,
                     add_confidence=add_confidence)
-        elif self.probabilities:
-            total = 0.0
-            output = [0.0] * len(self.predictions[0])
-
-            for distribution in self.predictions:
-                for i, vote_value in enumerate(distribution):
-                    output[i] += vote_value
-                    total += vote_value
-
-            for i, value in enumerate(output):
-                output[i] = value / total
-
-            return output
         elif self.is_regression():
             for prediction in self.predictions:
                 if prediction[CONFIDENCE_W] is None:

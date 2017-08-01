@@ -1,9 +1,9 @@
-BigML Bindings: 101 - Using a Decision Tree Model
+BigML Bindings: 101 - Using a Logistic Regression
 =================================================
 
 Following the schema described in the `prediction workflow <api_sketch.html>`_,
 document, this is the code snippet that shows the minimal workflow to
-create a decision tree model and produce a single prediction.
+create a logistic regression model and produce a single prediction.
 
 .. code-block:: python
 
@@ -18,21 +18,22 @@ create a decision tree model and produce a single prediction.
     dataset = api.create_dataset(source)
     # waiting for the dataset to be finished
     api.ok(dataset)
-    # step 5: creating a decision tree model
-    model = api.create_model(dataset)
-    # waiting for the model to be finished
-    api.ok(model)
+    # step 5: creating a logistic regression
+    logistic_regression = api.create_logistic_regression(dataset)
+    # waiting for the logistic regression to be finished
+    api.ok(logistic_regression)
     # the new input data to predict for
     input_data = {"petal length": 4, "sepal length": 2}
     # creating a single prediction
-    prediction = api.create_prediction(model, input_data)
+    prediction = api.create_prediction(logistic_regression, input_data)
 
 If you want to create predictions for many new inputs, you can do so by
 creating
 a `batch_prediction` resource. First, you will need to upload to the platform
 all the input data that you want to predict for and create the corresponding
 `source` and `dataset` resources. In the example, we'll be assuming you already
-created a `model` following the steps 0 to 5 in the previous snippet.
+created a `logistic regression` following the steps 0 to 5
+in the previous snippet.
 
 .. code-block:: python
 
@@ -45,7 +46,8 @@ created a `model` following the steps 0 to 5 in the previous snippet.
     # waiting for the dataset to be finished
     api.ok(test_dataset)
     # step 10: creating a batch prediction
-    batch_prediction = api.create_batch_prediction(model, test_dataset)
+    batch_prediction = api.create_batch_prediction(logistic_regression,
+                                                   test_dataset)
     # waiting for the batch_prediction to be finished
     api.ok(batch_prediction)
     # downloading the results to your computer
@@ -59,21 +61,23 @@ output you would change `step 10` to:
 
 .. code-block:: python
 
-    batch_prediction = api.create_batch_prediction(model, test_dataset,
+    batch_prediction = api.create_batch_prediction(logistic_regression,
+                                                   test_dataset,
                                                    {"all_fields": True})
 Check the `API documentation <https://bigml.com/api/>`_ to learn about the
 available configuration options for any BigML resource.
 
-You can also predict locally using the `Model`
-class in the `model` module. A simple example of that is:
+You can also predict locally using the `LogisticRegression`
+class in the `logistic` module. A simple example of that is:
 
 .. code-block:: python
 
-    from bigml.model import Model
-    local_model = Model("model/5968ec46983efc21b000001b")
+    from bigml.logistic import LogisticRegression
+    local_logistic_regression = LogisticRegression( \
+        "logisticregression/5968ec46983efc21b000001b")
     # predicting for some input data
-    local_model.predict({"petal length": 4, "sepal length": 2,
-                         "petal width": 1, "sepal witdh": 3})
+    local_logistic_regression.predict({"petal length": 4, "sepal length": 2,
+                                       "petal width": 1, "sepal witdh": 3})
 
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the

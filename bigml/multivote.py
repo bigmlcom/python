@@ -424,7 +424,7 @@ class MultiVote(object):
         method = COMBINER_MAP.get(method, COMBINER_MAP[DEFAULT_METHOD])
         keys = WEIGHT_KEYS.get(method, None)
         # and all predictions should have the weight-related keys
-        if keys is not None and not self.probabilities:
+        if keys is not None:
             for key in keys:
                 if not all([key in prediction for prediction
                             in self.predictions]):

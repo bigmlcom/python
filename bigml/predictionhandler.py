@@ -57,9 +57,11 @@ class PredictionHandler(ResourceHandler):
             - a simple tree model
             - a simple logistic regression model
             - an ensemble
+            - a deepnet
            The by_name argument is now deprecated. It will be removed.
 
         """
+        deepnet_id = None
         logistic_regression_id = None
         ensemble_id = None
         model_id = None
@@ -84,6 +86,12 @@ class PredictionHandler(ResourceHandler):
                            query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True, api=self)
+        elif resource_type == DEEPNET_PATH:
+            deepnet_id = get_deepnet_id(model)
+            check_resource(deepnet_id,
+                           query_string=TINY_RESOURCE,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True, api=self)
         else:
             raise Exception("A model or ensemble id is needed to create a"
                             " prediction. %s found." % resource_type)
@@ -104,6 +112,9 @@ class PredictionHandler(ResourceHandler):
         elif logistic_regression_id is not None:
             create_args.update({
                 "logisticregression": logistic_regression_id})
+        elif deepnet_id is not None:
+            create_args.update({
+                "deepnet": deepnet_id})
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,

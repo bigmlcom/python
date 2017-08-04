@@ -47,6 +47,7 @@ TOPIC_DISTRIBUTION_PATH = 'topicdistribution'
 BATCH_TOPIC_DISTRIBUTION_PATH = 'batchtopicdistribution'
 TIME_SERIES_PATH = 'timeseries'
 FORECAST_PATH = 'forecast'
+DEEPNET_PATH = 'deepnet'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -101,6 +102,8 @@ TIME_SERIES_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (TIME_SERIES_PATH, ID_PATTERN, TIME_SERIES_PATH, SHARED_PATTERN))
 FORECAST_RE = re.compile(r'^%s/%s$' % \
     (FORECAST_PATH, ID_PATTERN))
+DEEPNET_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (DEEPNET_PATH, ID_PATTERN, DEEPNET_PATH, SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -134,6 +137,7 @@ RESOURCE_RE = {
     BATCH_TOPIC_DISTRIBUTION_PATH: BATCH_TOPIC_DISTRIBUTION_RE,
     TIME_SERIES_PATH: TIME_SERIES_RE,
     FORECAST_PATH: FORECAST_RE,
+    DEEPNET_PATH: DEEPNET_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}

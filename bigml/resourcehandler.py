@@ -275,6 +275,13 @@ def get_forecast_id(forecast):
     return get_resource(c.FORECAST_PATH, forecast)
 
 
+def get_deepnet_id(deepnet):
+    """Returns a deepnet/id.
+
+    """
+    return get_resource(c.DEEPNET_PATH, deepnet)
+
+
 def get_script_id(script):
     """Returns a script/id.
 

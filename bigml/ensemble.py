@@ -338,7 +338,6 @@ class Ensemble(object):
         if self.regression:
             prediction = self.predict(input_data,
                                       by_name=by_name,
-                                      method=method,
                                       missing_strategy=missing_strategy)
 
             if compact:
@@ -395,19 +394,9 @@ class Ensemble(object):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
-        if self.regression:
-            prediction = self.predict(input_data,
-                                      by_name=by_name,
-                                      method=method,
-                                      missing_strategy=missing_strategy)
-
-            if compact:
-                output = [prediction]
-            else:
-                output = {'prediction': prediction}
-        elif self.boosting is not None:
+        if self.regression or self.boosting is not None:
             raise ValueError("Confidence cannot be computed for boosted"
-                             " ensembles.")
+                             " ensembles or regressions.")
         else:
             output= self._combine_distributions( \
                 input_data,
@@ -537,7 +526,7 @@ class Ensemble(object):
         else:
             positive_class = operating_point["positive_class"]
             if positive_class not in self.class_names:
-                raise ValueError("The positive class must be one of the"
+                raise ValueError("The positive class must be one of the "
                                  "objective field classes: %s." %
                                  ", ".join(self.class_names))
         try:

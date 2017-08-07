@@ -31,7 +31,8 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_batch_prediction_id)
 from bigml.constants import (BATCH_PREDICTION_PATH, ENSEMBLE_PATH,
-                             MODEL_PATH, LOGISTIC_REGRESSION_PATH)
+                             MODEL_PATH, LOGISTIC_REGRESSION_PATH,
+                             DEEPNET_PATH)
 
 
 class BatchPredictionHandler(ResourceHandler):
@@ -62,7 +63,8 @@ class BatchPredictionHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        model_types = [ENSEMBLE_PATH, MODEL_PATH, LOGISTIC_REGRESSION_PATH]
+        model_types = [ENSEMBLE_PATH, MODEL_PATH, LOGISTIC_REGRESSION_PATH,
+                       DEEPNET_PATH]
         origin_resources_checked = self.check_origins(
             dataset, model, create_args, model_types=model_types,
             wait_time=wait_time, retries=retries)

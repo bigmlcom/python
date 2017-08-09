@@ -4062,7 +4062,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_time_series(\
         time_series, {"name": "new name"})
     api.update_forecast(\
-        time_series, {"name": "new name"})
+        forecast, {"name": "new name"})
     api.update_deepnet(deepnet, {"name": "new name"})
     api.update_script(script, {"name": "new name"})
     api.update_library(library, {"name": "new name"})

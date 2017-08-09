@@ -44,7 +44,8 @@ import gc
 import json
 
 from bigml.api import BigML, get_ensemble_id, get_model_id
-from bigml.model import Model, retrieve_resource, print_distribution
+from bigml.model import Model, retrieve_resource, print_distribution, \
+    parse_operating_point
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
@@ -53,7 +54,8 @@ from bigml.basemodel import BaseModel, print_importance
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
-THRESHOLD_ATTRIBUTES = ["probability", "confidence", "k"]
+OPERATING_POINT_KINDS = ["probability", "confidence", "voting"]
+
 
 def use_cache(cache_get):
     """Checks whether the user has provided a cache get function to retrieve
@@ -126,7 +128,6 @@ class Ensemble(object):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
-
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
@@ -214,7 +215,6 @@ class Ensemble(object):
         if self.fields is None:
             self.fields, self.objective_id = self.all_model_fields(
                 max_models=max_models)
-
 
         if self.fields:
             summary = self.fields[self.objective_id]['summary']
@@ -394,9 +394,11 @@ class Ensemble(object):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
-        if self.regression or self.boosting is not None:
-            raise ValueError("Confidence cannot be computed for boosted"
-                             " ensembles or regressions.")
+        if self.regression or self.boosting:
+            # we use boosting probabilities as confidences also
+            return self.predict_probability(input_data, by_name=by_name,
+                                            missing_strategy=missing_strategy,
+                                            compact=compact)
         else:
             output= self._combine_distributions( \
                 input_data,
@@ -411,9 +413,9 @@ class Ensemble(object):
 
         return output
 
-    def predict_plurality(self, input_data, by_name=True,
-                           missing_strategy=LAST_PREDICTION,
-                           compact=False):
+    def predict_voting(self, input_data, by_name=True,
+                       missing_strategy=LAST_PREDICTION,
+                       compact=False):
 
         """For classification models, Predicts the votes for
         each possible output class, based on input values.  The input
@@ -445,7 +447,7 @@ class Ensemble(object):
             else:
                 output = {'prediction': prediction}
         elif self.boosting is not None:
-            raise ValueError("Plurality cannot be computed for boosted"
+            raise ValueError("Voting cannot be computed for boosted"
                              " ensembles.")
         else:
             output = self._combine_distributions( \
@@ -465,7 +467,7 @@ class Ensemble(object):
                                method=PROBABILITY_CODE):
         """Computes the predicted distributions and combines them to give the
         final predicted distribution. Depending on the method parameter
-        probability, plurality or the confidence are used to weight the models.
+        probability, votes or the confidence are used to weight the models.
 
         """
 
@@ -520,35 +522,25 @@ class Ensemble(object):
     def predict_operating(self, input_data, by_name=True,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None, compact=False):
-        if "positive_class" not in operating_point:
-            raise ValueError("The operating point needs to have a"
-                             " positive_class attribute.")
-        else:
-            positive_class = operating_point["positive_class"]
-            if positive_class not in self.class_names:
-                raise ValueError("The positive class must be one of the "
-                                 "objective field classes: %s." %
-                                 ", ".join(self.class_names))
+        """Computes the prediction based on a user-given operating point.
+
+        """
+        kind, threshold, positive_class = parse_operating_point( \
+            operating_point, OPERATING_POINT_KINDS, self.class_names)
+
         try:
             predict_method = None
-            for attribute in THRESHOLD_ATTRIBUTES:
-                if "%s_threshold" % attribute in operating_point:
-                    predict_method = getattr(self, "predict_%s" % attribute)
-                    break
-            if predict_method is None:
-                raise ValueError("The operating point needs to have a"
-                                 "k_threshold, a "
-                                 "probability_threshold or a "
-                                 "confidence_threshold attribute.")
+            predict_method = getattr(self, "predict_%s" % kind)
 
             predictions = predict_method(input_data, by_name,
                                          missing_strategy, compact)
-            positive_class = operating_point["positive_class"]
-            threshold = operating_point["%s_threshold" % attribute]
             position = self.class_names.index(positive_class)
         except KeyError:
             raise ValueError("The operating point needs to contain a valid"
-                             " positive class and a threshold.")
+                             " positive class, kind and a threshold.")
+        attribute = kind
+        if kind == "voting":
+            attribute = "k"
         if predictions[position][attribute] < threshold:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
@@ -621,30 +613,22 @@ class Ensemble(object):
                                 The operating point can be defined in terms of:
                                   - the positive_class, the class that is
                                     important to predict accurately
-                                  - the probability_threshold
-                                    (or confidence_threshold),
-                                    the probability (or confidence) that is
-                                    stablished as minimum for the
-                                    positive_class to be predicted.
+                                  - its kind: probability, confidence or voting
+                                  - its threshold: the minimum established
+                                    for the positive_class to be predicted.
                                     The operating_point is then defined as a
-                                    map with two attributes, e.g.:
+                                    map with three attributes, e.g.:
                                        {"positive_class": "Iris-setosa",
-                                        "probability_threshold": 0.5}
-                                     or
-                                       {"positive_class": "Iris-setosa",
-                                        "confidence_threshold": 0.5}
+                                        "kind": "probability",
+                                        "threshold": 0.5}
         """
 
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
-            if self.boosting and "confidence_threshold" in operating_point:
-                raise ValueError("Confidence thresholds cannot be applied to"
-                                 "boosted ensembles. "
-                                 "Try probability_threshold.")
             prediction = self.predict_operating( \
-                input_data, by_name=by_name, method=method,
+                input_data, by_name=by_name,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
             if with_confidence or add_confidence or add_probability:

@@ -106,6 +106,8 @@ STORAGE = './storage'
 
 DEFAULT_IMPURITY = 0.2
 
+OPERATING_POINT_KINDS = ["probability", "confidence"]
+
 
 def print_distribution(distribution, out=sys.stdout):
     """Prints distribution data
@@ -120,6 +122,38 @@ def print_distribution(distribution, out=sys.stdout):
                 round(group[1] * 1.0 / total, 4) * 100,
                 group[1],
                 u"" if group[1] == 1 else u"s")))
+
+
+def parse_operating_point(operating_point, operating_kinds, class_names):
+    """Checks the operating point contents and extracts the three defined
+    variables
+
+    """
+    if "kind" not in operating_point:
+        raise ValueError("Failed to find the kind of operating point.")
+    elif operating_point["kind"] not in operating_kinds:
+        raise ValueError("Unexpected operating point kind. Allowed values"
+                         " are: %s." % ", ".join(operating_kinds))
+    if "threshold" not in operating_point:
+        raise ValueError("Failed to find the threshold of the operating"
+                         "point.")
+    if operating_point["threshold"] > 1 or \
+            operating_point["threshold"] < 0:
+        raise ValueError("The threshold value should be in the 0 to 1"
+                         " range.")
+    if "positive_class" not in operating_point:
+        raise ValueError("The operating point needs to have a"
+                         " positive_class attribute.")
+    else:
+        positive_class = operating_point["positive_class"]
+        if positive_class not in class_names:
+            raise ValueError("The positive class must be one of the"
+                             "objective field classes: %s." %
+                             ", ".join(class_names))
+    kind = operating_point["kind"]
+    threshold = operating_point["threshold"]
+
+    return kind, threshold, positive_class
 
 
 class Model(BaseModel):
@@ -405,36 +439,25 @@ class Model(BaseModel):
     def predict_operating(self, input_data, by_name=True,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None, compact=False):
-        if "positive_class" not in operating_point:
-            raise ValueError("The operating point needs to have a"
-                             " positive_class attribute.")
-        else:
-            positive_class = operating_point["positive_class"]
-            if positive_class not in self.class_names:
-                raise ValueError("The positive class must be one of the"
-                                 "objective field classes: %s." %
-                                 ", ".join(self.class_names))
+        """Computes the prediction based on a user-given operating point.
 
-        if "probability_threshold" in operating_point:
+        """
+
+        kind, threshold, positive_class = parse_operating_point( \
+            operating_point, OPERATING_POINT_KINDS, self.class_names)
+        if kind == "probability":
             predictions = self.predict_probability(input_data, by_name,
                                                    missing_strategy, compact)
-            attribute = "probability"
-        elif "confidence_threshold" in operating_point:
+        else:
             predictions = self.predict_confidence(input_data, by_name,
                                                   missing_strategy, compact)
-            attribute = "confidence"
-        else:
-            raise ValueError("The operating point needs to have a"
-                             "probability_threshold or a "
-                             "confidence_threshold attribute.")
-        positive_class = operating_point["positive_class"]
-        threshold = operating_point["%s_threshold" % attribute]
+
         position = self.class_names.index(positive_class)
-        if predictions[position][attribute] < threshold:
+        if predictions[position][kind] < threshold:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             prediction = sorted(predictions,
-                                key=lambda x: - x[attribute])[0 : 2]
+                                key=lambda x: - x[kind])[0 : 2]
             if prediction[0]["prediction"] == positive_class:
                 prediction = prediction[1]
             else:

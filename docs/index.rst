@@ -2820,18 +2820,23 @@ contents of a remote file is:
 
 A ``script`` allows to define some variables as ``inputs``. In the previous
 example, no input has been defined, but we could modify our code to
-allow the user to set the remote file name as input:
+allow the user to set the remote file name and the name that we want
+the ``source`` to have as input:
 
 .. code-block:: python
-
     >>> from bigml.api import BigML
     >>> api = BigML()
     >>> script = api.create_script( \
-            "(create-source {\"remote\" my_remote_data})",
+            "(create-source {\"remote\" my_remote_data
+                             \"name\" my_source_name})",
             {"inputs": [{"name": "my_remote_data",
                          "type": "string",
                          "default": "s3://bigml-public/csv/iris.csv",
-                         "description": "Location of the remote data"}]})
+                         "description": "Location of the remote data"},
+                         {"name": "my_source_name",
+                         "type": "string",
+                         "default": "Iris source",
+                         "description": "Source name"}]})
 
 The ``script`` can also use a ``library`` resource (please, see the
 ``Libraries`` section below for more details) by including its id in the
@@ -2898,12 +2903,26 @@ in the previous section:
         u'tags': [],
         u'updated': u'2016-05-18T16:58:02.035000'}
 
-
-An ``execution`` receives inputs, the ones defined in the ``script`` chosen
-to be executed, and generates a result. It can also generate outputs.
 As you can see, the execution resource contains information about the result
 of the execution, the resources that have been generated while executing and
-users can define some variables in the code to be exported as outputs. Please
+users can define some variables in the code to be exported as outputs.
+
+An ``execution`` receives inputs, the ones defined in the ``script`` chosen
+to be executed, and generates a result. It can also generate outputs. Following
+the example in the last section we can see how we need to specify the
+remote file and the name for the ``source`` as inputs to execute the script.
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> script = api.create_execution("script/573c9e2db85eee23cd000489", \
+            {"inputs": [["my_remote_data",
+                         "s3://bigml-public/csv/diabetes.csv"],
+                        ["my_source_name",
+                         "Diabetes source"]]})
+
+Please
 refer to the
 `Developers documentation for Executions <https://bigml.com/api/executions#we_execution_arguments>`_
 for details on how to define execution outputs.

@@ -36,7 +36,7 @@ NO_MISSING_SPLITS = {'missing_splits': False}
 ENSEMBLE_SAMPLE = {'ensemble_sample': {"rate": 0.70, "seed": 'BigML'}}
 
 #@step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
-def i_create_an_ensemble(step, number_of_models, tlp):
+def i_create_an_ensemble(step, number_of_models='10', tlp='1'):
     dataset = world.dataset.get('resource')
     try:
         number_of_models = int(number_of_models)
@@ -110,3 +110,29 @@ def i_create_an_ensemble_with_params(step, params):
     world.ensemble = resource['object']
     world.ensemble_id = resource['resource']
     world.ensembles.append(resource['resource'])
+
+#@step(r'I make the ensemble shared')
+def make_the_ensemble_shared(step):
+    resource = world.api.update_ensemble(world.ensemble['resource'],
+                                         {'shared': True})
+    world.status = resource['code']
+    eq_(world.status, HTTP_ACCEPTED)
+    world.location = resource['location']
+    world.ensemble = resource['object']
+
+#@step(r'I get the ensemble sharing info')
+def get_sharing_info(step):
+    world.shared_hash = world.ensemble['shared_hash']
+    world.sharing_key = world.ensemble['sharing_key']
+
+#@step(r'I check the ensemble status using the ensemble\'s shared url')
+def ensemble_from_shared_url(step):
+    world.ensemble = world.api.get_ensemble("shared/ensemble/%s" % world.shared_hash)
+    eq_(get_status(world.ensemble)['code'], FINISHED)
+
+#@step(r'I check the ensemble status using the ensemble\'s shared key')
+def ensemble_from_shared_key(step):
+    username = os.environ.get("BIGML_USERNAME")
+    world.ensemble = world.api.get_ensemble(world.ensemble['resource'],
+        shared_username=username, shared_api_key=world.sharing_key)
+    eq_(get_status(world.ensemble)['code'], FINISHED)

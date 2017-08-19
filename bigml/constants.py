@@ -62,7 +62,8 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
-ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
+ENSEMBLE_RE = re.compile(r'^%s/%s$|^shared/%s/%s$' % ( \
+    ENSEMBLE_PATH, ID_PATTERN, ENSEMBLE_PATH, SHARED_PATTERN))
 BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
                                                ID_PATTERN))
 CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (

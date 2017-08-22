@@ -46,11 +46,11 @@ import re
 import copy
 
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_logistic_regression_id, get_status)
+from bigml.api import BigML, get_logistic_regression_id, get_status
 from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
+from bigml.model import STORAGE, parse_operating_point
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml.modelfields import ModelFields, check_model_fields
 from bigml.cluster import OPTIONAL_FIELDS
@@ -93,6 +93,7 @@ class LogisticRegression(ModelFields):
     def __init__(self, logistic_regression, api=None):
 
         self.resource_id = None
+        self.class_names = None
         self.input_fields = []
         self.term_forms = {}
         self.tag_clouds = {}
@@ -202,6 +203,10 @@ class LogisticRegression(ModelFields):
                         del self.field_codings[field_id]
                 if old_coefficients:
                     self.map_coefficients()
+                categories = self.fields[self.objective_id].get( \
+                    "summary", {}).get('categories')
+                self.class_names = sorted([category[0]
+                                           for category in categories])
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:
@@ -233,7 +238,33 @@ class LogisticRegression(ModelFields):
         else:
             return distribution
 
-    def predict(self, input_data, by_name=True, add_unused_fields=False):
+    def predict_operating(self, input_data, by_name=True,
+                          operating_point=None, compact=False):
+        """Computes the prediction based on a user-given operating point.
+
+        """
+
+        kind, threshold, positive_class = parse_operating_point( \
+            operating_point, ["probability"], self.class_names)
+        predictions = self.predict_probability(input_data, by_name, compact)
+        position = self.class_names.index(positive_class)
+        if predictions[position][kind] < threshold:
+            # if the threshold is not met, the alternative class with
+            # highest probability or confidence is returned
+            prediction = sorted(predictions,
+                                key=lambda x: - x[kind])[0 : 2]
+            if prediction[0]["category"] == positive_class:
+                prediction = prediction[1]
+            else:
+                prediction = prediction[0]
+        else:
+            prediction = predictions[position]
+        prediction["prediction"] = prediction["category"]
+        del prediction["category"]
+        return prediction
+
+    def predict(self, input_data, by_name=True, add_unused_fields=False,
+                operating_point=None):
         """Returns the class prediction and the probability distribution
         By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.
@@ -243,8 +274,26 @@ class LogisticRegression(ModelFields):
         add_unused_fields: Boolean, if True adds the information about the
                            fields in the input_data that are not being used
                            in the model as predictors.
-
+        operating_point: In classification models, this is the point of the
+                         ROC curve where the model will be used at. The
+                         operating point can be defined in terms of:
+                         - the positive_class, the class that is important to
+                           predict accurately
+                         - the probability_threshold,
+                           the probability that is stablished
+                           as minimum for the positive_class to be predicted.
+                         The operating_point is then defined as a map with
+                         two attributes, e.g.:
+                           {"positive_class": "Iris-setosa",
+                            "probability_threshold": 0.5}
         """
+        # When operating_point is used, we need the probabilities
+        # of all possible classes to decide, so se use
+        # the `predict_probability` method
+        if operating_point:
+            prediction = self.predict_operating( \
+                input_data, by_name=by_name, operating_point=operating_point)
+            return prediction
 
         # Checks and cleans input_data leaving the fields used in the model
         new_data = self.filter_input_data( \

@@ -326,7 +326,7 @@ class Model(BaseModel):
             output = []
             for name in self.class_names:
                 output.append({
-                    'prediction': name,
+                    'category': name,
                     value_key: output_map.get(name, 0.0)
                 })
             return output
@@ -458,12 +458,14 @@ class Model(BaseModel):
             # highest probability or confidence is returned
             prediction = sorted(predictions,
                                 key=lambda x: - x[kind])[0 : 2]
-            if prediction[0]["prediction"] == positive_class:
+            if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
             else:
                 prediction = prediction[0]
         else:
             prediction = predictions[position]
+        prediction["prediction"] = prediction["category"]
+        del prediction["category"]
         return prediction
 
     def predict(self, input_data, by_name=True,

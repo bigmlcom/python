@@ -365,7 +365,7 @@ class Ensemble(object):
 
             if not compact:
                 names_probabilities = zip(self.class_names, output)
-                output = [{'prediction': class_name,
+                output = [{'category': class_name,
                            'probability': probability}
                           for class_name, probability in names_probabilities]
 
@@ -407,7 +407,7 @@ class Ensemble(object):
                 method=CONFIDENCE_CODE)
             if not compact:
                 names_confidences = zip(self.class_names, output)
-                output = [{'prediction': class_name,
+                output = [{'category': class_name,
                            'confidence': confidence}
                           for class_name, confidence in names_confidences]
 
@@ -457,7 +457,7 @@ class Ensemble(object):
                 method=PLURALITY_CODE)
             if not compact:
                 names_votes = zip(self.class_names, output)
-                output = [{'prediction': class_name,
+                output = [{'category': class_name,
                            'k': k}
                           for class_name, k in names_votes]
 
@@ -546,12 +546,14 @@ class Ensemble(object):
             # highest probability or confidence is returned
             prediction = sorted(predictions,
                                 key=lambda x: - x[attribute])[0 : 2]
-            if prediction[0]["prediction"] == positive_class:
+            if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
             else:
                 prediction = prediction[0]
         else:
             prediction = predictions[position]
+        prediction["prediction"] = prediction["category"]
+        del prediction["category"]
         return prediction
 
     def predict(self, input_data, by_name=True, method=PLURALITY_CODE,

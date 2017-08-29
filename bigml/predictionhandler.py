@@ -31,7 +31,7 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, get_prediction_id,
                                    check_resource, get_ensemble_id,
                                    get_model_id, get_logistic_regression_id,
-                                   get_resource_type)
+                                   get_deepnet_id, get_resource_type)
 from bigml.constants import (PREDICTION_PATH, ENSEMBLE_PATH, MODEL_PATH,
                              LOGISTIC_REGRESSION_PATH, DEEPNET_PATH,
                              TINY_RESOURCE)

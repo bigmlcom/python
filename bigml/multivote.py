@@ -189,7 +189,8 @@ class MultiVote(object):
             if distribution_unit == 'counts':
                 distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
                                      else 'counts')
-            distribution = merge_bins(distribution, BINS_LIMIT)
+            if distribution_unit != 'categories':
+                distribution = merge_bins(distribution, BINS_LIMIT)
         return {'distribution': distribution,
                 'distribution_unit': distribution_unit}
 

@@ -44,6 +44,10 @@ import logging
 import sys
 import json
 
+import numpy as np
+
+import bigml.laminar.preprocess as pp
+
 from bigml.api import FINISHED
 from bigml.api import BigML, get_deepnet_id, get_status
 from bigml.util import cast
@@ -119,6 +123,8 @@ class Deepnet(ModelFields):
         self.output_exposition = None
         self.input_fields = []
         self.class_names = []
+        self.preprocess = []
+        self.missing_numerics = False
         # the string can be a path to a JSON file
         if isinstance(deepnet, basestring):
             try:
@@ -184,12 +190,14 @@ class Deepnet(ModelFields):
                         self.fields[self.objective_id][ \
                         'summary']['categories']]
 
+                self.missing_numerics = deepnet.get('missing_numerics', False)
            # TODO: add properties here
                 if 'network' in deepnet:
                     network = deepnet['network']
 
                     self.layers = net.init_layers(network['layers'])
                     self.output_exposition = network['output_exposition']
+                    self.preprocess = network['preprocess']
 
             else:
                 raise Exception("The deepnet isn't finished yet")
@@ -203,20 +211,10 @@ class Deepnet(ModelFields):
         input_data dictionary. Numeric missings are added as a new field
         and texts/items are processed.
         """
-        input_array = []
+        columns = []
         for field_id in self.input_fields:
-            optype = self.fields[field_id]["optype"]
-            if optype == NUMERIC:
-                input_array.append(input_data.get(field_id, 0))
-                if not field_id in input_data:
-                    input_array.append(1)
-            elif optype == CATEGORICAL:
-                input_array.append(input_data.get(field_id, ""))
-            else:
-                # TODO: process text and items
-                pass
-
-        return input_array
+            columns.append([input_data.get(field_id, None)])
+        return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):
         """Makes a prediction based on a number of field values.
@@ -248,10 +246,7 @@ class Deepnet(ModelFields):
         y_out = propagate(x_in, self.layers)
 
         if self.regression:
-            y_mean, y_stdev = moments(deepnet.output_exposition)
+            y_mean, y_stdev = moments(self.output_exposition)
             y_out = net.destandardize(y_out, y_mean, y_stdev)
 
-        output = y_out[0]
-        total = sum(output)
-        output = [v/total for v in output]
-        return output
+        return y_out[0]

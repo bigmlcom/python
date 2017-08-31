@@ -238,5 +238,12 @@ class Deepnet(ModelFields):
         if self.regression:
             y_mean, y_stdev = moments(self.output_exposition)
             y_out = net.destandardize(y_out, y_mean, y_stdev)
+            return y_out[0][0]
 
-        return y_out
+        prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
+        prediction = {"prediction": self.class_names[prediction[0]],
+                      "probability": prediction[1],
+                      "distribution": [{"category": category,
+                                        "probability": y_out[0][i]} \
+            for i, category in enumerate(self.class_names)]}
+        return prediction

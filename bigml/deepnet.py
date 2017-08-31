@@ -44,9 +44,6 @@ import logging
 import sys
 import json
 
-import numpy as np
-
-import bigml.laminar.preprocess as pp
 
 from bigml.api import FINISHED
 from bigml.api import BigML, get_deepnet_id, get_status
@@ -57,10 +54,14 @@ from bigml.modelfields import check_model_fields, ModelFields
 from bigml.laminar.constants import NUMERIC, CATEGORICAL
 
 try:
+    import numpy
     import scipy
     import bigml.laminar.numpy_ops as net
+    import bigml.laminar.preprocess_np as pp
 except ImportError:
     import bigml.laminar.math_ops as net
+    import bigml.laminar.preprocess as pp
+
 
 
 LOGGER = logging.getLogger('BigML')
@@ -74,7 +75,7 @@ def moments(amap):
 
 
 def propagate(x_in, layers):
-    last_X = identities = x_in
+    last_X = identities = x_in[0]
 
     for layer in layers:
         w = layer['weights']
@@ -99,7 +100,7 @@ def propagate(x_in, layers):
         else:
             last_X = net.ACTIVATORS[afn](next_in)
 
-    return last_X
+    return [last_X]
 
 
 class Deepnet(ModelFields):
@@ -198,7 +199,27 @@ class Deepnet(ModelFields):
                     self.layers = net.init_layers(network['layers'])
                     self.output_exposition = network['output_exposition']
                     self.preprocess = network['preprocess']
-
+                    self.beta1 = network.get('beta1', 0.9)
+                    self.beta2 = network.get('beta2', 0.999)
+                    self.decay = network.get('decay', 0.0)
+                    self.descent_algorithm = network.get('descent_algorithm',
+                                                         'adam')
+                    self.epsilon = network.get('epsilon', 1e-08)
+                    self.hidden_layers = network.get('hidden_layers', [])
+                    self.initial_accumulator_value = network.get( \
+                        'initial_accumulator_value', 0)
+                    self.l1_regularization = network.get( \
+                        'l1_regularization', 0)
+                    self.l2_regularization = network.get( \
+                        'l2_regularization', 0)
+                    self.learning_rate = network.get('learning_rate', 0.001)
+                    self.learning_rate_power = network.get( \
+                        'learning_rate_power', -0.5)
+                    # max_iterations or max_training_time needs to be filled
+                    self.max_iterations = network.get('max_iterations')
+                    self.max_training_time = network.get('max_training_time',
+                                                         1800)
+                    self.momentum = network.get('momentum', 0.99)
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:

@@ -1,19 +1,33 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+#
+# Copyright 2017 BigML
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 """Activation functions and helpers in numpy
 
 Here are most of the vector operations and helper functions we use in
-numpy.  We've encapsulated these here as there's a known bug that
-causes numpy to hang when using Apple accelerate in some cases.  If
-we're on an apple machine, we use pure python for the vector
-operations, as shown in math_ops.py.
-
+numpy.
 """
 
 import numpy as np
 
 from scipy.special import expit
 
-from bigml.laminar.constants import LARGE_EXP, EPSILON, MATRIX_PARAMS, \
+from bigml.laminar.constants import LARGE_EXP, MATRIX_PARAMS, \
     VEC_PARAMS
+
 
 def to_numpy_array(xs):
     if isinstance(xs, np.ndarray):
@@ -21,14 +35,17 @@ def to_numpy_array(xs):
     else:
         return np.array(xs, dtype=np.float32)
 
+
 def softplus(xs):
     x_cpy = to_numpy_array(xs)
     x_cpy[x_cpy < LARGE_EXP] = np.log(np.exp(x_cpy[x_cpy < LARGE_EXP]) + 1)
     return x_cpy
 
+
 def relu(xs):
     x_cpy = to_numpy_array(xs)
     return x_cpy * (x_cpy > 0)
+
 
 def softmax(xs):
     x_cpy = to_numpy_array(xs)
@@ -47,6 +64,7 @@ def softmax(xs):
 
     return dist
 
+
 ACTIVATORS = {
     'tanh': np.tanh,
     'sigmoid': expit,
@@ -56,17 +74,18 @@ ACTIVATORS = {
     'identity': lambda x: x
 }
 
+
 def plus(mat, vec):
     return mat + vec
+
 
 def dot(mat1, mat2):
     return np.dot(mat1, mat2)
 
+
 def batch_norm(X, mean, stdev, shift, scale):
     return scale * (X - mean) / stdev + shift
 
-def argmax(mat):
-    return np.argmax(mat, 1)
 
 def init_layer(layer, ftype=np.float64):
     out_layer = {}
@@ -83,19 +102,14 @@ def init_layer(layer, ftype=np.float64):
 
     return out_layer
 
+
 def init_layers(layers):
     return [init_layer(layer) for layer in layers]
 
-def sum_and_normalize(youts, classify):
-    ysums = sum(youts)
-
-    if classify:
-        return ysums / np.sum(ysums, axis=1).reshape(-1, 1)
-    else:
-        return ysums / len(youts)
 
 def destandardize(vec, v_mean, v_stdev):
     return vec * v_stdev + v_mean
+
 
 def to_width(mat, width):
     if width > len(mat[0]):
@@ -103,7 +117,8 @@ def to_width(mat, width):
     else:
         ntiles = 1
 
-    return np.tile(mat, (1, ntiles))[:,:width]
+    return np.tile(mat, (1, ntiles))[::width]
+
 
 def add_residuals(residuals, values):
     to_add = to_width(values, len(residuals[0]))

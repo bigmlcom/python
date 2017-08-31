@@ -27,7 +27,7 @@ def np_zeros(x_dim, y_dim, dtype_fn=None):
         pass
     array = []
     for i in range(x_dim):
-        array[i] = []
+        array.append([])
         for j in range(y_dim):
             array[i].append(value)
     return array
@@ -50,8 +50,7 @@ def np_c_(array_a, array_c):
         return [array_c]
 
     new_array = deepcopy(array_a)
-    for i, item_c in enumerate(array_c):
-        new_array[i].append(item_c)
+    new_array[0].extend(array_c)
 
     return new_array
 
@@ -65,10 +64,10 @@ def index(alist, value):
 def one_hot(vector, possible_values):
     idxs = list(enumerate(index(possible_values, v) for v in vector))
     valid_pairs = filter(lambda x: x[1] is not None, idxs)
-    outvec = np_zeros((len(idxs), len(possible_values)), dtype_fn=float)
-    outvec[[v[0] for v in valid_pairs], [v[1] for v in valid_pairs]] = 1
+    outvec = np_zeros(len(idxs), len(possible_values), dtype_fn=float)
+    outvec[[v[0] for v in valid_pairs][0]][[v[1] for v in valid_pairs][0]] = 1
 
-    return outvec
+    return outvec[0]
 
 def standardize(vector, mn, stdev):
     newvec = [component - mn for component in vector]

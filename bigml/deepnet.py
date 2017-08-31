@@ -74,35 +74,6 @@ def moments(amap):
     return amap[MEAN], amap[STANDARD_DEVIATION]
 
 
-def propagate(x_in, layers):
-    last_X = identities = x_in[0]
-
-    for layer in layers:
-        w = layer['weights']
-        m = layer['mean']
-        s = layer['stdev']
-        b = layer['offset']
-        g = layer['scale']
-
-        afn = layer['activation_function']
-
-        X_dot_w = net.dot(last_X, w)
-
-        if m is not None and s is not None:
-            next_in = net.batch_norm(X_dot_w, m, s, b, g)
-        else:
-            next_in = net.plus(X_dot_w, b)
-
-        if layer['residuals']:
-            next_in = net.add_residuals(next_in, identities)
-            last_X = net.ACTIVATORS[afn](next_in)
-            identities = last_X
-        else:
-            last_X = net.ACTIVATORS[afn](next_in)
-
-    return [last_X]
-
-
 class Deepnet(ModelFields):
     """ A lightweight wrapper around Deepnet model.
 
@@ -257,17 +228,15 @@ class Deepnet(ModelFields):
 
         input_array = self.fill_array(input_data)
 
-        x_in = [input_array]
-
         """
         if self.trees is not None:
             x_in = tree_transform(x_in, self.trees, None)
         """
 
-        y_out = propagate(x_in, self.layers)
+        y_out = net.propagate(input_array, self.layers)
 
         if self.regression:
             y_mean, y_stdev = moments(self.output_exposition)
             y_out = net.destandardize(y_out, y_mean, y_stdev)
 
-        return y_out[0]
+        return y_out

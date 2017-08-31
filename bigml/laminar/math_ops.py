@@ -133,3 +133,32 @@ def add_residuals(residuals, identities):
 
     return [[r + v for r, v in zip(rrow, vrow)]
             for rrow, vrow in zip(residuals, to_add)]
+
+
+def propagate(x_in, layers):
+    last_X = identities = x_in
+
+    for layer in layers:
+        w = layer['weights']
+        m = layer['mean']
+        s = layer['stdev']
+        b = layer['offset']
+        g = layer['scale']
+
+        afn = layer['activation_function']
+
+        X_dot_w = dot(last_X, w)
+
+        if m is not None and s is not None:
+            next_in = batch_norm(X_dot_w, m, s, b, g)
+        else:
+            next_in = plus(X_dot_w, b)
+
+        if layer['residuals']:
+            next_in = add_residuals(next_in, identities)
+            last_X = ACTIVATORS[afn](next_in)
+            identities = last_X
+        else:
+            last_X = ACTIVATORS[afn](next_in)
+
+    return last_X

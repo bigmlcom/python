@@ -24,7 +24,6 @@ def one_hot(vector, possible_values):
     valid_pairs = filter(lambda x: x[1] is not None, idxs)
     outvec = np.zeros((len(idxs), len(possible_values)), dtype=np.float32)
     outvec[[v[0] for v in valid_pairs], [v[1] for v in valid_pairs]] = 1
-
     return outvec
 
 def standardize(vector, mn, stdev):
@@ -69,27 +68,6 @@ def transform(vector, spec):
         raise ValueError("'%s' is not a valid spec type!" % vtype)
     return output
 
-def preprocess_and_get_specs(columns, optypes):
-    outdata = None
-    outspecs = []
-
-    for i, column in enumerate(columns):
-        is_numeric = optypes[i] == NUMERIC
-
-        if is_numeric:
-            column = np.asarray(column, dtype=np.float32)
-
-        outarray, outspec = transform_and_get_spec(column, is_numeric)
-        outspec['index'] = i
-
-        if outdata is not None:
-            outdata = np.c_[outdata, outarray]
-        else:
-            outdata = outarray
-
-        outspecs.append(outspec)
-
-    return outdata, outspecs
 
 def preprocess(columns, specs):
     outdata = None
@@ -101,10 +79,8 @@ def preprocess(columns, specs):
             column = np.asarray(column, dtype=np.float32)
 
         outarray = transform(column, spec)
-
         if outdata is not None:
             outdata = np.c_[outdata, outarray]
         else:
             outdata = outarray
-
     return outdata

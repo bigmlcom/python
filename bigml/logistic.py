@@ -53,38 +53,13 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml.modelfields import ModelFields, check_model_fields
-from bigml.cluster import parse_terms, parse_items, OPTIONAL_FIELDS
+from bigml.cluster import OPTIONAL_FIELDS
 
 
 LOGGER = logging.getLogger('BigML')
 
 EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
                         "items": "items"}
-
-
-def get_unique_terms(terms, term_forms, tag_cloud):
-    """Extracts the unique terms that occur in one of the alternative forms in
-       term_forms or in the tag cloud.
-
-    """
-
-    extend_forms = {}
-    for term, forms in term_forms.items():
-        for form in forms:
-            extend_forms[form] = term
-        extend_forms[term] = term
-    terms_set = {}
-    for term in terms:
-        if term in tag_cloud:
-            if term not in terms_set:
-                terms_set[term] = 0
-            terms_set[term] += 1
-        elif term in extend_forms:
-            term = extend_forms[term]
-            if term not in terms_set:
-                terms_set[term] = 0
-            terms_set[term] += 1
-    return terms_set.items()
 
 
 def balance_input(input_data, fields):
@@ -211,32 +186,10 @@ class LogisticRegression(ModelFields):
                 self.missing_numerics = logistic_regression_info.get( \
                     'missing_numerics', False)
                 objective_id = extract_objective(objective_field)
-                for field_id, field in fields.items():
-                    if field['optype'] == 'text':
-                        self.term_forms[field_id] = {}
-                        self.term_forms[field_id].update(
-                            field['summary']['term_forms'])
-                        self.tag_clouds[field_id] = []
-                        self.tag_clouds[field_id] = [tag for [tag, _] in field[
-                            'summary']['tag_cloud']]
-                        self.term_analysis[field_id] = {}
-                        self.term_analysis[field_id].update(
-                            field['term_analysis'])
-                    if field['optype'] == 'items':
-                        self.items[field_id] = []
-                        self.items[field_id] = [item for item, _ in \
-                            field['summary']['items']]
-                        self.item_analysis[field_id] = {}
-                        self.item_analysis[field_id].update(
-                            field['item_analysis'])
-                    if field['optype'] == 'categorical':
-                        self.categories[field_id] = [category for \
-                            [category, _] in field['summary']['categories']]
-                    if self.missing_numerics and field['optype'] == 'numeric':
-                        self.numeric_fields[field_id] = True
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=objective_id)
+                    objective_id=objective_id, terms=True, categories=True,
+                    numerics=True)
                 self.field_codings = logistic_regression_info.get( \
                   'field_codings', {})
                 self.format_field_codings()
@@ -462,66 +415,6 @@ class LogisticRegression(ModelFields):
         except OverflowError:
             probability = 0 if probability < 0 else 1
         return probability
-
-    def get_unique_terms(self, input_data):
-        """Parses the input data to find the list of unique terms in the
-           tag cloud
-
-        """
-        unique_terms = {}
-        for field_id in self.term_forms:
-            if field_id in input_data:
-                input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
-                    case_sensitive = self.term_analysis[field_id].get(
-                        'case_sensitive', True)
-                    token_mode = self.term_analysis[field_id].get(
-                        'token_mode', 'all')
-                    if token_mode != TM_FULL_TERM:
-                        terms = parse_terms(input_data_field,
-                                            case_sensitive=case_sensitive)
-                    else:
-                        terms = []
-                    full_term = input_data_field if case_sensitive \
-                        else input_data_field.lower()
-                    # We add full_term if needed. Note that when there's
-                    # only one term in the input_data, full_term and term are
-                    # equal. Then full_term will not be added to avoid
-                    # duplicated counters for the term.
-                    if token_mode == TM_FULL_TERM or \
-                            (token_mode == TM_ALL and terms[0] != full_term):
-                        terms.append(full_term)
-                    unique_terms[field_id] = get_unique_terms(
-                        terms, self.term_forms[field_id],
-                        self.tag_clouds.get(field_id, []))
-                else:
-                    unique_terms[field_id] = [(input_data_field, 1)]
-                del input_data[field_id]
-        # the same for items fields
-        for field_id in self.item_analysis:
-            if field_id in input_data:
-                input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
-                    # parsing the items in input_data
-                    separator = self.item_analysis[field_id].get(
-                        'separator', ' ')
-                    regexp = self.item_analysis[field_id].get(
-                        'separator_regexp')
-                    if regexp is None:
-                        regexp = ur'%s' % re.escape(separator)
-                    terms = parse_items(input_data_field, regexp)
-                    unique_terms[field_id] = get_unique_terms(
-                        terms, {},
-                        self.items.get(field_id, []))
-                else:
-                    unique_terms[field_id] = [(input_data_field, 1)]
-                del input_data[field_id]
-        for field_id in self.categories:
-            if field_id in input_data:
-                input_data_field = input_data.get(field_id, '')
-                unique_terms[field_id] = [(input_data_field, 1)]
-                del input_data[field_id]
-        return unique_terms
 
     def map_coefficients(self):
         """ Maps each field to the corresponding coefficients subarray

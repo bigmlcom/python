@@ -74,6 +74,17 @@ def moments(amap):
     return amap[MEAN], amap[STANDARD_DEVIATION]
 
 
+def expand_terms(terms_list, input_terms):
+    """Builds a list of occurrences for all the available terms
+
+    """
+    terms_occurrences = [0.0] * len(terms_list)
+    for term, occurrences in input_terms:
+        index = terms_list.index(term)
+        terms_occurrences[index] = occurrences
+    return terms_occurrences
+
+
 class Deepnet(ModelFields):
     """ A lightweight wrapper around Deepnet model.
 
@@ -153,7 +164,8 @@ class Deepnet(ModelFields):
                 objective_field = deepnet['objective_fields']
                 ModelFields.__init__(
                     self, self.fields,
-                    objective_id=extract_objective(objective_field))
+                    objective_id=extract_objective(objective_field),
+                    terms=True)
 
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == 'numeric'
@@ -161,6 +173,7 @@ class Deepnet(ModelFields):
                     self.class_names = [category for category,_ in \
                         self.fields[self.objective_id][ \
                         'summary']['categories']]
+                    self.class_names.sort()
 
                 self.missing_numerics = deepnet.get('missing_numerics', False)
            # TODO: add properties here
@@ -198,14 +211,27 @@ class Deepnet(ModelFields):
                             " find the 'deepnet' key in the resource:\n\n%s" %
                             deepnet)
 
-    def fill_array(self, input_data):
+    def fill_array(self, input_data, unique_terms):
         """ Filling the input array for the network with the data in the
         input_data dictionary. Numeric missings are added as a new field
         and texts/items are processed.
         """
         columns = []
         for field_id in self.input_fields:
-            columns.append([input_data.get(field_id, None)])
+            # if the field is text or items, we need to expand the field
+            # in one field per term and get its frequency
+            if field_id in self.tag_clouds:
+                terms_occurrences = expand_terms(self.tag_clouds[field_id],
+                                                 unique_terms.get(field_id,
+                                                                  []))
+                columns.extend(terms_occurrences)
+            elif field_id in self.items:
+                terms_occurrences = expand_terms(self.items[field_id],
+                                                 unique_terms.get(field_id,
+                                                                  []))
+                columns.extend(terms_occurrences)
+            else:
+                columns.append([input_data.get(field_id, None)])
         return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):
@@ -226,7 +252,10 @@ class Deepnet(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        input_array = self.fill_array(input_data)
+        # Computes text and categorical field expansion
+        unique_terms = self.get_unique_terms(input_data)
+
+        input_array = self.fill_array(input_data, unique_terms)
 
         """
         if self.trees is not None:

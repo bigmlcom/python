@@ -51,7 +51,7 @@ from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.modelfields import check_model_fields, ModelFields
-from bigml.laminar.constants import NUMERIC, CATEGORICAL
+from bigml.laminar.constants import NUMERIC
 
 try:
     import numpy
@@ -158,17 +158,17 @@ class Deepnet(ModelFields):
             self.input_fields = deepnet['input_fields']
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):
             status = get_status(deepnet)
+            objective_field = deepnet['objective_fields']
             deepnet = deepnet['deepnet']
             if 'code' in status and status['code'] == FINISHED:
                 self.fields = deepnet['fields']
-                objective_field = deepnet['objective_fields']
                 ModelFields.__init__(
                     self, self.fields,
                     objective_id=extract_objective(objective_field),
                     terms=True)
 
                 self.regression = \
-                    self.fields[self.objective_id]['optype'] == 'numeric'
+                    self.fields[self.objective_id]['optype'] == NUMERIC
                 if not self.regression:
                     self.class_names = [category for category,_ in \
                         self.fields[self.objective_id][ \
@@ -181,8 +181,9 @@ class Deepnet(ModelFields):
                     network = deepnet['network']
 
                     self.layers = net.init_layers(network['layers'])
-                    self.output_exposition = network['output_exposition']
-                    self.preprocess = network['preprocess']
+                    self.networks = network.get('networks', [])
+                    self.output_exposition = network.get('output_exposition')
+                    self.preprocess = network.get('preprocess')
                     self.beta1 = network.get('beta1', 0.9)
                     self.beta2 = network.get('beta2', 0.999)
                     self.decay = network.get('decay', 0.0)
@@ -231,7 +232,7 @@ class Deepnet(ModelFields):
                                                                   []))
                 columns.extend(terms_occurrences)
             else:
-                columns.append([input_data.get(field_id, None)])
+                columns.append(input_data.get(field_id, None))
         return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):
@@ -249,6 +250,7 @@ class Deepnet(ModelFields):
         else:
             input_data = new_data
 
+
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
@@ -256,7 +258,6 @@ class Deepnet(ModelFields):
         unique_terms = self.get_unique_terms(input_data)
 
         input_array = self.fill_array(input_data, unique_terms)
-
         """
         if self.trees is not None:
             x_in = tree_transform(x_in, self.trees, None)

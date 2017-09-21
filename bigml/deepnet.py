@@ -275,12 +275,14 @@ class Deepnet(ModelFields):
 
     def predict_list(self, input_array):
         if self.network['trees'] is not None:
-            input_array = pp.tree_transform(input_array,
-                                            self.network['trees'])
-
+            input_array_trees = pp.tree_transform(input_array,
+                                                  self.network['trees'])
         youts = []
         for model in self.networks:
-            youts.append(self.model_predict(input_array, model))
+            if model['trees']:
+                youts.append(self.model_predict(input_array_trees, model))
+            else:
+                youts.append(self.model_predict(input_array, model))
 
         return self.to_prediction(net.sum_and_normalize(youts,
                                                         self.regression))
@@ -292,7 +294,6 @@ class Deepnet(ModelFields):
 
         layers = net.init_layers(model['layers'])
         input_array = input_array
-        print "input", len(input_array)
         y_out = net.propagate(input_array, layers)
 
         if self.regression:

@@ -4,6 +4,7 @@ import numpy as np
 
 from bigml.laminar.constants import NUMERIC, CATEGORICAL
 
+
 MODE_CONCENTRATION = 0.1
 MODE_STRENGTH = 3
 
@@ -67,6 +68,57 @@ def transform(vector, spec):
     else:
         raise ValueError("'%s' is not a valid spec type!" % vtype)
     return output
+
+
+def tree_predict(tree, point):
+    node = tree
+
+    while node[-1] is not None:
+        if point[node[0]] <= node[1]:
+            node = node[2]
+        else:
+            node = node[3]
+
+    return node[0]
+
+
+def get_embedding(X, model):
+    if isinstance(model, list):
+        preds = None
+        for tree in model:
+            tree_preds = []
+            for row in X:
+                tree_preds.append(tree_predict(tree, row))
+
+            if preds is None:
+                preds = np.array(tree_preds, dtype='float64')
+            else:
+                preds += np.array(tree_preds, dtype='float64')
+
+        if len(preds[0]) > 1:
+            print preds.sum(axis=1, keepdims=True)
+            preds /= preds.sum(axis=1, keepdims=True)
+        else:
+            preds /= len(model)
+
+        return preds
+    else:
+        raise ValueError("Model is unknown type!")
+
+
+def tree_transform(X, trees):
+    outdata = None
+
+    for feature_range, model in trees:
+        sidx, eidx = feature_range
+        inputs = X[:,sidx:eidx]
+        outarray = get_embedding(inputs, model)
+
+        if outdata is not None:
+            outdata = np.c_[outdata, outarray]
+        else:
+            outdata = outarray
+    return np.c_[outdata, X]
 
 
 def preprocess(columns, specs):

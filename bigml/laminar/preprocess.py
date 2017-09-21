@@ -83,9 +83,10 @@ def one_hot(vector, possible_values):
     idxs = list(enumerate(index(possible_values, v) for v in vector))
     valid_pairs = filter(lambda x: x[1] is not None, idxs)
     outvec = np_zeros(len(idxs), len(possible_values), dtype_fn=float)
-    outvec[[v[0] for v in valid_pairs][0]][[v[1] for v in valid_pairs][0]] = 1
+    for i, j in valid_pairs:
+        outvec[i][j] = 1
 
-    return outvec[0]
+    return outvec
 
 def standardize(vector, mn, stdev):
     newvec = [component - mn for component in vector]
@@ -124,17 +125,77 @@ def transform(vector, spec):
         else:
             raise ValueError("'%s' is not a valid numeric spec!" % str(spec))
     elif vtype == CATEGORICAL:
-        output = one_hot(vector, spec['values'])
+        output = one_hot(vector, spec['values'])[0]
     else:
         raise ValueError("'%s' is not a valid spec type!" % vtype)
     return output
+
+
+def tree_predict(tree, point):
+    node = tree
+
+    while node[-1] is not None:
+        if point[node[0]] <= node[1]:
+            node = node[2]
+        else:
+            node = node[3]
+
+    return node[0]
+
+
+def sum_axis_1(arrays):
+    """Reproducing np.sum(arrays, axis=1, keepdims=True)
+
+    """
+    newArray = []
+    for row in arrays:
+        newArray.append(sum(row))
+    return newArray
+
+
+def get_embedding(X, model):
+    if isinstance(model, list):
+        preds = None
+        for tree in model:
+            tree_preds = []
+            for row in X:
+                tree_preds.append(tree_predict(tree, row))
+
+            if preds is None:
+                preds = np_asarray(tree_preds)
+            else:
+                preds += np_asarray(tree_preds)
+
+        if len(preds[0]) > 1:
+            preds /= sum_axis_1(preds)
+        else:
+            preds /= len(model)
+
+        return preds
+    else:
+        raise ValueError("Model is unknown type!")
+
+
+def tree_transform(X, trees):
+    outdata = None
+
+    for feature_range, model in trees:
+        sidx, eidx = feature_range
+        inputs = X[:][sidx:eidx]
+        outarray = get_embedding(inputs, model)
+
+        if outdata is not None:
+            outdata = np_c_[outdata, outarray]
+        else:
+            outdata = outarray
+    return np_c_[outdata, X]
 
 
 def preprocess(columns, specs):
     outdata = None
 
     for spec in specs:
-        column = columns[spec['index']]
+        column = [columns[spec['index']]]
 
         if spec['type'] == NUMERIC:
             column = np_asarray(column, dtype_fn=float)

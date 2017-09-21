@@ -102,7 +102,8 @@ class Deepnet(ModelFields):
         """
         self.resource_id = None
         self.regression = False
-        self.layers = None
+        self.network = None
+        self.networks = None
         self.output_exposition = None
         self.input_fields = []
         self.class_names = []
@@ -179,8 +180,7 @@ class Deepnet(ModelFields):
            # TODO: add properties here
                 if 'network' in deepnet:
                     network = deepnet['network']
-
-                    self.layers = net.init_layers(network['layers'])
+                    self.network = network
                     self.networks = network.get('networks', [])
                     self.output_exposition = network.get('output_exposition')
                     self.preprocess = network.get('preprocess')
@@ -250,7 +250,6 @@ class Deepnet(ModelFields):
         else:
             input_data = new_data
 
-
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
@@ -258,22 +257,61 @@ class Deepnet(ModelFields):
         unique_terms = self.get_unique_terms(input_data)
 
         input_array = self.fill_array(input_data, unique_terms)
+
+        if self.networks:
+            self.predict_list(input_array)
+        else:
+            self.predict_single(input_array)
+
+    def predict_single(self, input_array):
+        """Makes a prediction with a single network
+
         """
-        if self.trees is not None:
-            x_in = tree_transform(x_in, self.trees, None)
+        if self.network['trees'] is not None:
+            input_array = pp.tree_transform(input_array, self.network['trees'])
+
+        return self.to_prediction(self.model_predict(input_array,
+                                                     self.network))
+
+    def predict_list(self, input_array):
+        if self.network['trees'] is not None:
+            input_array = pp.tree_transform(input_array,
+                                            self.network['trees'])
+
+        youts = []
+        for model in self.networks:
+            youts.append(self.model_predict(input_array, model))
+
+        return self.to_prediction(net.sum_and_normalize(youts,
+                                                        self.regression))
+
+    def model_predict(self, input_array, model):
+        """Prediction with one model
+
         """
 
-        y_out = net.propagate(input_array, self.layers)
+        layers = net.init_layers(model['layers'])
+        input_array = input_array
+        print "input", len(input_array)
+        y_out = net.propagate(input_array, layers)
 
         if self.regression:
             y_mean, y_stdev = moments(self.output_exposition)
             y_out = net.destandardize(y_out, y_mean, y_stdev)
             return y_out[0][0]
 
+        print "model", y_out
+        return y_out
+
+    def to_prediction(self, y_out):
+        """Structuring prediction in a dictionary output
+
+        """
         prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
                       "probability": prediction[1],
                       "distribution": [{"category": category,
                                         "probability": y_out[0][i]} \
             for i, category in enumerate(self.class_names)]}
+        print prediction
         return prediction

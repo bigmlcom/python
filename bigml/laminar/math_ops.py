@@ -162,3 +162,24 @@ def propagate(x_in, layers):
             last_X = ACTIVATORS[afn](next_in)
 
     return last_X
+
+
+def sum_and_normalize(youts, is_regression):
+    ysums = []
+    for i, row in enumerate(youts[0]):
+        sum_row = []
+        for j, _ in enumerate(row):
+            sum_row.append(sum([yout[i][j] for yout in youts]))
+
+        ysums.append(sum_row)
+
+    out_dist = []
+    if is_regression:
+        for ysum in ysums:
+            out_dist.append([ysum[0] / len(youts)])
+    else:
+        for ysum in ysums:
+            rowsum = sum(ysum)
+            out_dist.append([y / rowsum for y in ysum])
+
+    return out_dist

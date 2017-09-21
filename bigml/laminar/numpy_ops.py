@@ -125,11 +125,22 @@ def add_residuals(residuals, values):
     return to_add + residuals
 
 
+def sum_and_normalize(youts, is_regression):
+    ysums = sum(youts)
+
+    if is_regression:
+        return ysums / len(youts)
+    else:
+        return ysums / np.sum(ysums, axis=1).reshape(-1, 1)
+
+
 def propagate(x_in, layers):
     last_X = identities = to_numpy_array(x_in)
 
     for layer in layers:
         w = layer['weights']
+        print "layer dim ***", len(w)
+        print "last_X ***", len(last_X[0])
         m = layer['mean']
         s = layer['stdev']
         b = layer['offset']

@@ -96,7 +96,6 @@ def get_embedding(X, model):
                 preds += np.array(tree_preds, dtype='float64')
 
         if len(preds[0]) > 1:
-            print preds.sum(axis=1, keepdims=True)
             preds /= preds.sum(axis=1, keepdims=True)
         else:
             preds /= len(model)
@@ -135,4 +134,5 @@ def preprocess(columns, specs):
             outdata = np.c_[outdata, outarray]
         else:
             outdata = outarray
+
     return outdata

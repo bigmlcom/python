@@ -259,9 +259,9 @@ class Deepnet(ModelFields):
         input_array = self.fill_array(input_data, unique_terms)
 
         if self.networks:
-            self.predict_list(input_array)
+            return self.predict_list(input_array)
         else:
-            self.predict_single(input_array)
+            return self.predict_single(input_array)
 
     def predict_single(self, input_array):
         """Makes a prediction with a single network
@@ -301,7 +301,6 @@ class Deepnet(ModelFields):
             y_out = net.destandardize(y_out, y_mean, y_stdev)
             return y_out[0][0]
 
-        print "model", y_out
         return y_out
 
     def to_prediction(self, y_out):
@@ -314,5 +313,5 @@ class Deepnet(ModelFields):
                       "distribution": [{"category": category,
                                         "probability": y_out[0][i]} \
             for i, category in enumerate(self.class_names)]}
-        print prediction
+
         return prediction

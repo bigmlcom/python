@@ -117,7 +117,7 @@ def to_width(mat, width):
     else:
         ntiles = 1
 
-    return np.tile(mat, (1, ntiles))[::width]
+    return np.tile(mat, (1, ntiles))[:,:width]
 
 
 def add_residuals(residuals, values):
@@ -139,8 +139,6 @@ def propagate(x_in, layers):
 
     for layer in layers:
         w = layer['weights']
-        print "layer dim ***", len(w)
-        print "last_X ***", len(last_X[0])
         m = layer['mean']
         s = layer['stdev']
         b = layer['offset']

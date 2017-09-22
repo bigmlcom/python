@@ -143,16 +143,6 @@ def tree_predict(tree, point):
     return node[0]
 
 
-def sum_axis_1(arrays):
-    """Reproducing np.sum(arrays, axis=1, keepdims=True)
-
-    """
-    newArray = []
-    for row in arrays:
-        newArray.append(sum(row))
-    return newArray
-
-
 def get_embedding(X, model):
     if isinstance(model, list):
         preds = None
@@ -162,16 +152,18 @@ def get_embedding(X, model):
                 tree_preds.append(tree_predict(tree, row))
 
             if preds is None:
-                preds = np_asarray(tree_preds)
+                preds = np_asarray(tree_preds)[0]
             else:
-                preds += np_asarray(tree_preds)
+                for index, pred in enumerate(preds):
+                    preds[index] += np_asarray(tree_preds)[0][index]
 
-        if len(preds[0]) > 1:
-            preds /= sum_axis_1(preds)
+        if preds and len(preds) > 1:
+            norm = sum(preds)
+            preds = [pred / norm for pred in preds]
         else:
-            preds /= len(model)
+            preds = [pred / len(model) for pred in preds]
 
-        return preds
+        return [preds]
     else:
         raise ValueError("Model is unknown type!")
 
@@ -181,14 +173,16 @@ def tree_transform(X, trees):
 
     for feature_range, model in trees:
         sidx, eidx = feature_range
-        inputs = X[:][sidx:eidx]
+        inputs = X[:]
+        for index, row in enumerate(inputs):
+            inputs[index] = row[sidx:eidx]
         outarray = get_embedding(inputs, model)
-
         if outdata is not None:
-            outdata = np_c_[outdata, outarray]
+            outdata = np_c_(outdata, outarray[0])
         else:
             outdata = outarray
-    return np_c_[outdata, X]
+
+    return np_c_(outdata, X[0])
 
 
 def preprocess(columns, specs):

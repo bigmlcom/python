@@ -166,7 +166,7 @@ class Deepnet(ModelFields):
                 ModelFields.__init__(
                     self, self.fields,
                     objective_id=extract_objective(objective_field),
-                    terms=True)
+                    terms=True, categories=True)
 
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC
@@ -231,6 +231,8 @@ class Deepnet(ModelFields):
                                                  unique_terms.get(field_id,
                                                                   []))
                 columns.extend(terms_occurrences)
+            elif field_id in self.categories:
+                columns.append([unique_terms.get(field_id)[0][0]])
             else:
                 columns.append(input_data.get(field_id, None))
         return pp.preprocess(columns, self.preprocess)
@@ -293,7 +295,6 @@ class Deepnet(ModelFields):
         """
 
         layers = net.init_layers(model['layers'])
-        input_array = input_array
         y_out = net.propagate(input_array, layers)
 
         if self.regression:
@@ -307,6 +308,8 @@ class Deepnet(ModelFields):
         """Structuring prediction in a dictionary output
 
         """
+        if (self.regression):
+            return y_out
         prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
                       "probability": prediction[1],

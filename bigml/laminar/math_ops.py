@@ -137,7 +137,6 @@ def add_residuals(residuals, identities):
 
 def propagate(x_in, layers):
     last_X = identities = x_in
-
     for layer in layers:
         w = layer['weights']
         m = layer['mean']
@@ -160,7 +159,6 @@ def propagate(x_in, layers):
             identities = last_X
         else:
             last_X = ACTIVATORS[afn](next_in)
-
     return last_X
 
 

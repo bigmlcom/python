@@ -24,7 +24,8 @@ def one_hot(vector, possible_values):
     idxs = list(enumerate(index(possible_values, v) for v in vector))
     valid_pairs = filter(lambda x: x[1] is not None, idxs)
     outvec = np.zeros((len(idxs), len(possible_values)), dtype=np.float32)
-    outvec[[v[0] for v in valid_pairs], [v[1] for v in valid_pairs]] = 1
+    for v in valid_pairs:
+        outvec[v[0], v[1]] = 1
     return outvec
 
 def standardize(vector, mn, stdev):

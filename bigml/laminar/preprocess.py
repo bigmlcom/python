@@ -22,9 +22,6 @@ from copy import deepcopy
 
 from bigml.laminar.constants import NUMERIC, CATEGORICAL
 
-MODE_CONCENTRATION = 0.1
-MODE_STRENGTH = 3
-
 MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
@@ -80,7 +77,7 @@ def index(alist, value):
         return None
 
 def one_hot(vector, possible_values):
-    idxs = list(enumerate(index(possible_values, v) for v in vector))
+    idxs = list(enumerate(index(possible_values, v) for v in vector[0]))
     valid_pairs = filter(lambda x: x[1] is not None, idxs)
     outvec = np_zeros(len(idxs), len(possible_values), dtype_fn=float)
     for i, j in valid_pairs:
@@ -181,7 +178,6 @@ def tree_transform(X, trees):
             outdata = np_c_(outdata, outarray[0])
         else:
             outdata = outarray
-
     return np_c_(outdata, X[0])
 
 
@@ -193,12 +189,9 @@ def preprocess(columns, specs):
 
         if spec['type'] == NUMERIC:
             column = np_asarray(column, dtype_fn=float)
-
         outarray = transform(column, spec)
-
         if outdata is not None:
             outdata = np_c_(outdata, outarray)
         else:
             outdata = [outarray]
-
     return outdata

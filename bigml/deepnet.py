@@ -63,7 +63,6 @@ except ImportError:
     import bigml.laminar.preprocess as pp
 
 
-
 LOGGER = logging.getLogger('BigML')
 
 STORAGE = './storage'
@@ -232,9 +231,13 @@ class Deepnet(ModelFields):
                                                                   []))
                 columns.extend(terms_occurrences)
             elif field_id in self.categories:
-                columns.append([unique_terms.get(field_id)[0][0]])
+                category = unique_terms.get(field_id)
+                if category is not None:
+                    category = category[0][0]
+                columns.append([category])
             else:
-                columns.append(input_data.get(field_id, None))
+                # numeric default is 0.0
+                columns.append(input_data.get(field_id))
         return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):

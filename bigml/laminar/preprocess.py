@@ -17,6 +17,7 @@
 """
 
 import collections
+import math
 
 from copy import deepcopy
 
@@ -53,6 +54,7 @@ def np_asarray(array, dtype_fn=None):
     if not isinstance(array, list):
         new_array = [item for item in new_array]
     try:
+        new_array = ['nan' if item is None else item for item in new_array]
         if dtype_ok(dtype_fn):
             new_array = [dtype_fn(item) for item in new_array]
     except (ValueError, NameError):
@@ -91,6 +93,8 @@ def standardize(vector, mn, stdev):
     if stdev > 0:
         newvec = [component / stdev for component in newvec]
 
+    for index, component in enumerate(newvec):
+        newvec[index] = 0.0 if math.isnan(component) else component
     return newvec
 
 def binarize(vector, zero, one):

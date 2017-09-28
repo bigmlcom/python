@@ -1,5 +1,5 @@
 import collections
-
+import math
 import numpy as np
 
 from bigml.laminar.constants import NUMERIC, CATEGORICAL
@@ -34,6 +34,8 @@ def standardize(vector, mn, stdev):
     if stdev > 0:
         newvec = newvec / stdev
 
+    fill_dft = lambda x: 0.0 if math.isnan(x) else x
+    newvec = np.vectorize(fill_dft)(newvec)
     return newvec
 
 def binarize(vector, zero, one):

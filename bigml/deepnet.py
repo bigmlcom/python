@@ -70,6 +70,7 @@ MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
 def moments(amap):
+    print "*** moments", amap
     return amap[MEAN], amap[STANDARD_DEVIATION]
 
 
@@ -103,7 +104,6 @@ class Deepnet(ModelFields):
         self.regression = False
         self.network = None
         self.networks = None
-        self.output_exposition = None
         self.input_fields = []
         self.class_names = []
         self.preprocess = []
@@ -181,29 +181,8 @@ class Deepnet(ModelFields):
                     network = deepnet['network']
                     self.network = network
                     self.networks = network.get('networks', [])
-                    self.output_exposition = network.get('output_exposition')
                     self.preprocess = network.get('preprocess')
-                    self.beta1 = network.get('beta1', 0.9)
-                    self.beta2 = network.get('beta2', 0.999)
-                    self.decay = network.get('decay', 0.0)
-                    self.descent_algorithm = network.get('descent_algorithm',
-                                                         'adam')
-                    self.epsilon = network.get('epsilon', 1e-08)
-                    self.hidden_layers = network.get('hidden_layers', [])
-                    self.initial_accumulator_value = network.get( \
-                        'initial_accumulator_value', 0)
-                    self.l1_regularization = network.get( \
-                        'l1_regularization', 0)
-                    self.l2_regularization = network.get( \
-                        'l2_regularization', 0)
-                    self.learning_rate = network.get('learning_rate', 0.001)
-                    self.learning_rate_power = network.get( \
-                        'learning_rate_power', -0.5)
-                    # max_iterations or max_training_time needs to be filled
-                    self.max_iterations = network.get('max_iterations')
-                    self.max_training_time = network.get('max_training_time',
-                                                         1800)
-                    self.momentum = network.get('momentum', 0.99)
+                    self.optimizer = network.get('optimizer', {})
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:
@@ -301,7 +280,7 @@ class Deepnet(ModelFields):
         y_out = net.propagate(input_array, layers)
 
         if self.regression:
-            y_mean, y_stdev = moments(self.output_exposition)
+            y_mean, y_stdev = moments(model['output_exposition'])
             y_out = net.destandardize(y_out, y_mean, y_stdev)
             return y_out[0][0]
 

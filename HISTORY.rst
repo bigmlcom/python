@@ -3,6 +3,12 @@
 History
 -------
 
+4.11.3 (2017-09-29)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in the local Ensemble object. Failed to use the
+  stored ensemble object.
+
 4.11.2 (2017-07-29)
 ~~~~~~~~~~~~~~~~~~~
 

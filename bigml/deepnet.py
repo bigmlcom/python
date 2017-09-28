@@ -107,6 +107,7 @@ class Deepnet(ModelFields):
         self.input_fields = []
         self.class_names = []
         self.preprocess = []
+        self.optimizer = None
         self.missing_numerics = False
         # the string can be a path to a JSON file
         if isinstance(deepnet, basestring):

@@ -34,7 +34,9 @@ LOGGER = logging.getLogger('BigML')
 
 FIELDS_PARENT = { \
     "cluster": "clusters",
-    "logisticregression": "logistic_regression"}
+    "logisticregression": "logistic_regression",
+    "ensemble": "ensemble"}
+
 
 
 def check_model_structure(model, inner_key="model"):

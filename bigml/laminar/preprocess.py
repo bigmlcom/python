@@ -98,12 +98,17 @@ def standardize(vector, mn, stdev):
     return newvec
 
 def binarize(vector, zero, one):
-    if one == 0.0:
-        vector[vector == one] = 1.0
-        vector[(vector != one) & (vector != 1.0)] = 0.0
-    else:
-        vector[vector != one] = 0.0
-        vector[vector == one] = 1.0
+    for index, value in enumerate(vector):
+        if one == 0.0:
+            if value == one:
+                vector[index] = 1.0
+            if value != one and value != 1.0:
+                vector[index] = 0.0
+        else:
+            if value != one:
+                vector[index] = 0.0
+            if value == one:
+                vector[index] = 1.0
 
     return vector
 

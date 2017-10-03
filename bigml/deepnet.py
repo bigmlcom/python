@@ -70,7 +70,6 @@ MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
 def moments(amap):
-    print "*** moments", amap
     return amap[MEAN], amap[STANDARD_DEVIATION]
 
 
@@ -138,7 +137,6 @@ class Deepnet(ModelFields):
         # checks whether the information needed for local predictions is in
         # the first argument
         if isinstance(deepnet, dict) and \
-                not fields and \
                 not check_model_fields(deepnet):
             # if the fields used by the deepenet are not
             # available, use only ID to retrieve it again
@@ -216,8 +214,15 @@ class Deepnet(ModelFields):
                     category = category[0][0]
                 columns.append([category])
             else:
-                # numeric default is 0.0
                 columns.append(input_data.get(field_id))
+                # when missing_numerics is True and the field had missings
+                # in the training data, then we add a new "is missing?" element
+                # whose value is 1 or 0 according to whether the field is
+                # missing or not in the input data
+                if self.missing_numerics \
+                        and self.fields[field_id][\
+                        "summary"]["missing_count"] > 0:
+                    columns.append(int(field_id not in input_data))
         return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):

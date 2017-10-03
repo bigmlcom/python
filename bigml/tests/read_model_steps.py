@@ -35,3 +35,11 @@ def i_get_the_logistic_model(step, model):
     world.status = resource['code']
     eq_(world.status, HTTP_OK)
     world.logistic_regression = resource['object']
+
+
+#@step(r'I get the deepnet model "(.*)"')
+def i_get_the_deepnet_model(step, model):
+    resource = world.api.get_deepnet(model)
+    world.status = resource['code']
+    eq_(world.status, HTTP_OK)
+    world.deepnet = resource['object']

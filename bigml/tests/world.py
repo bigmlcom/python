@@ -48,6 +48,7 @@ RESOURCE_TYPES = [
     'correlation',
     'statisticaltest',
     'logisticregression',
+    'deepnet',
     'association',
     'associationset',
     'topicmodel',

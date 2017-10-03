@@ -208,3 +208,46 @@ def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the logistic regression model is ready less than (\d+)')
 def the_logistic_model_is_finished_in_less_than(step, secs):
     wait_until_logistic_model_status_code_is(step, FINISHED, FAULTY, secs)
+
+#@step(r'I create a deepnet model$')
+def i_create_a_deepnet(step):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_deepnet(dataset)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.logistic_regression = resource['object']
+    world.logistic_regressions.append(resource['resource'])
+
+
+#@step(r'I create a deepnet model with objective "(.*?)" and parms "(.*)"$')
+def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):
+    dataset = world.dataset.get('resource')
+    if parms is None:
+        parms = {}
+    else:
+        parms = json.loads(parms)
+    parms.update({"objective_field": objective})
+    resource = world.api.create_deepnet(dataset, parms)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.deepnet = resource['object']
+    world.deepnets.append(resource['resource'])
+
+#@step(r'I wait until the deepnet model status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
+    start = datetime.utcnow()
+    read.i_get_the_deepnet_model(step, world.deepnet['resource'])
+    status = get_status(world.deepnet)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+           time.sleep(3)
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           read.i_get_the_deepnet_model(step, world.deepnet['resource'])
+           status = get_status(world.deepnet)
+    eq_(status['code'], int(code1))
+
+#@step(r'I wait until the deepnet model is ready less than (\d+)')
+def the_deepnet_is_finished_in_less_than(step, secs):
+    wait_until_deepnet_model_status_code_is(step, FINISHED, FAULTY, secs)

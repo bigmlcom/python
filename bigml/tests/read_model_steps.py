@@ -39,6 +39,7 @@ def i_get_the_logistic_model(step, model):
 
 #@step(r'I get the deepnet model "(.*)"')
 def i_get_the_deepnet_model(step, model):
+    print "*** get deepnet"
     resource = world.api.get_deepnet(model)
     world.status = resource['code']
     eq_(world.status, HTTP_OK)

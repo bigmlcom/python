@@ -3722,6 +3722,47 @@ Documentation
 <https://bigml.com/api/logisticregressions#lr_logistic_regression_arguments>`_.
 
 
+Creating deepnets
+~~~~~~~~~~~~~~~~~
+
+Deepnets can also solve classification and regression problems.
+Deepnets are an optimized version of Deep Neural Networks,
+a class of machine-learned models inspired by the neural
+circuitry of the human brain. In these classifiers, the input features
+are fed to a group of "nodes" called a "layer".
+Each node is essentially a function on the input that
+transforms the input features into another value or collection of values.
+Then the entire layer transforms an input vector into a new "intermediate"
+feature vector. This new vector is fed as input to another layer of nodes.
+This process continues layer by layer, until we reach the final "output"
+layer of nodes, where the output is the network’s prediction: an array
+of per-class probabilities for classification problems or a single,
+real value for regression problems.
+
+Deepnets predictions compute a probability associated to each class
+in the objective field for classification problems.
+As the rest of models, deepnets can be created from a dataset by
+calling the corresponding create method:
+
+.. code-block:: python
+
+    deepnet = api.create_deepnet( \
+        'dataset/5143a51a37203f2cf7000972',
+        {"name": "my deepnet",
+         "objective_field": "my_objective_field"})
+
+In this example, we created a deepnet named
+``my deepnet`` and set the objective field to be
+``my_objective_field``. Other arguments, like ``number_of_hidden_layers``,
+``learning_rate``
+and ``missing_numerics`` can also be specified as attributes
+in an arguments dictionary at
+creation time. For a more detailed description of the
+available attributes and its syntax, please see the `Developers API
+Documentation
+<https://tropo.dev.bigml.com/api/deepnets#dn_deepnet_arguments>`_.
+
+
 Creating batch predictions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3868,6 +3909,7 @@ You can list resources with the appropriate api method:
     api.list_topic_distributions()
     api.list_batch_topic_distributions()
     api.list_time_series()
+    api.list_deepnets()
     api.list_forecasts()
     api.list_scripts()
     api.list_libraries()
@@ -4014,6 +4056,7 @@ problems or one of the HTTP standard error codes otherwise.
         time_series, {"name": "new name"})
     api.update_forecast(\
         time_series, {"name": "new name"})
+    api.update_deepnet(deepnet, {"name": "new name"})
     api.update_script(script, {"name": "new name"})
     api.update_library(library, {"name": "new name"})
     api.update_execution(execution, {"name": "new name"})
@@ -4099,6 +4142,7 @@ each type of resource.
     api.delete_batch_topic_distribution(batch_topic_distribution)
     api.delete_time_series(time_series)
     api.delete_forecast(forecast)
+    api.delete_deepnet(deepnet)
     api.delete_project(project)
     api.delete_script(script)
     api.delete_library(library)
@@ -4727,6 +4771,100 @@ So, for example
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
 local Models.
+
+Local Deepnet
+-------------
+
+You can also instantiate a local version of a remote Deepnet.
+
+.. code-block:: python
+
+    from bigml.deepnet import Deepnet
+    local_deepnet = Deepnet(
+        'deepnet/502fdbff15526876610022435')
+
+This will retrieve the remote deepnet information,
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a ``Deepnet``
+object that you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.deepnet import Deepnet
+    from bigml.api import BigML
+
+    local_deepnet = Deepnet(
+        'deepnet/502fdbff15526876610602435',
+        api=BigML(my_username, my_api_key))
+
+You can also reuse a remote Deepnet JSON structure
+as previously retrieved to build the
+local Deepnet object:
+
+.. code-block:: python
+
+    from bigml.deepnet import Deepnet
+    from bigml.api import BigML
+    api = BigML()
+    deepnet = api.get_deepnet(
+        'deepnet/502fdbff15526876610002435',
+        query_string='limit=-1')
+
+    local_deepnet = Deepnet(deepnet)
+
+Note that in this example we used a ``limit=-1`` query string for the
+deepnet retrieval. This ensures that all fields are
+retrieved by the get method in the same call (unlike in the standard
+calls where the number of fields returned is limited).
+
+Local Deepnet Predictions
+-------------------------------------
+
+Using the local deepnet object, you can predict the prediction for
+an input data set:
+
+.. code-block:: python
+
+    local_deepnet.predict({"petal length": 2, "sepal length": 1.5,
+                           "petal width": 0.5, "sepal width": 0.7})
+    {'distribution': [
+        {'category': u'Iris-virginica', 'probability': 0.5041444478857267},
+        {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
+        {'category': u'Iris-setosa', 'probability': 0.02659013168639014}],
+        'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}
+
+As you can see, the prediction contains the predicted category and the
+associated probability. It also shows the distribution of probabilities for
+all the possible categories in the objective field.
+
+To be consistent with the ``Model`` class interface, deepnets
+have also a ``predict_probability`` method, which takes
+two of the same arguments as ``Model.predict``: ``by_name`` and
+``compact``.
+
+As with local Models, if ``compact`` is ``False`` (the default), the
+output is a list of maps, each with the keys ``prediction`` and
+``probability`` mapped to the class name and its associated
+probability.
+
+So, for example
+
+.. code-block:: python
+
+    local_deepnet.predict_probability({"petal length": 2, "sepal length": 1.5,
+                                       "petal width": 0.5, "sepal width": 0.7})
+
+    [{'prediction': u'Iris-setosa', 'probability': 0.02659013168639014},
+     {'prediction': u'Iris-versicolor', 'probability': 0.46926542042788333},
+     {'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}]
+
+If ``compact`` is ``True``, only the probabilities themselves are
+returned, as a list in class name order, again, as is the case with
+local Models.
+
 
 Local Association
 -----------------

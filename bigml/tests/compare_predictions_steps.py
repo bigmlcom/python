@@ -308,7 +308,7 @@ def i_create_a_local_logistic_model(step):
 
 #@step(r'I create a local deepnet model$')
 def i_create_a_local_deepnet(step):
-    world.local_deepnet = Deepnet(world.deepnet)
+    world.local_deepnet = Deepnet(world.deepnet['resource'])
 
 #@step(r'I create a local topic model$')
 def i_create_a_local_topic_model(step):

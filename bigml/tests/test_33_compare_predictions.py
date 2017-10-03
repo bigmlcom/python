@@ -357,19 +357,13 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
-            ['data/iris.csv', '10', '10', '120', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"number_of_models": 5}'],
-            ['data/iris.csv', '10', '10', '120', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '120', '{"Midterm": 20}', '000005', 46.261364, '{"number_of_models": 5}'],
-            ['data/iris.csv', '10', '10', '120', '{"petal width": 0.5}', '000004', 'Iris-setosa', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
-            ['data/iris.csv', '10', '10', '120', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
-            ['data/iris.csv', '10', '10', '120', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
-
-            ['data/iris.csv', '10', '10', '120', '{"petal width": 0.5}', '000004', 'Iris-versicolor', '{}']
 
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal width": 4}', '000004', 'Iris-virginica', '{}']]
+            ['data/iris.csv', '10', '50', '30000', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
+            ['data/iris_missing2.csv', '10', '50', '30000', '{}', '000004', 'Iris-setosa', '{}'],
+            ['data/spam.csv', '10', '50', '30000', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario8, examples)
 
         for example in examples:

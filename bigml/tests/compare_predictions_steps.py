@@ -95,7 +95,7 @@ def i_create_a_local_deepnet_prediction(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_deepnet = world.local_deepnet.predict(data)
+    world.local_prediction = world.local_deepnet.predict(data)
 
 #@step(r'I create a local prediction using median for "(.*)"$')
 def i_create_a_local_median_prediction(step, data=None):
@@ -238,9 +238,13 @@ def the_local_prediction_is(step, prediction):
                 local_prediction = round(float(local_prediction), 4)
                 prediction = round(float(prediction), 4)
     except AttributeError:
-        local_model = world.local_ensemble
+        if hasattr(world, "local_ensemble"):
+            local_model = world.local_ensemble
+        elif hasattr(world, "local_deepnet"):
+            local_model = world.local_deepnet
         if local_model.regression:
-            assert_almost_equal(local_prediction, float(prediction), places=5)
+            assert_almost_equal(local_prediction, float(prediction),
+                                places=5)
 
     eq_(local_prediction, prediction)
 

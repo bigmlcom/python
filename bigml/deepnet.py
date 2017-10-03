@@ -322,11 +322,15 @@ class Deepnet(ModelFields):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
-        distribution = self.predict(input_data,
-                                    by_name=by_name)['distribution']
-        distribution.sort(key=lambda x: x['category'])
-
-        if compact:
-            return [category['probability'] for category in distribution]
+        if self.regression:
+            return self.predict(input_data,
+                                by_name=by_name)
         else:
-            return distribution
+            distribution = self.predict(input_data,
+                                        by_name=by_name)['distribution']
+            distribution.sort(key=lambda x: x['category'])
+
+            if compact:
+                return [category['probability'] for category in distribution]
+            else:
+                return distribution

@@ -219,7 +219,6 @@ def i_create_a_deepnet(step):
     world.logistic_regression = resource['object']
     world.logistic_regressions.append(resource['resource'])
 
-
 #@step(r'I create a deepnet model with objective "(.*?)" and parms "(.*)"$')
 def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):
     dataset = world.dataset.get('resource')

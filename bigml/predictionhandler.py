@@ -31,9 +31,10 @@ from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, get_prediction_id,
                                    check_resource, get_ensemble_id,
                                    get_model_id, get_logistic_regression_id,
-                                   get_resource_type)
+                                   get_deepnet_id, get_resource_type)
 from bigml.constants import (PREDICTION_PATH, ENSEMBLE_PATH, MODEL_PATH,
-                             LOGISTIC_REGRESSION_PATH, TINY_RESOURCE)
+                             LOGISTIC_REGRESSION_PATH, DEEPNET_PATH,
+                             TINY_RESOURCE)
 
 class PredictionHandler(ResourceHandler):
     """This class is used by the BigML class as
@@ -57,9 +58,11 @@ class PredictionHandler(ResourceHandler):
             - a simple tree model
             - a simple logistic regression model
             - an ensemble
+            - a deepnet
            The by_name argument is now deprecated. It will be removed.
 
         """
+        deepnet_id = None
         logistic_regression_id = None
         ensemble_id = None
         model_id = None
@@ -84,6 +87,12 @@ class PredictionHandler(ResourceHandler):
                            query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True, api=self)
+        elif resource_type == DEEPNET_PATH:
+            deepnet_id = get_deepnet_id(model)
+            check_resource(deepnet_id,
+                           query_string=TINY_RESOURCE,
+                           wait_time=wait_time, retries=retries,
+                           raise_on_error=True, api=self)
         else:
             raise Exception("A model or ensemble id is needed to create a"
                             " prediction. %s found." % resource_type)
@@ -104,6 +113,9 @@ class PredictionHandler(ResourceHandler):
         elif logistic_regression_id is not None:
             create_args.update({
                 "logisticregression": logistic_regression_id})
+        elif deepnet_id is not None:
+            create_args.update({
+                "deepnet": deepnet_id})
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,

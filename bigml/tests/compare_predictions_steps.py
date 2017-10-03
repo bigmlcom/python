@@ -29,6 +29,7 @@ from bigml.association import Association
 from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
+from bigml.deepnet import Deepnet
 
 from create_prediction_steps import check_prediction
 
@@ -89,6 +90,12 @@ def i_create_a_local_ensemble_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_ensemble.predict(data)
 
+#@step(r'I create a local deepnet prediction for "(.*)"$')
+def i_create_a_local_deepnet_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_deepnet.predict(data)
 
 #@step(r'I create a local prediction using median for "(.*)"$')
 def i_create_a_local_median_prediction(step, data=None):
@@ -231,9 +238,13 @@ def the_local_prediction_is(step, prediction):
                 local_prediction = round(float(local_prediction), 4)
                 prediction = round(float(prediction), 4)
     except AttributeError:
-        local_model = world.local_ensemble
+        if hasattr(world, "local_ensemble"):
+            local_model = world.local_ensemble
+        elif hasattr(world, "local_deepnet"):
+            local_model = world.local_deepnet
         if local_model.regression:
-            assert_almost_equal(local_prediction, float(prediction), places=5)
+            assert_almost_equal(local_prediction, float(prediction),
+                                places=5)
 
     eq_(local_prediction, prediction)
 
@@ -299,6 +310,9 @@ def the_confidence_weighted_prediction(step, predictions):
 def i_create_a_local_logistic_model(step):
     world.local_model = LogisticRegression(world.logistic_regression)
 
+#@step(r'I create a local deepnet model$')
+def i_create_a_local_deepnet(step):
+    world.local_deepnet = Deepnet(world.deepnet['resource'])
 
 #@step(r'I create a local topic model$')
 def i_create_a_local_topic_model(step):

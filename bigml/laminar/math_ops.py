@@ -101,7 +101,7 @@ ACTIVATORS = {
     'tanh': broadcast(lambda xs: [math.tanh(x) for x in xs]),
     'sigmoid': broadcast(sigmoid),
     'softplus': broadcast(softplus),
-    'ReLU': broadcast(lambda xs: [x if x > 0 else 0 for x in xs]),
+    'relu': broadcast(lambda xs: [x if x > 0 else 0 for x in xs]),
     'softmax': broadcast(softmax),
     'identity': broadcast(lambda xs: [float(x) for x in xs])
 }

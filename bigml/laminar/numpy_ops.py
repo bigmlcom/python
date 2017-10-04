@@ -69,7 +69,7 @@ ACTIVATORS = {
     'tanh': np.tanh,
     'sigmoid': expit,
     'softplus': softplus,
-    'ReLU': relu,
+    'relu': relu,
     'softmax': softmax,
     'identity': lambda x: x
 }

@@ -269,7 +269,7 @@ class Cluster(ModelFields):
                             else input_data_field.lower())
                     unique_terms[field_id] = get_unique_terms(
                         terms, self.term_forms[field_id],
-                        self.tag_clouds.get(field_id, [])).keys()
+                        self.tag_clouds.get(field_id, []))
                 else:
                     unique_terms[field_id] = input_data_field
                 del input_data[field_id]
@@ -288,7 +288,7 @@ class Cluster(ModelFields):
                     terms = parse_items(input_data_field, regexp)
                     unique_terms[field_id] = get_unique_terms(
                         terms, {},
-                        self.items.get(field_id, [])).keys()
+                        self.items.get(field_id, []))
                 else:
                     unique_terms[field_id] = input_data_field
                 del input_data[field_id]

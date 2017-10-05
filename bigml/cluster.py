@@ -54,8 +54,7 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
-from bigml.modelfields import ModelFields, check_model_fields, parse_terms, \
-    parse_items, get_unique_terms
+from bigml.modelfields import ModelFields, check_model_fields
 from bigml.io import UnicodeWriter
 
 if PY3:
@@ -73,6 +72,48 @@ INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Maximum', max)]
 GLOBAL_CLUSTER_LABEL = 'Global'
 NUMERIC_DEFAULTS = ["mean", "median", "minimum", "maximum", "zero"]
+
+
+def parse_terms(text, case_sensitive=True):
+    """Returns the list of parsed terms
+
+    """
+    if text is None:
+        return []
+    expression = ur'(\b|_)([^\b_\s]+?)(\b|_)'
+    pattern = re.compile(expression)
+    return [match[1] if case_sensitive else match[1].lower()
+            for match in re.findall(pattern, text)]
+
+
+def parse_items(text, regexp):
+    """Returns the list of parsed items
+
+    """
+    if text is None:
+        return []
+    pattern = re.compile(regexp, flags=re.U)
+    return pattern.split(text)
+
+
+def get_unique_terms(terms, term_forms, tag_cloud):
+    """Extracts the unique terms that occur in one of the alternative forms in
+       term_forms or in the tag cloud.
+
+    """
+    extend_forms = {}
+    tag_cloud = tag_cloud.keys()
+    for term, forms in term_forms.items():
+        for form in forms:
+            extend_forms[form] = term
+        extend_forms[term] = term
+    terms_set = set()
+    for term in terms:
+        if term in tag_cloud:
+            terms_set.add(term)
+        elif term in extend_forms:
+            terms_set.add(extend_forms[term])
+    return list(terms_set)
 
 
 class Cluster(ModelFields):

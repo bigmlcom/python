@@ -15,4 +15,4 @@ install:
 script:
   - export TESTS=$(for t in $BML_TESTS; do ls bigml/tests/*$t*;done|paste -sd ",")
   - echo $TESTS
-  - python setup.py nosetests --tests=$TESTS
+  - python setup.py nosetests --nocapture --tests=$TESTS

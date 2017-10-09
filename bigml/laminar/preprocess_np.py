@@ -74,7 +74,7 @@ def transform(vector, spec):
 
 
 def tree_predict(tree, point):
-    node = tree
+    node = tree[:]
 
     while node[-1] is not None:
         if point[node[0]] <= node[1]:

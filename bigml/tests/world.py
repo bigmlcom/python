@@ -228,3 +228,6 @@ def teardown_class():
 
     """
     world.dataset_ids = []
+    world.local_ensemble = None
+    world.local_model = None
+    world.local_deepnet = None

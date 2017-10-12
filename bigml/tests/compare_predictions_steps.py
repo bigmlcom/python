@@ -238,9 +238,9 @@ def the_local_prediction_is(step, prediction):
                 local_prediction = round(float(local_prediction), 4)
                 prediction = round(float(prediction), 4)
     except AttributeError:
-        if hasattr(world, "local_ensemble"):
+        if hasattr(world, "local_ensemble") and world.local_ensemble:
             local_model = world.local_ensemble
-        elif hasattr(world, "local_deepnet"):
+        elif hasattr(world, "local_deepnet") and world.local_deepnet:
             local_model = world.local_deepnet
         if local_model.regression:
             assert_almost_equal(local_prediction, float(prediction),

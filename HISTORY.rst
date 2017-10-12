@@ -3,6 +3,11 @@
 History
 -------
 
+4.12.1 (2017-10-12)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in the local Deepnet predictions when numpy is not installed.
+
 4.12.0 (2017-10-04)
 ~~~~~~~~~~~~~~~~~~~
 

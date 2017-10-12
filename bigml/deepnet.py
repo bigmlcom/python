@@ -175,7 +175,6 @@ class Deepnet(ModelFields):
                     self.class_names.sort()
 
                 self.missing_numerics = deepnet.get('missing_numerics', False)
-           # TODO: add properties here
                 if 'network' in deepnet:
                     network = deepnet['network']
                     self.network = network
@@ -214,7 +213,6 @@ class Deepnet(ModelFields):
                     category = category[0][0]
                 columns.append([category])
             else:
-                columns.append(input_data.get(field_id))
                 # when missing_numerics is True and the field had missings
                 # in the training data, then we add a new "is missing?" element
                 # whose value is 1 or 0 according to whether the field is
@@ -222,7 +220,12 @@ class Deepnet(ModelFields):
                 if self.missing_numerics \
                         and self.fields[field_id][\
                         "summary"]["missing_count"] > 0:
-                    columns.append(int(field_id not in input_data))
+                    if field_id in input_data:
+                        columns.extend([input_data[field_id], 0.0])
+                    else:
+                        columns.extend([0.0, 1.0])
+                else:
+                    columns.append(input_data.get(field_id))
         return pp.preprocess(columns, self.preprocess)
 
     def predict(self, input_data, by_name=True, add_unused_fields=False):

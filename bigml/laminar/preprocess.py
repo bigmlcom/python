@@ -165,9 +165,9 @@ def get_embedding(X, model):
 
         if preds and len(preds) > 1:
             norm = sum(preds)
-            preds = [pred / norm for pred in preds]
+            preds = [pred / float(norm) for pred in preds]
         else:
-            preds = [pred / len(model) for pred in preds]
+            preds = [pred / float(len(model)) for pred in preds]
 
         return [preds]
     else:

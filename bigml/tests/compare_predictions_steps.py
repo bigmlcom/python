@@ -231,8 +231,10 @@ def the_local_prediction_is(step, prediction):
         local_prediction = world.local_prediction
     if hasattr(world, "local_ensemble") and world.local_ensemble is not None:
         world.local_model = world.local_ensemble
-    if hasattr(world.local_model, "regression") and \
-            world.local_model.regression:
+    if (hasattr(world.local_model, "regression") and \
+            world.local_model.regression) or \
+            (isinstance(world.local_model, MultiModel) and \
+            world.local_model.models[0].regression):
         local_prediction = round(float(local_prediction), 4)
         prediction = round(float(prediction), 4)
         assert_almost_equal(local_prediction, float(prediction),
@@ -270,6 +272,7 @@ def the_local_probability_is(step, probability):
 #@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):
     world.local_model = MultiModel(world.list_of_models)
+    world.local_ensemble = None
 
 #@step(r'I create a batch prediction for "(.*)" and save it in "(.*)"')
 def i_create_a_batch_prediction(step, input_data_list, directory):

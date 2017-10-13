@@ -95,7 +95,7 @@ def i_create_a_local_deepnet_prediction(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_deepnet.predict(data)
+    world.local_prediction = world.local_model.predict(data)
 
 #@step(r'I create a local prediction using median for "(.*)"$')
 def i_create_a_local_median_prediction(step, data=None):
@@ -229,24 +229,16 @@ def the_local_prediction_is(step, prediction):
         local_prediction = world.local_prediction['prediction']
     else:
         local_prediction = world.local_prediction
-    try:
-        local_model = world.local_model
-        if not isinstance(world.local_model, LogisticRegression):
-            if isinstance(local_model, MultiModel):
-                local_model = local_model.models[0]
-            if local_model.regression:
-                local_prediction = round(float(local_prediction), 4)
-                prediction = round(float(prediction), 4)
-    except AttributeError:
-        if hasattr(world, "local_ensemble") and world.local_ensemble:
-            local_model = world.local_ensemble
-        elif hasattr(world, "local_deepnet") and world.local_deepnet:
-            local_model = world.local_deepnet
-        if local_model.regression:
-            assert_almost_equal(local_prediction, float(prediction),
-                                places=5)
-
-    eq_(local_prediction, prediction)
+    if hasattr(world, "local_ensemble") and world.local_ensemble is not None:
+        world.local_model = world.local_ensemble
+    if hasattr(world.local_model, "regression") and \
+            world.local_model.regression:
+        local_prediction = round(float(local_prediction), 4)
+        prediction = round(float(prediction), 4)
+        assert_almost_equal(local_prediction, float(prediction),
+                            places=5)
+    else:
+        eq_(local_prediction, prediction)
 
 #@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):
@@ -265,8 +257,7 @@ def the_local_ensemble_prediction_is(step, prediction):
         local_prediction = world.local_prediction['prediction']
     else:
         local_prediction = world.local_prediction
-    local_model = world.local_ensemble
-    if local_model.regression:
+    if world.local_ensemble.regression:
         assert_almost_equal(local_prediction, float(prediction), places=5)
     else:
         eq_(local_prediction, prediction)
@@ -309,10 +300,14 @@ def the_confidence_weighted_prediction(step, predictions):
 #@step(r'I create a local logistic regression model$')
 def i_create_a_local_logistic_model(step):
     world.local_model = LogisticRegression(world.logistic_regression)
+    if hasattr(world, "local_ensemble"):
+        world.local_ensemble = None
 
 #@step(r'I create a local deepnet model$')
 def i_create_a_local_deepnet(step):
-    world.local_deepnet = Deepnet(world.deepnet['resource'])
+    world.local_model = Deepnet(world.deepnet['resource'])
+    if hasattr(world, "local_ensemble"):
+        world.local_ensemble = None
 
 #@step(r'I create a local topic model$')
 def i_create_a_local_topic_model(step):

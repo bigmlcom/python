@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
-# Copyright 2015-2017 BigML
+# Copyright 2017 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -81,3 +81,45 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_deepnet_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario2(self):
+        """
+            Scenario: Successfully comparing predictions in operating points for models:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the model is ready less than <time_3> secs
+                And I create a local model
+                When I create a prediction for "<data_input>" in "<operating_point>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>" in "<operating_point>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | prediction  | operating_point
+
+
+        """
+        examples = [
+            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-setosa',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-virginica', {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}',  'Iris-setosa', {"kind": "confidence", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}', 'Iris-virginica',  {"kind": "confidence", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"]]
+        show_doc(self.test_scenario2, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model(self)
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_model(self)
+            prediction_create.i_create_a_prediction_op(self, example[4], example[6])
+            prediction_create.the_prediction_is(self, example[7], example[5])
+            prediction_compare.i_create_a_local_prediction_op(self, example[4], example[6])
+            prediction_compare.the_local_prediction_is(self, example[5])

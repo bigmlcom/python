@@ -4423,6 +4423,43 @@ would result in
 The output of ``predict_confidence`` is the same, except that the
 output maps are keyed with ``confidence`` instead of ``probability``.
 
+
+Operating point's predictions
+------------------`-----------
+
+In classification problems,
+Models, Ensembles and Logistic Regressions can be used at different
+operating points, that is, associated to particular thresholds. Each
+operating point is then defined by the kind of property you use as threshold,
+its value and a the class that is supposed to be predicted if the threshold
+is reached.
+
+Let's assume you decide that you have a binary problem, with classes ``True``
+and ``False`` as possible outcomes. Imagine you want to be very sure to
+predict the `True` outcome, so you don't want to predict that unless the
+probability associated to it is over ``0,8``. You can achieve this with any
+classification model by creating an operating point:
+
+.. code-block:: python
+
+    operating_point = {"kind": "probability",
+                       "positive_class": "True",
+                       "threshold": 0.8};
+
+to predict using this restriction, you can use the ``operating_point``
+parameter:
+
+.. code-block:: python
+
+    prediction = local_model.predict(inputData,
+                                     operating_point=operating_point)
+
+where ``inputData`` should contain the values for which you want to predict.
+Local models allow two kinds of operating points: ``probability`` and
+``confidence``. For both of them, the threshold can be set to any number
+in the ``[0, 1]`` range.
+
+
 Local Clusters
 --------------
 
@@ -4747,6 +4784,24 @@ If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
 local Models.
 
+Operating point predictions are also available for local logistic regressions
+and an example of it would be:
+
+.. code-block:: python
+
+    operating_point = {"kind": "probability",
+                       "positiveClass": "True",
+                       "threshold": 0.8}
+    local_logistic.predict(inputData, operating_point=operating_point)
+
+
+You can check the
+`Operating point's predictions <#operating-point's-predictions>`_ section
+to learn about
+operating points. For logistic regressions, the only available kind is
+``probability``, that sets the threshold of probability to be reached for the
+prediction to be the positive class.
+
 Local Deepnet
 -------------
 
@@ -4796,7 +4851,7 @@ retrieved by the get method in the same call (unlike in the standard
 calls where the number of fields returned is limited).
 
 Local Deepnet Predictions
--------------------------------------
+-------------------------
 
 Using the local deepnet object, you can predict the prediction for
 an input data set:
@@ -5477,6 +5532,25 @@ So, for example:
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
 local Models.
+
+Operating point predictions are also available for local ensembles and an
+example of it would be:
+
+.. code-block:: python
+
+    operating_point = {"kind": "probability",
+                       "positiveClass": "True",
+                       "threshold": 0.8};
+    prediction = local_ensemble.predict(inputData,
+                                        operating_point=operating_point)
+
+You can check the
+`Operating point's predictions <#operating-point's-predictions>`_ section
+to learn about
+operating points. For ensembles, three kinds of operating points are available:
+``votes``, ``probability`` and ``confidence``. ``Votes`` will use as threshold the
+number of models in the ensemble that vote for the positive class. The other
+two are already explained in the above mentioned section.
 
 Fields
 ------

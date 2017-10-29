@@ -202,6 +202,43 @@ class MultiModel(object):
 
         return votes
 
+    def _generate_votes(self, input_data, by_name=True,
+                        missing_strategy=LAST_PREDICTION,
+                        add_median=False, add_min=False, add_max=False,
+                        add_unused_fields=False):
+        """ Generates a MultiVote object that contains the predictions
+            made by each of the models. Please note that this function
+            calls a _predict method which assumes input data has been
+            properly checked against the model fields and cast to the
+            correct type.
+        """
+        votes = MultiVote([])
+        for order in range(0, len(self.models)):
+            model = self.models[order]
+            prediction_info = model._predict( \
+                input_data,
+                by_name=by_name,
+                add_confidence=True,
+                add_distribution=True,
+                add_count=True,
+                add_median=add_median,
+                add_min=add_min,
+                add_max=add_max,
+                add_unused_fields=add_unused_fields,
+                missing_strategy=missing_strategy)
+
+            if model.boosting is not None:
+                votes.boosting = True
+                prediction_info.update( \
+                    {"weight": model.boosting.get("weight")})
+                if model.boosting.get("objective_class") is not None:
+                    prediction_info.update( \
+                        {"class": model.boosting.get("objective_class")})
+
+            votes.append(prediction_info)
+
+        return votes
+
     def generate_votes_distribution(self,
                                     input_data,
                                     by_name=True,

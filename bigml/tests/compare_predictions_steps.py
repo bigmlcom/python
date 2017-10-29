@@ -19,7 +19,7 @@
 import json
 import os
 
-from nose.tools import eq_, assert_almost_equal
+from nose.tools import eq_, assert_almost_equal, assert_is_not_none
 from world import world, res_filename
 from bigml.model import Model
 from bigml.logistic import LogisticRegression
@@ -73,6 +73,17 @@ def i_create_a_local_prediction(step, data=None):
         data = "{}"
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data)
+
+
+#@step(r'I create a local prediction for "(.*)" in operating point "(.*)"$')
+def i_create_a_local_prediction_op(step, data=None, operating_point=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_point)
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict( \
+        data, operating_point=operating_point)
+
 
 #@step(r'I create local probabilities for "(.*)"$')
 def i_create_local_probabilities(step, data=None):

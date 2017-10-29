@@ -51,6 +51,7 @@ from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
+from bigml.modelfields import ModelFields
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
@@ -75,7 +76,7 @@ def boosted_list_error(boosting):
                          " of boosting models.")
 
 
-class Ensemble(object):
+class Ensemble(ModelFields):
     """A local predictive Ensemble.
 
        Uses a number of BigML remote models to build an ensemble local version
@@ -249,6 +250,9 @@ class Ensemble(object):
 
             self.class_names = sorted(classes)
 
+        ModelFields.__init__( \
+            self, self.fields,
+            objective_id=self.objective_id)
         if len(self.models_splits) == 1:
             self.multi_model = MultiModel(models,
                                           self.api,
@@ -625,6 +629,15 @@ class Ensemble(object):
                                         "threshold": 0.5}
         """
 
+        # Checks and cleans input_data leaving the fields used in the model
+        new_data = self.filter_input_data( \
+            input_data, by_name=by_name,
+            add_unused_fields=add_unused_fields)
+        if add_unused_fields:
+            input_data, unused_fields = new_data
+        else:
+            input_data = new_data
+
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
@@ -649,7 +662,7 @@ class Ensemble(object):
                                          api=self.api,
                                          fields=self.fields)
 
-                votes_split = multi_model.generate_votes(
+                votes_split = multi_model._generate_votes(
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
                     add_median=(add_median or median),
@@ -662,7 +675,7 @@ class Ensemble(object):
         else:
             # When only one group of models is found you use the
             # corresponding multimodel to predict
-            votes_split = self.multi_model.generate_votes(
+            votes_split = self.multi_model._generate_votes(
                 input_data, by_name=by_name, missing_strategy=missing_strategy,
                 add_median=(add_median or median), add_min=add_min,
                 add_max=add_max, add_unused_fields=add_unused_fields)

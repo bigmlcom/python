@@ -534,6 +534,104 @@ class Model(BaseModel):
                             "confidence_threshold": 0.5}
         """
 
+        # Checks and cleans input_data leaving the fields used in the model
+        new_data = self.filter_input_data( \
+            input_data, by_name=by_name,
+            add_unused_fields=add_unused_fields)
+        if add_unused_fields:
+            input_data, unused_fields = new_data
+        else:
+            input_data = new_data
+
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.fields)
+
+        return self._predict( \
+            input_data, by_name=by_name,
+            print_path=print_path,
+            out=out,
+            with_confidence=with_confidence,
+            missing_strategy=missing_strategy,
+            add_confidence=add_confidence,
+                 add_path=add_path,
+                 add_distribution=add_distribution,
+                 add_count=add_count,
+                 add_median=add_median,
+                 add_next=add_next,
+                 add_min=add_min,
+                 add_max=add_max,
+                 add_unused_fields=add_unused_fields,
+                 add_probability=add_probability,
+                 operating_point=operating_point)
+
+    def _predict(self, input_data, by_name=True,
+                 print_path=False, out=sys.stdout, with_confidence=False,
+                 missing_strategy=LAST_PREDICTION,
+                 add_confidence=False,
+                 add_path=False,
+                 add_distribution=False,
+                 add_count=False,
+                 add_median=False,
+                 add_next=False,
+                 add_min=False,
+                 add_max=False,
+                 add_unused_fields=False,
+                 add_probability=False,
+                 operating_point=None):
+        """Makes a prediction based on a number of field values. Please,
+        note that this function does not check the types for the input
+        provided, so it's unsafe to use it directly without prior checking.
+
+        By default the input fields must be keyed by field name but you can use
+        `by_name=False` to input them directly keyed by id.
+
+        input_data: Input data to be predicted
+        by_name: Boolean, True if input_data is keyed by names
+        print_path: Boolean, if True the rules that lead to the prediction
+                    are printed
+        out: output handler
+        with_confidence: Boolean, if True, all the information in the node
+                         (prediction, confidence, distribution and count)
+                         is returned in a list format
+        missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                          missing fields
+        add_confidence: Boolean, if True adds confidence (or probability)
+                        to the dict output
+        add_path: Boolean, if True adds path to the dict output
+        add_distribution: Boolean, if True adds distribution info to the
+                          dict output
+        add_count: Boolean, if True adds the number of instances in the
+                       node to the dict output
+        add_median: Boolean, if True adds the median of the values in
+                    the distribution
+        add_next: Boolean, if True adds the field that determines next
+                  split in the tree
+        add_min: Boolean, if True adds the minimum value in the prediction's
+                 distribution (for regressions only)
+        add_max: Boolean, if True adds the maximum value in the prediction's
+                 distribution (for regressions only)
+        add_unused_fields: Boolean, if True adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
+        add_probability: Boolean, if True adds probability
+                         to the dict output (only if operating_point is used)
+        operating_point: In classification models, this is the point of the
+                         ROC curve where the model will be used at. The
+                         operating point can be defined in terms of:
+                         - the positive_class, the class that is important to
+                           predict accurately
+                         - the probability_threshold (or confidence_threshold),
+                           the probability (or confidence) that is stablished
+                           as minimum for the positive_class to be predicted.
+                         The operating_point is then defined as a map with
+                         two attributes, e.g.:
+                           {"positive_class": "Iris-setosa",
+                            "probability_threshold": 0.5}
+                         or
+                           {"positive_class": "Iris-setosa",
+                            "confidence_threshold": 0.5}
+        """
+
         # When operating_point is used, we need the probabilities
         # (or confidences) of all possible classes to decide, so se use
         # the `predict_probability` or `predict_confidence` methods
@@ -558,17 +656,6 @@ class Model(BaseModel):
                               " needed to use proportional missing strategy"
                               " for regressions. Please install them before"
                               " using local predictions for the model.")
-        # Checks and cleans input_data leaving the fields used in the model
-        new_data = self.filter_input_data( \
-            input_data, by_name=by_name,
-            add_unused_fields=add_unused_fields)
-        if add_unused_fields:
-            input_data, unused_fields = new_data
-        else:
-            input_data = new_data
-
-        # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
 
         prediction = self.tree.predict(input_data,
                                        missing_strategy=missing_strategy)
@@ -627,6 +714,8 @@ class Model(BaseModel):
             if add_unused_fields:
                 output.update({'unused_fields': unused_fields})
         return output
+
+
 
     def docstring(self):
         """Returns the docstring describing the model.

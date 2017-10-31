@@ -224,7 +224,8 @@ class Model(BaseModel):
             else:
                 query_string = ONLY_MODEL
             model = retrieve_resource(api, self.resource_id,
-                                      query_string=query_string)
+                                      query_string=query_string,
+                                      no_check_fields=fields is not None)
         else:
             self.resource_id = get_model_id(model)
         BaseModel.__init__(self, model, api=api, fields=fields)

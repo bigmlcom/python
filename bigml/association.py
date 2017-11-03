@@ -310,14 +310,14 @@ class Association(ModelFields):
 
         return items
 
-    def get_rules(self, min_leverage=None, min_strength=None,
+    def get_rules(self, min_leverage=None, min_confidence=None,
                   min_support=None, min_p_value=None, item_list=None,
                   filter_function=None):
         """Returns the rules array, previously selected by the leverage,
            strength, support or a user-defined filter function (if set)
 
            @param float min_leverage   Minum leverage value
-           @param float min_strength   Minum strength value
+           @param float min_confidence   Minum confidence value
            @param float min_support   Minum support value
            @param float min_p_value   Minum p_value value
            @param List item_list   List of Item objects. Any of them should be
@@ -332,13 +332,13 @@ class Association(ModelFields):
                 return True
             return rule.leverage >= min_leverage
 
-        def strength(rule):
-            """Check minimum strength
+        def confidence(rule):
+            """Check minimum confidence
 
             """
-            if min_strength is None:
+            if min_confidence is None:
                 return True
-            return rule.strength >= min_strength
+            return rule.confidence >= min_confidence
 
         def support(rule):
             """Check minimum support
@@ -346,7 +346,10 @@ class Association(ModelFields):
             """
             if min_support is None:
                 return True
-            return rule.support >= min_support
+            for rhs_support, _ in rule.support:
+                if rhs_support >= min_support:
+                    return True
+            return False
 
         def p_value(rule):
             """Check minimum p_value

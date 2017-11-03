@@ -105,9 +105,9 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-setosa',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
-            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-virginica', {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-versicolor', {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"],
             ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}',  'Iris-setosa', {"kind": "confidence", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
-            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}', 'Iris-virginica',  {"kind": "confidence", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"]]
+            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}', 'Iris-versicolor',  {"kind": "confidence", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"]]
         show_doc(self.test_scenario2, examples)
 
         for example in examples:

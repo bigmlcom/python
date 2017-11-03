@@ -328,7 +328,9 @@ class Tree(object):
                             last_node.output,
                             path,
                             last_node.confidence,
-                            distribution=last_node.distribution,
+                            distribution=(last_node.distribution if not  \
+                                self.weighted else \
+                                last_node.weighted_distribution),
                             count=instances,
                             median=last_node.median,
                             distribution_unit=last_node.distribution_unit,

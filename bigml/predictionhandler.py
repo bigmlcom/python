@@ -52,14 +52,14 @@ class PredictionHandler(ResourceHandler):
         self.prediction_url = self.prediction_url + PREDICTION_PATH
 
     def create_prediction(self, model, input_data=None,
-                          args=None, wait_time=3, retries=10, by_name=True):
+                          args=None, wait_time=3, retries=10):
         """Creates a new prediction.
            The model parameter can be:
             - a simple tree model
             - a simple logistic regression model
             - an ensemble
             - a deepnet
-           The by_name argument is now deprecated. It will be removed.
+           Note that the old `by_name` argument has been deprecated.
 
         """
         deepnet_id = None

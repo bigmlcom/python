@@ -1,4 +1,3 @@
-import collections
 import math
 import numpy as np
 
@@ -113,7 +112,7 @@ def tree_transform(X, trees):
 
     for feature_range, model in trees:
         sidx, eidx = feature_range
-        inputs = X[:,sidx:eidx]
+        inputs = X[:, sidx:eidx]
         outarray = get_embedding(inputs, model)
         if outdata is not None:
             outdata = np.c_[outdata, outarray]

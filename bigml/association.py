@@ -314,7 +314,7 @@ class Association(ModelFields):
                   min_support=None, min_p_value=None, item_list=None,
                   filter_function=None):
         """Returns the rules array, previously selected by the leverage,
-           strength, support or a user-defined filter function (if set)
+           confidence, support or a user-defined filter function (if set)
 
            @param float min_leverage   Minum leverage value
            @param float min_confidence   Minum confidence value
@@ -389,7 +389,7 @@ class Association(ModelFields):
 
         rules = []
         for rule in self.rules:
-            if all([leverage(rule), strength(rule), support(rule),
+            if all([leverage(rule), confidence(rule), support(rule),
                     p_value(rule), item_list_set(rule),
                     filter_function_set(rule)]):
                 rules.append(rule)

@@ -42,7 +42,6 @@ logistic_regression.predict({"petal length": 3, "petal width": 1,
 """
 import logging
 import math
-import re
 import copy
 
 from bigml.api import FINISHED
@@ -51,7 +50,6 @@ from bigml.util import cast
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE, parse_operating_point
-from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml.modelfields import ModelFields, check_model_fields
 from bigml.cluster import OPTIONAL_FIELDS
 

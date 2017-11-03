@@ -52,6 +52,7 @@ from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import ModelFields
+from bigml.multivotelist import MultiVoteList
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
@@ -404,7 +405,7 @@ class Ensemble(ModelFields):
                                             missing_strategy=missing_strategy,
                                             compact=compact)
         else:
-            output= self._combine_distributions( \
+            output = self._combine_distributions( \
                 input_data,
                 by_name,
                 missing_strategy,
@@ -443,7 +444,6 @@ class Ensemble(ModelFields):
         if self.regression:
             prediction = self.predict(input_data,
                                       by_name=by_name,
-                                      method=method,
                                       missing_strategy=missing_strategy)
 
             if compact:

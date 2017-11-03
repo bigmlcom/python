@@ -677,10 +677,11 @@ class MultiVote(object):
                                "The minimal key for the prediction is "
                                "'prediction': "
                                "\n{'prediction': 'Iris-virginica'")
-
+        """
         elif isinstance(prediction_info, list):
             if self.probabilities:
                 self.predictions.append(prediction_info)
+        """
 
     def single_out_category(self, options):
         """Singles out the votes for a chosen category and returns a prediction

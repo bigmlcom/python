@@ -416,7 +416,7 @@ class Model(BaseModel):
             else:
                 total = float(sum([category[1] for category in root_dist]))
                 category_map = {category[0]: category[1] / total
-                            for category in root_dist}
+                                for category in root_dist}
                 instances = 1.0
 
             prediction = self.predict(input_data,
@@ -554,16 +554,17 @@ class Model(BaseModel):
             with_confidence=with_confidence,
             missing_strategy=missing_strategy,
             add_confidence=add_confidence,
-                 add_path=add_path,
-                 add_distribution=add_distribution,
-                 add_count=add_count,
-                 add_median=add_median,
-                 add_next=add_next,
-                 add_min=add_min,
-                 add_max=add_max,
-                 add_unused_fields=add_unused_fields,
-                 add_probability=add_probability,
-                 operating_point=operating_point)
+            add_path=add_path,
+            add_distribution=add_distribution,
+            add_count=add_count,
+            add_median=add_median,
+            add_next=add_next,
+            add_min=add_min,
+            add_max=add_max,
+            add_unused_fields=add_unused_fields,
+            add_probability=add_probability,
+            operating_point=operating_point,
+            unused_fields=unused_fields)
 
     def _predict(self, input_data, by_name=True,
                  print_path=False, out=sys.stdout, with_confidence=False,
@@ -578,7 +579,8 @@ class Model(BaseModel):
                  add_max=False,
                  add_unused_fields=False,
                  add_probability=False,
-                 operating_point=None):
+                 operating_point=None,
+                 unused_fields=None):
         """Makes a prediction based on a number of field values. Please,
         note that this function does not check the types for the input
         provided, so it's unsafe to use it directly without prior checking.
@@ -631,6 +633,8 @@ class Model(BaseModel):
                          or
                            {"positive_class": "Iris-setosa",
                             "confidence_threshold": 0.5}
+        unused_fields: Fields in input data that have not been used by the
+                       model.
         """
 
         # When operating_point is used, we need the probabilities
@@ -686,8 +690,8 @@ class Model(BaseModel):
                       prediction.count,
                       prediction.median]
         if (add_confidence or add_path or add_distribution or add_count or
-              add_median or add_next or add_min or add_max or
-              add_unused_fields):
+                add_median or add_next or add_min or add_max or
+                add_unused_fields):
             output = {'prediction': prediction.output}
             if add_confidence:
                 output.update({'confidence': prediction.confidence})

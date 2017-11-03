@@ -41,7 +41,6 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 
 """
 import logging
-import sys
 import json
 
 
@@ -252,9 +251,13 @@ class Deepnet(ModelFields):
         input_array = self.fill_array(input_data, unique_terms)
 
         if self.networks:
-            return self.predict_list(input_array)
+            prediction = self.predict_list(input_array)
         else:
-            return self.predict_single(input_array)
+            prediction = self.predict_single(input_array)
+        if add_unused_fields:
+            prediction.update({"unused_fields": unused_fields})
+
+        return prediction
 
     def predict_single(self, input_array):
         """Makes a prediction with a single network
@@ -299,7 +302,7 @@ class Deepnet(ModelFields):
         """Structuring prediction in a dictionary output
 
         """
-        if (self.regression):
+        if self.regression:
             return y_out
         prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],

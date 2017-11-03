@@ -471,7 +471,7 @@ class Cluster(ModelFields):
                 "Failed to find the provided centroid_id: %s" % centroid_id)
         if centroid_id is None:
             # finding the reference point cluster's centroid
-            centroid_info = self.centroid(reference_point, by_name=True)
+            centroid_info = self.centroid(reference_point, by_name=by_name)
             centroid_id = centroid_info["centroid_id"]
         # reading the points that fall in the same cluster
         points = self.points_in_cluster(centroid_id)

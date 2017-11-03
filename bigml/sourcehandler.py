@@ -349,7 +349,7 @@ class SourceHandler(ResourceHandler):
                     'method': urlfetch.POST,
                     'headers': SEND_JSON,
                     'data': create_args,
-                    'files': {name: file_hander},
+                    'files': {name: file_handler},
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
@@ -364,12 +364,11 @@ class SourceHandler(ResourceHandler):
                                   file_handler,
                                   mimetypes.guess_type(name)[0])}
                 files.update(create_args)
-                m = MultipartEncoder(
-                    fields=files)
+                multipart = MultipartEncoder(fields=files)
                 response = requests.post( \
                     self.source_url + self.auth,
-                    headers={'Content-Type': m.content_type},
-                    data=m, verify=self.verify)
+                    headers={'Content-Type': multipart.content_type},
+                    data=multipart, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException), exc:

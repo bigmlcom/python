@@ -117,7 +117,7 @@ def to_width(mat, width):
     else:
         ntiles = 1
 
-    return np.tile(mat, (1, ntiles))[:,:width]
+    return np.tile(mat, (1, ntiles))[:, :width]
 
 
 def add_residuals(residuals, values):

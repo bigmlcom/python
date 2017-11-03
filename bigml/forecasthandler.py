@@ -54,7 +54,8 @@ class ForecastHandler(ResourceHandler):
 
         """
         time_series_id = get_time_series_id(time_series)
-        if time_series_id is not None:
+        resource_type = get_resource_type(time_series_id)
+        if resource_type == TIME_SERIES_PATH and time_series_id is not None:
             check_resource(time_series_id,
                            query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,

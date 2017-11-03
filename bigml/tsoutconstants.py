@@ -29,7 +29,7 @@ def _naive_forecast(components, horizon):
     return _trivial_forecast(components, horizon)
 
 """,
-             "mean": \
+                  "mean": \
 u"""
 def _mean_forecast(components, horizon):
     \"\"\"Computing the forecast for the mean model
@@ -37,7 +37,7 @@ def _mean_forecast(components, horizon):
     \"\"\"
     return _trivial_forecast(submodel, horizon)
 """,
-             "drift": \
+                  "drift": \
 u"""
 
 def _drift_forecast(components, horizon):
@@ -49,7 +49,7 @@ def _drift_forecast(components, horizon):
         points.append(components["value"] + components["slope"] * (h + 1))
     return points
 """,
-             "N": \
+                  "N": \
 u"""
 
 def _N_forecast(components, horizon, seasonality):
@@ -67,7 +67,7 @@ def _N_forecast(components, horizon, seasonality):
         points.append(OPERATORS[seasonality](l, s_i))
     return points
 """,
-             "A": \
+                  "A": \
 u"""
 
 def _A_forecast(components, horizon, seasonality):
@@ -86,7 +86,7 @@ def _A_forecast(components, horizon, seasonality):
         points.append(OPERATORS[seasonality](l + b * (h + 1), s_i))
     return points
 """,
-             "Ad": \
+                  "Ad": \
 u"""
 
 def _Ad_forecast(components, horizon, seasonality):
@@ -111,7 +111,7 @@ def _Ad_forecast(components, horizon, seasonality):
         phi_h = phi_h + pow(phi, h + 2)
     return points
 """,
-             "M": \
+                  "M": \
 u"""
 
 def _M_forecast(components, horizon, seasonality):
@@ -130,7 +130,7 @@ def _M_forecast(components, horizon, seasonality):
         points.append(OPERATORS[seasonality](l * pow(b, h + 1), s_i))
     return points
 """,
-             "Md": \
+                  "Md": \
 u"""
 
 def _Md_forecast(components, horizon, seasonality):

@@ -135,7 +135,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(DeepnetHandler, ForecastHandler,TimeSeriesHandler,
+class BigML(DeepnetHandler, ForecastHandler, TimeSeriesHandler,
             BatchTopicDistributionHandler, TopicDistributionHandler,
             TopicModelHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
             AssociationSetHandler, AssociationHandler,

@@ -16,7 +16,6 @@
 
 """
 
-import collections
 import math
 
 from copy import deepcopy
@@ -44,7 +43,7 @@ def np_zeros(x_dim, y_dim, dtype_fn=None):
     array = []
     for i in range(x_dim):
         array.append([])
-        for j in range(y_dim):
+        for _ in range(y_dim):
             array[i].append(value)
     return array
 
@@ -72,23 +71,23 @@ def np_c_(array_a, array_c):
     return new_array
 
 
-def index(alist, value):
+def v_index(alist, value):
     try:
         return alist.index(value)
     except ValueError:
         return None
 
 def one_hot(vector, possible_values):
-    idxs = list(enumerate(index(possible_values, v) for v in vector[0]))
-    valid_pairs = filter(lambda x: x[1] is not None, idxs)
+    idxs = list(enumerate(v_index(possible_values, v) for v in vector[0]))
+    valid_pairs = [x for x in idxs if x[1] is not None]
     outvec = np_zeros(len(idxs), len(possible_values), dtype_fn=float)
     for i, j in valid_pairs:
         outvec[i][j] = 1
 
     return outvec
 
-def standardize(vector, mn, stdev):
-    newvec = [component - mn for component in vector]
+def standardize(vector, mean, stdev):
+    newvec = [component - mean for component in vector]
 
     if stdev > 0:
         newvec = [component / stdev for component in newvec]
@@ -123,8 +122,8 @@ def transform(vector, spec):
 
     if vtype == NUMERIC:
         if STANDARD_DEVIATION in spec:
-            mn, stdev = moments(spec)
-            output = standardize(vector, mn, stdev)
+            mean, stdev = moments(spec)
+            output = standardize(vector, mean, stdev)
         elif ZERO in spec:
             low, high = bounds(spec)
             output = binarize(vector, low, high)

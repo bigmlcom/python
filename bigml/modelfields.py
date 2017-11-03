@@ -192,8 +192,9 @@ class ModelFields(object):
             if categories and field['optype'] == 'categorical':
                 self.categories[field_id] = [category for \
                     [category, _] in field['summary']['categories']]
-            if numerics and self.missing_numerics and \
-                    field['optype'] == 'numeric':
+            if numerics and hasattr(self, "missing_numerics") and \
+                    self.missing_numerics and field['optype'] == 'numeric' \
+                    and hasattr(self, "numeric_fields"):
                 self.numeric_fields[field_id] = True
 
 

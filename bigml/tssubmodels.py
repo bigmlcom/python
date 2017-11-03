@@ -190,4 +190,4 @@ def Md_forecast(submodel, horizon, seasonality):
 SUBMODELS = dict([\
     (name[0: -9].replace("_", ","), obj) for name, obj in
     inspect.getmembers(sys.modules[__name__])
-    if (inspect.isfunction(obj) and name.endswith('_forecast'))])
+    if inspect.isfunction(obj) and name.endswith('_forecast')])

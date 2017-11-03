@@ -40,8 +40,6 @@ time_series.forecast({"price": {"horizon": 10}})
 
 """
 import logging
-import math
-import copy
 import re
 import sys
 import StringIO
@@ -49,7 +47,7 @@ import pprint
 
 from bigml.api import FINISHED
 from bigml.api import (BigML, get_time_series_id, get_status)
-from bigml.util import cast, utf8
+from bigml.util import utf8
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.model import STORAGE
@@ -76,7 +74,7 @@ def compute_forecasts(submodels, horizon):
         trend = name
         seasonality = None
         if "," in name:
-            error, trend, seasonality = name.split(",")
+            _, trend, seasonality = name.split(",")
             args = [submodel, horizon, seasonality]
         else:
             args = [submodel, horizon]
@@ -107,7 +105,7 @@ def filter_submodels(submodels, filter_info):
 
     # union with filtered by names
     if names:
-        pattern  = r'|'.join(names)
+        pattern = r'|'.join(names)
         # only adding the submodels if they have not been included by using
         # indices
         submodel_names = [submodel["name"] for submodel in field_submodels]
@@ -152,7 +150,7 @@ class TimeSeries(ModelFields):
         self.trend = None
         self.time_range = {}
         self.field_parameters = {}
-        self._forecast = []
+        self._forecast = {}
 
         # checks whether the information needed for local predictions is in
         # the first argument
@@ -231,16 +229,13 @@ class TimeSeries(ModelFields):
                             " in the resource:\n\n%s" %
                             time_series)
 
-    def forecast(self, input_data=None, by_name=True, add_unused_fields=False):
+    def forecast(self, input_data=None, by_name=True):
         """Returns the class prediction and the confidence
         By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.
 
         input_data: Input data to be predicted
         by_name: Boolean, True if input_data is keyed by names
-        add_unused_fields: Boolean, True if the prediction should inform about
-                           any fields in the input data that are not
-                           objective fields in the model
 
         """
         if not input_data:
@@ -259,10 +254,7 @@ class TimeSeries(ModelFields):
         # Checks and cleans input_data leaving only the fields used as
         # objective fields in the model
         new_data = self.filter_objectives( \
-            input_data, by_name=by_name,
-            add_unused_fields=False)
-        if add_unused_fields:
-            new_data, unused_fields = new_data
+            input_data, by_name=by_name)
         input_data = new_data
 
         # filter submodels: filtering the submodels in the time-series
@@ -368,11 +360,11 @@ class TimeSeries(ModelFields):
 
         out.write(utf8(u"\n".join(output)))
 
-        model_names = set(model_names)
-        if (any(name in model_names for name in ["naive", "mean"])):
+        model_names = list(set(model_names))
+        if any(name in model_names for name in ["naive", "mean"]):
             out.write(utf8(TRIVIAL_MODEL))
-        if (any("," in name and name.split(",")[2] in ["A", "M"] for \
-                name in model_names)):
+        if any("," in name and name.split(",")[2] in ["A", "M"] for \
+               name in model_names):
             out.write(utf8(SEASONAL_CODE))
         trends = [name.split(",")[1] for name in model_names if "," in name]
         trends.extend([name for name in model_names if "," not in name])

@@ -23,7 +23,7 @@ create a decision tree model and produce a single prediction.
     # waiting for the model to be finished
     api.ok(model)
     # the new input data to predict for
-    input_data = {"petal length": 4, "sepal length": 2}
+    input_data = {"petal width": 1.75, "petal length": 2.45}
     # creating a single prediction
     prediction = api.create_prediction(model, input_data)
 
@@ -72,8 +72,8 @@ class in the `model` module. A simple example of that is:
     from bigml.model import Model
     local_model = Model("model/5968ec46983efc21b000001b")
     # predicting for some input data
-    local_model.predict({"petal length": 4, "sepal length": 2,
-                         "petal width": 1, "sepal witdh": 3})
+    local_model.predict({"petal length": 2.45, "sepal length": 2,
+                         "petal width": 1.75, "sepal witdh": 3})
 
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the

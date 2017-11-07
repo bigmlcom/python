@@ -185,8 +185,8 @@ Quick Start
 Imagine that you want to use `this csv
 file <https://static.bigml.com/csv/iris.csv>`_ containing the `Iris
 flower dataset <http://en.wikipedia.org/wiki/Iris_flower_data_set>`_ to
-predict the species of a flower whose ``sepal length`` is ``5`` and
-whose ``sepal width`` is ``2.5``. A preview of the dataset is shown
+predict the species of a flower whose ``petal length`` is ``2.45`` and
+whose ``petal width`` is ``1.75``. A preview of the dataset is shown
 below. It has 4 numeric fields: ``sepal length``, ``sepal width``,
 ``petal length``, ``petal width`` and a categorical field: ``species``.
 By default, BigML considers the last field in the dataset as the
@@ -220,14 +220,14 @@ You can easily generate a prediction following these steps:
     dataset = api.create_dataset(source)
     model = api.create_model(dataset)
     prediction = api.create_prediction(model, \
-        {'sepal length': 5, 'sepal width': 2.5})
+        {"petal width": 1.75, "petal length": 2.45})
 
 You can then print the prediction using the ``pprint`` method:
 
 .. code-block:: python
 
     >>> api.pprint(prediction)
-    species for {"sepal width": 2.5, "sepal length": 5} is Iris-setosa
+    species for {"petal width": 1.75, "petal length": 2.45} is Iris-setosa
 
 The ``iris`` dataset has a small number of instances, and usually will be
 instantly created, so the ``api.create_`` calls will probably return the
@@ -248,7 +248,7 @@ that objects are finished before using them by using ``api.ok``.
     model = api.create_model(dataset)
     api.ok(model)
     prediction = api.create_prediction(model, \
-        {'sepal length': 5, 'sepal width': 2.5})
+        {"petal width": 1.75, "petal length": 2.45})
 
 This method retrieves the remote object in its latest state and updates
 the variable used as argument with this information. Note that the prediction

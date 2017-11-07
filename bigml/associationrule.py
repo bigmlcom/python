@@ -81,7 +81,7 @@ class AssociationRule(object):
 
         """
 
-        items = [item_list[index].to_LISP_rule() for index in self.lhs]
-        rhs_items = [item_list[index].to_LISP_rule() for index in self.rhs]
+        items = [item_list[index].to_lisp_rule() for index in self.lhs]
+        rhs_items = [item_list[index].to_lisp_rule() for index in self.rhs]
         items.extend(rhs_items)
         return "(and %s)" % "".join(items)

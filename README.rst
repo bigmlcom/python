@@ -192,7 +192,7 @@ You can then print the prediction using the ``pprint`` method:
 .. code-block:: python
 
     >>> api.pprint(prediction)
-    species for {"sepal width": 2.5, "sepal length": 5} is Iris-virginica
+    species for {"sepal width": 2.5, "sepal length": 5} is Iris-setosa
 
 The ``iris`` dataset has a small number of instances, and usually will be
 instantly created, so the ``api.create_`` calls will probably return the

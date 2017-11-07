@@ -3,6 +3,12 @@
 History
 -------
 
+4.13.0 (2017-11-07)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding operating point thresholds to local model, ensemble and logistic
+  regression predictions.
+
 4.12.1 (2017-10-12)
 ~~~~~~~~~~~~~~~~~~~
 

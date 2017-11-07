@@ -536,6 +536,7 @@ class Model(BaseModel):
         """
 
         # Checks and cleans input_data leaving the fields used in the model
+        unused_fields = []
         new_data = self.filter_input_data( \
             input_data, by_name=by_name,
             add_unused_fields=add_unused_fields)

@@ -28,7 +28,7 @@ import re
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
 from bigml.fields import DEFAULT_MISSING_TOKENS
-from bigml.resourcehandler import get_resource_type
+from bigml.resourcehandler import get_resource_type, resource_is_ready
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 
 
@@ -72,6 +72,18 @@ def check_model_structure(model, inner_key="model"):
             model['resource'] is not None and
             ('object' in model and inner_key in model['object'] or
              inner_key in model))
+
+
+def lacks_info(model, inner_key="model"):
+    """Whether the information in `model` is not enough to use it locally
+
+    """
+    try:
+        return not (resource_is_ready(ensemble) and \
+            check_model_structure(ensemble, "ensemble") and \
+            check_model_fields(ensemble))
+    except Exception:
+        return True
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):

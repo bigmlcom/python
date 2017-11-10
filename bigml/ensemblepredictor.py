@@ -38,8 +38,9 @@ from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.basemodel import BaseModel, print_importance
-from bigml.modelfields import check_model_fields, check_model_structure
-from bigml.resourcehandler import resource_is_ready
+from bigml.modelfields import check_model_fields, check_model_structure, \
+    lacks_info
+
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
@@ -89,12 +90,7 @@ class EnsemblePredictor(object):
         self.resource_id = get_ensemble_id(ensemble)
         self.ensemble_id = self.resource_id
 
-        retrieve_info = True
-        full_info = resource_is_ready(ensemble) and \
-            check_model_structure(ensemble, "ensemble") and \
-            check_model_fields(ensemble)
-
-        if not full_info:
+        if lacks_info(ensemble):
             # avoid checking fields because of old ensembles
             ensemble = retrieve_resource(self.api, self.resource_id,
                                          no_check_fields=True)

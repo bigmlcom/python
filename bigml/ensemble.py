@@ -141,7 +141,7 @@ class Ensemble(ModelFields):
             self.resource_id = get_ensemble_id(ensemble)
             self.ensemble_id = self.resource_id
 
-            if lacks_info(ensemble):
+            if lacks_info(ensemble, inner_key="ensemble"):
                 # avoid checking fields because of old ensembles
                 ensemble = retrieve_resource(self.api, self.resource_id,
                                              no_check_fields=True)

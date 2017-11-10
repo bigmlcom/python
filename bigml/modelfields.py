@@ -79,9 +79,9 @@ def lacks_info(model, inner_key="model"):
 
     """
     try:
-        return not (resource_is_ready(ensemble) and \
-            check_model_structure(ensemble, "ensemble") and \
-            check_model_fields(ensemble))
+        return not (resource_is_ready(model) and \
+            check_model_structure(model, inner_key) and \
+            check_model_fields(model))
     except Exception:
         return True
 

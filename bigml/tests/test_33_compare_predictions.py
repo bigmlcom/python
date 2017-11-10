@@ -339,3 +339,24 @@ class TestComparePrediction(object):
             prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4])
             prediction_compare.the_local_ensemble_prediction_is(self, example[6])
             prediction_compare.the_local_prediction_confidence_is(self, example[7])
+
+    def test_scenario8(self):
+        """
+            Scenario: Successfully comparing predictions for ensembles:
+                Given I create a local ensemble predictor from "<directory>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | directory             | data_input   | prediction
+
+        """
+        examples = [
+            ['bigml/tests/my_ensemble', '{"petal width": 4}', 68.1258030739]]
+        show_doc(self.test_scenario6, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            ensemble_create.create_local_ensemble_predictor(self, example[0])
+            prediction_compare.i_create_a_local_ensemble_prediction(self, example[1])
+            prediction_compare.the_local_ensemble_prediction_is(self, example[2])

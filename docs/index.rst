@@ -5419,7 +5419,7 @@ this could increase performance for large ensembles:
 
     from bigml.model import Model
     model_ids = ['model/50c0de043b563519830001c2', \
-                 'model/50c0de043b5635198300031b')]
+                 'model/50c0de043b5635198300031b']
     local_models = [Model(model_id) for model_id in model_ids]
     local_ensemble = Ensemble(local_models)
 
@@ -5433,7 +5433,7 @@ to be retrieved and returning a local model object.
 
     from bigml.model import Model
     model_ids = ['model/50c0de043b563519830001c2', \
-                 'model/50c0de043b5635198300031b')]
+                 'model/50c0de043b5635198300031b']
     def cache_get(model_id):
         """ Retrieves a JSON model structure and builds a local model object
 
@@ -5551,6 +5551,36 @@ operating points. For ensembles, three kinds of operating points are available:
 ``votes``, ``probability`` and ``confidence``. ``Votes`` will use as threshold the
 number of models in the ensemble that vote for the positive class. The other
 two are already explained in the above mentioned section.
+
+Local Ensemble Predictor
+------------------------
+
+Predictions can take longer when the ensemble is formed by a large number of
+models or when its models have a high number of nodes. In these cases,
+predictions' speed can be increased and memory usage minimized by using the
+``EnsemblePredictor`` object. The basic example to build it is:
+
+.. code-block:: python
+
+    from bigml.ensemblepredictor import EnsemblePredictor
+    ensemble = EnsemblePredictor('ensemble/5143a51a37203f2cf7020351',
+                                 "./model_fns_directory")
+    ensemble.predict({"petal length": 3, "petal width": 1})
+    (u'Iris-versicolor', 0.91519)
+
+This constructor has two compulsory attributes: then ensemble ID (or the
+corresponding API response) and the path to a directory that contains a file
+per each of the ensemble models. Each file stores the ``predict`` function
+needed to obtain the model's predictions. As in the ``Ensemble`` object, you
+can also add an ``api`` argument with the connection to be used to download
+the ensemble's JSON information.
+
+The functions stored in this directory can be generated automatically using
+the command-line tool ``bigmler export``. Please, check the its documentation
+for more details.
+
+Note that only last prediction missings strategy is available for these
+predictions.
 
 Fields
 ------

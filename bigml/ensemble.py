@@ -54,6 +54,7 @@ from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import ModelFields
 from bigml.multivotelist import MultiVoteList
 
+
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
 OPERATING_POINT_KINDS = ["probability", "confidence", "voting"]
@@ -92,6 +93,10 @@ class Ensemble(ModelFields):
                    held in memory at the same time while predicting. If None,
                    no limit is set and all the ensemble models are
                    instantiated and held in memory permanently.
+       cache_get: user-provided function that shoudl return the JSON
+                  information describing the model or the corresponding
+                  Model object. Can be used to read these objects from a
+                  cache storage.
     """
 
     def __init__(self, ensemble, api=None, max_models=None, cache_get=None):
@@ -114,7 +119,7 @@ class Ensemble(ModelFields):
         self.regression = False
         self.fields = None
         self.class_names = None
-        self.importance = []
+        self.importance = {}
         query_string = ONLY_MODEL
         no_check_fields = False
         if isinstance(ensemble, list):

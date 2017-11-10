@@ -52,9 +52,10 @@ class BoostedTree(object):
         children = []
         if 'children' in tree:
             for child in tree['children']:
-                children.append(BoostedTree(child,
-                                            self.fields,
-                                            objective_field=objective_field))
+                children.append(self.__class__( \
+                    child,
+                    self.fields,
+                    objective_field=objective_field))
         self.children = children
         self.count = tree['count']
         self.g_sum = tree.get('g_sum')

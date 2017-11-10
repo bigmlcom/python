@@ -199,6 +199,7 @@ class Tree(object):
                 summary = tree['weighted_objective_summary']
                 (self.weighted_distribution_unit,
                  self.weighted_distribution) = extract_distribution(summary)
+                self.weight = tree['weight']
                 self.weighted = True
         else:
             summary = root_distribution
@@ -290,6 +291,10 @@ class Tree(object):
                 'impurity': self.impurity,
                 'output': self.output,
                 'path': path}
+            if hasattr(self, 'weighted_distribution'):
+                leaf.update( \
+                    {"weighted_distribution": self.weighted_distribution,
+                     "weight": self.weight})
             if (not hasattr(filter_function, '__call__')
                     or filter_function(leaf)):
                 leaves += [leaf]

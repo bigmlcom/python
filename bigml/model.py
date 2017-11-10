@@ -177,8 +177,6 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
-        if not hasattr(self, 'tree_class'):
-            self.tree_class = Tree
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -248,9 +246,12 @@ class Model(BaseModel):
                     self.fields[self.objective_id]['optype'] == 'numeric' \
                     or (self.boosting and \
                     self.boosting.get("objective_class") is None)
+                if not hasattr(self, 'tree_class'):
+                    self.tree_class = Tree if not self.boosting else \
+                        BoostedTree
 
                 if self.boosting:
-                    self.tree = BoostedTree(
+                    self.tree = self.tree_class(
                         model['model']['root'],
                         self.fields,
                         objective_field=self.objective_id)
@@ -727,8 +728,11 @@ class Model(BaseModel):
         """Returns the docstring describing the model.
 
         """
+        objective_name = self.fields[self.tree.objective_id]['name'] if \
+            not self.boosting else \
+            self.fields[self.boosting["objective_field"]]['name']
         docstring = (u"Predictor for %s from %s\n" % (
-            self.fields[self.tree.objective_id]['name'],
+            objective_name,
             self.resource_id))
         self.description = (
             unicode(

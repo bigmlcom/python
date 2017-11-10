@@ -3,6 +3,13 @@
 History
 -------
 
+4.13.1 (2017-11-10)
+~~~~~~~~~~~~~~~~~~~
+
+- Refactoring local BoostedTrees and adding the EnsemblePredictor to
+  use the local predict functions of each model to generate the ensemble
+  prediction.
+
 4.13.0 (2017-11-07)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -28,6 +28,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.ensemble import Ensemble
+from bigml.ensemblepredictor import EnsemblePredictor
 from bigml.model import Model
 
 from read_ensemble_steps import i_get_the_ensemble
@@ -78,6 +79,14 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 def create_local_ensemble(step):
     world.local_ensemble = Ensemble(world.ensemble_id, world.api)
     world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
+
+#@step(r'I create a local EnsemblePredictor from (.*?)$')
+def create_local_ensemble_predictor(step, directory):
+    module_dir = directory.replace("/", ".")
+    directory = res_filename(directory)
+    with open(os.path.join(directory, "ensemble.json")) as file_handler:
+        ensemble = json.load(file_handler)
+    world.local_ensemble = EnsemblePredictor(ensemble, module_dir)
 
 #@step(r'I create a local Ensemble with the last (\d+) models$')
 def create_local_ensemble_with_list(step, number_of_models):

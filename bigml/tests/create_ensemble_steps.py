@@ -82,7 +82,7 @@ def create_local_ensemble(step):
 
 #@step(r'I create a local EnsemblePredictor from (.*?)$')
 def create_local_ensemble_predictor(step, directory):
-    module_dir = directory.replace("/", ".")
+    module_dir = directory
     directory = res_filename(directory)
     with open(os.path.join(directory, "ensemble.json")) as file_handler:
         ensemble = json.load(file_handler)

@@ -79,6 +79,10 @@ def lacks_info(model, inner_key="model"):
 
     """
     try:
+        print "resource_is", resource_is_ready(model)
+        print "check_model_str", check_model_structure(model, inner_key)
+        print "check_model_fields", check_model_fields(model)
+
         return not (resource_is_ready(model) and \
             check_model_structure(model, inner_key) and \
             check_model_fields(model))

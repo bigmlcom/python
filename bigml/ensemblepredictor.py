@@ -159,11 +159,12 @@ class EnsemblePredictor(object):
         """
         function_name = "predict"
         model_id = self.model_ids[0]
+        module_path = ".".join(os.path.normpath(model_fns_dir).split(os.sep))
         if not os.path.isfile(os.path.join(model_fns_dir, "%s.py" %
                                            model_id.replace("/", "_"))):
             self.generate_models(model_fns_dir)
         for model_id in self.model_ids:
-            module_name = "%s.%s" % (model_fns_dir,
+            module_name = "%s.%s" % (module_path,
                                      model_id.replace("/", "_"))
             try:
                 __import__(module_name)

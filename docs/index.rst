@@ -5575,9 +5575,9 @@ needed to obtain the model's predictions. As in the ``Ensemble`` object, you
 can also add an ``api`` argument with the connection to be used to download
 the ensemble's JSON information.
 
-The functions stored in this directory can be generated automatically using
-the command-line tool ``bigmler export``. Please, check the its documentation
-for more details.
+The functions stored in this directory are generated automatically the first
+time you instantiate the ensemble. Once they are generated, the functions are
+retrieved from the directory.
 
 Note that only last prediction missings strategy is available for these
 predictions.

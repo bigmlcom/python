@@ -60,8 +60,8 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['nose'],
     install_requires = INSTALL_REQUIRES,
-    packages = ['bigml', 'bigml.tests', 'bigml.laminar',
-                'bigml.tests.my_ensemble'],
+    packages = ['bigml', 'bigml.tests', 'bigml.laminar', 'bigml.out_model',
+                'bigml.out_tree', 'bigml.tests.my_ensemble'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

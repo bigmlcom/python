@@ -94,7 +94,7 @@ class Ensemble(ModelFields):
                    held in memory at the same time while predicting. If None,
                    no limit is set and all the ensemble models are
                    instantiated and held in memory permanently.
-       cache_get: user-provided function that shoudl return the JSON
+       cache_get: user-provided function that should return the JSON
                   information describing the model or the corresponding
                   Model object. Can be used to read these objects from a
                   cache storage.

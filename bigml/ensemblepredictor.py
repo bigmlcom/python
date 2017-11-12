@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""An local Ensemble object focused on quick predictions.
+"""A local Ensemble object focused on quick predictions.
 
 This module defines an EnsemblePredictor to make predictions locally using its
 associated models. To use this ensemble, you need a local directory containing
@@ -29,6 +29,7 @@ ensemble.predict({"petal length": 3, "petal width": 1})
 
 """
 import sys
+import os
 import logging
 import json
 
@@ -40,6 +41,7 @@ from bigml.multivote import PLURALITY_CODE
 from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import check_model_fields, check_model_structure, \
     lacks_info
+from bigml.out_model.pythonmodel import PythonModel
 
 
 BOOSTING = 1
@@ -150,12 +152,16 @@ class EnsemblePredictor(object):
             self.class_names = sorted(classes)
 
     def get_model_fns(self, model_fns_dir):
-        """Retieves the predict functions for each model. The functions are
+        """Retrieves the predict functions for each model. The functions are
         named after the field that is being predicted prepended by the
         `predict_` string.
 
         """
         function_name = "predict"
+        model_id = self.model_ids[0]
+        if not os.path.isfile(os.path.join(model_fns_dir, "%s.py" %
+                                           model_id.replace("/", "_"))):
+            self.generate_models(model_fns_dir)
         for model_id in self.model_ids:
             module_name = "%s.%s" % (model_fns_dir,
                                      model_id.replace("/", "_"))
@@ -166,7 +172,7 @@ class EnsemblePredictor(object):
                 self.predict_functions.append(function)
             except ImportError:
                 raise ImportError("Failed to import the predict function"
-                                  " %s." % module_name)
+                                  " from %s." % module_name)
 
     def get_ensemble_resource(self, ensemble):
         """Extracts the ensemble resource info. The ensemble argument can be
@@ -367,3 +373,18 @@ class EnsemblePredictor(object):
             input_data_array.append(value)
 
         return input_data_array
+
+    def generate_models(self, directory='./storage'):
+        """Generates the functions for the models in the ensemble
+
+        """
+        if not os.path.isfile(directory):
+            os.makedirs(directory)
+            open(os.path.join(directory, "__init__.py"), "w").close()
+        for model_id in self.model_ids:
+            local_model = PythonModel(model_id, api=self.api,
+                                      fields=self.fields)
+            with open(os.path.join(directory, "%s.py" %
+                                   model_id.replace("/", "_")), "w") \
+                    as handler:
+                local_model.plug_in(out=handler)

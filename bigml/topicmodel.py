@@ -39,7 +39,11 @@ topic_distribution = topic_model.distribution({"text": "A sample string"}))
 import random
 import logging
 import array
-import Stemmer
+try:
+    import Stemmer
+except ImportError:
+    raise ImportError("Failed to import the Stemmer module. You need to"
+                      " install pystemmer to use the Topic Model class.")
 
 
 from bigml.api import FINISHED

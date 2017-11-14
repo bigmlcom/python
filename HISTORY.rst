@@ -3,6 +3,11 @@
 History
 -------
 
+4.13.2 (2017-11-14)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding leftout static files for local ensemble predictor functions.
+
 4.13.1 (2017-11-10)
 ~~~~~~~~~~~~~~~~~~~
 

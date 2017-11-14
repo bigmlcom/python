@@ -31,10 +31,12 @@ Requirements
 
 Python 2.7 and Python 3 are currently supported by these bindings.
 
-The only mandatory third-party dependencies are the
+The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
-`poster <http://pypi.python.org/pypi/poster/>`_, and `unidecode
-<http://http://pypi.python.org/pypi/Unidecode/>`_ libraries. These
+`poster <http://atlee.ca/software/poster/#download>`_,
+`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ and
+`requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
+libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package
 instead of `requests`.
@@ -50,6 +52,13 @@ using proportional missing strategy. As these are quite heavy libraries and
 they are so seldom used, they are not included in the automatic installation
 dependencies. The test suite includes some tests that will need these
 libraries to be installed.
+
+Also in order to use local `Topic Model` predictions, you will need to install
+`pystemmer <https://pypi.python.org/pypi/PyStemmer>`_. Using the `pip install`
+command for this library can produce an error if your system lacks the
+correct developer tools to compile it. In Windows, the error message
+will include a link pointing to the needed Visual Studio version and in
+OSX you'll need to install the Xcode developer tools.
 
 Installation
 ------------

@@ -53,7 +53,7 @@ from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import ModelFields, lacks_info
 from bigml.multivotelist import MultiVoteList
-
+from bigml.util import cast
 
 
 BOOSTING = 1

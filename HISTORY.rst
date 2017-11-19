@@ -3,10 +3,16 @@
 History
 -------
 
+4.13.3 (2017-11-14)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local ensemble predictions for inputs that don't match the
+  expected field types.
+
 4.13.2 (2017-11-14)
 ~~~~~~~~~~~~~~~~~~~
 
-- Adding leftout static files for local ensemble predictor functions.
+- Adding left out static files for local ensemble predictor functions.
 
 4.13.1 (2017-11-10)
 ~~~~~~~~~~~~~~~~~~~

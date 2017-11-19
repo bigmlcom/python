@@ -209,8 +209,8 @@ class MultiModel(object):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models. Please note that this function
             calls a _predict method which assumes input data has been
-            properly checked against the model fields and cast to the
-            correct type.
+            properly checked against the model fields. Only casting
+            to the correct type will be applied.
         """
         votes = MultiVote([])
         for order in range(0, len(self.models)):

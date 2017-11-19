@@ -52,7 +52,8 @@ class TestLocalPrediction(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris_model.json', '{"petal length": 0.5}', 'Iris-setosa', '0.90594']]
+            ['data/iris_model.json', '{"petal length": 0.5}', 'Iris-setosa', '0.90594'],
+            ['data/iris_model.json', '{"petal length": "0.5"}', 'Iris-setosa', '0.90594']]
         for example in examples:
             print "\nTesting with:\n", example
             prediction_compare.i_create_a_local_model_from_file(self, example[0])

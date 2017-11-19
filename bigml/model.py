@@ -546,9 +546,6 @@ class Model(BaseModel):
         else:
             input_data = new_data
 
-        # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
-
         return self._predict( \
             input_data, by_name=by_name,
             print_path=print_path,
@@ -638,6 +635,10 @@ class Model(BaseModel):
         unused_fields: Fields in input data that have not been used by the
                        model.
         """
+
+
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.fields)
 
         # When operating_point is used, we need the probabilities
         # (or confidences) of all possible classes to decide, so se use

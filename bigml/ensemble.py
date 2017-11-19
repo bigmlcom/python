@@ -646,6 +646,9 @@ class Ensemble(ModelFields):
         else:
             input_data = new_data
 
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.fields)
+
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"

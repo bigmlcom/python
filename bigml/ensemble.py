@@ -654,7 +654,7 @@ class Ensemble(ModelFields):
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             prediction = self.predict_operating( \
-                input_data, by_name=by_name,
+                input_data, by_name=False,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
             if with_confidence or add_confidence or add_probability:

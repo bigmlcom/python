@@ -3,6 +3,12 @@
 History
 -------
 
+4.13.4 (2017-11-21)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local ensemble predictions with operating points.
+- Fixing bug for local EnsemblePredictor class.
+
 4.13.3 (2017-11-14)
 ~~~~~~~~~~~~~~~~~~~
 

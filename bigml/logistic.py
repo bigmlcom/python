@@ -285,13 +285,6 @@ class LogisticRegression(ModelFields):
                            {"positive_class": "Iris-setosa",
                             "probability_threshold": 0.5}
         """
-        # When operating_point is used, we need the probabilities
-        # of all possible classes to decide, so se use
-        # the `predict_probability` method
-        if operating_point:
-            prediction = self.predict_operating( \
-                input_data, by_name=by_name, operating_point=operating_point)
-            return prediction
 
         # Checks and cleans input_data leaving the fields used in the model
         new_data = self.filter_input_data( \
@@ -301,6 +294,17 @@ class LogisticRegression(ModelFields):
             input_data, unused_fields = new_data
         else:
             input_data = new_data
+
+        # Strips affixes for numeric values and casts to the final field type
+        cast(input_data, self.fields)
+
+        # When operating_point is used, we need the probabilities
+        # of all possible classes to decide, so se use
+        # the `predict_probability` method
+        if operating_point:
+            prediction = self.predict_operating( \
+                input_data, by_name=False, operating_point=operating_point)
+            return prediction
 
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
@@ -312,9 +316,6 @@ class LogisticRegression(ModelFields):
                                     " data must contain values for all numeric"
                                     " fields to get a logistic regression"
                                     " prediction.")
-
-        # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
 
         if self.balance_fields:
             balance_input(input_data, self.fields)

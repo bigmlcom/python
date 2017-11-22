@@ -4799,7 +4799,7 @@ and an example of it would be:
 .. code-block:: python
 
     operating_point = {"kind": "probability",
-                       "positiveClass": "True",
+                       "positive_class": "True",
                        "threshold": 0.8}
     local_logistic.predict(inputData, operating_point=operating_point)
 
@@ -4904,6 +4904,16 @@ If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
 local Models.
 
+Operating point predictions are also available for local deepnets and an
+example of it would be:
+
+.. code-block:: python
+
+    operating_point = {"kind": "probability",
+                       "positive_class": "True",
+                       "threshold": 0.8};
+    prediction = local_deepnet.predict(inputData,
+                                       operating_point=operating_point)
 
 Local Association
 -----------------
@@ -5548,7 +5558,7 @@ example of it would be:
 .. code-block:: python
 
     operating_point = {"kind": "probability",
-                       "positiveClass": "True",
+                       "positive_class": "True",
                        "threshold": 0.8};
     prediction = local_ensemble.predict(inputData,
                                         operating_point=operating_point)

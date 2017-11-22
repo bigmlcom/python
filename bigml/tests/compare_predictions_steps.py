@@ -108,6 +108,15 @@ def i_create_a_local_deepnet_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data)
 
+#@step(r'I create a local deepnet prediction with operating point for "(.*)"$')
+def i_create_a_local_deepnet_prediction_with_op(step, data=None,
+                                                operating_point=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict( \
+        data, operating_point=operating_point)
+
 #@step(r'I create a local prediction using median for "(.*)"$')
 def i_create_a_local_median_prediction(step, data=None):
     if data is None:

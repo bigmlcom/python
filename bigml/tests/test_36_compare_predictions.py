@@ -123,3 +123,42 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[7], example[5])
             prediction_compare.i_create_a_local_prediction_op(self, example[4], example[6])
             prediction_compare.the_local_prediction_is(self, example[5])
+
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully comparing predictions for deepnets with operating point:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a deepnet with objective "<objective>" and "<params>"
+                And I wait until the deepnet is ready less than <time_3> secs
+                And I create a local deepnet
+                When I create a prediction with operating point "<operating_point>" for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction with operating point "<operating_point>" for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params | operating_point,
+
+
+        """
+        examples = [
+            ['data/iris.csv', '10', '50', '30000', '{"petal width": 4}', '000004', 'Iris-versicolor', '{}', {"kind": "probability", "threshold": 1, "positive_class": "Iris-virginica"}]]
+        show_doc(self.test_scenario3, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_deepnet_with_objective_and_params(self, example[5], example[7])
+            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_deepnet(self)
+            prediction_create.i_create_a_deepnet_prediction_with_op(self, example[4], example[8])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_deepnet_prediction_with_op(self, example[4], example[8])
+            prediction_compare.the_local_prediction_is(self, example[6])

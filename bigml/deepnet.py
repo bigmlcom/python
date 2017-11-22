@@ -51,6 +51,7 @@ from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
 from bigml.modelfields import check_model_fields, ModelFields
 from bigml.laminar.constants import NUMERIC
+from bigml.model import parse_operating_point
 
 try:
     import numpy
@@ -227,10 +228,27 @@ class Deepnet(ModelFields):
                     columns.append(input_data.get(field_id))
         return pp.preprocess(columns, self.preprocess)
 
-    def predict(self, input_data, by_name=True, add_unused_fields=False):
+    def predict(self, input_data, by_name=True, add_unused_fields=False,
+                operating_point=None):
         """Makes a prediction based on a number of field values.
 
-
+        input_data: Input data to be predicted
+        by_name: Boolean, True if input_data is keyed by names
+        add_unused_fields: Boolean, if True adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
+        operating_point: In classification models, this is the point of the
+                         ROC curve where the model will be used at. The
+                         operating point can be defined in terms of:
+                         - the positive_class, the class that is important to
+                           predict accurately
+                         - the probability_threshold,
+                           the probability that is stablished
+                           as minimum for the positive_class to be predicted.
+                         The operating_point is then defined as a map with
+                         two attributes, e.g.:
+                           {"positive_class": "Iris-setosa",
+                            "probability_threshold": 0.5}
         """
 
         # Checks and cleans input_data leaving the fields used in the model
@@ -244,6 +262,17 @@ class Deepnet(ModelFields):
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
+
+        # When operating_point is used, we need the probabilities
+        # of all possible classes to decide, so se use
+        # the `predict_probability` method
+        if operating_point:
+            if self.regression:
+                raise ValueError("The operating_point argument can only be"
+                                 " used in classifications.")
+            prediction = self.predict_operating( \
+                input_data, by_name=False, operating_point=operating_point)
+            return prediction
 
         # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(input_data)
@@ -340,3 +369,28 @@ class Deepnet(ModelFields):
                 return [category['probability'] for category in distribution]
             else:
                 return distribution
+
+    def predict_operating(self, input_data, by_name=True,
+                          operating_point=None, compact=False):
+        """Computes the prediction based on a user-given operating point.
+
+        """
+
+        kind, threshold, positive_class = parse_operating_point( \
+            operating_point, ["probability"], self.class_names)
+        predictions = self.predict_probability(input_data, by_name, compact)
+        position = self.class_names.index(positive_class)
+        if predictions[position][kind] < threshold:
+            # if the threshold is not met, the alternative class with
+            # highest probability or confidence is returned
+            prediction = sorted(predictions,
+                                key=lambda x: - x[kind])[0 : 2]
+            if prediction[0]["category"] == positive_class:
+                prediction = prediction[1]
+            else:
+                prediction = prediction[0]
+        else:
+            prediction = predictions[position]
+        prediction["prediction"] = prediction["category"]
+        del prediction["category"]
+        return prediction

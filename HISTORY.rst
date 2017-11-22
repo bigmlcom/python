@@ -3,6 +3,11 @@
 History
 -------
 
+4.13.5 (2017-11-21)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding operating point local predictions to deepnets.
+
 4.13.4 (2017-11-21)
 ~~~~~~~~~~~~~~~~~~~
 

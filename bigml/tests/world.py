@@ -61,7 +61,8 @@ RESOURCE_TYPES = [
     'library'
 ]
 
-irregular_plurals = IRREGULAR_PLURALS
+irregular_plurals = {}
+irregular_plurals.update(IRREGULAR_PLURALS)
 irregular_plurals.update({"timeseries": "time_series_set"})
 
 

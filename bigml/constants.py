@@ -157,6 +157,20 @@ RENAMED_RESOURCES = {
     TIME_SERIES_PATH: 'time_series'
 }
 
+IRREGULAR_PLURALS = {
+    ANOMALY_PATH: 'anomalies',
+    BATCH_PREDICTION_PATH: 'batch_predictions',
+    BATCH_CENTROID_PATH: 'batch_centroids',
+    ANOMALY_SCORE_PATH: 'anomaly_scores',
+    BATCH_ANOMALY_SCORE_PATH: 'batch_anomaly_scores',
+    STATISTICAL_TEST_PATH: 'statistical_tests',
+    LOGISTIC_REGRESSION_PATH: 'logistic_regressions',
+    ASSOCIATION_SET_PATH: 'association_sets',
+    TOPIC_MODEL_PATH: 'topic_models',
+    TOPIC_DISTRIBUTION_PATH: 'topic_distributions',
+    TIME_SERIES_PATH: 'time_series',
+    LIBRARY_PATH: 'libraries'
+}
 
 # Resource status codes
 WAITING = 0

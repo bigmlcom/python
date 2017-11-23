@@ -27,6 +27,7 @@ import datetime
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
+from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -59,40 +60,16 @@ RESOURCE_TYPES = [
     'execution',
     'library'
 ]
-IRREGULAR_PLURALS = {
-    'anomaly': 'anomalies',
-    'batchprediction': 'batch_predictions',
-    'batchcentroid': 'batch_centroids',
-    'anomalyscore': 'anomaly_scores',
-    'batchanomalyscore': 'batch_anomaly_scores',
-    'statisticaltest': 'statistical_tests',
-    'logisticregression': 'logistic_regressions',
-    'associationset': 'association_sets',
-    'topicmodel': 'topic_models',
-    'topicdistribution': 'topic_distributions',
-    'timeseries': 'time_series_set',
-    'library': 'libraries'
-}
 
-TRANSLATED_RESOURCES = {
-    'batchprediction': 'batch_prediction',
-    'batchcentroid': 'batch_centroid',
-    'anomalyscore': 'anomaly_score',
-    'batchanomalyscore': 'batch_anomaly_score',
-    'statisticaltest': 'statistical_test',
-    'logisticregression': 'logistic_regression',
-    'associationset': 'association_set',
-    'topicmodel': 'topic_model',
-    'topicdistribution': 'topic_distribution',
-    'timeseries': 'time_series'
-}
+irregular_plurals = IRREGULAR_PLURALS
+irregular_plurals.update({"timeseries": "time_series_set"})
 
 
 def plural(resource_type):
     """Creates the plural form of a resource type
 
     """
-    return IRREGULAR_PLURALS.get(resource_type, "%ss" % resource_type)
+    return irregular_plurals.get(resource_type, "%ss" % resource_type)
 
 
 def show_doc(self, examples=None):
@@ -146,8 +123,8 @@ class World(object):
         """
         for resource_type in RESOURCE_TYPES:
             setattr(self, plural(resource_type), [])
-            setattr(self, TRANSLATED_RESOURCES.get(resource_type,
-                                                   resource_type), None)
+            setattr(self, RENAMED_RESOURCES.get(resource_type,
+                                                resource_type), None)
 
     def reset_api(self):
         """Reset the api connection values

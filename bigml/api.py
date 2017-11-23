@@ -96,7 +96,8 @@ from bigml.constants import (
     TOPIC_DISTRIBUTION_RE, BATCH_TOPIC_DISTRIBUTION_RE, TIME_SERIES_RE,
     TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE,
     FORECAST_PATH, SCRIPT_PATH, SCRIPT_RE,
-    EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE)
+    EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
+    IRREGULAR_PLURALS)
 
 from bigml.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -237,6 +238,13 @@ class BigML(DeepnetHandler, ForecastHandler, TimeSeriesHandler,
             method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
             self.deleters[resource_type] = getattr(self,
                                                    "delete_%s" % method_name)
+        self.listers = {}
+        for resource_type in RESOURCE_RE:
+            method_name = IRREGULAR_PLURALS.get( \
+                resource_type, "%ss" % RENAMED_RESOURCES.get( \
+                resource_type, resource_type))
+            self.listers[resource_type] = getattr(self,
+                                                  "list_%s" % method_name)
 
     def connection_info(self):
         """Printable string: domain where the connection is bound and the

@@ -3286,7 +3286,7 @@ Similarly, if you want to split your source into training and test datasets,
 you can set the `sample_rate` as before to create the training dataset and
 use the `out_of_bag` option to assign the complementary subset of data to the
 test dataset. If you set the `seed` argument to a value of your choice, you
-will ensure a determinist sampling, so that each time you execute this call
+will ensure a deterministic sampling, so that each time you execute this call
 you will get the same datasets as a result and they will be complementary:
 
 .. code-block:: python
@@ -3299,6 +3299,23 @@ you will get the same datasets as a result and they will be complementary:
         origin_dataset, {"name": "Dataset Name | Test",
                          "sample_rate": 0.8, "seed": "my seed",
                          "out_of_bag": True})
+
+Sometimes, like for time series evaluations, it's important that the data
+in your train and test datasets is ordered. In this case, the split
+cannot be done at random. You will need to start from an ordered dataset and
+decide the ranges devoted to training and testing using the ``range``
+attribute:
+
+.. code-block:: python
+
+    origin_dataset = api.create_dataset(source)
+    train_dataset = api.create_dataset(
+        origin_dataset, {"name": "Dataset Name | Training",
+                         "range": [1, 80]})
+    test_dataset = api.create_dataset(
+        origin_dataset, {"name": "Dataset Name | Test",
+                         "range": [81, 100]})
+
 
 It is also possible to generate a dataset from a list of datasets
 (multidataset):

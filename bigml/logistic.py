@@ -203,8 +203,12 @@ class LogisticRegression(ModelFields):
                     self.map_coefficients()
                 categories = self.fields[self.objective_id].get( \
                     "summary", {}).get('categories')
-                self.class_names = sorted([category[0]
-                                           for category in categories])
+                if len(self.coefficients.keys()) > len(categories):
+                    self.class_names = [""]
+                else:
+                    self.class_names = []
+                self.class_names.extend(sorted([category[0]
+                                                for category in categories]))
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:

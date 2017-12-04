@@ -85,6 +85,16 @@ def i_create_a_local_prediction_op(step, data=None, operating_point=None):
         data, operating_point=operating_point)
 
 
+#@step(r'I create a local ensemble prediction for "(.*)" in operating point "(.*)"$')
+def i_create_a_local_ensemble_prediction_op(step, data=None, operating_point=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_point)
+    data = json.loads(data)
+    world.local_prediction = world.local_ensemble.predict( \
+        data, operating_point=operating_point)
+
+
 #@step(r'I create local probabilities for "(.*)"$')
 def i_create_local_probabilities(step, data=None):
     if data is None:

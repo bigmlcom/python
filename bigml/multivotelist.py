@@ -58,7 +58,7 @@ class MultiVoteList(object):
         """
         self.predictions.append(prediction)
 
-    def combine_to_distribution(self):
+    def combine_to_distribution(self, normalize=True):
         """Receives a list of lists. Each element is the list of probabilities
         or confidences
         associated to each class in the ensemble, as described in the
@@ -73,6 +73,8 @@ class MultiVoteList(object):
             for i, vote_value in enumerate(distribution):
                 output[i] += vote_value
                 total += vote_value
+        if not normalize:
+            total = len(self.predictions)
 
         for i, value in enumerate(output):
             output[i] = value / total

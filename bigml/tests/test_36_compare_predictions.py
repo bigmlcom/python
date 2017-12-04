@@ -23,6 +23,7 @@ from world import world, setup_module, teardown_module, show_doc
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
+import create_ensemble_steps as ensemble_create
 import create_prediction_steps as prediction_create
 import compare_predictions_steps as prediction_compare
 
@@ -162,3 +163,45 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_deepnet_prediction_with_op(self, example[4], example[8])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario4(self):
+        """
+            Scenario: Successfully comparing predictions in operating points for ensembles:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an ensemble
+                And I wait until the ensemble is ready less than <time_3> secs
+                And I create a local ensemble
+                When I create a prediction for "<data_input>" in "<operating_point>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local ensemble prediction for "<data_input>" in "<operating_point>"
+                Then the local ensemble prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | prediction  | operating_point
+
+
+        """
+        examples = [
+            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-setosa',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"petal width": 4}', 'Iris-virginica', {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}',  'Iris-setosa', {"kind": "confidence", "threshold": 0.1, "positive_class": "Iris-setosa"}, "000004"],
+            ['data/iris.csv', '10', '50', '50', '{"sepal length": 4.1, "sepal width": 2.4}', 'Iris-versicolor',  {"kind": "confidence", "threshold": 0.9, "positive_class": "Iris-setosa"}, "000004"]]
+        show_doc(self.test_scenario4, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            ensemble_create.i_create_an_ensemble(self)
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.create_local_ensemble(self)
+            prediction_create.i_create_an_ensemble_prediction_op(self, example[4], example[6])
+            prediction_create.the_prediction_is(self, example[7], example[5])
+            prediction_compare.i_create_a_local_ensemble_prediction_op(self, example[4], example[6])
+            prediction_compare.the_local_prediction_is(self, example[5])

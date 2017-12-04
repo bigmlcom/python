@@ -3,6 +3,11 @@
 History
 -------
 
+4.13.6 (2017-11-21)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing predict confidence method in local ensembles.
+
 4.13.5 (2017-11-21)
 ~~~~~~~~~~~~~~~~~~~
 

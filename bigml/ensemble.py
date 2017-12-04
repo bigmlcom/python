@@ -508,7 +508,7 @@ class Ensemble(ModelFields):
                 input_data, by_name=by_name,
                 missing_strategy=missing_strategy, method=method)
 
-        return votes.combine_to_distribution()
+        return votes.combine_to_distribution(normalize=False)
 
     def _get_models(self, models_split):
         if not isinstance(models_split[0], Model):

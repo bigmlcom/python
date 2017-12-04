@@ -37,7 +37,7 @@ NO_MISSING_SPLITS = {'missing_splits': False}
 ENSEMBLE_SAMPLE = {'ensemble_sample': {"rate": 0.70, "seed": 'BigML'}}
 
 #@step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
-def i_create_an_ensemble(step, number_of_models, tlp):
+def i_create_an_ensemble(step, number_of_models=2, tlp=1):
     dataset = world.dataset.get('resource')
     try:
         number_of_models = int(number_of_models)

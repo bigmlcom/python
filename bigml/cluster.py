@@ -500,7 +500,7 @@ class Cluster(ModelFields):
                 "centroids": sorted(close_centroids,
                                     key=lambda x: x["distance"])}
 
-    def centroid_features(self, centroid, field_ids):
+    def centroid_features(self, centroid, field_ids, encode=True):
         """Returns features defining the centroid according to the list
            of common field ids that define the centroids.
 
@@ -508,7 +508,7 @@ class Cluster(ModelFields):
         features = []
         for field_id in field_ids:
             value = centroid.center[field_id]
-            if isinstance(value, basestring):
+            if isinstance(value, basestring) and encode:
                 value = value.encode('utf-8')
             features.append(value)
         return features
@@ -570,7 +570,8 @@ class Cluster(ModelFields):
         centroids_list = sorted(self.centroids, key=lambda x: x.name)
         for centroid in centroids_list:
             row = [centroid.name]
-            row.extend(self.centroid_features(centroid, field_ids))
+            row.extend(self.centroid_features(centroid, field_ids,
+                                              encode=False))
             row.append(centroid.count)
             if len(self.centroids) > 1:
                 for measure, result in self.centroids_distance(centroid):
@@ -592,7 +593,8 @@ class Cluster(ModelFields):
 
         if self.cluster_global:
             row = [u"%s" % self.cluster_global.name]
-            row.extend(self.centroid_features(self.cluster_global, field_ids))
+            row.extend(self.centroid_features(self.cluster_global, field_ids,
+                                              encode=False))
             row.append(self.cluster_global.count)
             if len(self.centroids) > 1:
                 for measure, result in self.cluster_global_distance():
@@ -607,8 +609,7 @@ class Cluster(ModelFields):
             return rows
         with UnicodeWriter(file_name) as writer:
             for row in rows:
-                writer.writerow([item if not isinstance(item, basestring)
-                                 else item.encode("utf-8") for item in row])
+                writer.writerow(row)
 
     def summarize(self, out=sys.stdout):
         """Prints a summary of the cluster info

@@ -608,8 +608,7 @@ class Cluster(ModelFields):
         if file_name is None:
             return rows
         with UnicodeWriter(file_name) as writer:
-            for row in rows:
-                writer.writerow(row)
+            writer.writerows(rows)
 
     def summarize(self, out=sys.stdout):
         """Prints a summary of the cluster info

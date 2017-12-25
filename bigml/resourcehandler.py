@@ -321,7 +321,7 @@ def exception_on_error(resource):
     """Raises exception if resource has error
 
     """
-    if resource['error'] is not None:
+    if 'error' in resource and resource['error'] is not None:
         raise Exception(resource['error']['status']['message'])
 
 

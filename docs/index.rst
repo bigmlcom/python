@@ -191,7 +191,7 @@ that caused the connection to work with the Sandbox ``Development Environment``
 has been **deprecated** because this environment does not longer exist.
 The existing resources that were previously
 created in this environment have been moved
-to an especial project in the now unique ``Production Environment``, so this
+to a special project in the now unique ``Production Environment``, so this
 flag is no longer needed to work with them.
 
 Quick Start

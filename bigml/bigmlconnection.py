@@ -48,7 +48,9 @@ from bigml.domain import DEFAULT_DOMAIN, BIGML_PROTOCOL
 
 LOG_FORMAT = '%(asctime)-15s: %(message)s'
 LOGGER = logging.getLogger('BigML')
-
+CONSOLE = logging.StreamHandler()
+CONSOLE.setLevel(logging.WARNING)
+LOGGER.addHandler(CONSOLE)
 
 
 # Base URL

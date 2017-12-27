@@ -92,7 +92,6 @@ class World(object):
         self.USERNAME = None
         self.API_KEY = None
         self.api = None
-        self.api_dev_mode = None
         self.debug = False
         try:
             self.debug = bool(os.environ.get('BIGML_DEBUG', 0))
@@ -132,15 +131,8 @@ class World(object):
         """Reset the api connection values
 
         """
-        if self.api is not None and self.api.dev_mode:
-            self.project_id = None
-        if self.api is None or self.api.dev_mode:
+        if self.api is None:
             self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
-            self.api_dev_mode = BigML(self.USERNAME, self.API_KEY,
-                                      dev_mode=True, debug=self.debug)
-        if self.api_dev_mode is None:
-            self.api_dev_mode = BigML(self.USERNAME, self.API_KEY,
-                                      dev_mode=True, debug=self.debug)
 
     def delete_resources(self):
         """Deletes the created objects

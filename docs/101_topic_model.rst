@@ -78,6 +78,20 @@ class in the `topicmodel` module. A simple example of that is:
     # topic distribution for some input data
     local_topic_model.distribution({"Message": "Mobile offers, 20% discount."})
 
+And if you want to predict locally for all the rows in a CSV file (first line
+should contain the field headers):
+
+.. code-block:: python
+
+    import csv
+    from bigml.topicmodel import TopicModel
+    local_topic_model = TopicModel("topicmodel/5a414c667811dd5057000ab5")
+    with open("test_data.csv") as test_handler:
+        reader = csv.DictReader(test_handler)
+        for input_data in reader:
+        # predicting for all rows
+            print local_topic_model.distribution(input_data)
+
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

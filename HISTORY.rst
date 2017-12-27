@@ -3,16 +3,16 @@
 History
 -------
 
-4.13.8 (2018-01-08)
+4.14.0 (2018-01-22)
 ~~~~~~~~~~~~~~~~~~~
 
+- Deprecating `dev_mode` flag from BigML's API connection. The development
+  environment has been deprecated.
+- Fixing bug in local cluster output to CSV.
+- Improving docs with local batch predictions examples.
 - Adding operating kind support for local predictions in models and ensembles.
 - Fixing bug in ensembles local predictions with probability.
 - Fixing bug in logistic regression local predictions with operating points.
-
-4.13.7 (2018-01-02)
-~~~~~~~~~~~~~~~~~~~
-
 - Changing local predictions with threshold to meet changes in backend.
 - Adding support for configurations REST API calls.
 

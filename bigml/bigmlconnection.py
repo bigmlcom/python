@@ -165,9 +165,10 @@ class BigMLConnection(object):
         values of the `BIGML_USERNAME` and `BIGML_API_KEY` environment
         variables respectively.
 
-        If `dev_mode` is set to `True`, the API will be used in development
-        mode where the size of your datasets are limited but you are not
-        charged any credits.
+        dev_mode` has been deprecated. Now all resources coexist in the
+        same production environment. Existing resources generated in
+        development mode have been archived under an special project and
+        are now accessible in production mode.
 
         If storage is set to a directory name, the resources obtained in
         CRU operations will be stored in the given directory.
@@ -178,6 +179,10 @@ class BigMLConnection(object):
         Domain object. See Domain class for details.
 
         """
+
+        if dev_mode:
+            LOGGER.warning("Development mode is deprecated and the dev_mode"
+                           " flag will be removed.")
 
         logging_level = logging.ERROR
         if debug and not GAE_ENABLED:
@@ -203,7 +208,6 @@ class BigMLConnection(object):
                                      " your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
-        self.dev_mode = dev_mode
         self.debug = debug
         self.general_domain = None
         self.genearl_protocol = None
@@ -214,7 +218,7 @@ class BigMLConnection(object):
         self.url = None
         self.prediction_url = None
 
-        self._set_api_urls(dev_mode=dev_mode, domain=domain)
+        self._set_api_urls(domain=domain)
 
         # if verify is not set, we capture warnings to avoid `requests` library
         # warnings: InsecurePlatformWarning
@@ -226,7 +230,15 @@ class BigMLConnection(object):
     def _set_api_urls(self, dev_mode=False, domain=None):
         """Sets the urls that point to the REST api methods for each resource
 
+        dev_mode` has been deprecated. Now all resources coexist in the
+        same production environment. Existing resources generated in
+        development mode have been archived under an special project and
+        are now accessible in production mode.
+
         """
+        if dev_mode:
+            LOGGER.warning("Development mode is deprecated and the dev_mode"
+                           " flag will be removed soon.")
         if domain is None:
             domain = Domain()
         elif isinstance(domain, basestring):
@@ -240,17 +252,9 @@ class BigMLConnection(object):
         self.prediction_protocol = domain.prediction_protocol
         self.verify = domain.verify
         self.verify_prediction = domain.verify_prediction
-        if dev_mode:
-            self.url = BIGML_DEV_URL % (self.general_protocol,
-                                        self.general_domain)
-            self.prediction_url = BIGML_DEV_URL % (self.general_protocol,
-                                                   self.general_domain)
-        else:
-            # Using a different prediction domain and protocol only in
-            # production mode. Dev-mode uses the general values.
-            self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
-            self.prediction_url = BIGML_URL % (
-                self.prediction_protocol, self.prediction_domain)
+        self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
+        self.prediction_url = BIGML_URL % (
+            self.prediction_protocol, self.prediction_domain)
 
 
     def _create(self, url, body, verify=None):

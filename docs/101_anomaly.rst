@@ -70,6 +70,21 @@ class in the `anomaly` module. A simple example of that is:
     local_anomaly.anomaly_score({"petal length": 4, "sepal length": 2,
                                  "petal width": 1, "sepal witdh": 3})
 
+And if you want to assign the anomaly score
+locally for all the rows in a CSV file (first line
+should contain the field headers):
+
+.. code-block:: python
+
+    import csv
+    from bigml.anomaly import Anomaly
+    local_anomaly = Anomaly("anomaly/5a414c667811dd5057000ab5")
+    with open("test_data.csv") as test_handler:
+        reader = csv.DictReader(test_handler)
+        for input_data in reader:
+        # predicting for all rows
+            print local_anomaly.anomaly_score(input_data)
+
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

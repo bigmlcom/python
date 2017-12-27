@@ -75,6 +75,21 @@ class in the `model` module. A simple example of that is:
     local_model.predict({"petal length": 2.45, "sepal length": 2,
                          "petal width": 1.75, "sepal witdh": 3})
 
+And if you want to predict locally for all the rows in a CSV file (first line
+should contain the field headers):
+
+.. code-block:: python
+
+    import csv
+    from bigml.model import Model
+    local_model = Model("model/5a414c667811dd5057000ab5")
+    with open("test_data.csv") as test_handler:
+        reader = csv.DictReader(test_handler)
+        for input_data in reader:
+        # predicting for all rows
+            print local_model.predict(input_data)
+
+
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

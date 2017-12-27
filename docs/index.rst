@@ -123,13 +123,6 @@ class as follows:
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
-Also, you can initialize the library to work in the Sandbox
-environment by passing the parameter ``dev_mode``:
-
-.. code-block:: python
-
-    api = BigML(dev_mode=True)
-
 The main domain for the API service is ``bigml.io``, but there are some
 alternative domains, either for Virtual Private Cloud setups or
 the australian subdomain (``au.bigml.io``). You can change the remote
@@ -187,6 +180,19 @@ be used to set your special service endpoints:
 - prediction_verify (boolean) Sets on/off the SSL verification
   for the prediction server (when different from the general
   SSL verification)
+
+**Note** that the previously existing ``dev_mode`` flag:
+
+.. code-block:: python
+
+    api = BigML(dev_mode=True)
+
+that caused the connection to work with the Sandbox ``Development Environment``
+has been **deprecated** because this environment does not longer exist.
+The existing resources that were previously
+created in this environment have been moved
+to an especial project in the now unique ``Production Environment``, so this
+flag is no longer needed to work with them.
 
 Quick Start
 -----------

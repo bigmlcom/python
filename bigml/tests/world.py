@@ -105,7 +105,7 @@ class World(object):
             datetime.datetime.now()
         self.project_id = None
         self.print_connection_info()
-        self.reset_api()
+
 
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
@@ -126,13 +126,6 @@ class World(object):
             setattr(self, plural(resource_type), [])
             setattr(self, RENAMED_RESOURCES.get(resource_type,
                                                 resource_type), None)
-
-    def reset_api(self):
-        """Reset the api connection values
-
-        """
-        if self.api is None:
-            self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
 
     def delete_resources(self):
         """Deletes the created objects
@@ -168,7 +161,6 @@ def setup_module():
     """Operations to be performed before each module
 
     """
-    world.reset_api()
     if world.project_id is None:
         world.project_id = world.api.create_project( \
             {"name": world.test_project_name})['resource']

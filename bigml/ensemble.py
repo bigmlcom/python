@@ -553,15 +553,15 @@ class Ensemble(ModelFields):
         attribute = kind
         if kind == "voting":
             attribute = "k"
-        if predictions[position][attribute] < threshold:
+        if predictions[position][attribute] > threshold:
+                prediction = prediction[0]
+            else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             prediction = sorted(predictions,
                                 key=lambda x: - x[attribute])[0 : 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
-            else:
-                prediction = prediction[0]
         else:
             prediction = predictions[position]
         prediction["prediction"] = prediction["category"]

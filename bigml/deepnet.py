@@ -380,7 +380,9 @@ class Deepnet(ModelFields):
             operating_point, ["probability"], self.class_names)
         predictions = self.predict_probability(input_data, by_name, compact)
         position = self.class_names.index(positive_class)
-        if predictions[position][kind] < threshold:
+        if predictions[position][kind] > threshold:
+            prediction = predictions[position]
+        else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             prediction = sorted(predictions,
@@ -389,8 +391,6 @@ class Deepnet(ModelFields):
                 prediction = prediction[1]
             else:
                 prediction = prediction[0]
-        else:
-            prediction = predictions[position]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
         return prediction

@@ -3,12 +3,17 @@
 History
 -------
 
-4.13.6 (2017-11-21)
+4.13.7 (2017-12-29)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing local predictions with threshold to meet changes in backend.
+
+4.13.6 (2017-12-05)
 ~~~~~~~~~~~~~~~~~~~
 
 - Fixing predict confidence method in local ensembles.
 
-4.13.5 (2017-11-21)
+4.13.5 (2017-11-23)
 ~~~~~~~~~~~~~~~~~~~
 
 - Adding operating point local predictions to deepnets.

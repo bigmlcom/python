@@ -455,7 +455,9 @@ class Model(BaseModel):
                                                   missing_strategy, compact)
 
         position = self.class_names.index(positive_class)
-        if predictions[position][kind] < threshold:
+        if predictions[position][kind] > threshold:
+            prediction = predictions[position]
+        else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             prediction = sorted(predictions,
@@ -464,8 +466,6 @@ class Model(BaseModel):
                 prediction = prediction[1]
             else:
                 prediction = prediction[0]
-        else:
-            prediction = predictions[position]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
         return prediction

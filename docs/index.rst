@@ -298,6 +298,7 @@ document. You can also check other simple examples in the following documents:
 - `anomaly detector 101 <101_anomaly.html>`_
 - `association 101 <101_association.html>`_
 - `topic model 101 <101_topic_model.html>`_
+- `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
 
 Fields Structure

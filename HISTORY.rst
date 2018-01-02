@@ -3,10 +3,11 @@
 History
 -------
 
-4.13.7 (2017-12-29)
+4.13.7 (2018-01-02)
 ~~~~~~~~~~~~~~~~~~~
 
 - Changing local predictions with threshold to meet changes in backend.
+- Adding support for configurations REST API calls.
 
 4.13.6 (2017-12-05)
 ~~~~~~~~~~~~~~~~~~~

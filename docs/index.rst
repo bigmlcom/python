@@ -4451,6 +4451,20 @@ The output of ``predict_confidence`` is the same, except that the
 output maps are keyed with ``confidence`` instead of ``probability``.
 
 
+For classifications, the prediction of a local model will be one of the
+available categories in the objective field and an associated ``confidence``
+or ``probability`` that is used to decide which is the predicted category.
+If you prefer the model predictions to be operated using any of them, you can
+use the ``operating_kind`` argument in the ``predict`` method.
+Here's the example
+to use predictions based on ``confidence``:
+
+.. code-block:: python
+
+    local_model.predict({"petal length": 3, "petal width": 1},
+                        {"operating_kind": "confidence"})
+
+
 Operating point's predictions
 ------------------`-----------
 
@@ -5386,10 +5400,8 @@ you can choose another storage directory or even avoid storing at all.
 
 The local ensemble object can be used to manage the
 three types of ensembles: ``Decision Forests`` (bagging or random) and
-the ones using ``Boosted Trees``. However, arguments like the predictions
-combiner (``method`` argument) will only apply to ``Decision Forests``. As in
-``MultipleModel``, several prediction combination methods are available, for
-instance:
+the ones using ``Boosted Trees``.
+
 
 .. code-block:: python
 
@@ -5404,11 +5416,16 @@ instance:
 
     # Ensemble object to predict
     ensemble = Ensemble(ensemble, api)
-    ensemble.predict({"petal length": 3, "petal width": 1}, method=1)
+    ensemble.predict({"petal length": 3, "petal width": 1},
+                     operating_kind="votes")
 
-creates a new ensemble and stores its information in ``./my_storage``
-folder. Then this information is used to predict locally using the
-``confidence weighted`` method.
+In this example, we create
+a new ensemble and store its information in the ``./my_storage``
+folder. Then this information is used to predict locally using the number of
+votes (one per model) backing each category.
+
+The ``operating_kind`` argument overrides the legacy ``method`` argument, which
+was previously used to define the combiner for the models predictions.
 
 Similarly, local ensembles can also be created by giving a list of models to be
 combined to issue the final prediction (note: only random decision forests and
@@ -5534,18 +5551,34 @@ only the prediction will be obtained when applied to regressions.
 In classifications, adding the ``add_probability`` or ``with_probability``
 argument will also provide the probability of the prediction.
 
+When predicting, each model in the ensemble issues its particular prediction
+and the ensemble can
+aggregate them in different ways to issue the final prediction.
+For classifications
+the prediction will be one amongst the list of categories in the objective
+field. When each model in the ensemble
+is used to predict, each category has a confidence, a
+probability or a vote associated to this prediction.
+Then, through the collection
+of models in the
+ensemble, each category gets an averaged confidence, probabiity and number of
+votes. Thus you can decide whether to operate the ensemble using the
+``confidence``, the ``probability`` or the ``votes`` so that the predicted
+category is the one that scores higher in any of these quantities. The
+criteria can be set using the `operating_kind` option (default is set to
+``probabiity``):
+
+.. code-block:: python
+
+    ensemble.predict({"petal length": 3, "petal width": 1}, \
+                     operating_kind="votes")
+
 For consistency of interface with the ``Model`` class, as well as
 between boosted and non-boosted ensembles, local Ensembles again have
 a ``predict_probability`` method.  This takes the same optional
 arguments as ``Model.predict``: ``by_name``, ``missing_strategy`` and
-``compact``, as well as a fourth optional argument, ``method``, which
-describes whether or not the probabilities are a function of the raw
-model votes (``method=0``), the confidence-weighted votes
-(``method=1``) or the averaged probabilities of each individual model
-prediction (``method=2``).
-
-As with local Models, if ``compact`` is ``False`` (the default), the
-output is a list of maps, each with the keys ``prediction`` and
+``compact``. As with local Models, if ``compact`` is ``False`` (the default),
+the output is a list of maps, each with the keys ``prediction`` and
 ``probability`` mapped to the class name and its associated
 probability.
 
@@ -5558,13 +5591,6 @@ So, for example:
     [{'prediction': u'Iris-setosa', 'probability': 0.006733220044732548},
      {'prediction': u'Iris-versicolor', 'probability': 0.9824478534614787},
      {'prediction': u'Iris-virginica', 'probability': 0.0108189264937886}]
-
-    ensemble.predict_probability({"petal length": 3, "petal width": 1}, \
-                                 method=0)
-
-    [{'prediction': u'Iris-setosa', 'probability': 0.0},
-     {'prediction': u'Iris-versicolor', 'probability': 1.0},
-     {'prediction': u'Iris-virginica', 'probability': 0.0}]
 
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with

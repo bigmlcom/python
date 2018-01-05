@@ -56,7 +56,7 @@ import json
 
 from functools import partial
 
-from bigml.api import FINISHED
+from bigml.api import FINISHED, STATUSES
 from bigml.api import (BigML, get_model_id, get_status)
 from bigml.util import (slugify, markdown_cleanup,
                         prefix_as_comment, utf8,
@@ -107,6 +107,24 @@ STORAGE = './storage'
 DEFAULT_IMPURITY = 0.2
 
 OPERATING_POINT_KINDS = ["probability", "confidence"]
+
+
+def sort_categories(a, b, categories_list):
+    """Sorts a list of dictionaries with category keys according to their
+    value and order in the categories_list. If not found, alphabetic order is
+    used.
+
+    """
+    index_a = categories_list.index(a["category"])
+    index_b = categories_list.index(b["category"])
+    if index_a < 0 and index_b < 0:
+        index_a = a['category']
+        index_b = b['category']
+    if index_a < index_b:
+        return -1
+    if index_a > index_b:
+        return 1
+    return 0
 
 
 def print_distribution(distribution, out=sys.stdout):
@@ -283,8 +301,14 @@ class Model(BaseModel):
                         root_dist = self.tree.distribution
                         self.class_names = sorted([category[0]
                                                    for category in root_dist])
+                        self.objective_categories =  [category for \
+                            category, _ in self.fields[self.objective_id][ \
+                           "summary"]["categories"]]
             else:
-                raise Exception("The model isn't finished yet")
+                raise Exception("Cannot create the Model instance."
+                                " Only correctly finished models can be used."
+                                " The model status is currently: %s\n" %
+                                STATUSES[status['code']]);
         else:
             raise Exception("Cannot create the Model instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
@@ -358,9 +382,20 @@ class Model(BaseModel):
                         ordered by the sorted order of the class names.
 
         """
-        if self.regression or self.boosting:
+        if self.regression:
+            prediction = self.predict(input_data,
+                                      by_name=by_name,
+                                      missing_strategy=missing_strategy,
+                                      add_confidence=not compact)
+
+            if compact:
+                output = [prediction]
+            else:
+                output = prediction
+            return output
+        elif self.boosting:
             raise AttributeError("This method is available for non-boosting"
-                                 " categorization models only.")
+                                 " models only.")
 
         root_dist = self.tree.distribution
         category_map = {category[0]: 0.0 for category in root_dist}
@@ -402,12 +437,13 @@ class Model(BaseModel):
         if self.regression:
             prediction = self.predict(input_data,
                                       by_name=by_name,
-                                      missing_strategy=missing_strategy)
+                                      missing_strategy=missing_strategy,
+                                      add_confidence=not compact)
 
             if compact:
                 output = [prediction]
             else:
-                output = {'prediction': prediction}
+                output = prediction
         else:
             root_dist = self.tree.distribution
 
@@ -440,7 +476,7 @@ class Model(BaseModel):
 
     def predict_operating(self, input_data, by_name=True,
                           missing_strategy=LAST_PREDICTION,
-                          operating_point=None, compact=False):
+                          operating_point=None):
         """Computes the prediction based on a user-given operating point.
 
         """
@@ -449,10 +485,10 @@ class Model(BaseModel):
             operating_point, OPERATING_POINT_KINDS, self.class_names)
         if kind == "probability":
             predictions = self.predict_probability(input_data, by_name,
-                                                   missing_strategy, compact)
+                                                   missing_strategy, False)
         else:
             predictions = self.predict_confidence(input_data, by_name,
-                                                  missing_strategy, compact)
+                                                  missing_strategy, False)
 
         position = self.class_names.index(positive_class)
         if predictions[position][kind] > threshold:
@@ -470,6 +506,42 @@ class Model(BaseModel):
         del prediction["category"]
         return prediction
 
+    def _sort_predictions(a, b, criteria):
+        """Sorts the categories in the predicted node according to the
+        given criteria
+
+        """
+        if a[criteria] == b[criteria]:
+            return sort_category(a, b, self.objective_categories)
+        return b[criteria] - a[criteria]
+
+    def predict_operating_kind(self, input_data, by_name=True,
+                               missing_strategy=LAST_PREDICTION,
+                               operating_kind=None):
+        """Computes the prediction based on a user-given operating kind.
+
+        """
+        kind = operating_kind.lower()
+        if (kind not in OPERATING_POINT_KINDS):
+            raise ValueError("Allowed operating kinds are %s. %s found." %
+                             (", ".join(OPERATING_POINT_KINDS), kind))
+        if kind == "probability":
+            predictions = self.predict_probability(input_data, by_name,
+                                                   missing_strategy, False)
+        else:
+            predictions = self.predict_confidence(input_data, by_name,
+                                                  missing_strategy, False)
+
+        if self.regression:
+            prediction = predictions
+        else:
+
+            prediction = sorted(predictions,
+                                key=self.sort_predictions)[0]
+            prediction["prediction"] = prediction["category"]
+            del prediction["category"]
+        return prediction
+
     def predict(self, input_data, by_name=True,
                 print_path=False, out=sys.stdout, with_confidence=False,
                 missing_strategy=LAST_PREDICTION,
@@ -483,7 +555,9 @@ class Model(BaseModel):
                 add_max=False,
                 add_unused_fields=False,
                 add_probability=False,
-                operating_point=None):
+                operating_point=None,
+                operating_kind=None,
+                unused_fields=None):
         """Makes a prediction based on a number of field values.
 
         By default the input fields must be keyed by field name but you can use
@@ -534,6 +608,11 @@ class Model(BaseModel):
                          or
                            {"positive_class": "Iris-setosa",
                             "confidence_threshold": 0.5}
+        operating_kind: "probability" or "confidence". Sets the
+                        quantity that decides the prediction. Used only if
+                        no operating_point is used
+        unused_fields: Fields in input data that have not been used by the
+                       model.
         """
 
         # Checks and cleans input_data leaving the fields used in the model
@@ -566,6 +645,7 @@ class Model(BaseModel):
             add_unused_fields=add_unused_fields,
             add_probability=add_probability,
             operating_point=operating_point,
+            operating_kind=operating_kind,
             unused_fields=unused_fields)
 
     def _predict(self, input_data, by_name=True,
@@ -582,6 +662,7 @@ class Model(BaseModel):
                  add_unused_fields=False,
                  add_probability=False,
                  operating_point=None,
+                 operating_kind=None,
                  unused_fields=None):
         """Makes a prediction based on a number of field values. Please,
         note that this function does not check the types for the input
@@ -635,6 +716,9 @@ class Model(BaseModel):
                          or
                            {"positive_class": "Iris-setosa",
                             "confidence_threshold": 0.5}
+        operating_kind: "probability" or "confidence". Sets the
+                        quantity that decides the prediction. Used only if
+                        no operating_point is used
         unused_fields: Fields in input data that have not been used by the
                        model.
         """
@@ -650,6 +734,15 @@ class Model(BaseModel):
                 input_data, by_name=False,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
+            if with_confidence or add_confidence or add_probability:
+                return prediction
+            else:
+                return prediction["prediction"]
+        if operating_kind:
+            prediction = self.predict_operating_kind( \
+                input_data, by_name=False,
+                missing_strategy=missing_strategy,
+                operating_kind=operating_kind)
             if with_confidence or add_confidence or add_probability:
                 return prediction
             else:

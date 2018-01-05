@@ -3,6 +3,12 @@
 History
 -------
 
+4.13.8 (2018-01-05)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding operating kind support for local predictions in models and ensembles.
+- Fixing bug in ensembles local predictions with probability.
+
 4.13.7 (2018-01-02)
 ~~~~~~~~~~~~~~~~~~~
 

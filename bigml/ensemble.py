@@ -258,6 +258,9 @@ class Ensemble(ModelFields):
                         classes.add(category[0])
 
             self.class_names = sorted(classes)
+            self.objective_categories =  [category for \
+                category, _ in self.fields[self.objective_id][ \
+               "summary"]["categories"]]
 
         ModelFields.__init__( \
             self, self.fields,
@@ -350,6 +353,7 @@ class Ensemble(ModelFields):
         """
         if self.regression:
             prediction = self.predict(input_data,
+                                      method=PROBABILITY_CODE,
                                       by_name=by_name,
                                       missing_strategy=missing_strategy,
                                       add_confidence=not compact)
@@ -462,6 +466,7 @@ class Ensemble(ModelFields):
         """
         if self.regression:
             prediction = self.predict(input_data,
+                                      method=PLURALITY_CODE,
                                       by_name=by_name,
                                       missing_strategy=missing_strategy,
                                       add_confidence=not compact)
@@ -482,7 +487,7 @@ class Ensemble(ModelFields):
             if not compact:
                 names_votes = zip(self.class_names, output)
                 output = [{'category': class_name,
-                           'k': k}
+                           'votes': k}
                           for class_name, k in names_votes]
 
         return output
@@ -543,6 +548,15 @@ class Ensemble(ModelFields):
 
         return models
 
+    def _sort_predictions(a, b, criteria):
+        """Sorts the categories in the predicted node according to the
+        given criteria
+
+        """
+        if a[criteria] == b[criteria]:
+            return sort_category(a, b, self.objective_categories)
+        return b[criteria] - a[criteria]
+
     def predict_operating(self, input_data, by_name=True,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None, compact=False):
@@ -562,22 +576,20 @@ class Ensemble(ModelFields):
         except KeyError:
             raise ValueError("The operating point needs to contain a valid"
                              " positive class, kind and a threshold.")
-        attribute = kind
-        if kind == "votes":
-            attribute = "k"
-        if predictions[position][attribute] > threshold:
-            prediction = predictions[position]
+        if self.regression:
+            prediction = predictions
         else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
-            prediction = sorted(predictions,
-                                key=lambda x: - x[attribute])[0 : 2]
+            prediction = sorted( \
+                predictions,
+                key=lambda(a, b): self._sort_predictions(a, b, attribute))[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
             else:
                 prediction = prediction[0]
-        prediction["prediction"] = prediction["category"]
-        del prediction["category"]
+            prediction["prediction"] = prediction["category"]
+            del prediction["category"]
         return prediction
 
     def predict_operating_kind(self, input_data, by_name=True,
@@ -605,22 +617,12 @@ class Ensemble(ModelFields):
         if self.regression:
             prediction = predictions
         else:
-            attribute = kind if kind != "votes" else "k"
-            if predictions[position][attribute] > threshold:
-                prediction = predictions[position]
-            else:
-                # if the threshold is not met, the alternative class with
-                # highest probability or confidence is returned
-                prediction = sorted(predictions,
-                                    key=lambda x: - x[attribute])[0 : 2]
-                if prediction[0]["category"] == positive_class:
-                    prediction = prediction[1]
-                else:
-                    prediction = prediction[0]
+            prediction = sorted( \
+                predictions,
+                key=lambda(a, b): self._sort_predictions(a, b, attribute))[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
         return prediction
-
 
     def predict(self, input_data, by_name=True, method=None,
                 with_confidence=False, add_confidence=False,
@@ -709,10 +711,12 @@ class Ensemble(ModelFields):
         cast(input_data, self.fields)
 
         if method is None and operating_point is None and \
-            operating_kind is None:
+            operating_kind is None and median is None:
             # operating_point has precedence over operating_kind. If no
             # combiner is set, default operating kind is "probability"
             operating_kind = "probability"
+        if median and method is None:
+            method = PLURALITY_CODE
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"

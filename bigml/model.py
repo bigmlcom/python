@@ -535,9 +535,9 @@ class Model(BaseModel):
         if self.regression:
             prediction = predictions
         else:
-
-            prediction = sorted(predictions,
-                                key=self.sort_predictions)[0]
+            prediction = sorted( \
+                predictions,
+                key=lambda(a, b): self._sort_predictions(a, b, kind))[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
         return prediction

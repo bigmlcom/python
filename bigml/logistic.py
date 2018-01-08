@@ -333,7 +333,11 @@ class LogisticRegression(ModelFields):
         for category in self.coefficients:
             probability = self.category_probability( \
                 input_data, unique_terms, category)
-            order = self.categories[self.objective_id].index(category)
+            try:
+                order = self.categories[self.objective_id].index(category)
+            except ValueError:
+                if category == u'':
+                    order = len(self.categories[self.objective_id])
             probabilities[category] = {"category": category,
                                        "probability": probability,
                                        "order": order}
@@ -466,6 +470,8 @@ class LogisticRegression(ModelFields):
             probability = 1 / (1 + math.exp(-probability))
         except OverflowError:
             probability = 0 if probability < 0 else 1
+        # truncate probability to 5 digits, as in the backend
+        probability = round(probability, 5)
         return probability
 
     def map_coefficients(self):

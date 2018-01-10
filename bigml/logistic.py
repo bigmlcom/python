@@ -46,10 +46,10 @@ import copy
 
 from bigml.api import FINISHED
 from bigml.api import BigML, get_logistic_regression_id, get_status
-from bigml.util import cast
+from bigml.util import cast, PRECISION
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE, parse_operating_point
+from bigml.model import STORAGE, parse_operating_point, sort_categories
 from bigml.modelfields import ModelFields, check_model_fields
 from bigml.cluster import OPTIONAL_FIELDS
 
@@ -217,6 +217,15 @@ class LogisticRegression(ModelFields):
                             " in the resource:\n\n%s" %
                             logistic_regression)
 
+    def _sort_predictions(self, a, b, criteria):
+        """Sorts the categories in the predicted node according to the
+        given criteria
+
+        """
+        if a[criteria] == b[criteria]:
+            return sort_categories(a, b, self.objective_categories)
+        return 1 if b[criteria] > a[criteria] else - 1
+
     def predict_probability(self, input_data, by_name=True, compact=False):
         """Predicts a probability for each possible output class,
         based on input values.  The input fields must be a dictionary
@@ -241,22 +250,23 @@ class LogisticRegression(ModelFields):
             return distribution
 
     def predict_operating(self, input_data, by_name=True,
-                          operating_point=None, compact=False):
+                          operating_point=None):
         """Computes the prediction based on a user-given operating point.
 
         """
 
         kind, threshold, positive_class = parse_operating_point( \
             operating_point, ["probability"], self.class_names)
-        predictions = self.predict_probability(input_data, by_name, compact)
+        predictions = self.predict_probability(input_data, by_name, False)
         position = self.class_names.index(positive_class)
         if predictions[position][kind] > threshold:
             prediction = predictions[position]
         else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
-            prediction = sorted(predictions,
-                                key=lambda x: - x[kind])[0 : 2]
+            predictions.sort( \
+                lambda a, b : self._sort_predictions(a, b, kind))
+            prediction = predictions[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
             else:
@@ -265,8 +275,27 @@ class LogisticRegression(ModelFields):
         del prediction["category"]
         return prediction
 
+    def predict_operating_kind(self, input_data, by_name=True,
+                               operating_kind=None):
+        """Computes the prediction based on a user-given operating kind.
+
+        """
+        kind = operating_kind.lower()
+        if kind == "probability":
+            predictions = self.predict_probability(input_data, by_name,
+                                                   False)
+        else:
+            raise ValueError("Only probability is allowed as operating kind"
+                             " for logistic regressions.")
+        predictions.sort( \
+            lambda a, b : self._sort_predictions(a, b, kind))
+        prediction = predictions[0]
+        prediction["prediction"] = prediction["category"]
+        del prediction["category"]
+        return prediction
+
     def predict(self, input_data, by_name=True, add_unused_fields=False,
-                operating_point=None):
+                operating_point=None, operating_kind=None):
         """Returns the class prediction and the probability distribution
         By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.
@@ -288,6 +317,10 @@ class LogisticRegression(ModelFields):
                          two attributes, e.g.:
                            {"positive_class": "Iris-setosa",
                             "probability_threshold": 0.5}
+        operating_kind: "probability". Sets the
+                        property that decides the prediction. Used only if
+                        no operating_point is used
+
         """
 
         # Checks and cleans input_data leaving the fields used in the model
@@ -306,9 +339,11 @@ class LogisticRegression(ModelFields):
         # of all possible classes to decide, so se use
         # the `predict_probability` method
         if operating_point:
-            prediction = self.predict_operating( \
+            return self.predict_operating( \
                 input_data, by_name=False, operating_point=operating_point)
-            return prediction
+        if operating_kind:
+            return self.predict_operating_kind( \
+                input_data, by_name=False, operating_kind=operating_kind)
 
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
@@ -345,6 +380,8 @@ class LogisticRegression(ModelFields):
         # Normalizes the contributions to get a probability
         for category in probabilities:
             probabilities[category]["probability"] /= total
+            probabilities[category]["probability"] = round( \
+                probabilities[category]["probability"], PRECISION)
 
         # Chooses the most probable category as prediction
         predictions = sorted(probabilities.items(),

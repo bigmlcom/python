@@ -21,6 +21,10 @@ import logging
 import numbers
 import math
 
+
+from bigml.util import PRECISION
+
+
 LOGGER = logging.getLogger('BigML')
 
 PLURALITY = 'plurality'
@@ -125,7 +129,8 @@ def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
     ws_z2 = ws_z * ws_z
     ws_factor = ws_z2 / ws_n
     ws_sqrt = math.sqrt((ws_p * (1 - ws_p) + ws_factor / 4) / ws_n)
-    return (ws_p + ws_factor / 2 - ws_z * ws_sqrt) / (1 + ws_factor)
+    return round((ws_p + ws_factor / 2 - ws_z * ws_sqrt) / (1 + ws_factor),
+                 PRECISION)
 
 
 def merge_distributions(distribution, new_distribution):
@@ -238,7 +243,8 @@ class MultiVote(object):
                 float('nan')}
             if add_confidence:
                 output.update(
-                    {'confidence': confidence / total if total > 0 else 0})
+                    {'confidence': round(confidence / total, PRECISION)
+                     if total > 0 else 0})
             if add_distribution:
                 output.update(cls.grouped_distribution(instance))
             if add_count:
@@ -310,7 +316,8 @@ class MultiVote(object):
             output = {'prediction': result / normalization_factor}
             if add_confidence:
                 output.update({'confidence':
-                               combined_error / normalization_factor})
+                               round(combined_error / normalization_factor,
+                                     PRECISION)})
             if add_distribution:
                 output.update(cls.grouped_distribution(instance))
             if add_count:
@@ -490,10 +497,11 @@ class MultiVote(object):
                                 "as number of instances in a node" % total)
             order = prediction['order']
             for prediction, instances in prediction['distribution']:
-                predictions.append({'prediction': prediction,
-                                    'probability': float(instances) / total,
-                                    'count': instances,
-                                    'order': order})
+                predictions.append({ \
+                    'prediction': prediction,
+                    'probability': round(float(instances) / total, PRECISION),
+                    'count': instances,
+                    'order': order})
         return predictions
 
     def combine_distribution(self, weight_label='probability'):
@@ -578,7 +586,8 @@ class MultiVote(object):
         if add_confidence or add_distribution or add_count:
             output = {'prediction': prediction}
             if add_confidence:
-                output.update({'confidence': combined_confidence})
+                output.update({'confidence':
+                               round(combined_confidence, PRECISION)})
             if add_distribution:
                 output.update(self.__class__.grouped_distribution(self))
             if add_count:
@@ -638,15 +647,16 @@ class MultiVote(object):
             predictions.items(), key=lambda(x): \
             (- x[1]["probability"], x[1]["order"]))
         prediction, prediction_info = predictions[0]
-        confidence = prediction_info["probability"]
+        confidence = round(prediction_info["probability"], PRECISION)
         if with_confidence:
             return prediction, confidence
         elif add_confidence:
             return {"prediction": prediction,
                     "probability": confidence, \
                 "probabilities": [ \
-                    {"prediction": prediction,
-                     "probability": prediction_info["probability"]}
+                    {"category": prediction,
+                     "probability": round(prediction_info["probability"],
+                                          PRECISION)}
                     for prediction, prediction_info in predictions]}
         else:
             return prediction

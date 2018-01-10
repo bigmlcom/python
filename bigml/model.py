@@ -57,11 +57,10 @@ import json
 from functools import partial
 
 from bigml.api import FINISHED, STATUSES
-from bigml.api import (BigML, get_model_id, get_status)
-from bigml.util import (slugify, markdown_cleanup,
-                        prefix_as_comment, utf8,
-                        find_locale, cast)
-from bigml.util import DEFAULT_LOCALE
+from bigml.api import BigML, get_model_id, get_status
+from bigml.util import slugify, markdown_cleanup, prefix_as_comment, utf8, \
+    find_locale, cast
+from bigml.util import DEFAULT_LOCALE, PRECISION
 from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.boostedtree import BoostedTree
 from bigml.predicate import Predicate
@@ -347,13 +346,14 @@ class Model(BaseModel):
 
     def _to_output(self, output_map, compact, value_key):
         if compact:
-            return [output_map.get(name, 0.0) for name in self.class_names]
+            return [round(output_map.get(name, 0.0), PRECISION)
+                    for name in self.class_names]
         else:
             output = []
             for name in self.class_names:
                 output.append({
                     'category': name,
-                    value_key: output_map.get(name, 0.0)
+                    value_key: round(output_map.get(name, 0.0), PRECISION)
                 })
             return output
 
@@ -496,8 +496,9 @@ class Model(BaseModel):
         else:
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
-            prediction = sorted(predictions,
-                                key=lambda x: - x[kind])[0 : 2]
+            predictions.sort( \
+                lambda a, b : self._sort_predictions(a, b, kind))
+            prediction = predictions[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
             else:
@@ -506,13 +507,13 @@ class Model(BaseModel):
         del prediction["category"]
         return prediction
 
-    def _sort_predictions(a, b, criteria):
+    def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria
 
         """
         if a[criteria] == b[criteria]:
-            return sort_category(a, b, self.objective_categories)
+            return sort_categories(a, b, self.objective_categories)
         return b[criteria] - a[criteria]
 
     def predict_operating_kind(self, input_data, by_name=True,
@@ -535,9 +536,9 @@ class Model(BaseModel):
         if self.regression:
             prediction = predictions
         else:
-            prediction = sorted( \
-                predictions,
-                key=lambda(a, b): self._sort_predictions(a, b, kind))[0]
+            predictions.sort( \
+                lambda a, b : self._sort_predictions(a, b, kind))
+            prediction = predictions[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
         return prediction
@@ -609,7 +610,7 @@ class Model(BaseModel):
                            {"positive_class": "Iris-setosa",
                             "confidence_threshold": 0.5}
         operating_kind: "probability" or "confidence". Sets the
-                        quantity that decides the prediction. Used only if
+                        property that decides the prediction. Used only if
                         no operating_point is used
         unused_fields: Fields in input data that have not been used by the
                        model.
@@ -739,6 +740,9 @@ class Model(BaseModel):
             else:
                 return prediction["prediction"]
         if operating_kind:
+            if self.regression:
+                raise ValueError("The operating_kind argument can only be"
+                                 " used in classifications.")
             prediction = self.predict_operating_kind( \
                 input_data, by_name=False,
                 missing_strategy=missing_strategy,

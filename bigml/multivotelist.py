@@ -22,6 +22,8 @@ import logging
 
 LOGGER = logging.getLogger('BigML')
 
+from bigml.util import PRECISION
+
 
 class MultiVoteList(object):
     """A multiple vote prediction in compact format
@@ -77,6 +79,6 @@ class MultiVoteList(object):
             total = len(self.predictions)
 
         for i, value in enumerate(output):
-            output[i] = value / total
+            output[i] = round(value / total, PRECISION)
 
         return output

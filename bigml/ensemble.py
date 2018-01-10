@@ -45,7 +45,7 @@ import json
 
 from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution, \
-    parse_operating_point
+    parse_operating_point, sort_categories
 from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
@@ -368,7 +368,7 @@ class Ensemble(ModelFields):
                                          missing_strategy=missing_strategy,
                                          add_probability=True)['probabilities']
 
-            probabilities.sort(key=lambda x: x['prediction'])
+            probabilities.sort(key=lambda x: x['category'])
 
             if compact:
                 output = [probability['probability']
@@ -548,18 +548,18 @@ class Ensemble(ModelFields):
 
         return models
 
-    def _sort_predictions(a, b, criteria):
+    def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria
 
         """
         if a[criteria] == b[criteria]:
-            return sort_category(a, b, self.objective_categories)
-        return b[criteria] - a[criteria]
+            return sort_categories(a, b, self.objective_categories)
+        return 1 if b[criteria] > a[criteria] else - 1
 
     def predict_operating(self, input_data, by_name=True,
                           missing_strategy=LAST_PREDICTION,
-                          operating_point=None, compact=False):
+                          operating_point=None):
         """Computes the prediction based on a user-given operating point.
 
         """
@@ -571,55 +571,64 @@ class Ensemble(ModelFields):
             predict_method = getattr(self, "predict_%s" % kind)
 
             predictions = predict_method(input_data, by_name,
-                                         missing_strategy, compact)
+                                         missing_strategy, False)
             position = self.class_names.index(positive_class)
         except KeyError:
             raise ValueError("The operating point needs to contain a valid"
                              " positive class, kind and a threshold.")
+
         if self.regression:
             prediction = predictions
         else:
-            # if the threshold is not met, the alternative class with
-            # highest probability or confidence is returned
-            prediction = sorted( \
-                predictions,
-                key=lambda(a, b): self._sort_predictions(a, b, attribute))[0: 2]
-            if prediction[0]["category"] == positive_class:
-                prediction = prediction[1]
+            position = self.class_names.index(positive_class)
+            if predictions[position][kind] > threshold:
+                prediction = predictions[position]
             else:
-                prediction = prediction[0]
-            prediction["prediction"] = prediction["category"]
-            del prediction["category"]
+                # if the threshold is not met, the alternative class with
+                # highest probability or confidence is returned
+                predictions.sort( \
+                    lambda a, b : self._sort_predictions(a, b, kind))
+                prediction = predictions[0: 2]
+                if prediction[0]["category"] == positive_class:
+                    prediction = prediction[1]
+                else:
+                    prediction = prediction[0]
+                prediction["prediction"] = prediction["category"]
+                del prediction["category"]
         return prediction
 
     def predict_operating_kind(self, input_data, by_name=True,
                                missing_strategy=LAST_PREDICTION,
-                               operating_kind=None, compact=False):
+                               operating_kind=None):
         """Computes the prediction based on a user-given operating kind,
         i.e, confidence, probability or votes.
 
         """
 
         kind = operating_kind.lower()
-        if (kind not in OPERATING_POINT_KINDS):
+        if self.boosting and kind != "probability":
+            raise ValueError("Only probability is allowed as operating kind"
+                             " for boosted ensembles.")
+        if kind not in OPERATING_POINT_KINDS:
             raise ValueError("Allowed operating kinds are %s. %s found." %
                              (", ".join(OPERATING_POINT_KINDS), kind))
+
         try:
             predict_method = None
             predict_method = getattr(self, "predict_%s" % kind)
 
             predictions = predict_method(input_data, by_name,
-                                         missing_strategy, compact)
+                                         missing_strategy, False)
         except KeyError:
-            raise ValueError("The operating point needs to contain a valid"
-                             " positive class, kind and a threshold.")
+            raise ValueError("The operating kind needs to contain a valid"
+                             " property.")
 
         if self.regression:
             prediction = predictions
         else:
-            prediction = sorted( \
-                predictions,
-                key=lambda(a, b): self._sort_predictions(a, b, attribute))[0]
+            predictions.sort( \
+                lambda a, b : self._sort_predictions(a, b, kind))
+            prediction = predictions[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
         return prediction
@@ -693,7 +702,7 @@ class Ensemble(ModelFields):
                                         "kind": "probability",
                                         "threshold": 0.5}
         :param operating_kind: "probability", "confidence" or "votes". Sets the
-                               quantity that decides the prediction.
+                               property that decides the prediction.
                                Used only if no operating_point is used
 
         """
@@ -716,6 +725,7 @@ class Ensemble(ModelFields):
             # combiner is set, default operating kind is "probability"
             operating_kind = "probability"
         if median and method is None:
+            # predictions with median are only available with old combiners
             method = PLURALITY_CODE
         if operating_point:
             if self.regression:
@@ -731,6 +741,9 @@ class Ensemble(ModelFields):
                 return prediction["prediction"]
 
         if operating_kind:
+            if self.regression:
+                raise ValueError("The operating_kind argument can only be"
+                                 " used in classifications.")
             prediction = self.predict_operating_kind( \
                 input_data, by_name=False,
                 missing_strategy=missing_strategy,

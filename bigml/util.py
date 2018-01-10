@@ -98,6 +98,8 @@ PROGRESS_BAR_WIDTH = 50
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 
+PRECISION = 5
+
 
 def python_map_type(value):
     """Maps a BigML type to equivalent Python types.

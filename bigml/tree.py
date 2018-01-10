@@ -34,7 +34,7 @@ except ImportError:
 from bigml.predicate import Predicate
 from bigml.prediction import Prediction
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
-from bigml.util import sort_fields, slugify, split, utf8
+from bigml.util import sort_fields, slugify, split, utf8, PRECISION
 from bigml.multivote import ws_confidence, merge_distributions, merge_bins
 from bigml.multivote import BINS_LIMIT
 from bigml.tree_utils import tableau_string, filter_nodes, missing_branch, \
@@ -357,13 +357,13 @@ class Tree(object):
 
                     if total_instances < 2:
                         total_instances = 1
-                    confidence = parent_node.confidence / \
-                                 math.sqrt(total_instances)
+                    confidence = round(parent_node.confidence /
+                                       math.sqrt(total_instances), PRECISION)
                 else:
                     prediction = mean(distribution)
-                    confidence = regression_error(
+                    confidence = round(regression_error(
                         unbiased_sample_variance(distribution, prediction),
-                        total_instances)
+                        total_instances), PRECISION)
                 return Prediction(
                     prediction,
                     path,

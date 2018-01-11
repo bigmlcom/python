@@ -41,10 +41,12 @@ def i_create_an_evaluation(step):
 
 
 #@step(r'I create an evaluation for the ensemble with the dataset$')
-def i_create_an_evaluation_ensemble(step):
+def i_create_an_evaluation_ensemble(step, params=None):
+    if params is None:
+        params = {}
     dataset = world.dataset.get('resource')
     ensemble = world.ensemble.get('resource')
-    resource = world.api.create_evaluation(ensemble, dataset)
+    resource = world.api.create_evaluation(ensemble, dataset, params)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

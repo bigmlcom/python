@@ -89,20 +89,25 @@ class TestBatchPrediction(object):
                 And I wait until the dataset is ready less than <time_2> secs
                 And I create an ensemble of <number_of_models> models and <tlp> tlp
                 And I wait until the ensemble is ready less than <time_3> secs
-                When I create a batch prediction for the dataset with the ensemble
+                When I create a batch prediction for the dataset with the ensemble and "<params>"
                 And I wait until the batch prediction is ready less than <time_4> secs
                 And I download the created predictions file to "<local_file>"
                 Then the batch prediction file is like "<predictions_file>"
 
                 Examples:
-                | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./data/batch_predictions_e.csv |
+                | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       | params
+                | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./data/batch_predictions_e.csv | {"combiner": 0}
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c0.csv', {"combiner":0}],
 
 
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/iris.csv', '30', '30', '5', '1', '80', '50', 'tmp/batch_predictions.csv', 'data/batch_predictions_e.csv']]
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c1.csv', {"combiner":1, "confidence": True}],
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c2.csv', {"combiner":2, "confidence": True}],
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_o_k_v.csv', {"operating_kind": "votes", "confidence": True}],
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_o_k_p.csv', {"operating_kind": "probability", "probability": True}],
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_o_k_c.csv', {"operating_kind": "confidence", "confidence": True}]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -111,7 +116,7 @@ class TestBatchPrediction(object):
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
             ensemble_create.i_create_an_ensemble(self, example[3], example[4])
             ensemble_create.the_ensemble_is_finished_in_less_than(self, example[5])
-            batch_pred_create.i_create_a_batch_prediction_ensemble(self)
+            batch_pred_create.i_create_a_batch_prediction_ensemble(self, example[9])
             batch_pred_create.the_batch_prediction_is_finished_in_less_than(self, example[6])
             batch_pred_create.i_download_predictions_file(self, example[7])
             batch_pred_create.i_check_predictions(self, example[8])

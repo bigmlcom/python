@@ -554,6 +554,7 @@ class Ensemble(ModelFields):
 
         """
         if a[criteria] == b[criteria]:
+            print "*** tie break"
             return sort_categories(a, b, self.objective_categories)
         return 1 if b[criteria] > a[criteria] else - 1
 

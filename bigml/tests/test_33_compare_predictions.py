@@ -314,14 +314,15 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence | params
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}'],
+
 
         """
         examples = [
-            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}'],
-            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.3174', '{"number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}']]
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.27261', '{"number_of_models": 5"}', {"operating_kind": "confidence"}],
+            ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}', {}],
+            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}', {}],
+            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}', {}]]
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
@@ -333,10 +334,10 @@ class TestComparePrediction(object):
             ensemble_create.i_create_an_ensemble_with_params(self, example[8])
             ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
             ensemble_create.create_local_ensemble(self)
-            prediction_create.i_create_an_ensemble_proportional_prediction(self, example[4])
+            prediction_create.i_create_an_ensemble_proportional_prediction(self, example[4], example[9])
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_create.the_confidence_is(self, example[7])
-            prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4])
+            prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4], example[9])
             prediction_compare.the_local_ensemble_prediction_is(self, example[6])
             prediction_compare.the_local_prediction_confidence_is(self, example[7])
 

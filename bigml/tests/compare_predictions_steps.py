@@ -387,3 +387,42 @@ def the_local_association_set_is_like_file(step, filename):
     with open(filename) as filehandler:
         file_result = json.load(filehandler)
     eq_(world.local_association_set, file_result)
+
+#@step(r'I create a local prediction for "(.*)" in operating kind "(.*)"$')
+def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict( \
+        data, operating_kind=operating_kind)
+
+#@step(r'I create a local ensemble prediction for "(.*)" in operating kind "(.*)"$')
+def i_create_a_local_ensemble_prediction_op_kind( \
+        step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    data = json.loads(data)
+    world.local_prediction = world.local_ensemble.predict( \
+        data, operating_kind=operating_kind)
+
+#@step(r'I create a local deepnet for "(.*)" in operating kind "(.*)"$')
+def i_create_a_local_deepnet_prediction_op_kind( \
+        step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict( \
+        data, operating_kind=operating_kind)
+
+#@step(r'I create a local logistic regression for "(.*)" in operating kind "(.*)"$')
+def i_create_a_local_logistic_regressioin_prediction_op_kind( \
+        step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    data = json.loads(data)
+    world.local_prediction = world.local_model.predict( \
+        data, operating_kind=operating_kind)

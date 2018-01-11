@@ -82,17 +82,23 @@ class TestEvaluation(object):
                 And I wait until the dataset is ready less than <time_2> secs
                 And I create an ensemble of <number_of_models> models and <tlp> tlp
                 And I wait until the ensemble is ready less than <time_3> secs
-                When I create an evaluation for the ensemble with the dataset
+                When I create an evaluation for the ensemble with the dataset and "<params>"
                 And I wait until the evaluation is ready less than <time_4> secs
                 Then the measured "<measure>" is <value>
 
                 Examples:
-                | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | measure       | value  |
-                | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | average_phi   | 0.98029   |
+                | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | measure       | value  | params
+                | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | average_phi   | 0.98029   | {"combiner": 0}
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 0}],
+
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029']]
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"combiner": 1}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"combiner": 2}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"operating_kind": "votes"}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"operating_kind": "probability"}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"operating_kind": "confidence"}]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -101,7 +107,7 @@ class TestEvaluation(object):
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
             ensemble_create.i_create_an_ensemble(self, example[3], example[4])
             ensemble_create.the_ensemble_is_finished_in_less_than(self, example[5])
-            evaluation_create.i_create_an_evaluation_ensemble(self)
+            evaluation_create.i_create_an_evaluation_ensemble(self, example[9])
             evaluation_create.the_evaluation_is_finished_in_less_than(self, example[6])
             evaluation_create.the_measured_measure_is_value(self, example[7], example[8])
 

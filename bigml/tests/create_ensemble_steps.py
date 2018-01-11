@@ -34,16 +34,16 @@ from bigml.model import Model
 from read_ensemble_steps import i_get_the_ensemble
 
 NO_MISSING_SPLITS = {'missing_splits': False}
-ENSEMBLE_SAMPLE = {'ensemble_sample': {"rate": 0.70, "seed": 'BigML'}}
+ENSEMBLE_SAMPLE = {'seed': 'BigML',
+                   'ensemble_sample': {"rate": 0.7, "seed": 'BigML'}}
 
 #@step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
 def i_create_an_ensemble(step, number_of_models=2, tlp=1):
     dataset = world.dataset.get('resource')
     try:
         number_of_models = int(number_of_models)
-        tlp = int(tlp)
-        args = {'number_of_models': number_of_models,
-                'tlp': tlp}
+        # tlp is no longer used
+        args = {'number_of_models': number_of_models}
     except:
         args = {}
     args.update(NO_MISSING_SPLITS)

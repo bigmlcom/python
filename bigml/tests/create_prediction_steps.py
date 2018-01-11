@@ -138,14 +138,16 @@ def i_create_an_ensemble_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
-def i_create_an_ensemble_proportional_prediction(step, data=None):
+def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
     if data is None:
         data = "{}"
+    if params is None:
+        params = {}
     ensemble = world.ensemble['resource']
     data = json.loads(data)
-    resource = world.api.create_prediction(ensemble,
-                                           data,
-                                           {"missing_strategy": 1})
+    args = {"missing_strategy": 1}
+    args.update(params)
+    resource = world.api.create_prediction(ensemble, data, args)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
@@ -185,9 +187,13 @@ def create_local_ensemble_prediction_with_confidence(step, input_data):
         json.loads(input_data), compact=True)
 
 def create_local_ensemble_proportional_prediction_with_confidence( \
-    step, input_data):
+    step, input_data, params=None):
+    if params is None:
+        params = {}
+    kwargs = {"with_confidence": True, "missing_strategy": 1}
+    kwargs.update(params)
     world.local_prediction = world.local_ensemble.predict( \
-        json.loads(input_data), with_confidence=True, missing_strategy=1)
+        json.loads(input_data), **kwargs)
 
 def create_local_ensemble_prediction_using_median_with_confidence( \
     step, input_data):
@@ -272,3 +278,60 @@ def the_logistic_probability_is(step, probability):
             break
     assert_almost_equals(round(float(remote_probability), 4),
                          round(float(probability), 4))
+
+def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    model = world.model['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        model, data, {"operating_kind": operating_kind})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+
+def i_create_an_ensemble_prediction_op_kind(step, data=None, operating_kind=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_kind)
+    ensemble = world.ensemble['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        ensemble, data, {"operating_kind": operating_kind})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+def i_create_a_deepnet_prediction_op_kind(step, data=None,
+                                          operating_kind=None):
+    if data is None:
+        data = "{}"
+    deepnet = world.deepnet['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        deepnet, data, {"operating_kind": operating_kind})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+def i_create_a_logistic_prediction_with_op_kind(step, data=None,
+                                                operating_kind=None):
+    if data is None:
+        data = "{}"
+    logistic_regression = world.logistic_regression['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        logistic_regression, data, {"operating_kind": operating_kind})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])

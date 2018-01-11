@@ -46,11 +46,13 @@ def i_create_a_batch_prediction(step):
     world.batch_predictions.append(resource['resource'])
 
 
-#@step(r'I create a batch prediction for the dataset with the ensemble$')
-def i_create_a_batch_prediction_ensemble(step):
+#@step(r'I create a batch prediction for the dataset with the ensemble and "(.*)"$')
+def i_create_a_batch_prediction_ensemble(step, params=None):
+    if params is None:
+        params = {}
     dataset = world.dataset.get('resource')
     ensemble = world.ensemble.get('resource')
-    resource = world.api.create_batch_prediction(ensemble, dataset)
+    resource = world.api.create_batch_prediction(ensemble, dataset, params)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

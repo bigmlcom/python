@@ -97,12 +97,12 @@ class TestBatchPrediction(object):
                 Examples:
                 | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | local_file | predictions_file       | params
                 | ../data/iris.csv | 30      | 30     | 5                | 1   | 80     | 50     | ./tmp/batch_predictions.csv | ./data/batch_predictions_e.csv | {"combiner": 0}
-            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c0.csv', {"combiner":0}],
 
 
         """
         print self.test_scenario2.__doc__
         examples = [
+            ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c0.csv', {"combiner":0}],
             ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c1.csv', {"combiner":1, "confidence": True}],
             ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_c2.csv', {"combiner":2, "confidence": True}],
             ['data/iris.csv', '30', '30', '5', '1', '180', '150', 'tmp/batch_predictions.csv', 'data/batch_predictions_e_o_k_v.csv', {"operating_kind": "votes", "confidence": True}],

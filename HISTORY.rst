@@ -13,6 +13,10 @@ History
 - Adding operating kind support for local predictions in models and ensembles.
 - Fixing bug in ensembles local predictions with probability.
 - Fixing bug in logistic regression local predictions with operating points.
+
+4.13.7 (2018-01-02)
+~~~~~~~~~~~~~~~~~~~
+
 - Changing local predictions with threshold to meet changes in backend.
 - Adding support for configurations REST API calls.
 

@@ -418,7 +418,7 @@ def i_create_a_local_deepnet_prediction_op_kind( \
         data, operating_kind=operating_kind)
 
 #@step(r'I create a local logistic regression for "(.*)" in operating kind "(.*)"$')
-def i_create_a_local_logistic_regressioin_prediction_op_kind( \
+def i_create_a_local_logistic_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"

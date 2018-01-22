@@ -315,7 +315,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '50', '50', '{"petal length": 2.46}', 'Iris-versicolor',  "confidence", "000004"],
             ['data/iris.csv', '10', '50', '50', '{"petal length": 2}', 'Iris-setosa',  "confidence", "000004"],
             ['data/iris.csv', '10', '50', '50', '{"petal length": 2.46}', 'Iris-versicolor',  "votes", "000004"],
-            ['data/iris.csv', '10', '50', '50', '{"petal length": 2}', 'Iris-setosa',  "votes", "000004"]]
+            ['data/iris.csv', '10', '50', '50', '{"petal length": 1}', 'Iris-setosa',  "votes", "000004"]]
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
@@ -353,8 +353,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2.46}', '000004', 'Iris-setosa', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-versicolor', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '30000', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
         show_doc(self.test_scenario8, examples)
 
         for example in examples:
@@ -363,10 +363,10 @@ class TestComparePrediction(object):
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_deepnet_with_objective_and_params(self, example[5], example[7])
-            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
-            prediction_compare.i_create_a_local_logistic_regression(self)
-            prediction_create.i_create_a_logistic_prediction_op_kind(self, example[4], example[8])
+            model_create.i_create_a_logistic_model(self)
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction_with_op_kind(self, example[4], example[8])
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_logistic_prediction_op_kind(self, example[4], example[8])
             prediction_compare.the_local_prediction_is(self, example[6])

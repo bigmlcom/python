@@ -114,10 +114,8 @@ def sort_categories(a, b, categories_list):
     used.
 
     """
-    print "***", categories_list
     index_a = categories_list.index(a["category"])
     index_b = categories_list.index(b["category"])
-    print index_a, index_b
     if index_a < 0 and index_b < 0:
         index_a = a['category']
         index_b = b['category']

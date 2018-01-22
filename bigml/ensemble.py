@@ -554,7 +554,6 @@ class Ensemble(ModelFields):
 
         """
         if a[criteria] == b[criteria]:
-            print "*** tie break"
             return sort_categories(a, b, self.objective_categories)
         return 1 if b[criteria] > a[criteria] else - 1
 
@@ -594,8 +593,8 @@ class Ensemble(ModelFields):
                     prediction = prediction[1]
                 else:
                     prediction = prediction[0]
-                prediction["prediction"] = prediction["category"]
-                del prediction["category"]
+            prediction["prediction"] = prediction["category"]
+            del prediction["category"]
         return prediction
 
     def predict_operating_kind(self, input_data, by_name=True,

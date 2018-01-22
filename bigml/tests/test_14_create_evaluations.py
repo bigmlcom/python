@@ -94,8 +94,8 @@ class TestEvaluation(object):
         print self.test_scenario2.__doc__
         examples = [
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 0}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"combiner": 1}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"combiner": 2}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"combiner": 1}],
+            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 2}],
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"operating_kind": "votes"}],
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"operating_kind": "probability"}],
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"operating_kind": "confidence"}]]

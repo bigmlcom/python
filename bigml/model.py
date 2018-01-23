@@ -54,7 +54,7 @@ import locale
 import json
 
 
-from functools import partial
+from functools import partial, cmp_to_key
 
 from bigml.api import FINISHED, STATUSES
 from bigml.api import BigML, get_model_id, get_status
@@ -497,7 +497,8 @@ class Model(BaseModel):
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             predictions.sort( \
-                lambda a, b : self._sort_predictions(a, b, kind))
+                key=cmp_to_key( \
+                lambda a, b : self._sort_predictions(a, b, kind)))
             prediction = predictions[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]

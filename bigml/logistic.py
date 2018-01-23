@@ -44,6 +44,8 @@ import logging
 import math
 import copy
 
+from functools import cmp_to_key
+
 from bigml.api import FINISHED
 from bigml.api import BigML, get_logistic_regression_id, get_status
 from bigml.util import cast, PRECISION

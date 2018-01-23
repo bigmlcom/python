@@ -43,6 +43,7 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 import logging
 import json
 
+from functools import cmp_to_key
 
 from bigml.api import FINISHED
 from bigml.api import BigML, get_deepnet_id, get_status

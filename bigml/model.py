@@ -538,7 +538,8 @@ class Model(BaseModel):
             prediction = predictions
         else:
             predictions.sort( \
-                lambda a, b : self._sort_predictions(a, b, kind))
+                key=cmp_to_key( \
+                lambda a, b : self._sort_predictions(a, b, kind)))
             prediction = predictions[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]

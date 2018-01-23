@@ -402,7 +402,8 @@ class Deepnet(ModelFields):
             raise ValueError("Only probability is allowed as operating kind"
                              " for deepnets.")
         predictions.sort( \
-            lambda a, b : self._sort_predictions(a, b, kind))
+            key=cmp_to_key( \
+            lambda a, b : self._sort_predictions(a, b, kind)))
         prediction = predictions[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
@@ -424,7 +425,8 @@ class Deepnet(ModelFields):
             # if the threshold is not met, the alternative class with
             # highest probability or confidence is returned
             predictions.sort( \
-                lambda a, b : self._sort_predictions(a, b, kind))
+                key=cmp_to_key( \
+                lambda a, b : self._sort_predictions(a, b, kind)))
             prediction = predictions[0 : 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]

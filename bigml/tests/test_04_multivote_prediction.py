@@ -49,21 +49,21 @@ class TestMultiVotePrediction(object):
 
                 Examples:
                 | predictions               | method       | prediction    | confidence            |
-                | ../data/predictions_c.json| 0            | a             | 0.450471270879        |
-                | ../data/predictions_c.json| 1            | a             | 0.552021302649        |
-                | ../data/predictions_c.json| 2            | a             | 0.403632421178        |
-                | ../data/predictions_r.json| 0            | 1.55555556667 | 0.400079152063        |
-                | ../data/predictions_r.json| 1            | 1.59376845074 | 0.248366474212        |
-                | ../data/predictions_r.json| 2            | 1.55555556667 | 0.400079152063        |
+                | ../data/predictions_c.json| 0            | a             | 0.45047        |
+                | ../data/predictions_c.json| 1            | a             | 0.55202        |
+                | ../data/predictions_c.json| 2            | a             | 0.40363        |
+                | ../data/predictions_r.json| 0            | 1.55555556667 | 0.40008        |
+                | ../data/predictions_r.json| 1            | 1.59376845074 | 0.24837        |
+                | ../data/predictions_r.json| 2            | 1.55555556667 | 0.40008        |
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/predictions_c.json', '0', 'a', '0.450471270879'],
-            ['data/predictions_c.json', '1', 'a', '0.552021302649'],
-            ['data/predictions_c.json', '2', 'a', '0.403632421178'],
-            ['data/predictions_r.json', '0', '1.55555556667', '0.400079152063'],
-            ['data/predictions_r.json', '1', '1.59376845074', '0.248366474212'],
-            ['data/predictions_r.json', '2', '1.55555556667', '0.400079152063']]
+            ['data/predictions_c.json', '0', 'a', '0.45047'],
+            ['data/predictions_c.json', '1', 'a', '0.55202'],
+            ['data/predictions_c.json', '2', 'a', '0.40363'],
+            ['data/predictions_r.json', '0', '1.55555556667', '0.40008'],
+            ['data/predictions_r.json', '1', '1.59376845074', '0.24837'],
+            ['data/predictions_r.json', '2', '1.55555556667', '0.40008']]
         for example in examples:
             print "\nTesting with:\n", example
             multivote_prediction.i_create_a_multivote(self, example[0])

@@ -29,6 +29,8 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.multivote import MultiVote
 
+DIGITS = 5
+
 #@step(r'I create a MultiVote for the set of predictions in file (.*)$')
 def i_create_a_multivote(step, predictions_file):
     predictions_file = res_filename(predictions_file)
@@ -58,7 +60,8 @@ def check_combined_prediction(step, prediction):
 
     if world.multivote.is_regression():
         try:
-            eq_(round(world.combined_prediction, 6), round(float(prediction), 6))
+            eq_(round(world.combined_prediction, DIGITS),
+                round(float(prediction), DIGITS))
         except ValueError, exc:
             assert False, str(exc)
     else:
@@ -69,8 +72,8 @@ def check_combined_prediction_no_confidence(step, prediction):
 
     if world.multivote.is_regression():
         try:
-            eq_(round(world.combined_prediction_nc, 6),
-                round(float(prediction), 6))
+            eq_(round(world.combined_prediction_nc, DIGITS),
+                round(float(prediction), DIGITS))
         except ValueError, exc:
             assert False, str(exc)
     else:
@@ -79,6 +82,7 @@ def check_combined_prediction_no_confidence(step, prediction):
 #@step(r'the confidence for the combined prediction is (.*)$')
 def check_combined_confidence(step, confidence):
     try:
-        eq_(round(world.combined_confidence, 6), round(float(confidence), 6))
+        eq_(round(world.combined_confidence, DIGITS),
+            round(float(confidence), DIGITS))
     except ValueError, exc:
         assert False, str(exc)

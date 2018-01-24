@@ -5594,7 +5594,7 @@ votes. Thus you can decide whether to operate the ensemble using the
 ``confidence``, the ``probability`` or the ``votes`` so that the predicted
 category is the one that scores higher in any of these quantities. The
 criteria can be set using the `operating_kind` option (default is set to
-``probabiity``):
+``probability``):
 
 .. code-block:: python
 

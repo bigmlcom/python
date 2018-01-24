@@ -55,8 +55,6 @@ LOGGER.addHandler(CONSOLE)
 
 # Base URL
 BIGML_URL = '%s://%s/andromeda/'
-# Development Mode URL
-BIGML_DEV_URL = '%s://%s/dev/andromeda/'
 
 DOWNLOAD_DIR = '/download'
 
@@ -169,7 +167,7 @@ class BigMLConnection(object):
 
         dev_mode` has been deprecated. Now all resources coexist in the
         same production environment. Existing resources generated in
-        development mode have been archived under an special project and
+        development mode have been archived under a special project and
         are now accessible in production mode.
 
         If storage is set to a directory name, the resources obtained in
@@ -234,7 +232,7 @@ class BigMLConnection(object):
 
         dev_mode` has been deprecated. Now all resources coexist in the
         same production environment. Existing resources generated in
-        development mode have been archived under an special project and
+        development mode have been archived under a special project and
         are now accessible in production mode.
 
         """

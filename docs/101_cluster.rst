@@ -92,7 +92,7 @@ class in the `cluster` module. A simple example of that is:
     local_cluster.centroid({"petal length": 4, "sepal length": 2,
                             "petal width": 1, "sepal witdh": 3})
 
-And if you want find out locally the associated centroids
+And if you want to find out locally the associated centroids
 for all the rows in a CSV file (first line
 should contain the field headers):
 

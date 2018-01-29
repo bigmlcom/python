@@ -54,7 +54,7 @@ class ProjectHandler(ResourceHandler):
         if args is None:
             args = {}
         body = json.dumps(args)
-        return self._create(self.project_url, body)
+        return self._create(self.project_url, body, organization=True)
 
     def get_project(self, project, query_string=''):
         """Retrieves a project.
@@ -71,13 +71,13 @@ class ProjectHandler(ResourceHandler):
         project_id = get_project_id(project)
         if project_id:
             return self._get("%s%s" % (self.url, project_id),
-                             query_string=query_string)
+                             query_string=query_string, organization=True)
 
     def list_projects(self, query_string=''):
         """Lists all your projects.
 
         """
-        return self._list(self.project_url, query_string)
+        return self._list(self.project_url, query_string, organization=True)
 
     def update_project(self, project, changes):
         """Updates a project.
@@ -88,7 +88,8 @@ class ProjectHandler(ResourceHandler):
         project_id = get_project_id(project)
         if project_id:
             body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, project_id), body)
+            return self._update("%s%s" % (self.url, project_id), body,
+                                organization=True)
 
     def delete_project(self, project):
         """Deletes a project.
@@ -98,4 +99,5 @@ class ProjectHandler(ResourceHandler):
                             message="A project id is needed.")
         project_id = get_project_id(project)
         if project_id:
-            return self._delete("%s%s" % (self.url, project_id))
+            return self._delete("%s%s" % (self.url, project_id),
+                                organization=True)

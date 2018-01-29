@@ -123,7 +123,37 @@ class as follows:
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
-The main domain for the API service is ``bigml.io``, but there are some
+These credentials will allow you to manage any resource in your user
+environment.
+
+In BigML a user can also work for an ``organization``.
+In this case, the organization administrator should previously assign
+permissions for the user to access one or several particular projects
+in the organization.
+Once permissions are granted, the user can work with resources in a project
+according to his permission level by creating a special constructor for
+each project. The connection constructor in this case
+should include the ``project ID``:
+
+.. code-block:: python
+
+    api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
+                project=project/53739b98d994972da7001d4a)
+
+When the resource to be managed is a ``project`` itself, the connection
+needs to include the corresponding``organization ID``:
+
+.. code-block:: python
+
+    api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
+                organization=organization/53739b98d994972da7025d4a)
+
+
+Alternative domains
+-------------------
+
+
+The main public domain for the API service is ``bigml.io``, but there are some
 alternative domains, either for Virtual Private Cloud setups or
 the australian subdomain (``au.bigml.io``). You can change the remote
 server domain

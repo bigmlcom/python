@@ -158,7 +158,8 @@ class BigMLConnection(object):
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False, storage=None, domain=None):
+                 debug=False, set_locale=False, storage=None, domain=None,
+                 project=None, organization=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -177,6 +178,18 @@ class BigMLConnection(object):
         will be the one in the environment variable `BIGML_DOMAIN` or
         `bigml.io` if missing. The expected domain argument is a string or a
         Domain object. See Domain class for details.
+
+        When project is set to a project ID,
+        the user is considered to be working in an
+        organization project. The scope of the API requests will be limited
+        to this project and permissions should be previously given by the
+        organization administrator.
+
+        When organization is set to an organization ID,
+        the user is considered to be working for an
+        organization. The scope of the API requests will be limited to the
+        projects of the organization and permissions need to be previously
+        given by the organization administrator.
 
         """
 
@@ -208,6 +221,14 @@ class BigMLConnection(object):
                                      " your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
+        if project is not None:
+            self.project = "project=%s;" % project
+        else:
+            self.project = ""
+        if organization is not None:
+            self.organization = "organization=%s;" % organization
+        else:
+            self.organization = ""
         self.debug = debug
         self.general_domain = None
         self.genearl_protocol = None
@@ -257,7 +278,26 @@ class BigMLConnection(object):
             self.prediction_protocol, self.prediction_domain)
 
 
-    def _create(self, url, body, verify=None):
+    def _add_credentials(self, url, organization=False, shared_auth=None):
+        """Adding the credentials and project or organization information
+        for authentication
+
+        The organization argument is a boolean that controls authentication
+        profiles in organizations. When set to true,
+        the organization ID is used to access the projects in an
+        organization. If false, a particular project ID must be used.
+
+        The shared_auth string provides the alternative credentials for
+        shared resources.
+
+        """
+
+        return "%s%s%s" % (url, self.auth if shared_auth is None else
+                           shared_auth,
+                           self.organization if
+                           organization else self.project)
+
+    def _create(self, url, body, verify=None, organization=None):
         """Creates a new remote resource.
 
         Posts `body` in JSON to `url` to create a new remote resource.
@@ -286,11 +326,12 @@ class BigMLConnection(object):
         if verify is None:
             verify = self.verify
 
+        url = self._add_credentials(url, organization=organization)
         while code == HTTP_ACCEPTED:
             if GAE_ENABLED:
                 try:
                     req_options = {
-                        'url': url + self.auth,
+                        'url': url,
                         'method': urlfetch.POST,
                         'headers': SEND_JSON,
                         'payload': body,
@@ -304,7 +345,7 @@ class BigMLConnection(object):
                                       location, resource, error)
             else:
                 try:
-                    response = requests.post(url + self.auth,
+                    response = requests.post(url,
                                              headers=SEND_JSON,
                                              data=body, verify=verify)
                 except (requests.ConnectionError,
@@ -341,7 +382,7 @@ class BigMLConnection(object):
                           location, resource, error)
 
     def _get(self, url, query_string='',
-             shared_username=None, shared_api_key=None):
+             shared_username=None, shared_api_key=None, organization=None):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -366,10 +407,15 @@ class BigMLConnection(object):
                 else "?username=%s;api_key=%s" % (
                     shared_username, shared_api_key))
 
+        kwargs = {"organization": organization}
+        if shared_username is not None and shared_api_key is not None:
+            kwargs.update({"shared_auth": auth})
+
+        url =  self._add_credentials(url, **kwargs) + query_string
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth + query_string,
+                    'url': url,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.verify
@@ -382,8 +428,7 @@ class BigMLConnection(object):
                                   location, resource, error)
         else:
             try:
-                response = requests.get(url + auth + query_string,
-                                        headers=ACCEPT_JSON,
+                response = requests.get(url, headers=ACCEPT_JSON,
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
@@ -413,7 +458,7 @@ class BigMLConnection(object):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def _list(self, url, query_string=''):
+    def _list(self, url, query_string='', organization=None):
         """Lists all existing remote resources.
 
         Resources in listings can be filterd using `query_string` formatted
@@ -444,10 +489,12 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be listed"}}
 
+        url = self._add_credentials(url, organization=organization) + \
+            query_string
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth + query_string,
+                    'url': url,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.verify
@@ -463,8 +510,7 @@ class BigMLConnection(object):
                     'error': error}
         else:
             try:
-                response = requests.get(url + self.auth + query_string,
-                                        headers=ACCEPT_JSON,
+                response = requests.get(url , headers=ACCEPT_JSON,
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
@@ -500,7 +546,7 @@ class BigMLConnection(object):
             'objects': resources,
             'error': error}
 
-    def _update(self, url, body):
+    def _update(self, url, body, organization=None):
         """Updates a remote resource.
 
         Uses PUT to update a BigML resource. Only the new fields that
@@ -524,10 +570,11 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be updated"}}
 
+        url = self._add_credentials(url, organization=organization)
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth,
+                    'url': url,
                     'method': urlfetch.PUT,
                     'headers': SEND_JSON,
                     'payload': body,
@@ -541,7 +588,7 @@ class BigMLConnection(object):
                                   location, resource, error)
         else:
             try:
-                response = requests.put(url + self.auth,
+                response = requests.put(url,
                                         headers=SEND_JSON,
                                         data=body, verify=self.verify)
             except (requests.ConnectionError,
@@ -572,7 +619,7 @@ class BigMLConnection(object):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def _delete(self, url, query_string=''):
+    def _delete(self, url, query_string='', organization=None):
         """Permanently deletes a remote resource.
 
         If the request is successful the status `code` will be HTTP_NO_CONTENT
@@ -586,10 +633,12 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "The resource couldn't be deleted"}}
 
+        url = self._add_credentials(url, organization=organization) + \
+            query_string
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth + query_string,
+                    'url': url,
                     'method': urlfetch.DELETE,
                     'validate_certificate': self.verify
                 }
@@ -602,8 +651,7 @@ class BigMLConnection(object):
                     'error': error}
         else:
             try:
-                response = requests.delete(url + self.auth + query_string,
-                                           verify=self.verify)
+                response = requests.delete(url, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException), exc:
@@ -647,10 +695,11 @@ class BigMLConnection(object):
         if counter > 2 * retries:
             LOGGER.error("Retries exhausted trying to download the file.")
             return file_object
+
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url + self.auth,
+                    'url': self._add_credentials(url),
                     'method': urlfetch.GET,
                     'validate_certificate': self.verify
                 }
@@ -661,7 +710,7 @@ class BigMLConnection(object):
                 return file_object
         else:
             try:
-                response = requests.get(url + self.auth,
+                response = requests.get(self._add_credentials(url),
                                         verify=self.verify, stream=True)
             except (requests.ConnectionError,
                     requests.Timeout,

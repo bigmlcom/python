@@ -221,9 +221,10 @@ class SourceHandler(ResourceHandler):
         else:
             body, headers = multipart_encode(args)
 
+        url = self._add_credentials(self.source_url)
         if GAE_ENABLED:
             try:
-                response = urlfetch.fetch(url=self.source_url + self.auth,
+                response = urlfetch.fetch(url=url,
                                           payload="".join(body),
                                           method=urlfetch.POST,
                                           headers=headers)
@@ -251,7 +252,7 @@ class SourceHandler(ResourceHandler):
                              str(exception))
         else:
             try:
-                request = urllib2.Request(self.source_url + self.auth,
+                request = urllib2.Request(url,
                                           body, headers)
                 # try using the new SSL checking in python 2.7.9
                 try:
@@ -342,10 +343,11 @@ class SourceHandler(ResourceHandler):
         except IOError:
             sys.exit("ERROR: cannot read training set")
 
+        url = self._add_credentials(self.source_url)
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': self.source_url + self.auth,
+                    'url': url,
                     'method': urlfetch.POST,
                     'headers': SEND_JSON,
                     'data': create_args,
@@ -366,7 +368,7 @@ class SourceHandler(ResourceHandler):
                 files.update(create_args)
                 multipart = MultipartEncoder(fields=files)
                 response = requests.post( \
-                    self.source_url + self.auth,
+                    url,
                     headers={'Content-Type': multipart.content_type},
                     data=multipart, verify=self.verify)
             except (requests.ConnectionError,

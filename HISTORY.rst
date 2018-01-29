@@ -3,6 +3,11 @@
 History
 -------
 
+4.15.0 (2018-01-31)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding organizations support for all the API calls.
+
 4.14.0 (2018-01-22)
 ~~~~~~~~~~~~~~~~~~~
 

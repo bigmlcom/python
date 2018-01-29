@@ -167,7 +167,8 @@ class BigML(ConfigurationHandler,
 
     """
     def __init__(self, username=None, api_key=None, dev_mode=False,
-                 debug=False, set_locale=False, storage=None, domain=None):
+                 debug=False, set_locale=False, storage=None, domain=None,
+                 project=None, organization=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -186,12 +187,25 @@ class BigML(ConfigurationHandler,
         `bigml.io` if missing. The expected domain argument is a string or a
         Domain object. See Domain class for details.
 
+        When project is set to a project ID,
+        the user is considered to be working in an
+        organization project. The scope of the API requests will be limited
+        to this project and permissions should be previously given by the
+        organization administrator.
+
+        When organization is set to an organization ID,
+        the user is considered to be working for an
+        organization. The scope of the API requests will be limited to the
+        projects of the organization and permissions need to be previously
+        given by the organization administrator.
+
         """
 
         BigMLConnection.__init__(self, username=username, api_key=api_key,
                                  dev_mode=dev_mode, debug=debug,
                                  set_locale=set_locale, storage=storage,
-                                 domain=domain)
+                                 domain=domain, project=project,
+                                 organization=organization)
         ResourceHandler.__init__(self)
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
@@ -270,6 +284,11 @@ class BigML(ConfigurationHandler,
                 info += u"    using %s protocol\n" % self.prediction_protocol
             info += u"    SSL verification %s\n" % (
                 "on" if self.verify_prediction else "off")
+
+        if self.project or self.organization:
+            info += u"    Scope info: %s\n" % \
+                u"%s\n                %s" % (self.organization, self.project)
+
 
         info += u"\nAuthentication string:\n"
         info += u"    %s\n" % self.auth[1:]

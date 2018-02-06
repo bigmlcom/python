@@ -98,6 +98,7 @@ class SourceHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
         create_args.update({"remote": url})
+        create_args = self._add_project(create_args)
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
@@ -110,6 +111,7 @@ class SourceHandler(ResourceHandler):
         create_args = {}
         if args is not None:
             create_args.update(args)
+        create_args = self._add_project(create_args)
 
         # some basic validation
         if (not isinstance(src_obj, list) or (
@@ -216,12 +218,18 @@ class SourceHandler(ResourceHandler):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
+        if args is None:
+            args = {}
+        args = self._add_project(args, True)
+        print args
+
         if progress_bar and callback is not None:
             body, headers = multipart_encode(args, cb=callback)
         else:
             body, headers = multipart_encode(args)
 
         url = self._add_credentials(self.source_url)
+
         if GAE_ENABLED:
             try:
                 response = urlfetch.fetch(url=url,
@@ -344,6 +352,7 @@ class SourceHandler(ResourceHandler):
             sys.exit("ERROR: cannot read training set")
 
         url = self._add_credentials(self.source_url)
+        create_args = self._add_project(create_args, True)
         if GAE_ENABLED:
             try:
                 req_options = {

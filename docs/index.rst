@@ -140,6 +140,12 @@ should include the ``project ID``:
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
                 project=project/53739b98d994972da7001d4a)
 
+If the project used in a connection object
+does not belong to an existing organization but is one of the
+projects under the user's account, all the resources
+created or updated with that connection will also be assigned to the
+specified project.
+
 When the resource to be managed is a ``project`` itself, the connection
 needs to include the corresponding``organization ID``:
 
@@ -147,6 +153,7 @@ needs to include the corresponding``organization ID``:
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
                 organization=organization/53739b98d994972da7025d4a)
+
 
 
 Alternative domains

@@ -518,7 +518,7 @@ class Ensemble(ModelFields):
                     input_data, by_name=by_name,
                     missing_strategy=missing_strategy,
                     method=method)
-
+                print votes_split.predictions
                 votes.extend(votes_split)
         else:
             # When only one group of models is found you use the
@@ -527,6 +527,7 @@ class Ensemble(ModelFields):
                 input_data, by_name=by_name,
                 missing_strategy=missing_strategy, method=method)
 
+            print votes.predictions
         return votes.combine_to_distribution(normalize=False)
 
     def _get_models(self, models_split):
@@ -723,6 +724,7 @@ class Ensemble(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
+        print "****input", input_data
         if method is None and operating_point is None and \
             operating_kind is None and median is None:
             # operating_point has precedence over operating_kind. If no

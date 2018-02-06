@@ -221,14 +221,12 @@ class BigMLConnection(object):
                                      " your environment")
 
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
+        self.project = None
+        self.organization = None
         if project is not None:
-            self.project = "project=%s;" % project
-        else:
-            self.project = ""
+            self.project = project
         if organization is not None:
-            self.organization = "organization=%s;" % organization
-        else:
-            self.organization = ""
+            self.organization = organization
         self.debug = debug
         self.general_domain = None
         self.genearl_protocol = None
@@ -291,11 +289,29 @@ class BigMLConnection(object):
         shared resources.
 
         """
-
         return "%s%s%s" % (url, self.auth if shared_auth is None else
-                           shared_auth,
-                           self.organization if
-                           organization else self.project)
+                          shared_auth,
+                          "organization=%s;" % self.organization if
+                          organization and self.organization
+                          else "project=%s;" % self.project if self.project
+                          else "")
+
+    def _add_project(self, payload, include=True):
+        """Adding project id as attribute when it has been set in the
+        connection arguments.
+
+        """
+        to_string = False
+        if self.project and include:
+            # Adding project ID to args if it's not set
+            if isinstance(payload, basestring):
+                payload = json.loads(payload)
+                to_string = True
+            if payload.get("project") is None:
+                payload["project"] = self.project
+            if to_string:
+                return json.dumps(payload)
+        return payload
 
     def _create(self, url, body, verify=None, organization=None):
         """Creates a new remote resource.
@@ -327,6 +343,7 @@ class BigMLConnection(object):
             verify = self.verify
 
         url = self._add_credentials(url, organization=organization)
+        body = self._add_project(body, not organization)
         while code == HTTP_ACCEPTED:
             if GAE_ENABLED:
                 try:
@@ -571,6 +588,7 @@ class BigMLConnection(object):
                 "message": "The resource couldn't be updated"}}
 
         url = self._add_credentials(url, organization=organization)
+        body = self._add_project(body, not organization)
         if GAE_ENABLED:
             try:
                 req_options = {

@@ -287,7 +287,8 @@ class BigML(ConfigurationHandler,
 
         if self.project or self.organization:
             info += u"    Scope info: %s\n" % \
-                u"%s\n                %s" % (self.organization, self.project)
+                u"%s\n                %s" % (self.organization or "",
+                                             self.project or "")
 
 
         info += u"\nAuthentication string:\n"

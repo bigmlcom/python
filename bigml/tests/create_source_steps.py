@@ -45,6 +45,15 @@ def i_upload_a_file(step, file):
     # save reference
     world.sources.append(resource['resource'])
 
+#@step(r'I create a data source uploading a "(.*)" file using a project$')
+def i_upload_a_file_with_project_conn(step, file):
+    resource = world.api.create_source(res_filename(file))
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
 
 #@step(r'I create a data source from stdin uploading a "(.*)" file$')
 def i_upload_a_file_from_stdin(step, file):

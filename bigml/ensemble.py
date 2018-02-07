@@ -724,7 +724,6 @@ class Ensemble(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        print "****input", input_data
         if method is None and operating_point is None and \
             operating_kind is None and median is None:
             # operating_point has precedence over operating_kind. If no

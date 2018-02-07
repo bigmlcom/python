@@ -3,7 +3,12 @@
 History
 -------
 
-4.15.0 (2018-01-31)
+4.15.1 (2018-02-07)
+~~~~~~~~~~~~~~~~~~~
+
+- Removing logs left in local ensemble object.
+
+4.15.0 (2018-02-07)
 ~~~~~~~~~~~~~~~~~~~
 
 - Adding organizations support for all the API calls.

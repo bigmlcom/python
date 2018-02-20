@@ -227,7 +227,12 @@ class MultiVote(object):
             if add_median:
                 median_result += prediction['median']
             if with_confidence or add_confidence:
-                confidence += prediction[CONFIDENCE_W]
+                # some buggy models don't produce a valid confidence value
+                if prediction[CONFIDENCE_W] is not None and \
+                   prediction[CONFIDENCE_W] > 0:
+                    confidence += prediction[CONFIDENCE_W]
+                else:
+                    total -= 1
             if add_count:
                 instances += prediction['count']
             if add_min and d_min > prediction['min']:
@@ -305,8 +310,10 @@ class MultiVote(object):
             if add_max and d_max < prediction['max']:
                 d_max = prediction['max']
             if with_confidence or add_confidence:
-                combined_error += (prediction[CONFIDENCE_W] *
-                                   prediction['_error_weight'])
+                # some buggy models don't produce a valid confidence value
+                if prediction[CONFIDENCE_W] is not None:
+                    combined_error += (prediction[CONFIDENCE_W] *
+                                       prediction['_error_weight'])
             del prediction['_error_weight']
         if with_confidence:
             return (result / normalization_factor,
@@ -345,8 +352,9 @@ class MultiVote(object):
                             "prediction method. Try creating your"
                             " model anew.")
 
-        error_values = [prediction[CONFIDENCE_W]
-                        for prediction in instance.predictions]
+        for prediction in instance.predictions:
+            if prediction[CONFIDENCE_W] is not None:
+                error_values.append(prediction[CONFIDENCE_W])
         max_error = max(error_values)
         min_error = min(error_values)
         error_range = 1.0 * (max_error - min_error)
@@ -363,7 +371,7 @@ class MultiVote(object):
         else:
             for prediction in instance.predictions:
                 prediction['_error_weight'] = 1
-            normalize_factor = len(instance.predictions)
+            normalize_factor = len(error_values)
         return normalize_factor
 
     def __init__(self, predictions, boosting_offsets=None):

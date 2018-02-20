@@ -3,6 +3,12 @@
 History
 -------
 
+4.15.2 (2018-02-20)
+~~~~~~~~~~~~~~~~~~~
+
+- Local predictions for regression ensembles corrected for strange models
+  whose nodes lack the confidence attribute.
+
 4.15.1 (2018-02-07)
 ~~~~~~~~~~~~~~~~~~~
 

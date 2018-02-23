@@ -354,11 +354,16 @@ class Tree(object):
                 if len(distribution) == 1:
                     # where there's only one bin, there will be no error, but
                     # we use a correction derived from the parent's error
-
+                    prediction = distribution[0][0]
                     if total_instances < 2:
                         total_instances = 1
-                    confidence = round(parent_node.confidence /
-                                       math.sqrt(total_instances), PRECISION)
+                    try:
+                        # some strange models can have nodes with no confidence
+                        confidence = round(parent_node.confidence /
+                                           math.sqrt(total_instances),
+                                           PRECISION)
+                    except AttributeError:
+                        confidence = None
                 else:
                     prediction = mean(distribution)
                     confidence = round(regression_error(

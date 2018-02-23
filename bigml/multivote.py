@@ -220,6 +220,7 @@ class MultiVote(object):
         median_result = 0.0
         confidence = 0.0
         instances = 0
+        missing_confidence = 0
         d_min = float('Inf')
         d_max = float('-Inf')
         for prediction in instance.predictions:
@@ -232,7 +233,7 @@ class MultiVote(object):
                    prediction[CONFIDENCE_W] > 0:
                     confidence += prediction[CONFIDENCE_W]
                 else:
-                    total -= 1
+                    missing_confidence += 1
             if add_count:
                 instances += prediction['count']
             if add_min and d_min > prediction['min']:
@@ -247,8 +248,10 @@ class MultiVote(object):
             output = {'prediction': result / total if total > 0 else \
                 float('nan')}
             if add_confidence:
+                # some strange models have no confidence
                 output.update(
-                    {'confidence': round(confidence / total, PRECISION)
+                    {'confidence': round( \
+                        confidence / (total - missing_confidence), PRECISION)
                      if total > 0 else 0})
             if add_distribution:
                 output.update(cls.grouped_distribution(instance))

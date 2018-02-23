@@ -747,16 +747,30 @@ class Ensemble(ModelFields):
 
         if operating_kind:
             if self.regression:
-                raise ValueError("The operating_kind argument can only be"
-                                 " used in classifications.")
-            prediction = self.predict_operating_kind( \
-                input_data, by_name=False,
-                missing_strategy=missing_strategy,
-                operating_kind=operating_kind)
-            if with_confidence or add_confidence or add_probability:
-                return prediction
+                # for regressions, operating_kind defaults to the old
+                # combiners
+                method = 1 if operating_kind == "confidence" else 0
+                return self.predict( \
+                    input_data, by_name=False, method=method,
+                    with_confidence=with_confidence,
+                    add_confidence=add_confidence,
+                    add_distribution=add_distribution,
+                    add_count=add_count, add_median=add_median,
+                    add_min=add_min, add_max=add_max,
+                    add_unused_fields=add_unused_fields,
+                    options=options, missing_strategy=missing_strategy,
+                    median=median, with_probability=with_probability,
+                    add_probability=add_probability,
+                    operating_point=None, operating_kind=None)
             else:
-                return prediction["prediction"]
+                prediction = self.predict_operating_kind( \
+                    input_data, by_name=False,
+                    missing_strategy=missing_strategy,
+                    operating_kind=operating_kind)
+                if with_confidence or add_confidence or add_probability:
+                    return prediction
+                else:
+                    return prediction["prediction"]
 
         if len(self.models_splits) > 1:
             # If there's more than one chunk of models, they must be

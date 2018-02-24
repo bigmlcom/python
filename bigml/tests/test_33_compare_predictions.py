@@ -322,6 +322,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}', {}],
             ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.27261', '{"number_of_models": 5"}', {"operating_kind": "confidence"}],
             ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}', {}],
+            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '54.82214', '25.89672', '{"number_of_models": 5}', {"operating_kind": "confidence"}],
             ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}', {}],
             ['data/grades.csv', '10', '10', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}', {}]]
         show_doc(self.test_scenario7, examples)

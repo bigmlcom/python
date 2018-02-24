@@ -355,6 +355,7 @@ class MultiVote(object):
                             "prediction method. Try creating your"
                             " model anew.")
 
+        error_values = []
         for prediction in instance.predictions:
             if prediction[CONFIDENCE_W] is not None:
                 error_values.append(prediction[CONFIDENCE_W])

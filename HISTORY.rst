@@ -3,7 +3,7 @@
 History
 -------
 
-4.15.2 (2018-02-20)
+4.15.2 (2018-02-24)
 ~~~~~~~~~~~~~~~~~~~
 
 - Local predictions for regression ensembles corrected for strange models

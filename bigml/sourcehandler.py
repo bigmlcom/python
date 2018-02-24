@@ -221,7 +221,6 @@ class SourceHandler(ResourceHandler):
         if args is None:
             args = {}
         args = self._add_project(args, True)
-        print args
 
         if progress_bar and callback is not None:
             body, headers = multipart_encode(args, cb=callback)

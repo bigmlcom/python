@@ -405,8 +405,8 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0394, "000000", '{"field_codings": [{"field": "species", "coding": "dummy", "dummy_class": "Iris-setosa"}]}'],
-            ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
-            ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0511, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.051, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "contrast", "coefficients": [[1, 2, -1, -2]]}]}'],
+            ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.051, "000000", '{"balance_fields": false, "field_codings": [{"field": "species", "coding": "other", "coefficients": [[1, 2, -1, -2]]}]}'],
             ['data/iris.csv', '20', '20', '130', '{"fields": {"000000": {"optype": "categorical"}}}', '{"species": "Iris-setosa"}', '5.0', 0.0417, "000000", '{"bias": false}']]
         show_doc(self.test_scenario9, examples)
 
@@ -506,7 +506,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.3231, "000009", '{"balance_fields": false}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.4028, "000009", '{"balance_fields": false}'],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'

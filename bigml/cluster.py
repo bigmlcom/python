@@ -241,12 +241,12 @@ class Cluster(ModelFields):
                             " find the 'clusters' key in the resource:\n\n%s" %
                             cluster)
 
-    def centroid(self, input_data, by_name=True):
+    def centroid(self, input_data):
         """Returns the id of the nearest centroid
 
         """
         clean_input_data, unique_terms = self._prepare_for_distance( \
-            input_data, by_name=by_name)
+            input_data)
         nearest = {'centroid_id': None, 'centroid_name': None,
                    'distance': float('inf')}
         for centroid in self.centroids:
@@ -366,12 +366,12 @@ class Cluster(ModelFields):
             intercentroid_distance.append([measure, 'N/A'])
         return intercentroid_distance
 
-    def _prepare_for_distance(self, input_data, by_name=True):
+    def _prepare_for_distance(self, input_data):
         """Prepares the fields to be able to compute the distance2
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        clean_input_data = self.filter_input_data(input_data, by_name=by_name)
+        clean_input_data = self.filter_input_data(input_data)
 
         # Checks that all numeric fields are present in input data and
         # fills them with the default average (if given) when otherwise
@@ -390,20 +390,19 @@ class Cluster(ModelFields):
         return clean_input_data, unique_terms
 
     def distances2_to_point(self, reference_point,
-                            list_of_points, by_name=True):
+                            list_of_points):
         """Computes the cluster square of the distance to an arbitrary
         reference point for a list of points.
         reference_point: (dict) The field values for the point used as
                                 reference
         list_of_points: (dict|Centroid) The field values or a Centroid object
                                         which contains these values
-        by_name: (boolean) Set if the dict information is keyed by field name.
-                           Expects IDs as keys otherwise.
+
 
         """
         # Checks and cleans input_data leaving the fields used in the model
         reference_point, _ = self._prepare_for_distance( \
-            reference_point, by_name=by_name)
+            reference_point)
         # mimic centroid structure to use it in distance computation
         point_info = {"center": reference_point}
         reference = Centroid(point_info)
@@ -413,9 +412,8 @@ class Cluster(ModelFields):
             if isinstance(point, Centroid):
                 centroid_id = point.centroid_id
                 point = point.center
-                by_name = False
             clean_point, unique_terms = self._prepare_for_distance( \
-                point, by_name=by_name)
+                point)
             if clean_point != reference_point:
                 result = {"data": point, "distance": reference.distance2( \
                     clean_point, unique_terms, self.scales)}
@@ -454,8 +452,7 @@ class Cluster(ModelFields):
 
     def closest_in_cluster(self, reference_point,
                            number_of_points=None,
-                           centroid_id=None,
-                           by_name=True):
+                           centroid_id=None):
         """Computes the list of data points closer to a reference point.
         If no centroid_id information is provided, the points are chosen
         from the same cluster as the reference point.
@@ -471,7 +468,7 @@ class Cluster(ModelFields):
                 "Failed to find the provided centroid_id: %s" % centroid_id)
         if centroid_id is None:
             # finding the reference point cluster's centroid
-            centroid_info = self.centroid(reference_point, by_name=by_name)
+            centroid_info = self.centroid(reference_point)
             centroid_id = centroid_info["centroid_id"]
         # reading the points that fall in the same cluster
         points = self.points_in_cluster(centroid_id)
@@ -485,13 +482,13 @@ class Cluster(ModelFields):
         return {"centroid_id": centroid_id, "reference": reference_point,
                 "closest": points}
 
-    def sorted_centroids(self, reference_point, by_name=True):
+    def sorted_centroids(self, reference_point):
         """ Gives the list of centroids sorted according to its distance to
         an arbitrary reference point.
 
         """
         close_centroids = self.distances2_to_point( \
-            reference_point, self.centroids, by_name=by_name)
+            reference_point, self.centroids)
         for centroid in close_centroids:
             centroid["distance"] = math.sqrt(centroid["distance"])
             centroid["center"] = centroid["data"]

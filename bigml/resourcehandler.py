@@ -468,11 +468,11 @@ class ResourceHandler(BigMLConnection):
             check_resource_type(dataset, c.DATASET_PATH,
                                 message=("A dataset id is needed to create"
                                          " the resource."))
+            dataset_ids.append(get_dataset_id(dataset).replace("shared/", ""))
             dataset = check_resource(dataset,
                                      query_string=c.TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True, api=self)
-            dataset_ids.append(get_dataset_id(dataset))
 
         create_args = {}
         if args is not None:

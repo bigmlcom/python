@@ -136,7 +136,7 @@ class Anomaly(ModelFields):
                                 " find the 'top_anomalies' key in the"
                                 " resource:\n\n%s" % anomaly['model'].keys())
 
-    def anomaly_score(self, input_data, by_name=True):
+    def anomaly_score(self, input_data):
         """Returns the anomaly score given by the iforest
 
             To produce an anomaly score, we evaluate each tree in the iforest
@@ -151,7 +151,7 @@ class Anomaly(ModelFields):
         """
 
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        input_data = self.filter_input_data(input_data)
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)

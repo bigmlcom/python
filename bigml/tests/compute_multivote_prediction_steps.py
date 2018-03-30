@@ -43,8 +43,9 @@ def i_create_a_multivote(step, predictions_file):
 #@step(r'I compute the prediction with confidence using method "(.*)"$')
 def compute_prediction(step, method):
     try:
-        world.combined_prediction, world.combined_confidence = (
-            world.multivote.combine(int(method), with_confidence=True))
+        prediction = world.multivote.combine(int(method), full=True)
+        world.combined_prediction = prediction["prediction"]
+        world.combined_confidence = prediction["confidence"]
     except ValueError:
         assert False, "Incorrect method"
 

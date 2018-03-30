@@ -21,7 +21,7 @@ import os
 
 from nose.tools import eq_, assert_almost_equal, assert_is_not_none
 from world import world, res_filename
-from bigml.model import Model
+from bigml.model import Model, cast_prediction
 from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
@@ -64,7 +64,7 @@ def i_create_a_local_prediction_with_confidence(step, data=None):
         data = "{}"
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data,
-                                                       add_confidence=True)
+                                                       full=True)
 
 
 #@step(r'I create a local prediction for "(.*)"$')
@@ -184,7 +184,7 @@ def i_create_a_local_anomaly(step):
 def i_create_a_local_anomaly_score(step, input_data):
     input_data = json.loads(input_data)
     world.local_anomaly_score = world.local_anomaly.anomaly_score( \
-        input_data, by_name=False)
+        input_data)
 
 #@step(r'the local anomaly score is "(.*)"$')
 def the_local_anomaly_score_is(step, score):
@@ -202,7 +202,10 @@ def i_create_a_proportional_local_prediction(step, data=None):
         data = "{}"
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(
-        data, with_confidence=True, missing_strategy=1)
+        data, missing_strategy=1, full=True)
+    world.local_prediction = cast_prediction(world.local_prediction,
+                                             to="list",
+                                             confidence=True)
 
 
 #@step(r'I create a prediction from a multi model for "(.*)"')

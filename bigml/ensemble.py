@@ -330,7 +330,7 @@ class Ensemble(ModelFields):
         """
         return self.model_ids
 
-    def predict_probability(self, input_data, by_name=True,
+    def predict_probability(self, input_data,
                             missing_strategy=LAST_PREDICTION,
                             compact=False):
 
@@ -342,9 +342,6 @@ class Ensemble(ModelFields):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -356,9 +353,8 @@ class Ensemble(ModelFields):
         if self.regression:
             prediction = self.predict(input_data,
                                       method=PROBABILITY_CODE,
-                                      by_name=by_name,
                                       missing_strategy=missing_strategy,
-                                      add_confidence=not compact)
+                                      full=not compact)
 
             if compact:
                 output = [prediction]
@@ -366,9 +362,9 @@ class Ensemble(ModelFields):
                 output = prediction
         elif self.boosting is not None:
             probabilities = self.predict(input_data,
-                                         by_name=by_name,
+                                         method=PLURALITY_CODE,
                                          missing_strategy=missing_strategy,
-                                         add_probability=True)['probabilities']
+                                         full=True)['probabilities']
 
             probabilities.sort(key=lambda x: x['category'])
 
@@ -380,7 +376,6 @@ class Ensemble(ModelFields):
         else:
             output = self._combine_distributions( \
                 input_data,
-                by_name,
                 missing_strategy)
 
             if not compact:
@@ -391,7 +386,7 @@ class Ensemble(ModelFields):
 
         return output
 
-    def predict_confidence(self, input_data, by_name=True,
+    def predict_confidence(self, input_data,
                            missing_strategy=LAST_PREDICTION,
                            compact=False):
 
@@ -403,9 +398,6 @@ class Ensemble(ModelFields):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -418,13 +410,13 @@ class Ensemble(ModelFields):
         if self.boosting:
             # we use boosting probabilities as confidences also
             return self.predict_probability( \
-                input_data, by_name=by_name,
+                input_data,
                 missing_strategy=missing_strategy,
                 compact=compact)
         if self.regression:
             prediction = self.predict(input_data, method=CONFIDENCE_CODE,
                                       missing_strategy=missing_strategy,
-                                      add_confidence=not compact)
+                                      full=not compact)
             if compact:
                 output = [prediction]
             else:
@@ -432,7 +424,6 @@ class Ensemble(ModelFields):
         else:
             output = self._combine_distributions( \
                 input_data,
-                by_name,
                 missing_strategy,
                 method=CONFIDENCE_CODE)
             if not compact:
@@ -443,7 +434,7 @@ class Ensemble(ModelFields):
 
         return output
 
-    def predict_votes(self, input_data, by_name=True,
+    def predict_votes(self, input_data,
                       missing_strategy=LAST_PREDICTION,
                       compact=False):
 
@@ -455,9 +446,6 @@ class Ensemble(ModelFields):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -469,9 +457,8 @@ class Ensemble(ModelFields):
         if self.regression:
             prediction = self.predict(input_data,
                                       method=PLURALITY_CODE,
-                                      by_name=by_name,
                                       missing_strategy=missing_strategy,
-                                      add_confidence=not compact)
+                                      full=not compact)
 
             if compact:
                 output = [prediction]
@@ -483,7 +470,6 @@ class Ensemble(ModelFields):
         else:
             output = self._combine_distributions( \
                 input_data,
-                by_name,
                 missing_strategy,
                 method=PLURALITY_CODE)
             if not compact:
@@ -494,7 +480,7 @@ class Ensemble(ModelFields):
 
         return output
 
-    def _combine_distributions(self, input_data, by_name, missing_strategy,
+    def _combine_distributions(self, input_data, missing_strategy,
                                method=PROBABILITY_CODE):
         """Computes the predicted distributions and combines them to give the
         final predicted distribution. Depending on the method parameter
@@ -515,19 +501,17 @@ class Ensemble(ModelFields):
                                          class_names=self.class_names)
 
                 votes_split = multi_model.generate_votes_distribution( \
-                    input_data, by_name=by_name,
+                    input_data,
                     missing_strategy=missing_strategy,
                     method=method)
-                print votes_split.predictions
                 votes.extend(votes_split)
         else:
             # When only one group of models is found you use the
             # corresponding multimodel to predict
             votes = self.multi_model.generate_votes_distribution( \
-                input_data, by_name=by_name,
+                input_data,
                 missing_strategy=missing_strategy, method=method)
 
-            print votes.predictions
         return votes.combine_to_distribution(normalize=False)
 
     def _get_models(self, models_split):
@@ -560,7 +544,7 @@ class Ensemble(ModelFields):
             return sort_categories(a, b, self.objective_categories)
         return 1 if b[criteria] > a[criteria] else - 1
 
-    def predict_operating(self, input_data, by_name=True,
+    def predict_operating(self, input_data,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None):
         """Computes the prediction based on a user-given operating point.
@@ -573,7 +557,7 @@ class Ensemble(ModelFields):
             predict_method = None
             predict_method = getattr(self, "predict_%s" % kind)
 
-            predictions = predict_method(input_data, by_name,
+            predictions = predict_method(input_data,
                                          missing_strategy, False)
             position = self.class_names.index(positive_class)
         except KeyError:
@@ -601,7 +585,7 @@ class Ensemble(ModelFields):
             del prediction["category"]
         return prediction
 
-    def predict_operating_kind(self, input_data, by_name=True,
+    def predict_operating_kind(self, input_data,
                                missing_strategy=LAST_PREDICTION,
                                operating_kind=None):
         """Computes the prediction based on a user-given operating kind,
@@ -621,9 +605,9 @@ class Ensemble(ModelFields):
             predict_method = None
             predict_method = getattr(self, "predict_%s" % kind)
 
-            predictions = predict_method(input_data, by_name,
+            predictions = predict_method(input_data,
                                          missing_strategy, False)
-        except KeyError:
+        except KeyError, err:
             raise ValueError("The operating kind needs to contain a valid"
                              " property.")
 
@@ -638,19 +622,13 @@ class Ensemble(ModelFields):
             del prediction["category"]
         return prediction
 
-    def predict(self, input_data, by_name=True, method=None,
-                with_confidence=False, add_confidence=False,
-                add_distribution=False, add_count=False, add_median=False,
-                add_min=False, add_max=False, add_unused_fields=False,
-                options=None, missing_strategy=LAST_PREDICTION, median=False,
-                with_probability=False, add_probability=False,
-                operating_point=None, operating_kind=None):
+    def predict(self, input_data, method=None,
+                options=None, missing_strategy=LAST_PREDICTION,
+                operating_point=None, operating_kind=None, median=False,
+                full=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param method: **deprecated**. Please check the `operating_kind`
                        attribute. Numeric key code for the following
                        combination methods in classifications/regressions:
@@ -661,38 +639,10 @@ class Ensemble(ModelFields):
                   PROBABILITY_CODE
               3 - threshold filtered vote / doesn't apply:
                   THRESHOLD_CODE
-        The following parameter causes the result to be returned as a list
-        :param with_confidence: Adds the confidence, distribution, counts
-                                and median information to the node prediction.
-                                The result is given in a list format output.
-        The following parameters cause the result to be returned as a dict
-        :param add_confidence: Adds confidence to the prediction
-        :param add_distribution: Adds the predicted node's distribution to the
-                                 prediction
-        :param add_count: Adds the predicted nodes' instances to the
-                          prediction
-        :param add_median: Adds the median of the predicted nodes' distribution
-                           to the prediction
-        :param add_min: Boolean, if True adds the minimum value in the
-                        prediction's distribution (for regressions only)
-        :param add_max: Boolean, if True adds the maximum value in the
-                        prediction's distribution (for regressions only)
-        :param add_unused_fields: Boolean, if True adds the information about
-                                  the fields in the input_data that are not
-                                  being used in the model as predictors.
         :param options: Options to be used in threshold filtered votes.
         :param missing_strategy: numeric key for the individual model's
                                  prediction method. See the model predict
                                  method.
-        :param median: Uses the median of each individual model's predicted
-                       node as individual prediction for the specified
-                       combination method.
-        :param with_probability: Adds the probability, distribution, and counts
-                                 information to the node prediction.
-                                 The result is given in a list format output.
-                                 (like with_confidence for Boosted Trees)
-        :param add_probability: Adds probability to the prediction (only
-                                available in Boosted Trees)
         :param operating_point: In classification models, this is the point of
                                 the ROC curve where the model will be used at.
                                 The operating point can be defined in terms of:
@@ -709,14 +659,36 @@ class Ensemble(ModelFields):
         :param operating_kind: "probability", "confidence" or "votes". Sets the
                                property that decides the prediction.
                                Used only if no operating_point is used
-
+        :param median: Uses the median of each individual model's predicted
+                       node as individual prediction for the specified
+                       combination method.
+        :param full: Boolean that controls whether to include the prediction's
+                     attributes. By default, only the prediction is produced.
+                     If set to True, the rest of available information is
+                     added in a dictionary format. The dictionary keys can be:
+                      - prediction: the prediction value
+                      - confidence: prediction's confidence
+                      - probability: prediction's probability
+                      - path: rules that lead to the prediction
+                      - count: number of training instances supporting the
+                               prediction
+                      - next: field to check in the next split
+                      - min: minim value of the training instances in the
+                             predicted node
+                      - max: maximum value of the training instances in the
+                             predicted node
+                      - median: median of the values of the training instances
+                                in the predicted node
+                      - unused_fields: list of fields in the input data that
+                                       are not being used in the model
         """
 
         # Checks and cleans input_data leaving the fields used in the model
         new_data = self.filter_input_data( \
-            input_data, by_name=by_name,
-            add_unused_fields=add_unused_fields)
-        if add_unused_fields:
+            input_data,
+            add_unused_fields=full)
+        unused_fields= None
+        if full:
             input_data, unused_fields = new_data
         else:
             input_data = new_data
@@ -724,23 +696,25 @@ class Ensemble(ModelFields):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        if method is None and operating_point is None and \
-            operating_kind is None and median is None:
-            # operating_point has precedence over operating_kind. If no
-            # combiner is set, default operating kind is "probability"
-            operating_kind = "probability"
         if median and method is None:
             # predictions with median are only available with old combiners
             method = PLURALITY_CODE
+
+        if method is None and operating_point is None and \
+            operating_kind is None and not median:
+            # operating_point has precedence over operating_kind. If no
+            # combiner is set, default operating kind is "probability"
+            operating_kind = "probability"
+
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             prediction = self.predict_operating( \
-                input_data, by_name=False,
+                input_data,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
-            if with_confidence or add_confidence or add_probability:
+            if full:
                 return prediction
             else:
                 return prediction["prediction"]
@@ -751,26 +725,15 @@ class Ensemble(ModelFields):
                 # combiners
                 method = 1 if operating_kind == "confidence" else 0
                 return self.predict( \
-                    input_data, by_name=False, method=method,
-                    with_confidence=with_confidence,
-                    add_confidence=add_confidence,
-                    add_distribution=add_distribution,
-                    add_count=add_count, add_median=add_median,
-                    add_min=add_min, add_max=add_max,
-                    add_unused_fields=add_unused_fields,
+                    input_data, method=method,
                     options=options, missing_strategy=missing_strategy,
-                    median=median, with_probability=with_probability,
-                    add_probability=add_probability,
-                    operating_point=None, operating_kind=None)
+                    operating_point=None, operating_kind=None, full=full)
             else:
                 prediction = self.predict_operating_kind( \
-                    input_data, by_name=False,
+                    input_data,
                     missing_strategy=missing_strategy,
                     operating_kind=operating_kind)
-                if with_confidence or add_confidence or add_probability:
-                    return prediction
-                else:
-                    return prediction["prediction"]
+                return prediction
 
         if len(self.models_splits) > 1:
             # If there's more than one chunk of models, they must be
@@ -784,11 +747,9 @@ class Ensemble(ModelFields):
                                          fields=self.fields)
 
                 votes_split = multi_model._generate_votes(
-                    input_data, by_name=by_name,
+                    input_data,
                     missing_strategy=missing_strategy,
-                    add_median=(add_median or median),
-                    add_min=add_min, add_max=add_max,
-                    add_unused_fields=add_unused_fields)
+                    unused_fields=unused_fields)
                 if median:
                     for prediction in votes_split.predictions:
                         prediction['prediction'] = prediction['median']
@@ -797,9 +758,8 @@ class Ensemble(ModelFields):
             # When only one group of models is found you use the
             # corresponding multimodel to predict
             votes_split = self.multi_model._generate_votes(
-                input_data, by_name=by_name, missing_strategy=missing_strategy,
-                add_median=(add_median or median), add_min=add_min,
-                add_max=add_max, add_unused_fields=add_unused_fields)
+                input_data, missing_strategy=missing_strategy,
+                unused_fields=unused_fields)
 
             votes = MultiVote(votes_split.predictions,
                               boosting_offsets=self.boosting_offsets)
@@ -811,23 +771,12 @@ class Ensemble(ModelFields):
                 d[0] for d in
                 self.fields[self.objective_id]["summary"]["categories"]]
             options = {"categories": categories}
-
-        result = votes.combine(method=method,
-                               with_confidence=(with_confidence or
-                                                with_probability),
-                               add_confidence=(add_confidence or
-                                               add_probability),
-                               add_distribution=add_distribution,
-                               add_count=add_count,
-                               add_median=add_median,
-                               add_min=add_min,
-                               add_max=add_max,
-                               options=options)
-        if add_unused_fields:
+        result = votes.combine(method=method, options=options, full=full)
+        if full:
             unused_fields = set(input_data.keys())
             for prediction in votes.predictions:
                 unused_fields = unused_fields.intersection( \
-                    set(prediction["unused_fields"]))
+                    set(prediction.get("unused_fields", [])))
             if not isinstance(result, dict):
                 result = {"prediction": result}
             result['unused_fields'] = list(unused_fields)

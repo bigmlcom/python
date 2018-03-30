@@ -168,12 +168,12 @@ class TopicModel(ModelFields):
                             " find the 'topic_model' key in the"
                             " resource:\n\n%s" % topic_model)
 
-    def distribution(self, input_data, by_name=True):
+    def distribution(self, input_data):
         """Returns the distribution of topics given the input text.
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        input_data = self.filter_input_data(input_data)
 
         return self.distribution_for_text("\n\n".join(input_data.values()))
 

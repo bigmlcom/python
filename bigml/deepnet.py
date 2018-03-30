@@ -229,15 +229,11 @@ class Deepnet(ModelFields):
                     columns.append(input_data.get(field_id))
         return pp.preprocess(columns, self.preprocess)
 
-    def predict(self, input_data, by_name=True, add_unused_fields=False,
-                operating_point=None, operating_kind=None):
+    def predict(self, input_data, operating_point=None, operating_kind=None,
+                full=False):
         """Makes a prediction based on a number of field values.
 
         input_data: Input data to be predicted
-        by_name: Boolean, True if input_data is keyed by names
-        add_unused_fields: Boolean, if True adds the information about the
-                           fields in the input_data that are not being used
-                           in the model as predictors.
         operating_point: In classification models, this is the point of the
                          ROC curve where the model will be used at. The
                          operating point can be defined in terms of:
@@ -253,13 +249,21 @@ class Deepnet(ModelFields):
         operating_kind: "probability". Sets the
                         property that decides the prediction. Used only if
                         no operating_point is used
+        full: Boolean that controls whether to include the prediction's
+              attributes. By default, only the prediction is produced. If set
+              to True, the rest of available information is added in a
+              dictionary format. The dictionary keys can be:
+                  - prediction: the prediction value
+                  - probability: prediction's probability
+                  - unused_fields: list of fields in the input data that
+                                   are not being used in the model
         """
 
         # Checks and cleans input_data leaving the fields used in the model
+        unused_fields = []
         new_data = self.filter_input_data( \
-            input_data, by_name=by_name,
-            add_unused_fields=add_unused_fields)
-        if add_unused_fields:
+            input_data, add_unused_fields=full)
+        if full:
             input_data, unused_fields = new_data
         else:
             input_data = new_data
@@ -275,13 +279,13 @@ class Deepnet(ModelFields):
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             return self.predict_operating( \
-                input_data, by_name=False, operating_point=operating_point)
+                input_data, operating_point=operating_point)
         if operating_kind:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             return self.predict_operating_kind( \
-                input_data, by_name=False, operating_kind=operating_kind)
+                input_data, operating_kind=operating_kind)
 
         # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(input_data)
@@ -292,7 +296,7 @@ class Deepnet(ModelFields):
             prediction = self.predict_list(input_array)
         else:
             prediction = self.predict_single(input_array)
-        if add_unused_fields:
+        if full:
             prediction.update({"unused_fields": unused_fields})
 
         return prediction
@@ -352,15 +356,12 @@ class Deepnet(ModelFields):
 
         return prediction
 
-    def predict_probability(self, input_data, by_name=True, compact=False):
+    def predict_probability(self, input_data, compact=False):
         """Predicts a probability for each possible output class,
         based on input values.  The input fields must be a dictionary
         keyed by field name or field ID.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param compact: If False, prediction is returned as a list of maps, one
                         per class, with the keys "prediction" and "probability"
                         mapped to the name of the class and it's probability,
@@ -368,11 +369,9 @@ class Deepnet(ModelFields):
                         ordered by the sorted order of the class names.
         """
         if self.regression:
-            return self.predict(input_data,
-                                by_name=by_name)
+            return self.predict(input_data)
         else:
-            distribution = self.predict(input_data,
-                                        by_name=by_name)['distribution']
+            distribution = self.predict(input_data)['distribution']
             distribution.sort(key=lambda x: x['category'])
 
             if compact:
@@ -389,16 +388,14 @@ class Deepnet(ModelFields):
             return sort_categories(a, b, self.objective_categories)
         return 1 if b[criteria] > a[criteria] else - 1
 
-    def predict_operating_kind(self, input_data, by_name=True,
-                               operating_kind=None):
+    def predict_operating_kind(self, input_data, operating_kind=None):
         """Computes the prediction based on a user-given operating kind.
 
         """
 
         kind = operating_kind.lower()
         if kind == "probability":
-            predictions = self.predict_probability(input_data, by_name,
-                                                   False)
+            predictions = self.predict_probability(input_data, False)
         else:
             raise ValueError("Only probability is allowed as operating kind"
                              " for deepnets.")
@@ -410,15 +407,14 @@ class Deepnet(ModelFields):
         del prediction["category"]
         return prediction
 
-    def predict_operating(self, input_data, by_name=True,
-                          operating_point=None):
+    def predict_operating(self, input_data, operating_point=None):
         """Computes the prediction based on a user-given operating point.
 
         """
 
         kind, threshold, positive_class = parse_operating_point( \
             operating_point, ["probability"], self.class_names)
-        predictions = self.predict_probability(input_data, by_name, False)
+        predictions = self.predict_probability(input_data, False)
         position = self.class_names.index(positive_class)
         if predictions[position][kind] > threshold:
             prediction = predictions[position]

@@ -107,6 +107,74 @@ DEFAULT_IMPURITY = 0.2
 
 OPERATING_POINT_KINDS = ["probability", "confidence"]
 
+DICTIONARY = "dict"
+
+OUT_FORMATS = [DICTIONARY, "list"]
+
+
+def init_structure(to):
+    """Creates the empty structure to store predictions depending on the
+    chosen format.
+
+    """
+    if to is not None and to not in OUT_FORMATS:
+        raise ValueError("The allowed formats are %s." % \
+            ", ".join(OUT_FORMATS))
+    return {} if to is DICTIONARY else () if to is None \
+        else []
+
+
+def cast_prediction(full_prediction, to=None,
+                    confidence=False, probability=False,
+                    path=False, distribution=False,
+                    count=False, next=False, d_min=False,
+                    d_max=False, median=False,
+                    unused_fields=False):
+    """Creates the output filtering the attributes in a full
+    prediction.
+
+        to: defines the output format. The current
+            values are: None, `list` and `dict`. If not set, the result
+            will be expressed as a tuple. The other two options will
+            produce a list and a dictionary respectively. In the case of lists,
+            the attributes are stored in the same order used in
+            the signature of the function.
+        confidence: Boolean. If True, adds the confidence to the output
+        probability: Boolean. If True, adds the probability to the output
+        path: Boolean. If True adds the prediction path to the output
+        distribution: distribution of probabilities for each
+                      of the objective field classes
+        count: Boolean. If True adds the number of training instances in the
+               prediction node to the output
+        next: Boolean. If True adds the next predicate field to the output
+        d_min: Boolean. If True adds the predicted node distribution
+               minimum to the output
+        d_max: Boolean. If True adds the predicted node distribution
+               maximum to the output
+        median: Boolean. If True adds the median of the predicted node
+                distribution to the output
+        unused_fields: Boolean. If True adds the fields used in the input
+                       data that have not been used by the model.
+
+    """
+    prediction_properties = [ \
+        "prediction", "confidence", "probability", "path", "distribution",
+        "count", "next", "d_min", "d_max", "median", "unused_fields"]
+    prediction = True
+    result = init_structure(to)
+    for prop in prediction_properties:
+        value = full_prediction.get(prop)
+        if eval(prop):
+            if to is None:
+                # tuple
+                result = result + (value,)
+            elif to == DICTIONARY:
+                result.update({prop: value})
+            else:
+                # list
+                result.append(value)
+    return result
+
 
 def sort_categories(a, b, categories_list):
     """Sorts a list of dictionaries with category keys according to their
@@ -303,6 +371,8 @@ class Model(BaseModel):
                         self.objective_categories =  [category for \
                             category, _ in self.fields[self.objective_id][ \
                            "summary"]["categories"]]
+                if not self.regression and not self.boosting:
+                    self.laplacian_term = self._laplacian_term()
             else:
                 raise Exception("Cannot create the Model instance."
                                 " Only correctly finished models can be used."
@@ -357,8 +427,7 @@ class Model(BaseModel):
                 })
             return output
 
-    def predict_confidence(self, input_data, by_name=True,
-                           missing_strategy=LAST_PREDICTION,
+    def predict_confidence(self, input_data, missing_strategy=LAST_PREDICTION,
                            compact=False):
         """For classification models, Predicts a one-vs.-rest confidence value
         for each possible output class, based on input values.  This
@@ -370,9 +439,6 @@ class Model(BaseModel):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -384,15 +450,16 @@ class Model(BaseModel):
         """
         if self.regression:
             prediction = self.predict(input_data,
-                                      by_name=by_name,
                                       missing_strategy=missing_strategy,
-                                      add_confidence=not compact)
+                                      full=not compact)
 
             if compact:
                 output = [prediction]
             else:
-                output = prediction
+                output = cast_prediction(prediction, to=DICTIONARY,
+                                         confidence=True)
             return output
+
         elif self.boosting:
             raise AttributeError("This method is available for non-boosting"
                                  " models only.")
@@ -400,9 +467,8 @@ class Model(BaseModel):
         root_dist = self.tree.distribution
         category_map = {category[0]: 0.0 for category in root_dist}
         prediction = self.predict(input_data,
-                                  by_name=by_name,
                                   missing_strategy=missing_strategy,
-                                  add_distribution=True)
+                                  full=True)
 
         distribution = prediction['distribution']
 
@@ -412,7 +478,39 @@ class Model(BaseModel):
 
         return self._to_output(category_map, compact, "confidence")
 
-    def predict_probability(self, input_data, by_name=True,
+    def _laplacian_term(self):
+        """Correction term based on the training dataset distribution
+
+        """
+        root_dist = self.tree.distribution
+
+        if self.tree.weighted:
+            category_map = {category[0]: 0.0 for category in root_dist}
+        else:
+            total = float(sum([category[1] for category in root_dist]))
+            category_map = {category[0]: category[1] / total
+                            for category in root_dist}
+        return category_map
+
+    def _probabilities(self, distribution):
+        """Computes the probability of a distribution using a Laplacian
+        correction.
+
+        """
+        total = 0 if self.tree.weighted else 1
+
+        category_map = {}
+        category_map.update(self.laplacian_term)
+        for class_info in distribution:
+            category_map[class_info[0]] += class_info[1]
+            total += class_info[1]
+
+        for k in category_map:
+            category_map[k] /= total
+        return category_map
+
+
+    def predict_probability(self, input_data,
                             missing_strategy=LAST_PREDICTION,
                             compact=False):
         """For classification models, Predicts a probability for
@@ -423,9 +521,6 @@ class Model(BaseModel):
         containing the prediction.
 
         :param input_data: Input data to be predicted
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
                                  for missing fields
         :param compact: If False, prediction is returned as a list of maps, one
@@ -434,47 +529,26 @@ class Model(BaseModel):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
-        if self.regression:
+        if self.regression or self.boosting:
             prediction = self.predict(input_data,
-                                      by_name=by_name,
                                       missing_strategy=missing_strategy,
-                                      add_confidence=not compact)
+                                      full=not compact)
 
             if compact:
                 output = [prediction]
             else:
                 output = prediction
         else:
-            root_dist = self.tree.distribution
-
-            if self.tree.weighted:
-                category_map = {category[0]: 0.0 for category in root_dist}
-                instances = 0.0
-            else:
-                total = float(sum([category[1] for category in root_dist]))
-                category_map = {category[0]: category[1] / total
-                                for category in root_dist}
-                instances = 1.0
 
             prediction = self.predict(input_data,
-                                      by_name=by_name,
                                       missing_strategy=missing_strategy,
-                                      add_distribution=True)
-
-            distribution = prediction['distribution']
-
-            for class_info in distribution:
-                category_map[class_info[0]] += class_info[1]
-                instances += class_info[1]
-
-            for k in category_map:
-                category_map[k] /= instances
-
+                                      full=True)
+            category_map = self._probabilities(prediction['distribution'])
             output = self._to_output(category_map, compact, "probability")
 
         return output
 
-    def predict_operating(self, input_data, by_name=True,
+    def predict_operating(self, input_data,
                           missing_strategy=LAST_PREDICTION,
                           operating_point=None):
         """Computes the prediction based on a user-given operating point.
@@ -484,10 +558,10 @@ class Model(BaseModel):
         kind, threshold, positive_class = parse_operating_point( \
             operating_point, OPERATING_POINT_KINDS, self.class_names)
         if kind == "probability":
-            predictions = self.predict_probability(input_data, by_name,
+            predictions = self.predict_probability(input_data,
                                                    missing_strategy, False)
         else:
-            predictions = self.predict_confidence(input_data, by_name,
+            predictions = self.predict_confidence(input_data,
                                                   missing_strategy, False)
 
         position = self.class_names.index(positive_class)
@@ -517,7 +591,7 @@ class Model(BaseModel):
             return sort_categories(a, b, self.objective_categories)
         return 1 if b[criteria] > a[criteria] else -1
 
-    def predict_operating_kind(self, input_data, by_name=True,
+    def predict_operating_kind(self, input_data,
                                missing_strategy=LAST_PREDICTION,
                                operating_kind=None):
         """Computes the prediction based on a user-given operating kind.
@@ -528,10 +602,10 @@ class Model(BaseModel):
             raise ValueError("Allowed operating kinds are %s. %s found." %
                              (", ".join(OPERATING_POINT_KINDS), kind))
         if kind == "probability":
-            predictions = self.predict_probability(input_data, by_name,
+            predictions = self.predict_probability(input_data,
                                                    missing_strategy, False)
         else:
-            predictions = self.predict_confidence(input_data, by_name,
+            predictions = self.predict_confidence(input_data,
                                                   missing_strategy, False)
 
         if self.regression:
@@ -545,57 +619,13 @@ class Model(BaseModel):
             del prediction["category"]
         return prediction
 
-    def predict(self, input_data, by_name=True,
-                print_path=False, out=sys.stdout, with_confidence=False,
-                missing_strategy=LAST_PREDICTION,
-                add_confidence=False,
-                add_path=False,
-                add_distribution=False,
-                add_count=False,
-                add_median=False,
-                add_next=False,
-                add_min=False,
-                add_max=False,
-                add_unused_fields=False,
-                add_probability=False,
-                operating_point=None,
-                operating_kind=None,
-                unused_fields=None):
+    def predict(self, input_data, missing_strategy=LAST_PREDICTION,
+                operating_point=None, operating_kind=None, full=False):
         """Makes a prediction based on a number of field values.
 
-        By default the input fields must be keyed by field name but you can use
-        `by_name=False` to input them directly keyed by id.
-
         input_data: Input data to be predicted
-        by_name: Boolean, True if input_data is keyed by names
-        print_path: Boolean, if True the rules that lead to the prediction
-                    are printed
-        out: output handler
-        with_confidence: Boolean, if True, all the information in the node
-                         (prediction, confidence, distribution and count)
-                         is returned in a list format
         missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
                           missing fields
-        add_confidence: Boolean, if True adds confidence (or probability)
-                        to the dict output
-        add_path: Boolean, if True adds path to the dict output
-        add_distribution: Boolean, if True adds distribution info to the
-                          dict output
-        add_count: Boolean, if True adds the number of instances in the
-                       node to the dict output
-        add_median: Boolean, if True adds the median of the values in
-                    the distribution
-        add_next: Boolean, if True adds the field that determines next
-                  split in the tree
-        add_min: Boolean, if True adds the minimum value in the prediction's
-                 distribution (for regressions only)
-        add_max: Boolean, if True adds the maximum value in the prediction's
-                 distribution (for regressions only)
-        add_unused_fields: Boolean, if True adds the information about the
-                           fields in the input_data that are not being used
-                           in the model as predictors.
-        add_probability: Boolean, if True adds probability
-                         to the dict output (only if operating_point is used)
         operating_point: In classification models, this is the point of the
                          ROC curve where the model will be used at. The
                          operating point can be defined in terms of:
@@ -614,16 +644,33 @@ class Model(BaseModel):
         operating_kind: "probability" or "confidence". Sets the
                         property that decides the prediction. Used only if
                         no operating_point is used
-        unused_fields: Fields in input data that have not been used by the
-                       model.
+        full: Boolean that controls whether to include the prediction's
+              attributes. By default, only the prediction is produced. If set
+              to True, the rest of available information is added in a
+              dictionary format. The dictionary keys can be:
+                  - prediction: the prediction value
+                  - confidence: prediction's confidence
+                  - probability: prediction's probability
+                  - path: rules that lead to the prediction
+                  - count: number of training instances supporting the
+                           prediction
+                  - next: field to check in the next split
+                  - min: minim value of the training instances in the
+                         predicted node
+                  - max: maximum value of the training instances in the
+                         predicted node
+                  - median: median of the values of the training instances
+                            in the predicted node
+                  - unused_fields: list of fields in the input data that
+                                   are not being used in the model
         """
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
         new_data = self.filter_input_data( \
-            input_data, by_name=by_name,
-            add_unused_fields=add_unused_fields)
-        if add_unused_fields:
+            input_data,
+            add_unused_fields=full)
+        if full:
             input_data, unused_fields = new_data
         else:
             input_data = new_data
@@ -631,101 +678,24 @@ class Model(BaseModel):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        return self._predict( \
-            input_data, by_name=by_name,
-            print_path=print_path,
-            out=out,
-            with_confidence=with_confidence,
-            missing_strategy=missing_strategy,
-            add_confidence=add_confidence,
-            add_path=add_path,
-            add_distribution=add_distribution,
-            add_count=add_count,
-            add_median=add_median,
-            add_next=add_next,
-            add_min=add_min,
-            add_max=add_max,
-            add_unused_fields=add_unused_fields,
-            add_probability=add_probability,
-            operating_point=operating_point,
-            operating_kind=operating_kind,
+        full_prediction =  self._predict( \
+            input_data, missing_strategy=missing_strategy,
+            operating_point=operating_point, operating_kind=operating_kind,
             unused_fields=unused_fields)
+        if full:
+            return dict((key, value) for key, value in
+                    full_prediction.iteritems() if value is not None)
 
-    def _predict(self, input_data, by_name=True,
-                 print_path=False, out=sys.stdout, with_confidence=False,
-                 missing_strategy=LAST_PREDICTION,
-                 add_confidence=False,
-                 add_path=False,
-                 add_distribution=False,
-                 add_count=False,
-                 add_median=False,
-                 add_next=False,
-                 add_min=False,
-                 add_max=False,
-                 add_unused_fields=False,
-                 add_probability=False,
-                 operating_point=None,
-                 operating_kind=None,
+        return full_prediction['prediction']
+
+    def _predict(self, input_data, missing_strategy=LAST_PREDICTION,
+                 operating_point=None, operating_kind=None,
                  unused_fields=None):
         """Makes a prediction based on a number of field values. Please,
         note that this function does not check the types for the input
         provided, so it's unsafe to use it directly without prior checking.
 
-        By default the input fields must be keyed by field name but you can use
-        `by_name=False` to input them directly keyed by id.
-
-        input_data: Input data to be predicted
-        by_name: Boolean, True if input_data is keyed by names
-        print_path: Boolean, if True the rules that lead to the prediction
-                    are printed
-        out: output handler
-        with_confidence: Boolean, if True, all the information in the node
-                         (prediction, confidence, distribution and count)
-                         is returned in a list format
-        missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
-                          missing fields
-        add_confidence: Boolean, if True adds confidence (or probability)
-                        to the dict output
-        add_path: Boolean, if True adds path to the dict output
-        add_distribution: Boolean, if True adds distribution info to the
-                          dict output
-        add_count: Boolean, if True adds the number of instances in the
-                       node to the dict output
-        add_median: Boolean, if True adds the median of the values in
-                    the distribution
-        add_next: Boolean, if True adds the field that determines next
-                  split in the tree
-        add_min: Boolean, if True adds the minimum value in the prediction's
-                 distribution (for regressions only)
-        add_max: Boolean, if True adds the maximum value in the prediction's
-                 distribution (for regressions only)
-        add_unused_fields: Boolean, if True adds the information about the
-                           fields in the input_data that are not being used
-                           in the model as predictors.
-        add_probability: Boolean, if True adds probability
-                         to the dict output (only if operating_point is used)
-        operating_point: In classification models, this is the point of the
-                         ROC curve where the model will be used at. The
-                         operating point can be defined in terms of:
-                         - the positive_class, the class that is important to
-                           predict accurately
-                         - the probability_threshold (or confidence_threshold),
-                           the probability (or confidence) that is stablished
-                           as minimum for the positive_class to be predicted.
-                         The operating_point is then defined as a map with
-                         two attributes, e.g.:
-                           {"positive_class": "Iris-setosa",
-                            "probability_threshold": 0.5}
-                         or
-                           {"positive_class": "Iris-setosa",
-                            "confidence_threshold": 0.5}
-        operating_kind: "probability" or "confidence". Sets the
-                        quantity that decides the prediction. Used only if
-                        no operating_point is used
-        unused_fields: Fields in input data that have not been used by the
-                       model.
         """
-
         # When operating_point is used, we need the probabilities
         # (or confidences) of all possible classes to decide, so se use
         # the `predict_probability` or `predict_confidence` methods
@@ -734,25 +704,21 @@ class Model(BaseModel):
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             prediction = self.predict_operating( \
-                input_data, by_name=False,
+                input_data,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
-            if with_confidence or add_confidence or add_probability:
-                return prediction
-            else:
-                return prediction["prediction"]
+            return prediction
+
         if operating_kind:
             if self.regression:
                 raise ValueError("The operating_kind argument can only be"
                                  " used in classifications.")
             prediction = self.predict_operating_kind( \
-                input_data, by_name=False,
+                input_data,
                 missing_strategy=missing_strategy,
                 operating_kind=operating_kind)
-            if with_confidence or add_confidence or add_probability:
-                return prediction
-            else:
-                return prediction["prediction"]
+            return prediction
+
         # Checks if this is a regression model, using PROPORTIONAL
         # missing_strategy
         if (not self.boosting and
@@ -778,50 +744,19 @@ class Model(BaseModel):
                 median=None,
                 distribution_unit=None)
 
-        # Prediction path
-        if print_path:
-            out.write(utf8(u' AND '.join(prediction.path) + u' => %s \n' %
-                           prediction.output))
-            out.flush()
-        output = prediction.output
-        if with_confidence:
-            output = [prediction.output,
-                      prediction.confidence,
-                      prediction.distribution,
-                      prediction.count,
-                      prediction.median]
-        if (add_confidence or add_path or add_distribution or add_count or
-                add_median or add_next or add_min or add_max or
-                add_unused_fields):
-            output = {'prediction': prediction.output}
-            if add_confidence:
-                output.update({'confidence': prediction.confidence})
-            if add_path:
-                output.update({'path': prediction.path})
-            if add_distribution:
-                output.update(
-                    {'distribution': prediction.distribution,
-                     'distribution_unit': prediction.distribution_unit})
-            if add_count:
-                output.update({'count': prediction.count})
-            if add_next:
-                field = (None if len(prediction.children) == 0 else
-                         prediction.children[0].predicate.field)
-                if field is not None and field in self.fields:
-                    field = self.fields[field]['name']
-                output.update({'next': field})
-            if not self.boosting and self.regression:
-                if add_median:
-                    output.update({'median': prediction.median})
-                if add_min:
-                    output.update({'min': prediction.min})
-                if add_max:
-                    output.update({'max': prediction.max})
-            if add_unused_fields:
-                output.update({'unused_fields': unused_fields})
-        return output
+        result = vars(prediction)
+        # changing key name to prediction
+        result['prediction'] = result['output']
+        del result['output']
+        del result['children']
+        if not self.regression and not self.boosting:
+            probabilities = self._probabilities(result['distribution'])
+            result['probability'] = probabilities[result['prediction']]
+        # adding unused fields, if any
+        if unused_fields:
+            result.update({'unused_fields': unused_fields})
 
-
+        return result
 
     def docstring(self):
         """Returns the docstring describing the model.

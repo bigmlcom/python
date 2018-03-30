@@ -62,7 +62,7 @@ class TestEnsemblePrediction(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.3687', '["0.3403", "0.4150", "0.2447"]' ]]
+            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415', '["0.3403", "0.4150", "0.2447"]' ]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -137,7 +137,7 @@ class TestEnsemblePrediction(object):
         """
         print self.test_scenario3.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.3687']]
+            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -208,7 +208,7 @@ class TestEnsemblePrediction(object):
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 65.83]]
+            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 69.0934]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

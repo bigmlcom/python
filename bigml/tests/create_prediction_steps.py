@@ -174,15 +174,14 @@ def the_prediction_is_finished_in_less_than(step, secs):
 
 def create_local_ensemble_prediction_add_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict(
-        json.loads(input_data), add_confidence=True)
+        json.loads(input_data), full=True)
 
 def create_local_ensemble_prediction(step, input_data):
     world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
 
 def create_local_ensemble_prediction_with_confidence(step, input_data):
     world.local_prediction = world.local_ensemble.predict( \
-        json.loads(input_data), with_confidence=True)
-
+        json.loads(input_data), full=True)
     world.local_probabilities = world.local_ensemble.predict_probability( \
         json.loads(input_data), compact=True)
 
@@ -190,7 +189,7 @@ def create_local_ensemble_proportional_prediction_with_confidence( \
     step, input_data, params=None):
     if params is None:
         params = {}
-    kwargs = {"with_confidence": True, "missing_strategy": 1}
+    kwargs = {"full": True, "missing_strategy": 1}
     kwargs.update(params)
     world.local_prediction = world.local_ensemble.predict( \
         json.loads(input_data), **kwargs)
@@ -198,7 +197,7 @@ def create_local_ensemble_proportional_prediction_with_confidence( \
 def create_local_ensemble_prediction_using_median_with_confidence( \
     step, input_data):
     world.local_prediction = world.local_ensemble.predict( \
-        json.loads(input_data), with_confidence=True, median=True)
+        json.loads(input_data), full=True)
 
 
 def i_create_an_anomaly_score(step, data=None):

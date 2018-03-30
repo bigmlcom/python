@@ -251,7 +251,7 @@ class ModelFields(object):
             value = unicode(value, "utf-8")
         return None if value in self.missing_tokens else value
 
-    def filter_input_data(self, input_data, by_name=True,
+    def filter_input_data(self, input_data,
                           add_unused_fields=False):
         """Filters the keys given in input_data checking against model fields.
         If `add_unused_fields` is set to True, it also
@@ -268,7 +268,15 @@ class ModelFields(object):
                 if value is None:
                     del input_data[key]
 
-            if by_name:
+            if self.by_id(input_data):
+                for key, value in input_data.items():
+                    if key in self.fields and \
+                            (self.objective_id is None or \
+                             key != self.objective_id):
+                        new_input[key] = value
+                    else:
+                        unused_fields.append(key)
+            else:
                 # We no longer check that the input data keys match some of
                 # the dataset fields. We only remove the keys that are not
                 # used as predictors in the model
@@ -279,14 +287,7 @@ class ModelFields(object):
                         new_input[self.inverted_fields[key]] = value
                     else:
                         unused_fields.append(key)
-            else:
-                for key, value in input_data.items():
-                    if key in self.fields and \
-                            (self.objective_id is None or \
-                             key != self.objective_id):
-                        new_input[key] = value
-                    else:
-                        unused_fields.append(key)
+
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
             return result
@@ -356,3 +357,13 @@ class ModelFields(object):
                     unique_terms[field_id] = [(input_data_field, 1)]
                     del input_data[field_id]
         return unique_terms
+
+    def by_id(self, input_data):
+        """Checks whether the input_data is keyed by ID
+
+        """
+        for key in input_data:
+            if key not in self.fields:
+                return False
+
+        return True

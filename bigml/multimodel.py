@@ -40,7 +40,7 @@ import logging
 import ast
 
 
-from bigml.model import Model
+from bigml.model import Model, cast_prediction
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
@@ -121,16 +121,8 @@ class MultiModel(object):
         """
         return [model.resource() for model in self.models]
 
-    def predict(self, input_data, by_name=True, method=PLURALITY_CODE,
-                with_confidence=False, options=None,
-                missing_strategy=LAST_PREDICTION,
-                add_confidence=False,
-                add_distribution=False,
-                add_count=False,
-                add_median=False,
-                add_min=False,
-                add_max=False,
-                add_unused_fields=False):
+    def predict(self, input_data, method=PLURALITY_CODE, options=None,
+                missing_strategy=LAST_PREDICTION, full=False):
         """Makes a prediction based on the prediction made by every model.
 
            The method parameter is a numeric key to the following combination
@@ -144,35 +136,23 @@ class MultiModel(object):
                   THRESHOLD_CODE
         """
 
-        votes = self.generate_votes(input_data, by_name=by_name,
-                                    missing_strategy=missing_strategy,
-                                    add_median=add_median, add_min=add_min,
-                                    add_max=add_max,
-                                    add_unused_fields=add_unused_fields)
+        votes = self.generate_votes(input_data,
+                                    missing_strategy=missing_strategy)
 
-        result = votes.combine(method=method, with_confidence=with_confidence,
-                               add_confidence=add_confidence,
-                               add_distribution=add_distribution,
-                               add_count=add_count,
-                               add_median=add_median,
-                               add_min=add_min,
-                               add_max=add_max,
-                               options=options)
-        if add_unused_fields:
+        result = votes.combine(method=method, options=options, full=full)
+        if full:
             unused_fields = set(input_data.keys())
             for _, prediction in enumerate(votes.predictions):
                 unused_fields = unused_fields.intersection( \
-                    set(prediction["unused_fields"]))
+                    set(prediction.get("unused_fields", [])))
             if not isinstance(result, dict):
                 result = {"prediction": result}
             result['unused_fields'] = list(unused_fields)
 
         return result
 
-    def generate_votes(self, input_data, by_name=True,
-                       missing_strategy=LAST_PREDICTION,
-                       add_median=False, add_min=False, add_max=False,
-                       add_unused_fields=False):
+    def generate_votes(self, input_data,
+                       missing_strategy=LAST_PREDICTION):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models.
         """
@@ -180,15 +160,7 @@ class MultiModel(object):
         for order in range(0, len(self.models)):
             model = self.models[order]
             prediction_info = model.predict( \
-                input_data, by_name=by_name,
-                add_confidence=True,
-                add_distribution=True,
-                add_count=True,
-                add_median=add_median,
-                add_min=add_min,
-                add_max=add_max,
-                add_unused_fields=add_unused_fields,
-                missing_strategy=missing_strategy)
+                input_data, missing_strategy=missing_strategy, full=True)
 
             if model.boosting is not None:
                 votes.boosting = True
@@ -202,10 +174,8 @@ class MultiModel(object):
 
         return votes
 
-    def _generate_votes(self, input_data, by_name=True,
-                        missing_strategy=LAST_PREDICTION,
-                        add_median=False, add_min=False, add_max=False,
-                        add_unused_fields=False):
+    def _generate_votes(self, input_data, missing_strategy=LAST_PREDICTION,
+                        unused_fields=None):
         """ Generates a MultiVote object that contains the predictions
             made by each of the models. Please note that this function
             calls a _predict method which assumes input data has been
@@ -217,15 +187,7 @@ class MultiModel(object):
             model = self.models[order]
             prediction_info = model._predict( \
                 input_data,
-                by_name=by_name,
-                add_confidence=True,
-                add_distribution=True,
-                add_count=True,
-                add_median=add_median,
-                add_min=add_min,
-                add_max=add_max,
-                add_unused_fields=add_unused_fields,
-                missing_strategy=missing_strategy)
+                missing_strategy=missing_strategy, unused_fields=unused_fields)
 
             if model.boosting is not None:
                 votes.boosting = True
@@ -241,7 +203,6 @@ class MultiModel(object):
 
     def generate_votes_distribution(self,
                                     input_data,
-                                    by_name=True,
                                     missing_strategy=LAST_PREDICTION,
                                     method=PROBABILITY_CODE):
         votes = []
@@ -251,8 +212,8 @@ class MultiModel(object):
                 prediction_info = [0.0] * len(self.class_names)
                 prediction = model.predict(
                     input_data,
-                    by_name=by_name,
-                    missing_strategy=missing_strategy)
+                    missing_strategy=missing_strategy,
+                    full=False)
                 prediction_info[self.class_names.index(prediction)] = 1.0
             else:
                 predict_method = model.predict_confidence \
@@ -260,7 +221,6 @@ class MultiModel(object):
                     else model.predict_probability
                 prediction_info = predict_method(
                     input_data,
-                    by_name=by_name,
                     compact=True,
                     missing_strategy=missing_strategy)
             votes.append(prediction_info)
@@ -268,7 +228,7 @@ class MultiModel(object):
         return MultiVoteList(votes)
 
     def batch_predict(self, input_data_list, output_file_path=None,
-                      by_name=True, reuse=False,
+                      reuse=False,
                       missing_strategy=LAST_PREDICTION, headers=None,
                       to_file=True, use_median=False):
         """Makes predictions for a list of input data.
@@ -319,26 +279,22 @@ class MultiModel(object):
                 if add_headers:
                     input_data = dict(zip(headers, input_data))
                 prediction = model.predict(input_data,
-                                           by_name=by_name,
-                                           with_confidence=True,
-                                           missing_strategy=missing_strategy)
-                if use_median and model.tree.regression:
-                    # if median is to be used, we just place it as prediction
-                    # starting the list
-                    prediction[0] = prediction[-1]
-                prediction = prediction[:-1]
+                                           missing_strategy=missing_strategy,
+                                           full=True)
+                if model.tree.regression:
+                    # if median is to be used, we just replace the prediction
+                    if use_median:
+                        prediction["prediction"] = prediction["median"]
                 if to_file:
+                    prediction = cast_prediction(prediction, to="list",
+                                                 confidence=True,
+                                                 distribution=True,
+                                                 count=True)
                     out.writerow(prediction)
                 else:
-                    # prediction is a row that contains prediction, confidence,
-                    # distribution, instances
-                    prediction_row = prediction[0: 2]
-                    prediction_row.append(order)
-                    prediction_row.extend(prediction[2:])
-
                     if len(votes) <= index:
                         votes.append(MultiVote([]))
-                    votes[index].append_row(prediction_row)
+                    votes[index].append(prediction)
             if out:
                 out.close_writer()
         if not to_file:

@@ -229,13 +229,10 @@ class TimeSeries(ModelFields):
                             " in the resource:\n\n%s" %
                             time_series)
 
-    def forecast(self, input_data=None, by_name=True):
+    def forecast(self, input_data=None):
         """Returns the class prediction and the confidence
-        By default the input fields must be keyed by field name but you can use
-        `by_name` to input them directly keyed by id.
 
         input_data: Input data to be predicted
-        by_name: Boolean, True if input_data is keyed by names
 
         """
         if not input_data:
@@ -254,7 +251,7 @@ class TimeSeries(ModelFields):
         # Checks and cleans input_data leaving only the fields used as
         # objective fields in the model
         new_data = self.filter_objectives( \
-            input_data, by_name=by_name)
+            input_data)
         input_data = new_data
 
         # filter submodels: filtering the submodels in the time-series
@@ -271,33 +268,34 @@ class TimeSeries(ModelFields):
         for field_id, submodels in filtered_submodels.items():
             forecasts[field_id] = compute_forecasts(submodels, \
                 input_data[field_id]["horizon"])
+
         return forecasts
 
-    def filter_objectives(self, input_data, by_name=True,
-                          add_unused_fields=False):
+    def filter_objectives(self, input_data,
+                          full=False):
         """Filters the keys given in input_data checking against the
         objective fields in the time-series model fields.
-        If `add_unused_fields` is set to True, it also
-        provides information about the ones that are not used.
+        If `full` is set to True, it also
+        provides information about the fields that are not used.
 
         """
 
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
-            if by_name:
+            if self.by_id(input_data):
+                for key, value in input_data.items():
+                    if key in self.input_fields:
+                        new_input[key] = value
+                    else:
+                        unused_fields.append(key)
+            else:
                 # We only remove the keys that are not
                 # used as objective fields in the model
                 for key, value in input_data.items():
                     if key in self.inverted_fields and \
                             self.inverted_fields[key]:
                         new_input[self.inverted_fields[key]] = value
-                    else:
-                        unused_fields.append(key)
-            else:
-                for key, value in input_data.items():
-                    if key in self.input_fields:
-                        new_input[key] = value
                     else:
                         unused_fields.append(key)
 
@@ -319,13 +317,13 @@ class TimeSeries(ModelFields):
                         "Only %s allowed as keys in each fields submodel"
                         " filter." % ", ".join(SUBMODEL_KEYS))
 
-            result = (new_input, unused_fields) if add_unused_fields else \
+            result = (new_input, unused_fields) if full else \
                 new_input
             return result
         else:
             LOGGER.error("Failed to read input data in the expected"
                          " {field:value} format.")
-            return ({}, []) if add_unused_fields else {}
+            return ({}, []) if full else {}
 
     def python(self, out=sys.stdout):
         """Generates the code in python that creates the forecasts

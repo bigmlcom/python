@@ -177,7 +177,7 @@ class Association(ModelFields):
                             association)
 
     def association_set(self, input_data,
-                        k=DEFAULT_K, score_by=None, by_name=True):
+                        k=DEFAULT_K, score_by=None):
         """Returns the Consequents for the rules whose LHS best match
            the provided items. Cosine similarity is used to score the match.
 
@@ -198,14 +198,12 @@ class Association(ModelFields):
                 lhs-cover
                 lift
 
-            @param by_name boolean If True, input_data is keyed by field
-                                   name, field_id is used otherwise.
         """
         predictions = {}
         if score_by and score_by not in SCORES:
             raise ValueError("The available values of score_by are: %s" %
                              ", ".join(SCORES))
-        input_data = self.filter_input_data(input_data, by_name=by_name)
+        input_data = self.filter_input_data(input_data)
         # retrieving the items in input_data
         items_indexes = [item.index for item in
                          self.get_items(input_map=input_data)]

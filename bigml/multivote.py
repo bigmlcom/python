@@ -200,16 +200,14 @@ class MultiVote(object):
                 'distribution_unit': distribution_unit}
 
     @classmethod
-    def avg(cls, instance, with_confidence=False,
-            add_confidence=False, add_distribution=False,
-            add_count=False, add_median=False, add_min=False, add_max=False):
+    def avg(cls, instance, full=False):
         """Returns the average of a list of numeric values.
 
-           If with_confidence is True, the combined confidence (as the
+           If full is True, the combined confidence (as the
            average of confidences of the multivote predictions) is also
            returned
         """
-        if (instance.predictions and with_confidence and
+        if (instance.predictions and full and
                 not all([CONFIDENCE_W in prediction
                          for prediction in instance.predictions])):
             raise Exception("Not enough data to use the selected "
@@ -225,63 +223,50 @@ class MultiVote(object):
         d_max = float('-Inf')
         for prediction in instance.predictions:
             result += prediction['prediction']
-            if add_median:
-                median_result += prediction['median']
-            if with_confidence or add_confidence:
+            if full:
+                if 'median' in prediction:
+                    median_result += prediction['median']
                 # some buggy models don't produce a valid confidence value
                 if prediction[CONFIDENCE_W] is not None and \
                    prediction[CONFIDENCE_W] > 0:
                     confidence += prediction[CONFIDENCE_W]
                 else:
                     missing_confidence += 1
-            if add_count:
                 instances += prediction['count']
-            if add_min and d_min > prediction['min']:
-                d_min = prediction['min']
-            if add_max and d_max < prediction['max']:
-                d_max = prediction['max']
-        if with_confidence:
-            return (result / total, confidence / total) if total > 0 else \
-                (float('nan'), 0)
-        if (add_confidence or add_distribution or add_count or
-                add_median or add_min or add_max):
+                if 'min' in prediction and prediction['min'] < d_min:
+                    d_min = prediction['min']
+                if 'max' in prediction and prediction['max'] > d_max:
+                    d_max = prediction['max']
+        if full:
             output = {'prediction': result / total if total > 0 else \
                 float('nan')}
-            if add_confidence:
-                # some strange models have no confidence
-                output.update(
-                    {'confidence': round( \
-                        confidence / (total - missing_confidence), PRECISION)
-                     if total > 0 else 0})
-            if add_distribution:
-                output.update(cls.grouped_distribution(instance))
-            if add_count:
-                output.update({'count': instances})
-            if add_median:
-                output.update(
-                    {'median': median_result / total if total > 0 else \
-                    float('nan')})
-            if add_min:
-                output.update(
-                    {'min': d_min})
-            if add_max:
-                output.update(
-                    {'max': d_max})
+            # some strange models have no confidence
+            output.update(
+                {'confidence': round( \
+                    confidence / (total - missing_confidence), PRECISION)
+                 if total > 0 else 0})
+            output.update(cls.grouped_distribution(instance))
+            output.update({'count': instances})
+            if median_result > 0:
+                output.update({
+                    'median': median_result / total if \
+                    total > 0 else float('nan')})
+            if d_min < float('Inf'):
+                output.update({'min': d_min})
+            if d_max > float('-Inf'):
+                output.update({'max': d_max})
             return output
         return result / total if total > 0 else float('nan')
 
     @classmethod
-    def error_weighted(cls, instance, with_confidence=False,
-                       add_confidence=False, add_distribution=False,
-                       add_count=False, add_median=False, add_min=False,
-                       add_max=False):
+    def error_weighted(cls, instance, full=False):
         """Returns the prediction combining votes using error to compute weight
 
-           If with_confidences is true, the combined confidence (as the
+           If full is true, the combined confidence (as the
            error weighted average of the confidences of the multivote
            predictions) is also returned
         """
-        if (instance.predictions and with_confidence and
+        if (instance.predictions and full and
                 not all([CONFIDENCE_W in prediction
                          for prediction in instance.predictions])):
             raise Exception("Not enough data to use the selected "
@@ -295,51 +280,41 @@ class MultiVote(object):
         d_max = float('-Inf')
         normalization_factor = cls.normalize_error(instance, top_range)
         if normalization_factor == 0:
-            if with_confidence:
-                return float('nan'), 0
+            if full:
+                return {"prediction": float('nan')}
             else:
                 return float('nan')
-        if with_confidence or add_confidence:
+        if full:
             combined_error = 0.0
         for prediction in instance.predictions:
             result += prediction['prediction'] * prediction['_error_weight']
-            if add_median:
-                median_result += (prediction['median'] *
-                                  prediction['_error_weight'])
-            if add_count:
+            if full:
+                if 'median' in prediction:
+                    median_result += (prediction['median'] *
+                                      prediction['_error_weight'])
                 instances += prediction['count']
-            if add_min and d_min > prediction['min']:
-                d_min = prediction['min']
-            if add_max and d_max < prediction['max']:
-                d_max = prediction['max']
-            if with_confidence or add_confidence:
+                if 'min' in prediction and prediction['min'] < d_min:
+                    d_min = prediction['min']
+                if 'max' in prediction and prediction['max'] > d_max:
+                    d_max = prediction['max']
                 # some buggy models don't produce a valid confidence value
                 if prediction[CONFIDENCE_W] is not None:
                     combined_error += (prediction[CONFIDENCE_W] *
                                        prediction['_error_weight'])
             del prediction['_error_weight']
-        if with_confidence:
-            return (result / normalization_factor,
-                    combined_error / normalization_factor)
-        if (add_confidence or add_distribution or add_count or
-                add_median or add_min or add_max):
+        if full:
             output = {'prediction': result / normalization_factor}
-            if add_confidence:
-                output.update({'confidence':
-                               round(combined_error / normalization_factor,
-                                     PRECISION)})
-            if add_distribution:
-                output.update(cls.grouped_distribution(instance))
-            if add_count:
-                output.update({'count': instances})
-            if add_median:
+            output.update({'confidence':
+                           round(combined_error / normalization_factor,
+                                 PRECISION)})
+            output.update(cls.grouped_distribution(instance))
+            output.update({'count': instances})
+            if median_result > 0:
                 output.update({'median': median_result / normalization_factor})
-            if add_min:
-                output.update(
-                    {'min': d_min})
-            if add_max:
-                output.update(
-                    {'max': d_max})
+            if d_min < float('Inf'):
+                output.update({'min': d_min})
+            if d_max > float('-Inf'):
+                output.update({'max': d_max})
             return output
         return result / normalization_factor
 
@@ -423,16 +398,13 @@ class MultiVote(object):
             return self.predictions[-1]['order'] + 1
         return 0
 
-    def combine(self, method=DEFAULT_METHOD, with_confidence=False,
-                add_confidence=False, add_distribution=False,
-                add_count=False, add_median=False, add_min=False,
-                add_max=False, options=None):
+    def combine(self, method=DEFAULT_METHOD, options=None, full=False):
         """Reduces a number of predictions voting for classification and
            averaging predictions for regression.
 
            method will determine the voting method (plurality, confidence
            weighted, probability weighted or threshold).
-           If with_confidence is true, the combined confidence (as a weighted
+           If full is true, the combined confidence (as a weighted
            average of the confidences of votes for the combined prediction)
            will also be given.
         """
@@ -461,21 +433,14 @@ class MultiVote(object):
                     self.boosting_offsets
             else:
                 return self.classification_boosting_combiner( \
-                    options, with_confidence=with_confidence,
-                    add_confidence=add_confidence)
+                    options, full=full)
         elif self.is_regression():
             for prediction in self.predictions:
                 if prediction[CONFIDENCE_W] is None:
                     prediction[CONFIDENCE_W] = 0
             function = NUMERICAL_COMBINATION_METHODS.get(method,
                                                          self.__class__.avg)
-            return function(self, with_confidence=with_confidence,
-                            add_confidence=add_confidence,
-                            add_distribution=add_distribution,
-                            add_count=add_count,
-                            add_median=add_median,
-                            add_min=add_min,
-                            add_max=add_max)
+            return function(self, full=full)
         else:
             if method == THRESHOLD:
                 if options is None:
@@ -488,10 +453,7 @@ class MultiVote(object):
                 predictions = self
             return predictions.combine_categorical(
                 COMBINATION_WEIGHTS.get(method, None),
-                with_confidence=with_confidence,
-                add_confidence=add_confidence,
-                add_distribution=add_distribution,
-                add_count=add_count)
+                full=full)
 
     def probability_weight(self):
         """Reorganizes predictions depending on training data probability
@@ -542,9 +504,7 @@ class MultiVote(object):
             distribution = []
         return distribution, total
 
-    def combine_categorical(self, weight_label=None, with_confidence=False,
-                            add_confidence=False, add_distribution=False,
-                            add_count=False):
+    def combine_categorical(self, weight_label=None, full=False):
         """Returns the prediction combining votes by using the given weight:
 
             weight_label can be set as:
@@ -552,7 +512,7 @@ class MultiVote(object):
             'confidence':  confidence weighted (confidence as a vote value)
             'probability': probability weighted (probability as a vote value)
 
-            If with_confidence is true, the combined confidence (as a weighted
+            If full is true, the combined confidence (as a weighted
             average of the confidences of the votes for the combined
             prediction) will also be given.
         """
@@ -571,7 +531,7 @@ class MultiVote(object):
                 else:
                     weight = prediction[weight_label]
             category = prediction['prediction']
-            if add_count:
+            if full:
                 instances += prediction['count']
             if category in mode:
                 mode[category] = {"count": mode[category]["count"] + weight,
@@ -583,27 +543,28 @@ class MultiVote(object):
                                                          -x[1]['order'],
                                                          x[0]),
                             reverse=True)[0][0]
-        if with_confidence or add_confidence:
+        if full:
+            output = {'prediction': prediction}
             if 'confidence' in self.predictions[0]:
                 prediction, combined_confidence = self.weighted_confidence(
                     prediction, weight_label)
             # if prediction had no confidence, compute it from distribution
             else:
-                combined_distribution = self.combine_distribution()
-                distribution, count = combined_distribution
-                combined_confidence = ws_confidence(prediction, distribution,
-                                                    ws_n=count)
-        if with_confidence:
-            return prediction, combined_confidence
-        if add_confidence or add_distribution or add_count:
-            output = {'prediction': prediction}
-            if add_confidence:
-                output.update({'confidence':
-                               round(combined_confidence, PRECISION)})
-            if add_distribution:
+                if 'probability' in self.predictions[0]:
+                    combined_distribution = self.combine_distribution()
+                    distribution, count = combined_distribution
+                    combined_confidence = ws_confidence(prediction,
+                                                        distribution,
+                                                        ws_n=count)
+            output.update({'confidence':
+                           round(combined_confidence, PRECISION)})
+            if 'probability' in self.predictions[0]:
+                for prediction in self.predictions:
+                    if prediction['prediction'] == output['prediction']:
+                        output['probability'] = prediction['probability']
+            if 'distribution' in self.predictions[0]:
                 output.update(self.__class__.grouped_distribution(self))
-            if add_count:
-                output.update({'count': instances})
+            output.update({'count': instances})
             return output
         return prediction
 
@@ -632,10 +593,7 @@ class MultiVote(object):
                             if total_weight > 0 else float('nan'))
         return combined_prediction, final_confidence
 
-    def classification_boosting_combiner(self,
-                                         options,
-                                         with_confidence=False,
-                                         add_confidence=False):
+    def classification_boosting_combiner(self, options, full=False):
         """Combines the predictions for a boosted classification ensemble
         Applies the regression boosting combiner, but per class. Tie breaks
         use the order of the categories in the ensemble summary to decide.
@@ -660,9 +618,7 @@ class MultiVote(object):
             (- x[1]["probability"], x[1]["order"]))
         prediction, prediction_info = predictions[0]
         confidence = round(prediction_info["probability"], PRECISION)
-        if with_confidence:
-            return prediction, confidence
-        elif add_confidence:
+        if full:
             return {"prediction": prediction,
                     "probability": confidence, \
                 "probabilities": [ \

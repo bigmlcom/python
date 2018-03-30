@@ -26,8 +26,7 @@ from world import world, res_filename
 #@step(r'I create a local forecast for "(.*)"')
 def i_create_a_local_forecast(step, input_data):
     input_data = json.loads(input_data)
-    world.local_forecast = world.local_time_series.forecast(input_data,
-                                                            by_name=False)
+    world.local_forecast = world.local_time_series.forecast(input_data)
 
 
 #@step(r'the local forecast is "(.*)"')

@@ -198,9 +198,13 @@ class BigMLConnection(object):
                            " flag will be removed.")
 
         logging_level = logging.ERROR
-        if debug and not GAE_ENABLED:
-            logging_level = logging.DEBUG
-            patch_requests()
+        if debug:
+            try:
+                logging_level = logging.DEBUG
+                patch_requests()
+            except Exception:
+                # when using GAE will fail
+                pass
 
         logging.basicConfig(format=LOG_FORMAT,
                             level=logging_level,

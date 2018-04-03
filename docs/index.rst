@@ -4405,33 +4405,39 @@ Local predictions have three clear advantages:
 - Extremely low latency to generate predictions for huge volumes of data.
 
 The default output for local predictions is the prediction itself, but you can
-also add the associated confidence, the distribution, and the number
-of instances in the final node by using some additional arguments. To obtain
-a dictionary with the prediction, confidence and rules:
+also add other properties associated to the prediction, like its
+confidence or probability, the distribution of values in the predicted node
+(for decision tree models), and the number of instances supporting the
+prediction. To obtain a
+dictionary with the prediction and the available additional
+properties use the ``full=True`` argument:
 
 .. code-block:: python
 
-    local_model.predict({"petal length": 3, "petal width": 1},
-                        add_confidence=True,
-                        add_path=True)
+    local_model.predict({"petal length": 3, "petal width": 1}, full=True)
 that will return:
 
 .. code-block:: python
 
-    {'path': [u'petal length > 2.35',
-               u'petal width <= 1.75',
-               u'petal length <= 4.95',
-               u'petal width <= 1.65'],
-     'confidence': 0.91033,
-     'prediction': 'Iris-versicolor'}
+    {'count': 47,
+     'confidence': 0.92444,
+     'probability': 0.9861111111111112,
+     'prediction': u'Iris-versicolor',
+     'distribution_unit': 'categories',
+     'path': [u'petal length > 2.45',
+              u'petal width <= 1.75',
+              u'petal length <= 4.95',
+              u'petal width <= 1.65'],
+     'distribution': [[u'Iris-versicolor', 47]]}
 
-Note that the ``add_path`` argument for the ``proportional`` missing strategy
+Note that the ``path`` attribute for the ``proportional`` missing strategy
 shows the path leading to a final unique node, that gives the prediction, or
-to the first split where a missing value is found. Other options are
-``add_next`` which includes the field that determines the next split after
-the prediction node and ``add_distribution`` that adds the distribution
-that leads to the prediction. For regression models, ``add_min`` and
-``add_max`` will add the limit values for the data that supports the
+to the first split where a missing value is found. Other optional
+attributes are
+``next`` which contains the field that determines the next split after
+the prediction node and ``distribution`` that adds the distribution
+that leads to the prediction. For regression models, ``min`` and
+``max`` will add the limit values for the data that supports the
 prediction.
 
 When your test data has missing values, you can choose between ``last
@@ -4469,8 +4475,8 @@ leaf node, with a Laplace correction based on the root node
 distribution.  The latter returns a lower confidence bound on the leaf
 node probability based on the Wilson score interval.
 
-Each of these methods take the ``by_name`` and ``missing_strategy``
-arguments that function as they do in ``predict``, and one additional
+Each of these methods take the ``missing_strategy``
+argument that functions as it does in ``predict``, and one additional
 argument, ``compact``.  If ``compact`` is ``False`` (the default), the
 output of these functions is a list of maps, each with the keys
 ``prediction`` and ``probability`` (or ``confidence``) mapped to the
@@ -4529,6 +4535,28 @@ to use predictions based on ``confidence``:
     local_model.predict({"petal length": 3, "petal width": 1},
                         {"operating_kind": "confidence"})
 
+Previous versions of the bindings had additional arguments in the ``predict``
+method that were used to format the prediction attributes. The signature of
+the method has been changed to accept only arguments that affect the
+prediction itself, (like ``missing_strategy``, ``operating_kind`` and
+``opreating_point``) and ``full`` which is a boolean that controls whether
+the output is the prediction itself or a dictionary will all the available
+properties associated to the prediction. Formatting can be achieved by using
+the ``cast_prediction`` function:
+
+.. code-block:: python
+
+    def cast_prediction(full_prediction, to=None,
+                        confidence=False, probability=False,
+                        path=False, distribution=False,
+                        count=False, next=False, d_min=False,
+                        d_max=False, median=False,
+                        unused_fields=False):
+
+whose first argument is the prediction obtained with the ``full=True``
+argument, the second one defines the type of output (``None```to obtain
+the prediction output only, "list" or "dict") and the rest of booleans
+cause the corresponding property to be included or not.
 
 Operating point's predictions
 ------------------`-----------
@@ -4866,7 +4894,7 @@ fields are allowed.
 
 For consistency of interface with the ``Model`` class, logistic
 regressions again have a ``predict_probability`` method, which takes
-two of the same arguments as ``Model.predict``: ``by_name`` and
+the same argument as ``Model.predict``:
 ``compact``.  As stated above, missing values are not allowed, and so
 there is no ``missing_strategy`` argument.
 
@@ -4978,7 +5006,7 @@ all the possible categories in the objective field.
 
 To be consistent with the ``Model`` class interface, deepnets
 have also a ``predict_probability`` method, which takes
-two of the same arguments as ``Model.predict``: ``by_name`` and
+the same argument as ``Model.predict``:
 ``compact``.
 
 As with local Models, if ``compact`` is ``False`` (the default), the
@@ -5572,55 +5600,32 @@ the final output of the ``predict`` method.
 The predictions' structure will vary depending on the kind of
 ensemble used. For ``Decision Forests`` local predictions will just contain
 the ensemble's final prediction if no other argument is used.
-You can add the confidence to it by
-setting the ``with_confidence`` argument to True.
+
+.. code-block:: python
+
+    from bigml.ensemble import Ensemble
+    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
+    ensemble.predict({"petal length": 3, "petal width": 1})
+    u'Iris-versicolor'
+
+The final prediction of an ensemble is determined
+by aggregating or selecting the predictions of the individual models therein.
+For classifications, the most probable class is returned if no especial
+operating method is set. Using ``full=True`` you can see both the predicted
+output and the associated probability:
 
 .. code-block:: python
 
     from bigml.ensemble import Ensemble
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
     ensemble.predict({"petal length": 3, "petal width": 1}, \
-                     with_confidence=True)
-    (u'Iris-versicolor', 0.91519)
+                     full=True)
 
-And you can add more information to the predictions in a JSON format using:
+    {'prediction': u'Iris-versicolor',
+     'probability': 0.98566}
 
-- ``add_confidence=True`` includes the confidence of the prediction
-- ``add_distribution=True`` includes the distribution of predictions. This is
-                            built by merging the distributions of each of the
-                            nodes predicted by every model the ensemble is
-                            composed of
-- ``add_count=True`` includes the sum of instances of the nodes predicted by
-                     every model the ensemble is composed of
-- ``add_median=True`` for regression ensembles, it computes the prediction
-                      based on the median (instead of the usual mean)
-- ``add_min=True`` adds the minimum value in the prediction's
-                    distribution (for regressions only)
-- ``add_max=True`` adds the maximum value in the prediction's
-                   distribution (for regressions only)
-
-.. code-block:: python
-
-    from bigml.ensemble import Ensemble
-    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
-    ensemble.predict({"petal length": 3, "petal width": 1}, \
-                     add_confidence=True, add_distribution=True)
-
-    {'distribution': [[u'Iris-versicolor', 84]],
-     'confidence': 0.91519,
-     'prediction': u'Iris-versicolor',
-     'distribution_unit': 'counts'}
-
-However, ``Boosted Trees`` don't have an associated confidence measure, so
-only the prediction will be obtained when applied to regressions.
-In classifications, adding the ``add_probability`` or ``with_probability``
-argument will also provide the probability of the prediction.
-
-When predicting, each model in the ensemble issues its particular prediction
-and the ensemble can
-aggregate them in different ways to issue the final prediction.
-For classifications
-the prediction will be one amongst the list of categories in the objective
+In general, the prediction in a classification
+will be one amongst the list of categories in the objective
 field. When each model in the ensemble
 is used to predict, each category has a confidence, a
 probability or a vote associated to this prediction.
@@ -5638,10 +5643,14 @@ criteria can be set using the `operating_kind` option (default is set to
     ensemble.predict({"petal length": 3, "petal width": 1}, \
                      operating_kind="votes")
 
+Regression will generate a predictiona and an associated error, however
+``Boosted Trees`` don't have an associated confidence measure, so
+only the prediction will be obtained in this case.
+
 For consistency of interface with the ``Model`` class, as well as
 between boosted and non-boosted ensembles, local Ensembles again have
 a ``predict_probability`` method.  This takes the same optional
-arguments as ``Model.predict``: ``by_name``, ``missing_strategy`` and
+arguments as ``Model.predict``: ``missing_strategy`` and
 ``compact``. As with local Models, if ``compact`` is ``False`` (the default),
 the output is a list of maps, each with the keys ``prediction`` and
 ``probability`` mapped to the class name and its associated
@@ -5653,9 +5662,9 @@ So, for example:
 
     ensemble.predict_probability({"petal length": 3, "petal width": 1})
 
-    [{'prediction': u'Iris-setosa', 'probability': 0.006733220044732548},
-     {'prediction': u'Iris-versicolor', 'probability': 0.9824478534614787},
-     {'prediction': u'Iris-virginica', 'probability': 0.0108189264937886}]
+    [{'category': u'Iris-setosa', 'probability': 0.006733220044732548},
+     {'category': u'Iris-versicolor', 'probability': 0.9824478534614787},
+     {'category': u'Iris-virginica', 'probability': 0.0108189264937886}]
 
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
@@ -5676,9 +5685,9 @@ You can check the
 `Operating point's predictions <#operating-point's-predictions>`_ section
 to learn about
 operating points. For ensembles, three kinds of operating points are available:
-``votes``, ``probability`` and ``confidence``. ``Votes`` will use as threshold the
-number of models in the ensemble that vote for the positive class. The other
-two are already explained in the above mentioned section.
+``votes``, ``probability`` and ``confidence``. ``Votes`` will use as threshold
+the number of models in the ensemble that vote for the positive class.
+The other two are already explained in the above mentioned section.
 
 Local Ensemble Predictor
 ------------------------
@@ -5825,7 +5834,7 @@ using a csv file as input:
     local_model = Model(model)
     for row in test_reader:
         input_data = fields.pair([float(val) for val in row], objective_field)
-        prediction = local_model.predict(input_data, by_name=False)
+        prediction = local_model.predict(input_data)
 
 If missing values are present, the ``Fields`` object can return a dict
 with the ids of the fields that contain missing values and its count. The

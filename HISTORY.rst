@@ -3,6 +3,12 @@
 History
 -------
 
+4.16.0 (2018-04-03)
+~~~~~~~~~~~~~~~~~~~
+
+- Deprecating local predictions formatting arguments. Formatting is available
+  through the `cast_prediction` function.
+
 4.15.2 (2018-02-24)
 ~~~~~~~~~~~~~~~~~~~
 

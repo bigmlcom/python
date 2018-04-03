@@ -748,6 +748,12 @@ class Model(BaseModel):
         # changing key name to prediction
         result['prediction'] = result['output']
         del result['output']
+        # next
+        field = (None if len(prediction.children) == 0 else
+                 prediction.children[0].predicate.field)
+        if field is not None and field in self.fields:
+            field = self.fields[field]['name']
+        result.update({'next': field})
         del result['children']
         if not self.regression and not self.boosting:
             probabilities = self._probabilities(result['distribution'])

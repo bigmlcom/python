@@ -80,8 +80,13 @@ def plus(mat, vec):
 
 
 def dot(mat1, mat2):
-    return np.dot(mat1, mat2)
-
+    output = []
+    for row1 in mat1:
+      new_row = []
+      for row2 in mat2:
+        new_row.append(np.dot(row1, row2).tolist())
+      output.append(new_row)
+    return output
 
 def batch_norm(X, mean, stdev, shift, scale):
     return scale * (X - mean) / stdev + shift
@@ -92,7 +97,7 @@ def init_layer(layer, ftype=np.float64):
     for key in layer:
         if layer[key] is not None:
             if key in MATRIX_PARAMS:
-                out_layer[key] = np.array(layer[key], dtype=ftype).T
+                out_layer[key] = np.array(layer[key], dtype=ftype)
             elif key in VEC_PARAMS:
                 out_layer[key] = np.array(layer[key], dtype=ftype)
             else:
@@ -136,7 +141,6 @@ def sum_and_normalize(youts, is_regression):
 
 def propagate(x_in, layers):
     last_X = identities = to_numpy_array(x_in)
-
     for layer in layers:
         w = layer['weights']
         m = layer['mean']
@@ -147,7 +151,6 @@ def propagate(x_in, layers):
         afn = layer['activation_function']
 
         X_dot_w = dot(last_X, w)
-
         if m is not None and s is not None:
             next_in = batch_norm(X_dot_w, m, s, b, g)
         else:

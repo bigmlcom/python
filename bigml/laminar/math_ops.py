@@ -54,7 +54,6 @@ def divide(mat, vec):
 
 def dot(mat1, mat2):
     out_mat = []
-
     for row1 in mat1:
         new_row = [sum(m1 * m2 for m1, m2 in zip(row1, row2)) for row2 in mat2]
         out_mat.append(new_row)

@@ -155,7 +155,7 @@ class Deepnet(ModelFields):
             self.resource_id = get_deepnet_id(deepnet)
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
-            self.input_fields = deepnet['input_fields']
+        self.input_fields = deepnet['input_fields']
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):
             status = get_status(deepnet)
             objective_field = deepnet['objective_fields']
@@ -332,7 +332,6 @@ class Deepnet(ModelFields):
 
         layers = net.init_layers(model['layers'])
         y_out = net.propagate(input_array, layers)
-
         if self.regression:
             y_mean, y_stdev = moments(model['output_exposition'])
             y_out = net.destandardize(y_out, y_mean, y_stdev)

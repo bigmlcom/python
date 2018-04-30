@@ -20,10 +20,14 @@
 """
 
 import time
+import sys
+import os
+import datetime
 
 import bigml.constants as c
 
-from bigml.util import get_exponential_wait, get_status
+from bigml.util import get_exponential_wait, get_status, is_status_final, save
+from bigml.util import DFT_STORAGE
 from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
 
@@ -43,6 +47,11 @@ RUNNABLE = -3
 
 # Minimum query string to get model fields
 TINY_RESOURCE = "full=false"
+
+# Resource types that are composed by other resources
+COMPOSED_RESOURCES = ["ensemble"]
+
+LIST_LAST = "limit=1;full=yes;tags=%s"
 
 
 def get_resource_type(resource):
@@ -541,3 +550,91 @@ class ResourceHandler(BigMLConnection):
                                 " %s found." % resource_type)
 
         return dataset_id and resource_id
+
+    def export(self, resource, filename=None, **kwargs):
+        """Retrieves a remote resource when finished and stores it
+           in the user-given file
+
+           The resource parameter should be a string containing the
+           resource id or the dict returned by the corresponding create method.
+           As each resource is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           wait until the resource is in one of these states to store the
+           associated info.
+
+        """
+        resource_type = get_resource_type(resource)
+        if resource_type is None:
+            raise ValueError("A resource ID or structure is needed.")
+        resource_id = get_resource_id(resource)
+
+        if resource_id:
+            resource_info = self._get("%s%s" % (self.url, resource_id),
+                                      **kwargs)
+            if not is_status_final(resource_info):
+                self.ok(resource_info)
+            if filename is None:
+                file_dir = self.storage or DFT_STORAGE
+                filename = os.path.join( \
+                    file_dir, resource_id.replace("/", "_"))
+            if resource_type in COMPOSED_RESOURCES:
+                for component_id in resource_info["object"]["models"]:
+                    self.export( \
+                        component_id,
+                        filename=os.path.join(os.path.dirname(filename),
+                                              component_id.replace("/", "_")),
+                        **kwargs)
+            return save(resource_info, filename)
+        else:
+            raise ValueError("First agument is expected to be a valid"
+                             " resource ID or structure.")
+
+    def export_last(self, tags, filename=None,
+                    resource_type="model", project=None,
+                    **kwargs):
+        """Retrieves a remote resource by tag when finished and stores it
+           in the user-given file
+
+           The resource parameter should be a string containing the
+           resource id or the dict returned by the corresponding create method.
+           As each resource is an evolving object that is processed
+           until it reaches the FINISHED or FAULTY state, the function will
+           wait until the resource is in one of these states to store the
+           associated info.
+
+        """
+
+        if tags is not None and tags != '':
+            query_string = LIST_LAST % tags
+            if project is not None:
+                query_string += ";project=%s" % project
+
+            kwargs.update({'query_string': "%s;%s" %
+                           (query_string, kwargs.get('query_string', ''))})
+
+            response = self._list("%s%s" % (self.url, resource_type),
+                                  **kwargs)
+            if len(response.get("objects", [])) > 0:
+                resource_info = response["objects"][0]
+                if not is_status_final(resource_info):
+                    self.ok(resource_info)
+                if filename is None:
+                    file_dir = self.storage or DFT_STORAGE
+                    now = datetime.datetime.now().strftime("%a%b%d%y_%H%M%S")
+                    filename = os.path.join( \
+                        file_dir,
+                        "%s_%s.json" % (tags.replace("/", "_"), now))
+                if resource_type in COMPOSED_RESOURCES:
+                    for component_id in resource_info["models"]:
+                        self.export( \
+                            component_id,
+                            filename=os.path.join( \
+                                os.path.dirname(filename),
+                                component_id.replace("/", "_")))
+                return save(resource_info, filename)
+            else:
+                raise ValueError("No %s found with tags %s." % (resource_type,
+                                                                tags))
+        else:
+            raise ValueError("First agument is expected to be a non-empty"
+                             " tag.")

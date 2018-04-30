@@ -75,6 +75,24 @@ class in the `ensemble` module. A simple example of that is:
     local_ensemble.predict({"petal length": 4, "sepal length": 2,
                             "petal width": 1, "sepal witdh": 3})
 
+Or you could store first your ensemble information in a file and use that
+file to create the local `Ensemble` object:
+
+.. code-block:: python
+
+    # downloading the ensemble JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("ensemble/5968ec46983efc21b000001b",
+               "filename": "my_ensemble.json")
+    # creating the ensemble from the file
+    from bigml.ensemble import Ensemble
+    local_ensemble = Ensemble("my_ensemble.json")
+    # predicting for some input data
+    local_ensemble.predict({"petal length": 4, "sepal length": 2,
+                            "petal width": 1, "sepal witdh": 3})
+
+
 And if you want to predict locally for all the rows in a CSV file (first line
 should contain the field headers):
 

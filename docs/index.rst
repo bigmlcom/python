@@ -302,8 +302,7 @@ that objects are finished before using them by using ``api.ok``.
     prediction = api.create_prediction(model, \
         {"petal width": 1.75, "petal length": 2.45})
 
-This method retrieves the remote object in its latest state and updates
-the variable used as argument with this information. Note that the prediction
+Note that the prediction
 call is not followed by the ``api.ok`` method. Predictions are so quick to be
 generated that, unlike the
 rest of resouces, will be generated synchronously as a finished object.
@@ -349,6 +348,29 @@ If you set the ``storage`` argument in the ``api`` instantiation:
 
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
+
+Alternatively, you can use the ``export`` method to explicitly
+download the JSON information
+that describes any of your resources in BigML to a particular file:
+
+.. code-block:: python
+
+    api.export('model/5acea49a08b07e14b9001068', "my_dir/my_model.json")
+
+This example downloads the JSON for the model and stores it in
+the ``my_dir/my_model.json`` file.
+
+You can also retrieve the last resource with some previously given tag:
+
+.. code-block:: python
+
+     api.export_last("foo",
+                     resource_type="ensemble",
+                     filename="my_dir/my_ensemble.json")
+
+which selects the last ensemble that has a ``foo`` tag. This mechanism can
+be specially useful when retrieving retrained models that have been created
+with a shared unique keyword as tag.
 
 For a descriptive overview of the steps that you will usually need to
 follow to model
@@ -4321,6 +4343,50 @@ access your shared models.
 
 
 .. _local_resources:
+
+Local Resources
+---------------
+
+All the resources in BigML can be downloaded and used locally with no
+connection whatsoever to BigML's servers. This is specially important
+for all Supervised and Unsupervised models, that can be used to generate
+predictions in any programmable device. The next sections describe how to
+do that for each type of resource, but as a general rule, resources can be
+exported to a JSON file in your file system using the ``export`` method.
+
+.. code-block:: python
+
+    api.export('model/5143a51a37203f2cf7000956',
+               'filename': 'my_dir/my_model.json')
+
+The contents of the generated file can be used just as the remote model
+to generate predictions. As you'll see in next section, the local ``Model``
+object can be instantiated by giving the path to this file as first argument:
+
+.. code-block:: python
+
+    from bigml.model import Model
+    local_model = Model("my_dir/my_model.json")
+    local_model.predict({"petal length": 3, "petal width": 1})
+    Iris-versicolor
+
+If you use a tag to label the resource, you can also ask for the last resource
+that has the tag:
+
+.. code-block:: python
+
+    api.export_last('my_tag',
+                    resource_type='ensemble',
+                    'filename': 'my_dir/my_ensemble.json')
+
+and even for a resource inside a project:
+
+.. code-block:: python
+
+    api.export_last('my_tag',
+                    resource_type='dataset',
+                    project='project/5143a51a37203f2cf7000959',
+                    'filename': 'my_dir/my_dataset.json')
 
 
 Local Models

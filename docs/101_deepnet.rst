@@ -75,6 +75,24 @@ class in the `deepnet` module. A simple example of that is:
     local_deepnet.predict({"petal length": 2.45, "sepal length": 2,
                            "petal width": 1.75, "sepal witdh": 3})
 
+Or you could store first your deepnet information in a file and use that
+file to create the local `Deepnet` object:
+
+.. code-block:: python
+
+    # downloading the deepnet JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("deepnet/5968ec46983efc21b000001b",
+               "filename": "my_deepnet.json")
+    # creating the deepnet from the file
+    from bigml.deepnet import Deepnet
+    local_deepnet = Deepnet("my_deepnet.json")
+    # predicting for some input data
+    local_deepnet.predict({"petal length": 2.45, "sepal length": 2,
+                           "petal width": 1.75, "sepal witdh": 3})
+
+
 And if you want to predict locally for all the rows in a CSV file (first line
 should contain the field headers):
 

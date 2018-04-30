@@ -41,6 +41,24 @@ class in the `timeseries` module. A simple example of that is:
     local_time_series.forecast({"Final": {"horizon": 10},
                                 "Assignment": {"horizon": 5}})
 
+Or you could store first your time series information in a file and use that
+file to create the local `TimeSeries` object:
+
+.. code-block:: python
+
+    # downloading the time series JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("timeseries/5968ec46983efc21b000001b",
+               "filename": "my_time_series.json")
+    # creating the time series from the file
+    from bigml.timeseries import TimeSeries
+    local_time_series = TimeSeries("my_timeseries.json")
+    # 10 points forecast for field "Final" and 5 points for field "Assignment"
+    local_time_series.forecast({"Final": {"horizon": 10},
+                                "Assignment": {"horizon": 5}})
+
+
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

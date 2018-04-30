@@ -37,6 +37,23 @@ class in the `association` module. A simple example of that is:
     # association set for some input data
     local_association.association_set({"Products": "Fruit, Wine"})
 
+Or you could store first your association information in a file and use that
+file to create the local `Association` object:
+
+.. code-block:: python
+
+    # downloading the association JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("association/5968ec46983efc21b000001b",
+               "filename": "my_association.json")
+    # creating the association from the file
+    from bigml.association import Association
+    local_association = Association("my_association.json")
+    # association set for some input data
+    local_association.association_set({"Products": "Fruit, Wine"})
+
+
 Every modeling resource in BigML has its corresponding local class. Check
 the `Local resources <index.html#local-resources>`_ section of the
 documentation to learn more about them.

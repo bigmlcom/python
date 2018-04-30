@@ -92,6 +92,24 @@ class in the `cluster` module. A simple example of that is:
     local_cluster.centroid({"petal length": 4, "sepal length": 2,
                             "petal width": 1, "sepal witdh": 3})
 
+Or you could store first your cluster information in a file and use that
+file to create the local `Cluster` object:
+
+.. code-block:: python
+
+    # downloading the cluster JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("cluster/5968ec46983efc21b000001b",
+               "filename": "my_cluster.json")
+    # creating the cluster from the file
+    from bigml.cluster import Cluster
+    local_cluster = Cluster("my_cluster.json")
+    # associated centroid for some input data
+    local_cluster.centroid({"petal length": 4, "sepal length": 2,
+                            "petal width": 1, "sepal witdh": 3})
+
+
 And if you want to find out locally the associated centroids
 for all the rows in a CSV file (first line
 should contain the field headers):

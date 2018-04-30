@@ -3,6 +3,12 @@
 History
 -------
 
+4.16.2 (2018-04-31)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding the `export` and `export_last` methods to download and save the
+  remote resources in the local file system.
+
 4.16.1 (2018-04-24)
 ~~~~~~~~~~~~~~~~~~~
 

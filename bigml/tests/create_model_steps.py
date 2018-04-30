@@ -20,7 +20,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -42,6 +42,17 @@ def i_create_a_model(step):
     world.location = resource['location']
     world.model = resource['object']
     world.models.append(resource['resource'])
+
+#@step(r'I export the model$')
+def i_export_model(step, filename):
+    world.api.export(world.model.get('resource'),
+                     filename=res_filename(filename))
+
+
+#@step(r'I export the last model$')
+def i_export_tags_model(step, filename, tag):
+    world.api.export_last(tag,
+                          filename=res_filename(filename))
 
 #@step(r'I create a balanced model$')
 def i_create_a_balanced_model(step):

@@ -75,6 +75,24 @@ class in the `model` module. A simple example of that is:
     local_model.predict({"petal length": 2.45, "sepal length": 2,
                          "petal width": 1.75, "sepal witdh": 3})
 
+Or you could store first your model information in a file and use that
+file to create the local `Model` object:
+
+.. code-block:: python
+
+    # downloading the model JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("model/5968ec46983efc21b000001b",
+               "filename": "my_model.json")
+    # creating the model from the file
+    from bigml.model import Model
+    local_model = Model("my_model.json")
+    # predicting for some input data
+    local_model.predict({"petal length": 2.45, "sepal length": 2,
+                         "petal width": 1.75, "sepal witdh": 3})
+
+
 And if you want to predict locally for all the rows in a CSV file (first line
 should contain the field headers):
 

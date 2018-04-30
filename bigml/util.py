@@ -28,6 +28,7 @@ import json
 import math
 import random
 import ast
+import datetime
 from urlparse import urlparse
 
 import unidecode
@@ -99,6 +100,10 @@ PROGRESS_BAR_WIDTH = 50
 HTTP_INTERNAL_SERVER_ERROR = 500
 
 PRECISION = 5
+
+
+DFT_STORAGE = "./storage"
+DFT_STORAGE_FILE = os.path.join(DFT_STORAGE, "BigML_%s.json")
 
 
 def python_map_type(value):
@@ -518,25 +523,41 @@ def maybe_save(resource_id, path,
 
     """
     resource = resource_structure(code, resource_id, location, resource, error)
-    if resource_id is not None:
-        try:
-            status = get_status(resource)
-        except ValueError:
-            status['code'] = None
-        if status['code'] in [c.FINISHED, c.FAULTY] and \
-                path is not None:
-            try:
-                resource_json = json.dumps(resource)
-            except ValueError:
-                print "The resource has an invalid JSON format"
-            try:
-                resource_file_name = "%s%s%s" % (path, os.sep,
-                                                 resource_id.replace('/', '_'))
-                with open(resource_file_name, "wb", 0) as resource_file:
-                    resource_file.write(resource_json.encode('UTF-8'))
-            except IOError:
-                print "Failed writing resource to %s" % resource_file_name
+    if resource_id is not None and path is not None and \
+            is_status_final(resource):
+        resource_file_name = "%s%s%s" % (path, os.sep,
+                                         resource_id.replace('/', '_'))
+        save(resource, resource_file_name)
     return resource
+
+
+def is_status_final(resource):
+    """Try whether a resource is in a final state
+
+    """
+    try:
+        status = get_status(resource)
+    except ValueError:
+        status['code'] = None
+    return status['code'] in [c.FINISHED, c.FAULTY]
+
+
+def save(resource, path):
+    """Stores the resource in the user-given path in a JSON format
+
+    """
+    if path is None:
+        datestamp = datetime.datetime.now().strftime("%a%b%d%y_%H%M%S")
+        path = DFT_STORAGE_FILE % datestamp
+    check_dir(os.path.dirname(path))
+    try:
+        with open(path, "wb", 0) as resource_file:
+            json.dump(resource, resource_file, encoding="utf-8")
+        return path
+    except ValueError:
+        print "The resource has an invalid JSON format"
+    except IOError:
+        print "Failed writing resource to %s" % path
 
 
 def plural(text, num):

@@ -79,6 +79,26 @@ class in the `logistic` module. A simple example of that is:
     local_logistic_regression.predict({"petal length": 4, "sepal length": 2,
                                        "petal width": 1, "sepal witdh": 3})
 
+Or you could store first your logistic regression
+information in a file and use that
+file to create the local `LogisticRegression` object:
+
+.. code-block:: python
+
+    # downloading the logistic regression JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("logisticregression/5968ec46983efc21b000001b",
+               "filename": "my_logistic_regression.json")
+    # creating the logistic regression from the file
+    from bigml.logistic import LogisticRegression
+    local_logistic_regression = LogisticRegression( \
+        "my_logistic_regression.json")
+    # predicting for some input data
+    local_logistic_regression.predict({"petal length": 4, "sepal length": 2,
+                                       "petal width": 1, "sepal witdh": 3})
+
+
 And if you want to predict locally for all the rows in a CSV file (first line
 should contain the field headers):
 

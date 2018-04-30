@@ -70,7 +70,24 @@ class in the `anomaly` module. A simple example of that is:
     local_anomaly.anomaly_score({"petal length": 4, "sepal length": 2,
                                  "petal width": 1, "sepal witdh": 3})
 
-And if you want to assign the anomaly score
+Or you could store first your anomaly information in a file and use that
+file to create the local `Anomaly` object:
+
+.. code-block:: python
+
+    # downloading the anomaly detector JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("anomaly/5968ec46983efc21b000001b",
+               "filename": "my_anomaly.json")
+    # creating an anomaly object using the information in the file
+    from bigml.anomaly import Anomaly
+    local_anomaly = Anomaly("my_anomaly.json")
+    # assigning the anomaly score to some input data
+    local_anomaly.anomaly_score({"petal length": 4, "sepal length": 2,
+                                 "petal width": 1, "sepal witdh": 3})
+
+If you want to assign the anomaly score
 locally for all the rows in a CSV file (first line
 should contain the field headers):
 

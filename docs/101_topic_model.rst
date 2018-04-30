@@ -78,6 +78,23 @@ class in the `topicmodel` module. A simple example of that is:
     # topic distribution for some input data
     local_topic_model.distribution({"Message": "Mobile offers, 20% discount."})
 
+Or you could store first your topic model information in a file and use that
+file to create the local `TopicModel` object:
+
+.. code-block:: python
+
+    # downloading the topic model JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("topicmodel/5968ec46983efc21b000001b",
+               "filename": "my_topic_model.json")
+    # creating the topic model from the file
+    from bigml.topicmodel import TopicModel
+    local_topic_model = TopicModel("my_topic_model.json")
+    # topic distribution for some input data
+    local_topic_model.distribution({"Message": "Mobile offers, 20% discount."})
+
+
 And if you want to predict locally for all the rows in a CSV file (first line
 should contain the field headers):
 

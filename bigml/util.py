@@ -552,11 +552,8 @@ def save(resource, path):
     check_dir(os.path.dirname(path))
     try:
         with open(path, "wb", 0) as resource_file:
-            if PY3:
-                resource_json = json.dumps(resource)
-                resource_file.write(resource_json.encode('UTF-8'))
-            else:
-                json.dump(resource, resource_file, encoding="utf-8")
+            resource_json = json.dumps(resource)
+            resource_file.write(resource_json.encode('UTF-8'))
         return path
     except ValueError:
         print "The resource has an invalid JSON format"

@@ -3,6 +3,12 @@
 History
 -------
 
+4.16.3 (2018-05-02)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding the local Supervised Model class to allow local predictions with
+  any supervised model resource.
+
 4.16.2 (2018-04-31)
 ~~~~~~~~~~~~~~~~~~~
 

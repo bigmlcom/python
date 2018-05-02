@@ -240,7 +240,7 @@ class LogisticRegression(ModelFields):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
-        distribution = self.predict(input_data)['distribution']
+        distribution = self.predict(input_data, full=True)['distribution']
         distribution.sort(key=lambda x: x['category'])
 
         if compact:

@@ -30,6 +30,7 @@ from bigml.api import get_status
 from bigml.ensemble import Ensemble
 from bigml.ensemblepredictor import EnsemblePredictor
 from bigml.model import Model
+from bigml.supervised import SupervisedModel
 
 from read_ensemble_steps import i_get_the_ensemble
 
@@ -79,6 +80,12 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 def create_local_ensemble(step):
     world.local_ensemble = Ensemble(world.ensemble_id, world.api)
     world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
+
+#@step(r'I create a local Ensemble$')
+def create_local_supervised_ensemble(step):
+    world.local_ensemble = SupervisedModel(world.ensemble_id, world.api)
+    world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
+
 
 #@step(r'I create a local EnsemblePredictor from (.*?)$')
 def create_local_ensemble_predictor(step, directory):

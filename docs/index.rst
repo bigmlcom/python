@@ -4459,7 +4459,6 @@ Once you have a local model you can use to generate predictions locally.
 .. code-block:: python
 
     local_model.predict({"petal length": 3, "petal width": 1})
-    petal length > 2.45 AND petal width <= 1.65 AND petal length <= 4.95 =>
     Iris-versicolor
 
 Local predictions have three clear advantages:
@@ -4942,7 +4941,8 @@ an input data set:
 .. code-block:: python
 
     local_log_regression.predict({"petal length": 2, "sepal length": 1.5,
-                                  "petal width": 0.5, "sepal width": 0.7})
+                                  "petal width": 0.5, "sepal width": 0.7},
+                                  full=True)
     {'distribution': [
         {'category': u'Iris-virginica', 'probability': 0.5041444478857267},
         {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
@@ -4951,7 +4951,8 @@ an input data set:
 
 As you can see, the prediction contains the predicted category and the
 associated probability. It also shows the distribution of probabilities for
-all the possible categories in the objective field.
+all the possible categories in the objective field. If you only need the
+predicted value, you can remove the ``full``argument.
 
 You must keep in mind, though, that to obtain a logistic regression
 prediction, input data
@@ -5059,16 +5060,18 @@ an input data set:
 .. code-block:: python
 
     local_deepnet.predict({"petal length": 2, "sepal length": 1.5,
-                           "petal width": 0.5, "sepal width": 0.7})
+                           "petal width": 0.5, "sepal width": 0.7},
+                           full=True)
     {'distribution': [
         {'category': u'Iris-virginica', 'probability': 0.5041444478857267},
         {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
         {'category': u'Iris-setosa', 'probability': 0.02659013168639014}],
         'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}
 
-As you can see, the prediction contains the predicted category and the
+As you can see, the full prediction contains the predicted category and the
 associated probability. It also shows the distribution of probabilities for
-all the possible categories in the objective field.
+all the possible categories in the objective field. If you only need the
+predicted value, you can remove the ``full`` argument.
 
 To be consistent with the ``Model`` class interface, deepnets
 have also a ``predict_probability`` method, which takes
@@ -5784,6 +5787,28 @@ retrieved from the directory.
 
 Note that only last prediction missings strategy is available for these
 predictions.
+
+Local Supervised Model
+----------------------
+
+There's a general class that will allow you to predict using any supervised
+model resource, regardless of its particular type (model, ensemble,
+logistic regression or deepnet).
+
+The ``SupervisedModel`` object will retrieve the resource information and
+instantiate the corresponding local object, so that you can use its
+``predict`` method to produce local predictions:
+
+.. code-block:: python
+    from bigml.supervised import SupervisedModel
+    local_supervised_1 = SupervisedModel( \
+        "logisticregression/5143a51a37203f2cf7020351")
+    local_supervised_2 = SupervisedModel( \
+        "model/5143a51a37203f2cf7020351")
+    input_data = {"petal length": 3, "petal width": 1}
+    logistic_regression_prediction = local_supervised_1.predict(input_data)
+    model_prediction = local_supervised_2.predict(input_data)
+
 
 Fields
 ------

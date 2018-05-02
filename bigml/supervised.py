@@ -107,8 +107,11 @@ class SupervisedModel(BaseModel):
 
         resource_id, model = extract_id(model)
         resource_type = get_resource_type(resource_id)
-        self.local_model = COMPONENT_CLASSES[resource_type](model, api=api)
-
+        local_model = COMPONENT_CLASSES[resource_type](model, api=api)
+        self.__class__.__bases__ = local_model.__class__.__bases__
+        for attr, value in local_model.__dict__.items():
+            setattr(self, attr, value)
+        self.local_model = local_model
 
     def predict(self, *args, **kwargs):
         return self.local_model.predict(*args, **kwargs)

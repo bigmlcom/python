@@ -30,6 +30,7 @@ from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
 from bigml.deepnet import Deepnet
+from bigml.supervised import SupervisedModel
 
 from create_prediction_steps import check_prediction
 
@@ -48,6 +49,15 @@ def i_create_a_local_model_from_file(step, model_file):
 #@step(r'I create a local model$')
 def i_create_a_local_model(step):
     world.local_model = Model(world.model)
+
+
+#@step(r'I create a local supervised model$')
+def i_create_a_local_supervised_model(step, model_type=None):
+    if model_type is None:
+        model = world.model
+    else:
+        model = getattr(world, model_type)
+    world.local_model = SupervisedModel(model)
 
 
 #@step(r'I create a multiple local prediction for "(.*)"')

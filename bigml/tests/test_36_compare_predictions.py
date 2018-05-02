@@ -370,3 +370,43 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_logistic_prediction_op_kind(self, example[4], example[8])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario9(self):
+        """
+            Scenario: Successfully comparing predictions for logistic regressions with operating kind and supervised model:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a logistic regression with objective "<objective>"
+                And I wait until the logistic regression is ready less than <time_3> secs
+                And I create a local supervised model
+                When I create a prediction with operating kind "<operating_kind>" for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction with operating point "<operating_kind>" for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params | operating_point,
+
+
+        """
+        examples = [
+            ['data/iris.csv', '10', '50', '30000', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
+        show_doc(self.test_scenario9, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_logistic_model(self)
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_supervised_model(self, model_type="logistic_regression")
+            prediction_create.i_create_a_logistic_prediction_with_op_kind(self, example[4], example[8])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_logistic_prediction_op_kind(self, example[4], example[8])
+            prediction_compare.the_local_prediction_is(self, example[6])

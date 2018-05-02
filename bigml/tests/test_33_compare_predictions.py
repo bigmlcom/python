@@ -363,3 +363,47 @@ class TestComparePrediction(object):
             ensemble_create.create_local_ensemble_predictor(self, example[0])
             prediction_compare.i_create_a_local_ensemble_prediction(self, example[1])
             prediction_compare.the_local_ensemble_prediction_is(self, example[2])
+
+    def test_scenario9(self):
+        """
+            Scenario: Successfully comparing predictions for ensembles with proportional missing strategy in a supervised model:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an esemble with "<params>"
+                And I wait until the ensemble is ready less than <time_3> secs
+                And I create a local ensemble
+                When I create a proportional missing strategy prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And the confidence for the prediction is "<confidence>"
+                And I create a proportional missing strategy local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+
+                Examples:
+                | data               | time_1  | time_2 | time_3 | data_input           | objective | prediction     | confidence | params
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}'],
+
+
+        """
+        examples = [
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}', {}],
+            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.27261', '{"number_of_models": 5"}', {"operating_kind": "confidence"}]]
+        show_doc(self.test_scenario7, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            ensemble_create.i_create_an_ensemble_with_params(self, example[8])
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.create_local_supervised_ensemble(self)
+            prediction_create.i_create_an_ensemble_proportional_prediction(self, example[4], example[9])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_create.the_confidence_is(self, example[7])
+            prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4], example[9])
+            prediction_compare.the_local_ensemble_prediction_is(self, example[6])
+            prediction_compare.the_local_prediction_confidence_is(self, example[7])

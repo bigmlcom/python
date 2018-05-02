@@ -370,9 +370,9 @@ class Deepnet(ModelFields):
                         ordered by the sorted order of the class names.
         """
         if self.regression:
-            return self.predict(input_data)
+            return self.predict(input_data, full=True)
         else:
-            distribution = self.predict(input_data)['distribution']
+            distribution = self.predict(input_data, full=True)['distribution']
             distribution.sort(key=lambda x: x['category'])
 
             if compact:

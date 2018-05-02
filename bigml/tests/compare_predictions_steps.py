@@ -82,7 +82,7 @@ def i_create_a_local_prediction(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data)
+    world.local_prediction = world.local_model.predict(data, full=True)
 
 
 #@step(r'I create a local prediction for "(.*)" in operating point "(.*)"$')

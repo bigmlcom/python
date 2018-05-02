@@ -298,6 +298,8 @@ class Deepnet(ModelFields):
             prediction = self.predict_single(input_array)
         if full:
             prediction.update({"unused_fields": unused_fields})
+        else:
+            prediction = prediction["prediction"]
 
         return prediction
 

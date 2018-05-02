@@ -407,6 +407,9 @@ class LogisticRegression(ModelFields):
 
         if full:
             result.update({'unused_fields': unused_fields})
+        else:
+            result = result["prediction"]
+
         return result
 
     def category_probability(self, numeric_inputs, unique_terms, category):

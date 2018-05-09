@@ -66,6 +66,8 @@ from bigml.batchtopicdistributionhandler import BatchTopicDistributionHandler
 from bigml.timeserieshandler import TimeSeriesHandler
 from bigml.forecasthandler import ForecastHandler
 from bigml.deepnethandler import DeepnetHandler
+from bigml.optimlhandler import OptimlHandler
+from bigml.fusionhandler import FusionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
@@ -95,8 +97,8 @@ from bigml.constants import (
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
     ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE, TOPIC_MODEL_RE,
     TOPIC_DISTRIBUTION_RE, BATCH_TOPIC_DISTRIBUTION_RE, TIME_SERIES_RE,
-    TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE,
-    CONFIGURATION_PATH, CONFIGURATION_RE,
+    TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE, OPTIML_PATH,
+    OPTIML_RE, FUSION_PATH, FUSION_RE, CONFIGURATION_PATH, CONFIGURATION_RE,
     FORECAST_PATH, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
     IRREGULAR_PLURALS)
@@ -111,7 +113,8 @@ from bigml.resourcehandler import (
     get_correlation_id, get_statistical_test_id, get_logistic_regression_id,
     get_association_id, get_association_set_id, get_topic_model_id,
     get_topic_distribution_id, get_batch_topic_distribution_id,
-    get_time_series_id, get_forecast_id, get_deepnet_id,
+    get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
+    get_fusion_id,
     get_configuration_id,
     get_script_id, get_execution_id, get_library_id)
 
@@ -139,7 +142,7 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(ConfigurationHandler,
+class BigML(ConfigurationHandler, FusionHandler, OptimlHandler,
             DeepnetHandler, ForecastHandler, TimeSeriesHandler,
             BatchTopicDistributionHandler, TopicDistributionHandler,
             TopicModelHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
@@ -236,6 +239,8 @@ class BigML(ConfigurationHandler,
         TimeSeriesHandler.__init__(self)
         ForecastHandler.__init__(self)
         DeepnetHandler.__init__(self)
+        OptimlHandler.__init__(self)
+        FusionHandler.__init__(self)
         ConfigurationHandler.__init__(self)
 
         self.getters = {}
@@ -374,7 +379,9 @@ class BigML(ConfigurationHandler,
                     or TOPIC_MODEL_RE.match(resource_id)
                     or LOGISTIC_REGRESSION_RE.match(resource_id)
                     or TIME_SERIES_RE.match(resource_id)
-                    or DEEPNET_RE.match(resource_id)):
+                    or DEEPNET_RE.match(resource_id)
+                    or FUSION_RE.match(resource_id)
+                    or OPTIML_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):

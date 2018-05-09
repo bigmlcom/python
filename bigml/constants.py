@@ -49,6 +49,8 @@ BATCH_TOPIC_DISTRIBUTION_PATH = 'batchtopicdistribution'
 TIME_SERIES_PATH = 'timeseries'
 FORECAST_PATH = 'forecast'
 DEEPNET_PATH = 'deepnet'
+OPTIML_PATH = 'optiml'
+FUSION_PATH = 'fusion'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -114,6 +116,10 @@ FORECAST_RE = re.compile(r'^%s/%s$' % \
     (FORECAST_PATH, ID_PATTERN))
 DEEPNET_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (DEEPNET_PATH, ID_PATTERN, DEEPNET_PATH, SHARED_PATTERN))
+OPTIML = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (OPTIML_PATH, ID_PATTERN, OPTIML_PATH, SHARED_PATTERN))
+FUSION = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (FUSION_PATH, ID_PATTERN, FUSION_PATH, SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -149,6 +155,8 @@ RESOURCE_RE = {
     TIME_SERIES_PATH: TIME_SERIES_RE,
     FORECAST_PATH: FORECAST_RE,
     DEEPNET_PATH: DEEPNET_RE,
+    OPTIML_PATH: OPTIML_RE,
+    FUSION_PATH: FUSION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}

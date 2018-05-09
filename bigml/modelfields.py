@@ -60,7 +60,7 @@ def parse_items(text, regexp):
     if text is None:
         return []
     pattern = re.compile(regexp, flags=re.U)
-    return pattern.split(text)
+    return [term.strip() for term in pattern.split(text)]
 
 
 def check_model_structure(model, inner_key="model"):

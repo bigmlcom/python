@@ -294,6 +294,20 @@ def get_forecast_id(forecast):
     return get_resource(c.FORECAST_PATH, forecast)
 
 
+def get_fusion_id(fusion):
+    """Returns an fusion/id.
+
+    """
+    return get_resource(c.FUSION_PATH, fusion)
+
+
+def get_optiml_id(optiml):
+    """Returns an optiml/id.
+
+    """
+    return get_resource(c.OPTIML_PATH, optiml)
+
+
 def get_deepnet_id(deepnet):
     """Returns a deepnet/id.
 

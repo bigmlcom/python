@@ -30,7 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, resource_is_ready,
                                    get_fusion_id)
-from bigml.constants import FUSION_PATH
+from bigml.constants import FUSION_PATH, SUPERVISED_PATHS
 
 
 class FusionHandler(ResourceHandler):
@@ -48,14 +48,14 @@ class FusionHandler(ResourceHandler):
         """
         self.fusion_url = self.url + FUSION_PATH
 
-    def create_fusion(self, datasets,
+    def create_fusion(self, models,
                       args=None, wait_time=3, retries=10):
-        """Creates a fusion from a `dataset`
-           of a list o `datasets`.
+        """Creates a fusion from a list of supervised models
 
         """
-        create_args = self._set_create_from_datasets_args(
-            datasets, args=args, wait_time=wait_time, retries=retries)
+        create_args = self._set_create_from_models_args(
+            models, SUPERVISED_PATHS,
+            args=args, wait_time=wait_time, retries=retries)
 
         body = json.dumps(create_args)
         return self._create(self.fusion_url, body)

@@ -64,7 +64,7 @@ JSON_TYPE = 'application/json'
 SEND_JSON = {'Content-Type': '%s;charset=utf-8' % JSON_TYPE}
 ACCEPT_JSON = {'Accept': '%s;charset=utf-8' % JSON_TYPE}
 
-# HTTP Status Codes from https://bigml.com/developers/status_codes
+# HTTP Status Codes from https://bigml.com/api/status_codes
 HTTP_OK = 200
 HTTP_CREATED = 201
 HTTP_ACCEPTED = 202
@@ -854,9 +854,6 @@ class BigMLConnection(object):
                     u'- A typo in the %s\'s id.\n'
                     u'- The %s id cannot be accessed with your credentials'
                     u' or was not created in %s.\n'
-                    u'- The resource was created in a mode (development or'
-                    u' production) that is not the one set in the'
-                    u' BigML connection object by the corresponding flag.\n'
                     u'\nDouble-check your %s and'
                     u' credentials info and retry.' % (
                         resource_type, self.general_domain,

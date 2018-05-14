@@ -32,6 +32,8 @@ from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
     'cluster',
+    'fusion',
+    'optiml',
     'source',
     'dataset',
     'model',

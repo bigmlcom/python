@@ -106,8 +106,12 @@ def check_resource_type(resource, expected_resource, message=None):
     """Checks the resource type.
 
     """
+    if isinstance(expected_resource, basestring):
+        expected_resources = [expected_resource]
+    else:
+        expected_resources = expected_resource
     resource_type = get_resource_type(resource)
-    if expected_resource != resource_type:
+    if resource_type not in expected_resources:
         raise Exception("%s\nFound %s." % (message, resource_type))
 
 
@@ -512,6 +516,37 @@ class ResourceHandler(BigMLConnection):
             if key is None:
                 key = "datasets"
             create_args.update({key: dataset_ids})
+
+        return create_args
+
+    def _set_create_from_models_args(self, models, types, args=None,
+                                     wait_time=3, retries=10, key=None):
+        """Builds args dictionary for the create call from a list of
+        models
+
+        """
+        model_ids = []
+        if not isinstance(models, list):
+            origin_models = [models]
+        else:
+            origin_models = models
+
+        for model in origin_models:
+            check_resource_type(model, types,
+                                message=("A list of model ids "
+                                         "is needed to create"
+                                         " the resource."))
+            model_ids.append(get_resource_id(model).replace("shared/", ""))
+            model = check_resource(model,
+                                   query_string=c.TINY_RESOURCE,
+                                   wait_time=wait_time, retries=retries,
+                                   raise_on_error=True, api=self)
+
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        create_args.update({"models": model_ids})
 
         return create_args
 

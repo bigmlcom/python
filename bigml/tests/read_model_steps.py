@@ -43,3 +43,19 @@ def i_get_the_deepnet_model(step, deepnet):
     world.status = resource['code']
     eq_(world.status, HTTP_OK)
     world.deepnet = resource['object']
+
+
+#@step(r'I get the optiml "(.*)"')
+def i_get_the_optiml(step, optiml):
+    resource = world.api.get_optiml(optiml)
+    world.status = resource['code']
+    eq_(world.status, HTTP_OK)
+    world.optiml = resource['object']
+
+
+#@step(r'I get the fusion "(.*)"')
+def i_get_the_fusion(step, fusion):
+    resource = world.api.get_fusion(fusion)
+    world.status = resource['code']
+    eq_(world.status, HTTP_OK)
+    world.fusion = resource['object']

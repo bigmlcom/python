@@ -272,3 +272,116 @@ def i_check_model_stored(step, filename, pmml):
         model_id = world.model["resource"][ \
             (world.model["resource"].index("/") + 1):]
         assert(content.index(model_id) > -1)
+
+#@step(r'I create an optiml$')
+def i_create_an_optiml(step):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_optiml(dataset)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.optiml = resource['object']
+    world.optimls.append(resource['resource'])
+
+#@step(r'I create an optiml model with objective "(.*?)" and parms "(.*)"$')
+def i_create_an_optiml_with_objective_and_params(step, objective=None, parms=None):
+    dataset = world.dataset.get('resource')
+    if parms is None:
+        parms = {}
+    else:
+        parms = json.loads(parms)
+    if objective is not None:
+        parms.update({"objective_field": objective})
+    resource = world.api.create_optiml(dataset, parms)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.optiml = resource['object']
+    world.optimls.append(resource['resource'])
+
+#@step(r'I wait until the optiml status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_optiml_status_code_is(step, code1, code2, secs):
+    start = datetime.utcnow()
+    read.i_get_the_optiml(step, world.optiml['resource'])
+    status = get_status(world.optiml)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+           time.sleep(3)
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           read.i_get_the_optiml(step, world.optiml['resource'])
+           status = get_status(world.optiml)
+    eq_(status['code'], int(code1))
+
+#@step(r'I wait until the optiml is ready less than (\d+)')
+def the_optiml_is_finished_in_less_than(step, secs):
+    wait_until_optiml_status_code_is(step, FINISHED, FAULTY, secs)
+
+#@step(r'I update the optiml name to "(.*)"')
+def i_update_optiml_name(step, name):
+    resource = world.api.update_optiml(world.optiml['resource'],
+                                      {'name': name})
+    world.status = resource['code']
+    eq_(world.status, HTTP_ACCEPTED)
+    world.location = resource['location']
+    world.optiml = resource['object']
+
+#@step(r'the optiml name is "(.*)"')
+def i_check_optiml_name(step, name):
+    optiml_name = world.optiml['name']
+    eq_(name, optiml_name)
+
+#@step(r'I create a fusion$')
+def i_create_a_fusion(step):
+    resource = world.api.create_fusion(world.list_of_models)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.fusion = resource['object']
+    world.fusions.append(resource['resource'])
+
+#@step(r'I create a fusion with objective "(.*?)" and parms "(.*)"$')
+def i_create_a_fusion_with_objective_and_params(step, objective, parms=None):
+    models = world.list_models
+    if parms is None:
+        parms = {}
+    else:
+        parms = json.loads(parms)
+    parms.update({"objective_field": objective})
+    resource = world.api.create_fusion(models, parms)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.fusion = resource['object']
+    world.fusions.append(resource['resource'])
+
+#@step(r'I wait until the fusion status code is either (\d) or (-\d) less than (\d+)')
+def wait_until_fusion_status_code_is(step, code1, code2, secs):
+    start = datetime.utcnow()
+    read.i_get_the_fusion(step, world.fusion['resource'])
+    status = get_status(world.fusion)
+    while (status['code'] != int(code1) and
+           status['code'] != int(code2)):
+           time.sleep(3)
+           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           read.i_get_the_fusion(step, world.fusion['resource'])
+           status = get_status(world.fusion)
+    eq_(status['code'], int(code1))
+
+#@step(r'I wait until the fusion is ready less than (\d+)')
+def the_fusion_is_finished_in_less_than(step, secs):
+    wait_until_fusion_status_code_is(step, FINISHED, FAULTY, secs)
+
+
+#@step(r'I update the fusion name to "(.*)"')
+def i_update_fusion_name(step, name):
+    resource = world.api.update_fusion(world.fusion['resource'],
+                                       {'name': name})
+    world.status = resource['code']
+    eq_(world.status, HTTP_ACCEPTED)
+    world.location = resource['location']
+    world.fusion = resource['object']
+
+#@step(r'the fusion name is "(.*)"')
+def i_check_fusion_name(step, name):
+    fusion_name = world.fusion['name']
+    eq_(name, fusion_name)

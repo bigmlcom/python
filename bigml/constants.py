@@ -54,6 +54,23 @@ FUSION_PATH = 'fusion'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
+SUPERVISED_PATHS = [
+    MODEL_PATH,
+    ENSEMBLE_PATH,
+    LOGISTIC_REGRESSION_PATH,
+    DEEPNET_PATH
+]
+MODELS_PATHS = [
+    MODEL_PATH,
+    ENSEMBLE_PATH,
+    LOGISTIC_REGRESSION_PATH,
+    DEEPNET_PATH,
+    CLUSTER_PATH,
+    ANOMALY_PATH,
+    ASSOCIATION_PATH,
+    TOPIC_MODEL_PATH,
+    TIME_SERIES_PATH
+]
 
 
 PMML_MODELS = [
@@ -116,9 +133,9 @@ FORECAST_RE = re.compile(r'^%s/%s$' % \
     (FORECAST_PATH, ID_PATTERN))
 DEEPNET_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (DEEPNET_PATH, ID_PATTERN, DEEPNET_PATH, SHARED_PATTERN))
-OPTIML = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+OPTIML_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (OPTIML_PATH, ID_PATTERN, OPTIML_PATH, SHARED_PATTERN))
-FUSION = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+FUSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (FUSION_PATH, ID_PATTERN, FUSION_PATH, SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))

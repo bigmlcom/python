@@ -24,6 +24,8 @@ import sys
 import os
 import datetime
 
+from xml.dom import minidom
+
 import bigml.constants as c
 
 from bigml.util import get_exponential_wait, get_status, is_status_final, save
@@ -551,7 +553,7 @@ class ResourceHandler(BigMLConnection):
 
         return dataset_id and resource_id
 
-    def export(self, resource, filename=None, **kwargs):
+    def export(self, resource, filename=None, pmml=False, **kwargs):
         """Retrieves a remote resource when finished and stores it
            in the user-given file
 
@@ -566,9 +568,29 @@ class ResourceHandler(BigMLConnection):
         resource_type = get_resource_type(resource)
         if resource_type is None:
             raise ValueError("A resource ID or structure is needed.")
+
+        if pmml:
+            if resource_type not in c.PMML_MODELS:
+                raise ValueError("Failed to export to PMML. Only some models"
+                                 " can be exported to PMML.")
         resource_id = get_resource_id(resource)
 
         if resource_id:
+            if pmml:
+                # only models with no text fields can be exported
+                resource_info = self._get("%s%s" % (self.url, resource_id),
+                                          query_string=c.TINY_RESOURCE)
+                field_types = resource_info["object"].get( \
+                    "dataset_field_types", {})
+                if field_types.get("items", 0) > 0 or \
+                        field_types.get("text", 0) > 0:
+                    raise ValueError("Failed to export to PMML. Models with "
+                                     "text and items fields cannot be "
+                                     "exported to PMML.")
+                if kwargs.get("query_string"):
+                    kwargs["query_string"] += ";pmml=yes"
+                else:
+                    kwargs["query_string"] = "pmml=yes"
             resource_info = self._get("%s%s" % (self.url, resource_id),
                                       **kwargs)
             if not is_status_final(resource_info):
@@ -583,8 +605,14 @@ class ResourceHandler(BigMLConnection):
                         component_id,
                         filename=os.path.join(os.path.dirname(filename),
                                               component_id.replace("/", "_")),
+                        pmml=pmml,
                         **kwargs)
-            return save(resource_info, filename)
+            if pmml and resource_info.get("object", {}).get("pmml"):
+                resource_info = resource_info.get("object", {}).get("pmml")
+                resource_info = minidom.parseString( \
+                    resource_info).toprettyxml()
+                return save(resource_info, filename)
+            return savejson(resource_info, filename)
         else:
             raise ValueError("First agument is expected to be a valid"
                              " resource ID or structure.")

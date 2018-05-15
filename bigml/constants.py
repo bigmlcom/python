@@ -54,6 +54,13 @@ EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
 
 
+PMML_MODELS = [
+    MODEL_PATH,
+    LOGISTIC_REGRESSION_PATH,
+    CLUSTER_PATH,
+    ASSOCIATION_PATH
+]
+
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
 SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'

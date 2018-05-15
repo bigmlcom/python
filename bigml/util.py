@@ -527,7 +527,7 @@ def maybe_save(resource_id, path,
             is_status_final(resource):
         resource_file_name = "%s%s%s" % (path, os.sep,
                                          resource_id.replace('/', '_'))
-        save(resource, resource_file_name)
+        save_json(resource, resource_file_name)
     return resource
 
 
@@ -542,7 +542,7 @@ def is_status_final(resource):
     return status['code'] in [c.FINISHED, c.FAULTY]
 
 
-def save(resource, path):
+def save_json(resource, path):
     """Stores the resource in the user-given path in a JSON format
 
     """
@@ -551,14 +551,23 @@ def save(resource, path):
         path = DFT_STORAGE_FILE % datestamp
     check_dir(os.path.dirname(path))
     try:
-        with open(path, "wb", 0) as resource_file:
-            resource_json = json.dumps(resource)
-            resource_file.write(resource_json.encode('UTF-8'))
-        return path
+        resource_json = json.dumps(resource)
+        return save(resource_json, path)
     except ValueError:
         print "The resource has an invalid JSON format"
     except IOError:
         print "Failed writing resource to %s" % path
+
+
+def save(content, path):
+    """Stores content in an utf-8 file
+
+    """
+    with open(path, "wb", 0) as file_handler:
+        if not PY3:
+            content = content.encode('UTF-8')
+        file_handler.write(content)
+    return path
 
 
 def plural(text, num):

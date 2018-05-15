@@ -28,7 +28,8 @@ from xml.dom import minidom
 
 import bigml.constants as c
 
-from bigml.util import get_exponential_wait, get_status, is_status_final, save
+from bigml.util import get_exponential_wait, get_status, is_status_final, \
+    save, save_json
 from bigml.util import DFT_STORAGE
 from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
 from bigml.bigmlconnection import BigMLConnection
@@ -612,7 +613,7 @@ class ResourceHandler(BigMLConnection):
                 resource_info = minidom.parseString( \
                     resource_info).toprettyxml()
                 return save(resource_info, filename)
-            return savejson(resource_info, filename)
+            return save_json(resource_info, filename)
         else:
             raise ValueError("First agument is expected to be a valid"
                              " resource ID or structure.")

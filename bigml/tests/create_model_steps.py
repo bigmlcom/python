@@ -248,7 +248,6 @@ def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):
 #@step(r'I wait until the deepnet model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
-    read.i_get_the_deepnet_model(step, world.deepnet['resource'])
     status = get_status(world.deepnet)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
@@ -261,3 +260,15 @@ def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the deepnet model is ready less than (\d+)')
 def the_deepnet_is_finished_in_less_than(step, secs):
     wait_until_deepnet_model_status_code_is(step, FINISHED, FAULTY, secs)
+
+#@step(r'I export the "(.*)" model to file "(.*)"$')
+def i_export_model(step, pmml, filename):
+    world.api.export(world.model["resource"], res_filename(filename), pmml)
+
+#@step(r'I check the model is stored in "(.*)" file in "(.*)"$')
+def i_check_model_stored(step, filename, pmml):
+    with open(res_filename(filename)) as file_handler:
+        content = file_handler.read()
+        model_id = world.model["resource"][ \
+            (world.model["resource"].index("/") + 1):]
+        assert(content.index(model_id) > -1)

@@ -546,10 +546,6 @@ def save_json(resource, path):
     """Stores the resource in the user-given path in a JSON format
 
     """
-    if path is None:
-        datestamp = datetime.datetime.now().strftime("%a%b%d%y_%H%M%S")
-        path = DFT_STORAGE_FILE % datestamp
-    check_dir(os.path.dirname(path))
     try:
         resource_json = json.dumps(resource)
         return save(resource_json, path)
@@ -563,6 +559,10 @@ def save(content, path):
     """Stores content in an utf-8 file
 
     """
+    if path is None:
+        datestamp = datetime.datetime.now().strftime("%a%b%d%y_%H%M%S")
+        path = DFT_STORAGE_FILE % datestamp
+    check_dir(os.path.dirname(path))
     with open(path, "wb", 0) as file_handler:
         if not PY3:
             content = content.encode('UTF-8')

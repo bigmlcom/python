@@ -563,7 +563,7 @@ def save(content, path):
         datestamp = datetime.datetime.now().strftime("%a%b%d%y_%H%M%S")
         path = DFT_STORAGE_FILE % datestamp
     check_dir(os.path.dirname(path))
-    with open(path, "wb", 0) as file_handler:
+    with open(path, "w", 0) as file_handler:
         if not PY3:
             content = content.encode('UTF-8')
         file_handler.write(content)

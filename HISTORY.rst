@@ -3,6 +3,11 @@
 History
 -------
 
+4.17.1 (2018-05-15)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding the option to `export  PMML models when available.
+
 4.17.0 (2018-05-02)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -355,10 +355,20 @@ that describes any of your resources in BigML to a particular file:
 
 .. code-block:: python
 
-    api.export('model/5acea49a08b07e14b9001068', "my_dir/my_model.json")
+    api.export('model/5acea49a08b07e14b9001068',
+               filename="my_dir/my_model.json")
 
 This example downloads the JSON for the model and stores it in
 the ``my_dir/my_model.json`` file.
+
+In the case of models that can be represented in a `PMML` syntax, the
+export method can be used to produce the corresponding `PMML` file.
+
+.. code-block:: python
+
+    api.export('model/5acea49a08b07e14b9001068',
+               filename="my_dir/my_model.pmml",
+               pmml=True)
 
 You can also retrieve the last resource with some previously given tag:
 
@@ -4624,7 +4634,7 @@ the prediction output only, "list" or "dict") and the rest of booleans
 cause the corresponding property to be included or not.
 
 Operating point's predictions
-------------------`-----------
+-----------------------------
 
 In classification problems,
 Models, Ensembles and Logistic Regressions can be used at different

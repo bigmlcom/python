@@ -625,7 +625,7 @@ class TestComparePrediction(object):
             args = '{"tags": ["%s"]}' % example[8]
             model_create.i_create_a_model_with(self, data=args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_export_model(self, example[7], False) # no pmml
+            model_create.i_export_model(self, False, example[7]) # no pmml
             prediction_compare.i_create_a_local_model_from_file(self, example[7])
             prediction_create.i_create_a_prediction(self, example[4])
             prediction_create.the_prediction_is(self, example[5], example[6])

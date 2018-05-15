@@ -660,7 +660,7 @@ class ResourceHandler(BigMLConnection):
                             filename=os.path.join( \
                                 os.path.dirname(filename),
                                 component_id.replace("/", "_")))
-                return save(resource_info, filename)
+                return save_json(resource_info, filename)
             else:
                 raise ValueError("No %s found with tags %s." % (resource_type,
                                                                 tags))

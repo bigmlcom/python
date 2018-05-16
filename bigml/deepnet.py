@@ -297,9 +297,13 @@ class Deepnet(ModelFields):
         else:
             prediction = self.predict_single(input_array)
         if full:
+            if not isinstance(prediction, dict):
+                prediction = {"prediction": prediction}
             prediction.update({"unused_fields": unused_fields})
         else:
-            prediction = prediction["prediction"]
+            if isinstance(prediction, dict):
+                prediction = prediction["prediction"]
+
 
         return prediction
 
@@ -346,7 +350,7 @@ class Deepnet(ModelFields):
 
         """
         if self.regression:
-            return y_out
+            return float(y_out)
         prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
                       "probability": round(prediction[1], PRECISION),

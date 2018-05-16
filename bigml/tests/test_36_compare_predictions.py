@@ -66,6 +66,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '50', '30000', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
             ['data/iris.csv', '10', '50', '30000', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-setosa', '{}'],
             ['data/iris_missing2.csv', '10', '50', '30000', '{}', '000004', 'Iris-setosa', '{}'],
+            ['data/grades.csv', '10', '50', '30000', '{}', '000005', 42.15474, '{}'],
             ['data/spam.csv', '10', '50', '30000', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1, examples)
 

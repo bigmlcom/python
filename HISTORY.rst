@@ -7,6 +7,7 @@ History
 ~~~~~~~~~~~~~~~~~~~
 
 - Adding the option to `export  PMML models when available.
+- Fixing bug in local deepnets for regressions.
 
 4.17.0 (2018-05-02)
 ~~~~~~~~~~~~~~~~~~~

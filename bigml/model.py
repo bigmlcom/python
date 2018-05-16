@@ -286,7 +286,7 @@ class Model(BaseModel):
                                       " at %s" % model)
             except ValueError:
                 raise ValueError("Failed to interpret %s."
-                                 " JSON file expected.")
+                                 " JSON file expected." % model)
 
         # checks whether the information needed for local predictions is in
         # the first argument

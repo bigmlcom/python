@@ -3,6 +3,11 @@
 History
 -------
 
+4.18.0 (2018-05-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding methods for the REST calls to OptiMLs and Fusions.
+
 4.17.1 (2018-05-15)
 ~~~~~~~~~~~~~~~~~~~
 

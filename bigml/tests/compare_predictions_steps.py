@@ -166,7 +166,7 @@ def i_create_a_local_proportional_median_prediction(step, data=None):
 
 #@step(r'I create a local cluster')
 def i_create_a_local_cluster(step):
-    world.local_cluster = Cluster(world.cluster)
+    world.local_cluster = Cluster(world.cluster["resource"])
 
 
 #@step(r'I create a local centroid for "(.*)"')

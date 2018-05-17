@@ -207,7 +207,12 @@ class Cluster(ModelFields):
                 fields = cluster['clusters']['fields']
                 summary_fields = cluster['summary_fields']
                 for field_id in summary_fields:
-                    del fields[field_id]
+                    try:
+                        del fields[field_id]
+                    except KeyError:
+                        # clusters retrieved from API will only contain
+                        # model fields
+                        pass
                 for field_id, field in fields.items():
                     if field['optype'] == 'text':
                         self.term_forms[field_id] = {}

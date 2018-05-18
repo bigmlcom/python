@@ -283,19 +283,12 @@ class TimeSeries(ModelFields):
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
-            if self.by_id(input_data):
+
                 for key, value in input_data.items():
+                    if key not in self.fields:
+                        key = self.inverted_fields.get(key, key)
                     if key in self.input_fields:
                         new_input[key] = value
-                    else:
-                        unused_fields.append(key)
-            else:
-                # We only remove the keys that are not
-                # used as objective fields in the model
-                for key, value in input_data.items():
-                    if key in self.inverted_fields and \
-                            self.inverted_fields[key]:
-                        new_input[self.inverted_fields[key]] = value
                     else:
                         unused_fields.append(key)
 

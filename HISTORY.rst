@@ -3,6 +3,11 @@
 History
 -------
 
+4.18.1 (2018-05-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug when unused field IDs are used in local prediction inputs.
+
 4.18.0 (2018-05-19)
 ~~~~~~~~~~~~~~~~~~~
 

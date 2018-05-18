@@ -267,26 +267,15 @@ class ModelFields(object):
                 value = self.normalize(value)
                 if value is None:
                     del input_data[key]
-
-            if self.by_id(input_data):
-                for key, value in input_data.items():
-                    if key in self.fields and \
-                            (self.objective_id is None or \
-                             key != self.objective_id):
-                        new_input[key] = value
-                    else:
-                        unused_fields.append(key)
-            else:
-                # We no longer check that the input data keys match some of
-                # the dataset fields. We only remove the keys that are not
-                # used as predictors in the model
-                for key, value in input_data.items():
-                    if key in self.inverted_fields and \
-                            (self.objective_id is None or \
-                             self.inverted_fields[key] != self.objective_id):
-                        new_input[self.inverted_fields[key]] = value
-                    else:
-                        unused_fields.append(key)
+            for key, value in input_data.items():
+                if key not in self.fields:
+                    key = self.inverted_fields.get(key, key)
+                if key in self.fields and \
+                        (self.objective_id is None or \
+                         key != self.objective_id):
+                    new_input[key] = value
+                else:
+                    unused_fields.append(key)
 
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
@@ -357,13 +346,3 @@ class ModelFields(object):
                     unique_terms[field_id] = [(input_data_field, 1)]
                     del input_data[field_id]
         return unique_terms
-
-    def by_id(self, input_data):
-        """Checks whether the input_data is keyed by ID
-
-        """
-        for key in input_data:
-            if key not in self.fields:
-                return False
-
-        return True

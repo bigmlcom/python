@@ -284,13 +284,13 @@ class TimeSeries(ModelFields):
         new_input = {}
         if isinstance(input_data, dict):
 
-                for key, value in input_data.items():
-                    if key not in self.fields:
-                        key = self.inverted_fields.get(key, key)
-                    if key in self.input_fields:
-                        new_input[key] = value
-                    else:
-                        unused_fields.append(key)
+            for key, value in input_data.items():
+                if key not in self.fields:
+                    key = self.inverted_fields.get(key, key)
+                if key in self.input_fields:
+                    new_input[key] = value
+                else:
+                    unused_fields.append(key)
 
             # raise error if no horizon is provided
             for key, value in input_data.items():

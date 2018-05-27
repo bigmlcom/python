@@ -143,3 +143,36 @@ class TestEvaluation(object):
             evaluation_create.i_create_an_evaluation_logistic(self)
             evaluation_create.the_evaluation_is_finished_in_less_than(self, example[4])
             evaluation_create.the_measured_measure_is_value(self, example[5], example[6])
+
+    def test_scenario4(self):
+        """
+
+            Scenario4: Successfully creating an evaluation for a deepnet:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a deepnet
+                And I wait until the deepnet is ready less than <time_3> secs
+                When I create an evaluation for the deepnet with the dataset
+                And I wait until the evaluation is ready less than <time_4> secs
+                Then the measured "<measure>" is <value>
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
+                | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.95007   |
+        """
+        print self.test_scenario4.__doc__
+        examples = [
+            ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.95007']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_deepnet(self)
+            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
+            evaluation_create.i_create_an_evaluation_deepnet(self)
+            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[4])
+            evaluation_create.the_measured_measure_is_value(self, example[5], example[6])

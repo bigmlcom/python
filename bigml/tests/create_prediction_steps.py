@@ -334,3 +334,15 @@ def i_create_a_logistic_prediction_with_op_kind(step, data=None,
     world.location = resource['location']
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
+
+def i_create_a_fusion_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    fusion = world.fusion['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction(fusion, data)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])

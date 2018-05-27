@@ -3,6 +3,11 @@
 History
 -------
 
+4.18.2 (2018-05-28)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding predictions and evaluations for fusion resources.
+
 4.18.1 (2018-05-19)
 ~~~~~~~~~~~~~~~~~~~
 

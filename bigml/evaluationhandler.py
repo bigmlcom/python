@@ -30,9 +30,7 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_evaluation_id)
-from bigml.constants import (EVALUATION_PATH, MODEL_PATH, ENSEMBLE_PATH,
-                             LOGISTIC_REGRESSION_PATH, TIME_SERIES_PATH,
-                             DEEPNET_PATH)
+from bigml.constants import SUPERVISED_PATHS, TIME_SERIES_PATH, EVALUATION_PATH
 
 
 class EvaluationHandler(ResourceHandler):
@@ -59,8 +57,9 @@ class EvaluationHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        model_types = [ENSEMBLE_PATH, MODEL_PATH, LOGISTIC_REGRESSION_PATH,
-                       TIME_SERIES_PATH, DEEPNET_PATH]
+        model_types = SUPERVISED_PATHS[:]
+        model_types.extend(TIME_SERIES_PATH)
+
         origin_resources_checked = self.check_origins(
             dataset, model, create_args, model_types=model_types,
             wait_time=wait_time, retries=retries)

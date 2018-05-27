@@ -29,12 +29,10 @@ except ImportError:
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type, get_prediction_id,
-                                   check_resource, get_ensemble_id,
-                                   get_model_id, get_logistic_regression_id,
-                                   get_deepnet_id, get_resource_type)
-from bigml.constants import (PREDICTION_PATH, ENSEMBLE_PATH, MODEL_PATH,
-                             LOGISTIC_REGRESSION_PATH, DEEPNET_PATH,
-                             TINY_RESOURCE)
+                                   check_resource, get_resource_id,
+                                   get_resource_type)
+from bigml.constants import SUPERVISED_PATHS, TINY_RESOURCE, PREDICTION_PATH
+
 
 class PredictionHandler(ResourceHandler):
     """This class is used by the BigML class as
@@ -59,43 +57,24 @@ class PredictionHandler(ResourceHandler):
             - a simple logistic regression model
             - an ensemble
             - a deepnet
+            - a fusion
            Note that the old `by_name` argument has been deprecated.
 
         """
-        deepnet_id = None
-        logistic_regression_id = None
-        ensemble_id = None
         model_id = None
 
         resource_type = get_resource_type(model)
-        if resource_type == ENSEMBLE_PATH:
-            ensemble_id = get_ensemble_id(model)
-            if ensemble_id is not None:
-                check_resource(ensemble_id,
-                               query_string=TINY_RESOURCE,
-                               wait_time=wait_time, retries=retries,
-                               raise_on_error=True, api=self)
-        elif resource_type == MODEL_PATH:
-            model_id = get_model_id(model)
+        if resource_type not in SUPERVISED_PATHS:
+            raise Exception("A supervised model resource id is needed"
+                            " to create a prediction. %s found." %
+                            resource_type)
+
+        model_id = get_resource_id(model)
+        if model_id is not None:
             check_resource(model_id,
                            query_string=TINY_RESOURCE,
                            wait_time=wait_time, retries=retries,
                            raise_on_error=True, api=self)
-        elif resource_type == LOGISTIC_REGRESSION_PATH:
-            logistic_regression_id = get_logistic_regression_id(model)
-            check_resource(logistic_regression_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        elif resource_type == DEEPNET_PATH:
-            deepnet_id = get_deepnet_id(model)
-            check_resource(deepnet_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
-            raise Exception("A model or ensemble id is needed to create a"
-                            " prediction. %s found." % resource_type)
 
         if input_data is None:
             input_data = {}
@@ -107,15 +86,6 @@ class PredictionHandler(ResourceHandler):
         if model_id is not None:
             create_args.update({
                 "model": model_id})
-        elif ensemble_id is not None:
-            create_args.update({
-                "ensemble": ensemble_id})
-        elif logistic_regression_id is not None:
-            create_args.update({
-                "logisticregression": logistic_regression_id})
-        elif deepnet_id is not None:
-            create_args.update({
-                "deepnet": deepnet_id})
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,

@@ -227,8 +227,8 @@ def i_create_a_deepnet(step):
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
-    world.logistic_regression = resource['object']
-    world.logistic_regressions.append(resource['resource'])
+    world.deepnet = resource['object']
+    world.deepnets.append(resource['resource'])
 
 #@step(r'I create a deepnet model with objective "(.*?)" and parms "(.*)"$')
 def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):

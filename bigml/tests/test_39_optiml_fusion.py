@@ -24,6 +24,9 @@ import create_model_steps as model_create
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import compare_predictions_steps as compare_pred
+import create_prediction_steps as prediction_create
+import create_evaluation_steps as evaluation_create
+
 
 class TestOptimlFusion(object):
 
@@ -92,16 +95,23 @@ class TestOptimlFusion(object):
                 And I wait until the fusion is ready less than <time_4> secs
                 And I update the fusion name to "<fusion_name>"
                 When I wait until the fusion is ready less than <time_5> secs
+                And I create a prediction for "<data_input>"
                 Then the fusion name is "<fusion_name>"
+                And the prediction for "<objective>" is "<prediction>"
+                And I create an evaluation for the fusion with the dataset
+                And I wait until the evaluation is ready less than <time_4> secs
+                Then the measured "<measure>" is <value>
 
                 Examples:
-                | data                | time_1  | time_2 | time_3 | time_4 | fusion_name |
-                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new fusion name |
+                | data                | time_1  | time_2 | time_3 | time_4 | fusion_name | data_input | objective | prediction
+                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new fusion name | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
         """
         print self.test_scenario2.__doc__
         examples = [
             ['data/iris.csv', '10', '10', '20', '20', 'my new fusion name',
-             '{"tags":["mytag"]}', 'mytag']]
+             '{"tags":["mytag"]}', 'mytag',
+             '{"petal width": 1.75, "petal length": 2.45}', "000004",
+             "Iris-setosa", 'average_phi', '1.0']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -120,3 +130,8 @@ class TestOptimlFusion(object):
             model_create.i_update_fusion_name(self, example[5])
             model_create.the_fusion_is_finished_in_less_than(self, example[4])
             model_create.i_check_fusion_name(self, example[5])
+            prediction_create.i_create_a_fusion_prediction(self, example[8])
+            prediction_create.the_prediction_is(self, example[9], example[10])
+            evaluation_create.i_create_an_evaluation_fusion(self)
+            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[3])
+            evaluation_create.the_measured_measure_is_value(self, example[11], example[12])

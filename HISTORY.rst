@@ -21,7 +21,7 @@ History
 4.17.1 (2018-05-15)
 ~~~~~~~~~~~~~~~~~~~
 
-- Adding the option to `export  PMML models when available.
+- Adding the option to export PMML models when available.
 - Fixing bug in local deepnets for regressions.
 - Adapting local Cluster and Anomaly detector to not include summary fields
   information.

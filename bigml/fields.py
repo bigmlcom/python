@@ -114,6 +114,8 @@ def get_fields_structure(resource, errors=False):
             fields = resource['associations']['fields']
         elif resource_type == TOPIC_MODEL_PATH:
             fields = resource['topic_model']['fields']
+        elif resource_type == ENSEMBLE_PATH:
+            fields = resource['ensemble']['fields']
         elif resource_type == SAMPLE_PATH:
             fields = dict([(field['id'], field) for field in
                            resource['sample']['fields']])

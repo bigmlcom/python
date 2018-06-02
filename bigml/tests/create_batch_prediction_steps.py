@@ -221,3 +221,15 @@ def i_create_a_batch_prediction_logistic_model(step):
     world.location = resource['location']
     world.batch_prediction = resource['object']
     world.batch_predictions.append(resource['resource'])
+
+
+#@step(r'I create a batch prediction for the dataset with the fusion$')
+def i_create_a_batch_prediction_fusion(step):
+    dataset = world.dataset.get('resource')
+    fusion = world.fusion.get('resource')
+    resource = world.api.create_batch_prediction(fusion, dataset)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.batch_prediction = resource['object']
+    world.batch_predictions.append(resource['resource'])

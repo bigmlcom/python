@@ -3,6 +3,11 @@
 History
 -------
 
+4.18.3 (2018-06-03)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding batch predictions for fusion resources.
+
 4.18.2 (2018-05-28)
 ~~~~~~~~~~~~~~~~~~~
 

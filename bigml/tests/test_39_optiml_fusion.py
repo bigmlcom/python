@@ -26,6 +26,7 @@ import create_dataset_steps as dataset_create
 import compare_predictions_steps as compare_pred
 import create_prediction_steps as prediction_create
 import create_evaluation_steps as evaluation_create
+import create_batch_prediction_steps as batch_pred_create
 
 
 class TestOptimlFusion(object):
@@ -135,3 +136,54 @@ class TestOptimlFusion(object):
             evaluation_create.i_create_an_evaluation_fusion(self)
             evaluation_create.the_evaluation_is_finished_in_less_than(self, example[3])
             evaluation_create.the_measured_measure_is_value(self, example[11], example[12])
+
+
+    def test_scenario3(self):
+        """
+            Scenario 3: Successfully creating a fusion from a dataset:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I retrieve a list of remote models tagged with "<tag>"
+                And I create a fusion from a dataset
+                And I wait until the fusion is ready less than <time_4> secs
+                When I create a batch prediction for the dataset with the fusion
+                And I wait until the batch prediction is ready less than <time_4> secs
+                And I download the created predictions file to "<local_file>"
+                Then the batch prediction file is like "<predictions_file>"
+
+                Examples:
+                | data                | time_1  | time_2 | time_3 | time_4 | tag | local_file | predictions_file       |
+                | ../data/iris.csv | 10      | 10     | 20     | 20 | mytag | ./tmp/batch_predictions.csv | ./data/batch_predictions_fs.csv |
+        """
+        print self.test_scenario3.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '20', '20',
+             '{"tags":["mytag"]}', 'mytag',
+              'tmp/batch_predictions.csv', 'data/batch_predictions_fs.csv']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            compare_pred.i_retrieve_a_list_of_remote_models(self, example[6])
+            model_create.i_create_a_fusion(self)
+            model_create.the_fusion_is_finished_in_less_than(self, example[3])
+            batch_pred_create.i_create_a_batch_prediction_fusion(self)
+            batch_pred_create.the_batch_prediction_is_finished_in_less_than(self, example[4])
+            batch_pred_create.i_download_predictions_file(self, example[7])
+            batch_pred_create.i_check_predictions(self, example[8])

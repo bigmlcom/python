@@ -59,7 +59,7 @@ RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
                          PREDICTION_PATH, CLUSTER_PATH, ANOMALY_PATH,
                          SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
                          LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH,
-                         TOPIC_MODEL_PATH]
+                         TOPIC_MODEL_PATH, ENSEMBLE_PATH]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
                           "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]

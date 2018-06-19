@@ -31,6 +31,7 @@ from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
 from bigml.deepnet import Deepnet
 from bigml.supervised import SupervisedModel
+from bigml.fusion import Fusion
 
 from create_prediction_steps import check_prediction
 
@@ -50,6 +51,9 @@ def i_create_a_local_model_from_file(step, model_file):
 def i_create_a_local_model(step):
     world.local_model = Model(world.model)
 
+#@step(r'I create a local fusion$')
+def i_create_a_local_fusion(step):
+    world.local_model = Fusion(world.fusion['resource'])
 
 #@step(r'I create a local supervised model$')
 def i_create_a_local_supervised_model(step, model_type=None):

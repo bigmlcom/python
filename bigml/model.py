@@ -71,6 +71,7 @@ from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
+from bigml.constants import STORAGE
 
 
 LOGGER = logging.getLogger('BigML')
@@ -100,8 +101,6 @@ PYTHON_FUNC = dict([(numtype, eval(function))
                     for numtype, function in PYTHON_CONV.iteritems()])
 
 INDENT = u'    '
-
-STORAGE = './storage'
 
 DEFAULT_IMPURITY = 0.2
 
@@ -262,6 +261,8 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
+        if api is None:
+            api = BigML(storage=STORAGE)
         # the string can be a path to a JSON file
         if isinstance(model, basestring):
             try:
@@ -300,8 +301,6 @@ class Model(BaseModel):
 
         if not (isinstance(model, dict) and 'resource' in model and
                 model['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
             if fields is not None and isinstance(fields, dict):
                 query_string = EXCLUDE_FIELDS
             else:
@@ -368,7 +367,7 @@ class Model(BaseModel):
                         root_dist = self.tree.distribution
                         self.class_names = sorted([category[0]
                                                    for category in root_dist])
-                        self.objective_categories =  [category for \
+                        self.objective_categories = [category for \
                             category, _ in self.fields[self.objective_id][ \
                            "summary"]["categories"]]
                 if not self.regression and not self.boosting:
@@ -377,7 +376,7 @@ class Model(BaseModel):
                 raise Exception("Cannot create the Model instance."
                                 " Only correctly finished models can be used."
                                 " The model status is currently: %s\n" %
-                                STATUSES[status['code']]);
+                                STATUSES[status['code']])
         else:
             raise Exception("Cannot create the Model instance. Could not"
                             " find the 'model' key in the resource:\n\n%s" %
@@ -572,7 +571,7 @@ class Model(BaseModel):
             # highest probability or confidence is returned
             predictions.sort( \
                 key=cmp_to_key( \
-                lambda a, b : self._sort_predictions(a, b, kind)))
+                lambda a, b: self._sort_predictions(a, b, kind)))
             prediction = predictions[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
@@ -598,7 +597,7 @@ class Model(BaseModel):
 
         """
         kind = operating_kind.lower()
-        if (kind not in OPERATING_POINT_KINDS):
+        if kind not in OPERATING_POINT_KINDS:
             raise ValueError("Allowed operating kinds are %s. %s found." %
                              (", ".join(OPERATING_POINT_KINDS), kind))
         if kind == "probability":
@@ -613,7 +612,7 @@ class Model(BaseModel):
         else:
             predictions.sort( \
                 key=cmp_to_key( \
-                lambda a, b : self._sort_predictions(a, b, kind)))
+                lambda a, b: self._sort_predictions(a, b, kind)))
             prediction = predictions[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
@@ -678,13 +677,13 @@ class Model(BaseModel):
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 
-        full_prediction =  self._predict( \
+        full_prediction = self._predict( \
             input_data, missing_strategy=missing_strategy,
             operating_point=operating_point, operating_kind=operating_kind,
             unused_fields=unused_fields)
         if full:
-            return dict((key, value) for key, value in
-                    full_prediction.iteritems() if value is not None)
+            return dict((key, value) for key, value in \
+                full_prediction.iteritems() if value is not None)
 
         return full_prediction['prediction']
 

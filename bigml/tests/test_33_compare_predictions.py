@@ -407,3 +407,111 @@ class TestComparePrediction(object):
             prediction_create.create_local_ensemble_proportional_prediction_with_confidence(self, example[4], example[9])
             prediction_compare.the_local_ensemble_prediction_is(self, example[6])
             prediction_compare.the_local_prediction_confidence_is(self, example[7])
+
+
+    def test_scenario10(self):
+        """
+            Scenario: Successfully comparing predictions for fusions:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I retrieve a list of remote models tagged with "<tag>"
+                And I create a fusion from a list of models
+                And I wait until the fusion is ready less than <time_4> secs
+                And I create a local fusion
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | params| tag | data_input                             | objective | prediction  | params
+
+        """
+        examples = [
+            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '10', '10', '120', '120', '{"tags":["mytag_reg"]}', 'mytag_reg', '{"Midterm": 20}', '000005', 43.65286]]
+        show_doc(self.test_scenario10, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            model_create.i_create_a_fusion(self)
+            model_create.the_fusion_is_finished_in_less_than(self, example[4])
+            prediction_compare.i_create_a_local_fusion(self)
+            prediction_create.i_create_a_fusion_prediction(self, example[7])
+            prediction_create.the_prediction_is(self, example[8], example[9])
+            prediction_compare.i_create_a_local_prediction(self, example[7])
+            prediction_compare.the_local_prediction_is(self, example[9])
+
+
+    def test_scenario11(self):
+        """
+            Scenario: Successfully comparing predictions in operating points for fusions:
+            Scenario: Successfully comparing predictions for fusions:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I retrieve a list of remote models tagged with "<tag>"
+                And I create a fusion from a list of models
+                And I wait until the fusion is ready less than <time_4> secs
+                And I create a local fusion
+                When I create a prediction for "<data_input>" in "<operating_point>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local fusion prediction for "<data_input>" in "<operating_point>"
+                Then the local ensemble prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | params| tag | data_input                             | objective | prediction  | params | operating_point
+
+
+        """
+        examples = [
+            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
+           ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
+        show_doc(self.test_scenario11, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            model_create.i_create_a_fusion(self)
+            model_create.the_fusion_is_finished_in_less_than(self, example[4])
+            prediction_compare.i_create_a_local_fusion(self)
+            prediction_create.i_create_a_fusion_prediction_op(self, example[7], example[10])
+            prediction_create.the_prediction_is(self, example[8], example[9])
+            prediction_compare.i_create_a_local_prediction_op(self, example[7], example[10])
+            prediction_compare.the_local_prediction_is(self, example[9])

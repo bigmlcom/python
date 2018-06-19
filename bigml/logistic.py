@@ -51,10 +51,10 @@ from bigml.api import BigML, get_logistic_regression_id, get_status
 from bigml.util import cast, PRECISION
 from bigml.basemodel import retrieve_resource, extract_objective
 from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE, parse_operating_point, sort_categories
+from bigml.model import parse_operating_point, sort_categories
 from bigml.modelfields import ModelFields, check_model_fields
 from bigml.cluster import OPTIONAL_FIELDS
-
+from bigml.constants import STORAGE
 
 LOGGER = logging.getLogger('BigML')
 
@@ -211,6 +211,9 @@ class LogisticRegression(ModelFields):
                     self.class_names = []
                 self.class_names.extend(sorted([category[0]
                                                 for category in categories]))
+                # order matters
+                self.objective_categories = [category[0]
+                                             for category in categories]
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:
@@ -265,7 +268,7 @@ class LogisticRegression(ModelFields):
             # highest probability or confidence is returned
             predictions.sort( \
                 key=cmp_to_key( \
-                lambda a, b : self._sort_predictions(a, b, kind)))
+                lambda a, b: self._sort_predictions(a, b, kind)))
             prediction = predictions[0: 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]
@@ -289,7 +292,7 @@ class LogisticRegression(ModelFields):
                              " for logistic regressions.")
         predictions.sort( \
             key=cmp_to_key( \
-            lambda a, b : self._sort_predictions(a, b, kind)))
+            lambda a, b: self._sort_predictions(a, b, kind)))
         prediction = predictions[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]

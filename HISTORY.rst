@@ -3,6 +3,12 @@
 History
 -------
 
+4.19.0 (2018-06-20)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding local fusion object and predict methods.
+- Fixing error handling in local objects.
+
 4.18.3 (2018-06-03)
 ~~~~~~~~~~~~~~~~~~~
 

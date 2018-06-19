@@ -53,6 +53,7 @@ from bigml.basemodel import ONLY_MODEL
 from bigml.modelfields import check_model_fields, ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
+from bigml.constants import STORAGE
 
 try:
     import numpy
@@ -66,7 +67,6 @@ except ImportError:
 
 LOGGER = logging.getLogger('BigML')
 
-STORAGE = './storage'
 MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
@@ -109,6 +109,8 @@ class Deepnet(ModelFields):
         self.preprocess = []
         self.optimizer = None
         self.missing_numerics = False
+        if api is None:
+            api = BigML(storage=STORAGE)
         # the string can be a path to a JSON file
         if isinstance(deepnet, basestring):
             try:
@@ -146,8 +148,6 @@ class Deepnet(ModelFields):
 
         if not (isinstance(deepnet, dict) and 'resource' in deepnet and
                 deepnet['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
             query_string = ONLY_MODEL
             deepnet = retrieve_resource(api, self.resource_id,
                                         query_string=query_string)
@@ -170,10 +170,14 @@ class Deepnet(ModelFields):
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC
                 if not self.regression:
-                    self.class_names = [category for category,_ in \
+                    self.class_names = [category for category, _ in \
                         self.fields[self.objective_id][ \
                         'summary']['categories']]
                     self.class_names.sort()
+                    # order matters
+                    self.objective_categories = [category for \
+                        category, _ in self.fields[self.objective_id][ \
+                       "summary"]["categories"]]
 
                 self.missing_numerics = deepnet.get('missing_numerics', False)
                 if 'network' in deepnet:
@@ -304,7 +308,6 @@ class Deepnet(ModelFields):
             if isinstance(prediction, dict):
                 prediction = prediction["prediction"]
 
-
         return prediction
 
     def predict_single(self, input_array):
@@ -374,7 +377,11 @@ class Deepnet(ModelFields):
                         ordered by the sorted order of the class names.
         """
         if self.regression:
-            return self.predict(input_data, full=True)
+            prediction = self.predict(input_data, full=not compact)
+            if compact:
+                return [prediction]
+            else:
+                return prediction
         else:
             distribution = self.predict(input_data, full=True)['distribution']
             distribution.sort(key=lambda x: x['category'])
@@ -406,7 +413,7 @@ class Deepnet(ModelFields):
                              " for deepnets.")
         predictions.sort( \
             key=cmp_to_key( \
-            lambda a, b : self._sort_predictions(a, b, kind)))
+            lambda a, b: self._sort_predictions(a, b, kind)))
         prediction = predictions[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
@@ -428,7 +435,7 @@ class Deepnet(ModelFields):
             # highest probability or confidence is returned
             predictions.sort( \
                 key=cmp_to_key( \
-                lambda a, b : self._sort_predictions(a, b, kind)))
+                lambda a, b: self._sort_predictions(a, b, kind)))
             prediction = predictions[0 : 2]
             if prediction[0]["category"] == positive_class:
                 prediction = prediction[1]

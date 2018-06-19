@@ -28,7 +28,7 @@ except ImportError:
 
 
 from bigml.resourcehandler import ResourceHandler
-from bigml.resourcehandler import (check_resource_type, resource_is_ready,
+from bigml.resourcehandler import (check_resource_type,
                                    get_configuration_id)
 from bigml.constants import CONFIGURATION_PATH
 
@@ -49,11 +49,11 @@ class ConfigurationHandler(ResourceHandler):
         self.configuration_url = self.url + CONFIGURATION_PATH
 
     def create_configuration(self, configurations,
-                             args=None, wait_time=3, retries=10):
+                             args=None):
         """Creates a configuration from a `configurations` dictionary.
 
         """
-        if (not isinstance(configurations, dict)):
+        if not isinstance(configurations, dict):
             raise AttributeError("Failed to find a configuration dictionary as"
                                  " first argument.")
         if args is None:
@@ -62,7 +62,6 @@ class ConfigurationHandler(ResourceHandler):
         create_args.update(args)
 
         body = json.dumps(create_args)
-        print body
         return self._create(self.configuration_url, body)
 
     def get_configuration(self, configuration, query_string=''):

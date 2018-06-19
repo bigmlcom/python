@@ -243,7 +243,7 @@ class MultiVote(object):
             # some strange models have no confidence
             output.update(
                 {'confidence': round( \
-                    confidence / (total - missing_confidence), PRECISION)
+                    confidence / (total - missing_confidence), PRECISION) \
                  if total > 0 else 0})
             output.update(cls.grouped_distribution(instance))
             output.update({'count': instances})

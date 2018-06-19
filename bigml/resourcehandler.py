@@ -20,7 +20,6 @@
 """
 
 import time
-import sys
 import os
 import datetime
 
@@ -687,8 +686,8 @@ class ResourceHandler(BigMLConnection):
             if project is not None:
                 query_string += ";project=%s" % project
 
-            kwargs.update({'query_string': "%s;%s" %
-                           (query_string, kwargs.get('query_string', ''))})
+            kwargs.update({'query_string': "%s;%s" % \
+                (query_string, kwargs.get('query_string', ''))})
 
             response = self._list("%s%s" % (self.url, resource_type),
                                   **kwargs)

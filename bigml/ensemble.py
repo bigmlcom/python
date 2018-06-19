@@ -48,7 +48,7 @@ from functools import cmp_to_key
 from bigml.api import BigML, get_ensemble_id, get_model_id
 from bigml.model import Model, retrieve_resource, print_distribution, \
     parse_operating_point, sort_categories
-from bigml.model import STORAGE, ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
+from bigml.model import ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel
@@ -56,6 +56,7 @@ from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import ModelFields, lacks_info
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast
+from bigml.constants import STORAGE
 
 
 BOOSTING = 1
@@ -102,7 +103,10 @@ class Ensemble(ModelFields):
                   cache storage.
     """
 
-    def __init__(self, ensemble, api=None, max_models=None, cache_get=None):
+    def __init__(self, ensemble,
+                 api=None,
+                 max_models=None,
+                 cache_get=None):
 
         if api is None:
             self.api = BigML(storage=STORAGE)
@@ -247,8 +251,7 @@ class Ensemble(ModelFields):
                                                            0) \
                 if self.regression else dict(ensemble['object'].get( \
                     'initial_offsets', []))
-
-        if not self.regression and self.boosting is None:
+        if not self.regression:
             try:
                 objective_field = self.fields[self.objective_id]
                 categories = objective_field['summary']['categories']
@@ -260,7 +263,7 @@ class Ensemble(ModelFields):
                         classes.add(category[0])
 
             self.class_names = sorted(classes)
-            self.objective_categories =  [category for \
+            self.objective_categories = [category for \
                 category, _ in self.fields[self.objective_id][ \
                "summary"]["categories"]]
 
@@ -575,7 +578,7 @@ class Ensemble(ModelFields):
                 # highest probability or confidence is returned
                 predictions.sort( \
                     key=cmp_to_key( \
-                    lambda a, b : self._sort_predictions(a, b, kind)))
+                    lambda a, b: self._sort_predictions(a, b, kind)))
                 prediction = predictions[0: 2]
                 if prediction[0]["category"] == positive_class:
                     prediction = prediction[1]
@@ -607,7 +610,7 @@ class Ensemble(ModelFields):
 
             predictions = predict_method(input_data,
                                          missing_strategy, False)
-        except KeyError, err:
+        except KeyError:
             raise ValueError("The operating kind needs to contain a valid"
                              " property.")
 
@@ -616,7 +619,7 @@ class Ensemble(ModelFields):
         else:
             predictions.sort( \
                 key=cmp_to_key( \
-                lambda a, b : self._sort_predictions(a, b, kind)))
+                lambda a, b: self._sort_predictions(a, b, kind)))
             prediction = predictions[0]
             prediction["prediction"] = prediction["category"]
             del prediction["category"]
@@ -687,7 +690,7 @@ class Ensemble(ModelFields):
         new_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
-        unused_fields= None
+        unused_fields = None
         if full:
             input_data, unused_fields = new_data
         else:

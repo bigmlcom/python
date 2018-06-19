@@ -294,11 +294,11 @@ class BigMLConnection(object):
 
         """
         return "%s%s%s" % (url, self.auth if shared_auth is None else
-                          shared_auth,
-                          "organization=%s;" % self.organization if
-                          organization and self.organization
-                          else "project=%s;" % self.project if self.project
-                          else "")
+                           shared_auth,
+                           "organization=%s;" % self.organization if
+                           organization and self.organization
+                           else "project=%s;" % self.project if self.project
+                           else "")
 
     def _add_project(self, payload, include=True):
         """Adding project id as attribute when it has been set in the
@@ -432,7 +432,7 @@ class BigMLConnection(object):
         if shared_username is not None and shared_api_key is not None:
             kwargs.update({"shared_auth": auth})
 
-        url =  self._add_credentials(url, **kwargs) + query_string
+        url = self._add_credentials(url, **kwargs) + query_string
         if GAE_ENABLED:
             try:
                 req_options = {
@@ -531,7 +531,7 @@ class BigMLConnection(object):
                     'error': error}
         else:
             try:
-                response = requests.get(url , headers=ACCEPT_JSON,
+                response = requests.get(url, headers=ACCEPT_JSON,
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,

@@ -354,7 +354,7 @@ class TopicModel(ModelFields):
         doc = sorted(list_of_indices)
         updates = 0
 
-        if (len(doc) > 0):
+        if len(doc) > 0:
             updates = SAMPLES_PER_TOPIC * self.ntopics / len(doc)
             updates = int(min(MAX_UPDATES, max(MIN_UPDATES, updates)))
 

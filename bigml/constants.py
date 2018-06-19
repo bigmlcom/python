@@ -224,3 +224,6 @@ RUNNABLE = -3
 
 # Minimum query string to get model fields
 TINY_RESOURCE = "full=false"
+
+# Default storage folder
+STORAGE = "./storage"

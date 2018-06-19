@@ -41,12 +41,17 @@ model.predict({"petal length": 3, "petal width": 1,
 
 """
 
-from bigml.api import get_resource_id, get_resource_type
+import json
+
+
+from bigml.api import get_resource_id, get_resource_type, BigML
 from bigml.model import Model
 from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.basemodel import BaseModel
+from bigml.constants import STORAGE
+
 
 COMPONENT_CLASSES = {
     "model": Model,
@@ -55,7 +60,7 @@ COMPONENT_CLASSES = {
     "deepnet": Deepnet}
 
 
-def extract_id(model):
+def extract_id(model, api):
     """Extract the resource id from:
         - a resource ID string
         - a resource structure
@@ -105,9 +110,12 @@ class SupervisedModel(BaseModel):
 
     def __init__(self, model, api=None):
 
-        resource_id, model = extract_id(model)
+        if api is None:
+            api = BigML(storage=STORAGE)
+        resource_id, model = extract_id(model, api)
         resource_type = get_resource_type(resource_id)
-        local_model = COMPONENT_CLASSES[resource_type](model, api=api)
+        kwargs = {"api": api}
+        local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)
         self.__class__.__bases__ = local_model.__class__.__bases__
         for attr, value in local_model.__dict__.items():
             setattr(self, attr, value)
@@ -115,3 +123,12 @@ class SupervisedModel(BaseModel):
 
     def predict(self, *args, **kwargs):
         return self.local_model.predict(*args, **kwargs)
+
+    def predict_probability(self, *args, **kwargs):
+        new_kwargs = {}
+        new_kwargs.update(kwargs)
+        try:
+            return self.local_model.predict_probability(*args, **new_kwargs)
+        except TypeError:
+            del new_kwargs["missing_strategy"]
+            return self.local_model.predict_probability(*args, **new_kwargs)

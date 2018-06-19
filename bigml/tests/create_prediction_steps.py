@@ -69,6 +69,21 @@ def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
     world.predictions.append(resource['resource'])
 
 
+def i_create_a_fusion_prediction_op(step, data=None, operating_point=None):
+    if data is None:
+        data = "{}"
+    assert_is_not_none(operating_point)
+    fusion = world.fusion['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        fusion, data, {"operating_point": operating_point})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+
 def i_create_a_centroid(step, data=None):
     if data is None:
         data = "{}"

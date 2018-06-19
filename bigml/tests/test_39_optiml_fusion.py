@@ -152,7 +152,7 @@ class TestOptimlFusion(object):
                 And I create a model with "<params>"
                 And I wait until the model is ready less than <time_3> secs
                 And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a dataset
+                And I create a fusion from a list of models
                 And I wait until the fusion is ready less than <time_4> secs
                 When I create a batch prediction for the dataset with the fusion
                 And I wait until the batch prediction is ready less than <time_4> secs

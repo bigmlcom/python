@@ -5333,9 +5333,9 @@ So, for example
     local_log_regression.predict_probability({"petal length": 2, "sepal length": 1.5,
                                               "petal width": 0.5, "sepal width": 0.7})
 
-    [{'prediction': u'Iris-setosa', 'probability': 0.02659013168639014},
-     {'prediction': u'Iris-versicolor', 'probability': 0.46926542042788333},
-     {'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}]
+    [{'category': u'Iris-setosa', 'probability': 0.02659013168639014},
+     {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
+     {'category': u'Iris-virginica', 'probability': 0.5041444478857267}]
 
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
@@ -5446,9 +5446,9 @@ So, for example
     local_deepnet.predict_probability({"petal length": 2, "sepal length": 1.5,
                                        "petal width": 0.5, "sepal width": 0.7})
 
-    [{'prediction': u'Iris-setosa', 'probability': 0.02659013168639014},
-     {'prediction': u'Iris-versicolor', 'probability': 0.46926542042788333},
-     {'prediction': u'Iris-virginica', 'probability': 0.5041444478857267}]
+    [{'category': u'Iris-setosa', 'probability': 0.02659013168639014},
+     {'category': u'Iris-versicolor', 'probability': 0.46926542042788333},
+     {'category': u'Iris-virginica', 'probability': 0.5041444478857267}]
 
 If ``compact`` is ``True``, only the probabilities themselves are
 returned, as a list in class name order, again, as is the case with
@@ -5464,6 +5464,110 @@ example of it would be:
                        "threshold": 0.8};
     prediction = local_deepnet.predict(inputData,
                                        operating_point=operating_point)
+
+Local Fusion
+------------
+
+You can also instantiate a local version of a remote Fusion.
+
+.. code-block:: python
+
+    from bigml.fusion import Fusion
+    local_fusion = Fusion(
+        'fusion/502fdbff15526876610022438')
+
+This will retrieve the remote fusion information,
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials) and return a ``Fusion``
+object that you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.fusion import Fusion
+    from bigml.api import BigML
+
+    local_fusion = Fusion(
+        'fusion/502fdbff15526876610602435',
+        api=BigML(my_username, my_api_key))
+
+You can also reuse a remote Fusion JSON structure
+as previously retrieved to build the
+local Fusion object:
+
+.. code-block:: python
+
+    from bigml.fusion import Fusion
+    from bigml.api import BigML
+    api = BigML()
+    fusion = api.get_fusion(
+        'fusion/502fdbff15526876610002435',
+        query_string='limit=-1')
+
+    local_fusion = Fusion(fusion)
+
+Note that in this example we used a ``limit=-1`` query string for the
+fusion retrieval. This ensures that all fields are
+retrieved by the get method in the same call (unlike in the standard
+calls where the number of fields returned is limited).
+
+Local Fusion Predictions
+-------------------------
+
+Using the local fusion object, you can predict the prediction for
+an input data set:
+
+.. code-block:: python
+
+    local_fusion.predict({"petal length": 2, "sepal length": 1.5,
+                          "petal width": 0.5, "sepal width": 0.7},
+                          full=True)
+    {'prediction': u'Iris-setosa', 'probability': 0.45224}
+
+
+As you can see, the full prediction contains the predicted category and the
+associated probability. If you only need the
+predicted value, you can remove the ``full`` argument.
+
+To be consistent with the ``Model`` class interface, fusions
+have also a ``predict_probability`` method, which takes
+the same argument as ``Model.predict``:
+``compact``.
+
+As with local Models, if ``compact`` is ``False`` (the default), the
+output is a list of maps, each with the keys ``prediction`` and
+``probability`` mapped to the class name and its associated
+probability.
+
+So, for example
+
+.. code-block:: python
+
+    local_fusion.predict_probability({"petal length": 2, "sepal length": 1.5,
+                                      "petal width": 0.5, "sepal width": 0.7})
+
+    [{'category': u'Iris-setosa', 'probability': 0.45224},
+     {'category': u'Iris-versicolor', 'probability': 0.2854},
+     {'category': u'Iris-virginica', 'probability': 0.26236}]
+
+
+If ``compact`` is ``True``, only the probabilities themselves are
+returned, as a list in class name order, again, as is the case with
+local Models.
+
+Operating point predictions are also available with probability as threshold
+for local fusions and an
+example of it would be:
+
+.. code-block:: python
+
+    operating_point = {"kind": "probability",
+                       "positive_class": "True",
+                       "threshold": 0.8};
+    prediction = local_fusion.predict(inputData,
+                                      operating_point=operating_point)
 
 Local Association
 -----------------

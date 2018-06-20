@@ -436,8 +436,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica'],
-            ['data/grades.csv', '10', '10', '120', '120', '{"tags":["mytag_reg"]}', 'mytag_reg', '{"Midterm": 20}', '000005', 43.65286]]
+            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag"]}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_reg"]}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 43.65286]]
         show_doc(self.test_scenario10, examples)
 
         for example in examples:

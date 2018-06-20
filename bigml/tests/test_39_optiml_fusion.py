@@ -110,7 +110,7 @@ class TestOptimlFusion(object):
         print self.test_scenario2.__doc__
         examples = [
             ['data/iris.csv', '10', '10', '20', '20', 'my new fusion name',
-             '{"tags":["mytag"]}', 'mytag',
+             '{"tags":["my_fusion_2_tag"]}', 'my_fusion_2_tag',
              '{"petal width": 1.75, "petal length": 2.45}', "000004",
              "Iris-setosa", 'average_phi', '1.0']]
         for example in examples:
@@ -166,7 +166,7 @@ class TestOptimlFusion(object):
         print self.test_scenario3.__doc__
         examples = [
             ['data/iris.csv', '10', '10', '20', '20',
-             '{"tags":["mytag"]}', 'mytag',
+             '{"tags":["my_fusion_3_tag"]}', 'my_fusion_3_tag',
               'tmp/batch_predictions.csv', 'data/batch_predictions_fs.csv']]
         for example in examples:
             print "\nTesting with:\n", example

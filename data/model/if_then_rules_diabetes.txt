@@ -1,4 +1,4 @@
- IF plasma_glucose > 123 AND
+IF plasma_glucose > 123 AND
      IF plasma_glucose > 166 AND
          IF bmi > 23.1 AND
              IF blood_pressure > 65 THEN

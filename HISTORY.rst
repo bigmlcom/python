@@ -8,6 +8,7 @@ History
 
 - Adding local fusion object and predict methods.
 - Fixing error handling in local objects.
+- Fixing bug in local logistic regressions when using a local stored file.
 
 4.18.3 (2018-06-03)
 ~~~~~~~~~~~~~~~~~~~

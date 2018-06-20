@@ -69,3 +69,8 @@ def i_check_if_the_output_is_like_expected_file(step, expected_file):
     expected_content = file.read()
     file.close()
     eq_(world.output.strip(), expected_content.strip())
+
+
+def update_content(filename, content):
+    with open(res_filename(filename), "w") as file_handler:
+        file_handler.write(content)

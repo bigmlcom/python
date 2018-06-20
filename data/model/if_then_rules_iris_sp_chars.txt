@@ -1,4 +1,4 @@
- IF petal_length > 2.45 AND
+IF petal_length > 2.45 AND
      IF petal_width_ > 1.75 AND
          IF petal_length > 4.85 THEN
              species = Iris-virginica

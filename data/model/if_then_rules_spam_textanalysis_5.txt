@@ -1,4 +1,4 @@
- IF message is equal to congratulations! thanks to a good friend u have won the £2,000 xmas prize. 2 claim is easy, just call 08718726971 now! only 10p per minute. bt-national-rate.  THEN
+IF message is equal to congratulations! thanks to a good friend u have won the £2,000 xmas prize. 2 claim is easy, just call 08718726971 now! only 10p per minute. bt-national-rate.  THEN
      type = spam
  IF message is not equal to congratulations! thanks to a good friend u have won the £2,000 xmas prize. 2 claim is easy, just call 08718726971 now! only 10p per minute. bt-national-rate.  AND
      IF message is equal to 88066 from 88066 lost 3pound help  THEN

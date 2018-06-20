@@ -491,8 +491,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
-           ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["mytag"]}', 'mytag', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
+            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_11"]}', 'my_fusion_tag_11', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
+           ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_11_b"]}', 'my_fusion_tag_11_b', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
         show_doc(self.test_scenario11, examples)
 
         for example in examples:

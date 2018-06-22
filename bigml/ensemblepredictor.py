@@ -39,7 +39,7 @@ from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.basemodel import BaseModel, print_importance, retrieve_resource
-from bigml.modelfields lacks_info
+from bigml.modelfields import lacks_info
 from bigml.out_model.pythonmodel import PythonModel
 
 

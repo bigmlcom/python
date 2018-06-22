@@ -35,7 +35,7 @@ import json
 
 from bigml.api import BigML, get_ensemble_id
 from bigml.model import print_distribution
-from bigml.model import STORAGE
+from bigml.constants import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
 from bigml.basemodel import BaseModel, print_importance, retrieve_resource

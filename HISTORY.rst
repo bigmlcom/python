@@ -3,6 +3,14 @@
 History
 -------
 
+
+4.19.1 (2018-06-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Refactoring the local classes that manage models information to create
+  predictions. Now all of them allow a path, an ID or a dictionary to be
+  the first argument in the constructor.
+
 4.19.0 (2018-06-20)
 ~~~~~~~~~~~~~~~~~~~
 

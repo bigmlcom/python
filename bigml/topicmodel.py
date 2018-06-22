@@ -47,10 +47,8 @@ except ImportError:
 
 
 from bigml.api import FINISHED
-from bigml.api import BigML, get_topic_model_id, get_status
-from bigml.basemodel import retrieve_resource
-from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
+from bigml.api import get_status
+from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 
 
@@ -100,20 +98,8 @@ class TopicModel(ModelFields):
         self.term_to_index = None
         self.topics = []
 
-        if not (isinstance(topic_model, dict) and 'resource' in topic_model and
-                topic_model['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
-            self.resource_id = get_topic_model_id(topic_model)
-            if self.resource_id is None:
-                raise Exception(api.error_message(topic_model,
-                                                  resource_type='topicmodel',
-                                                  method='get'))
-            query_string = ONLY_MODEL
-            topic_model = retrieve_resource(api, self.resource_id,
-                                            query_string=query_string)
-        else:
-            self.resource_id = get_topic_model_id(topic_model)
+        self.resource_id, topic_model = get_resource_dict( \
+            topic_model, "topicmodel", api=api)
 
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']

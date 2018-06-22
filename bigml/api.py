@@ -133,6 +133,41 @@ STATUSES = {
     RUNNABLE: "RUNNABLE"
 }
 
+ID_GETTERS = {
+    "project": get_project_id,
+    "source": get_source_id,
+    "dataset": get_dataset_id,
+    "model": get_model_id,
+    "ensemble": get_ensemble_id,
+    "logisticregression": get_logistic_regression_id,
+    "deepnet": get_deepnet_id,
+    "evaluation": get_evaluation_id,
+    "cluster": get_cluster_id,
+    "anomaly": get_anomaly_id,
+    "topicmodel": get_topic_model_id,
+    "association": get_association_id,
+    "timeseries": get_time_series_id,
+    "optiml": get_optiml_id,
+    "fusion": get_fusion_id,
+    "prediction": get_prediction_id,
+    "centroid": get_centroid_id,
+    "anomalyscore": get_anomaly_score_id,
+    "topicdistribution": get_topic_distribution_id,
+    "associationset": get_association_set_id,
+    "bathprediction": get_batch_prediction_id,
+    "batchcentroid": get_batch_centroid_id,
+    "batchanomalyscore": get_batch_anomaly_score_id,
+    "batchtopicdistribution": get_batch_topic_distribution_id,
+    "forecast": get_forecast_id,
+    "correlation": get_correlation_id,
+    "statisticaltest": get_statistical_test_id,
+    "sample": get_sample_id,
+    "configuration": get_configuration_id,
+    "script": get_script_id,
+    "library": get_library_id,
+    "execution": get_execution_id
+}
+
 
 def count(listing):
     """Count of existing resources

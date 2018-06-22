@@ -46,15 +46,13 @@ import re
 import csv
 
 from bigml.api import FINISHED
-from bigml.api import BigML, get_cluster_id, get_status
+from bigml.api import get_status, BigML
 from bigml.util import cast, utf8, PY3
 from bigml.centroid import Centroid
-from bigml.basemodel import retrieve_resource
-from bigml.basemodel import ONLY_MODEL
+from bigml.basemodel import get_resource_dict, STORAGE
 from bigml.model import print_distribution
-from bigml.model import STORAGE
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
-from bigml.modelfields import ModelFields, check_model_fields
+from bigml.modelfields import ModelFields
 from bigml.io import UnicodeWriter
 
 if PY3:
@@ -146,30 +144,12 @@ class Cluster(ModelFields):
         self.datasets = {}
         self.api = api
 
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(cluster, dict) and \
-                not check_model_fields(cluster):
-            # if the fields used by the cluster are not
-            # available, use only ID to retrieve it again
-            cluster = get_cluster_id(cluster)
-            self.resource_id = cluster
+        if self.api is None:
+            self.api = BigML(storage=STORAGE)
 
-        if not (isinstance(cluster, dict) and 'resource' in cluster and
-                cluster['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
-                self.api = api
-            self.resource_id = get_cluster_id(cluster)
-            if self.resource_id is None:
-                raise Exception(api.error_message(cluster,
-                                                  resource_type='cluster',
-                                                  method='get'))
-            query_string = ONLY_MODEL
-            cluster = retrieve_resource(api, self.resource_id,
-                                        query_string=query_string)
-        else:
-            self.resource_id = get_cluster_id(cluster)
+        self.resource_id, cluster = get_resource_dict( \
+            cluster, "cluster", api=api)
+
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
 
@@ -434,8 +414,6 @@ class Cluster(ModelFields):
 
         cluster_datasets = self.datasets
         centroid_dataset = cluster_datasets.get(centroid_id)
-        if self.api is None:
-            self.api = BigML(storage=STORAGE)
         if centroid_dataset in [None, ""]:
             centroid_dataset = self.api.create_dataset( \
                 self.resource_id, {"centroid": centroid_id})

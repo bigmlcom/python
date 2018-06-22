@@ -48,14 +48,12 @@ import json
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import BigML, get_logistic_regression_id, get_status
+from bigml.api import get_status
 from bigml.util import cast, PRECISION
-from bigml.basemodel import retrieve_resource, extract_objective
-from bigml.basemodel import ONLY_MODEL
+from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.model import parse_operating_point, sort_categories
-from bigml.modelfields import ModelFields, check_model_fields
+from bigml.modelfields import ModelFields
 from bigml.cluster import OPTIONAL_FIELDS
-from bigml.constants import STORAGE
 
 LOGGER = logging.getLogger('BigML')
 
@@ -116,56 +114,8 @@ class LogisticRegression(ModelFields):
 
         old_coefficients = False
 
-        if api is None:
-            api = BigML(storage=STORAGE)
-        # the string can be a path to a JSON file
-        if isinstance(logistic_regression, basestring):
-            try:
-                with open(logistic_regression) as logistic_regression_file:
-                    logistic_regression = json.load(logistic_regression_file)
-                    self.resource_id = get_logistic_regression_id( \
-                        logistic_regression)
-                    if self.resource_id is None:
-                        raise ValueError("The JSON file does not seem"
-                                         " to contain a valid BigML logistic"
-                                         " regression representation.")
-            except IOError:
-                # if it is not a path, it can be a logistic regression id
-                self.resource_id = get_logistic_regression_id( \
-                    logistic_regression)
-                if self.resource_id is None:
-                    if logistic_regression.find('logisticregression/') > -1:
-                        raise Exception(
-                            api.error_message( \
-                                logistic_regression,
-                                resource_type='logisticregression',
-                                method='get'))
-                    else:
-                        raise IOError("Failed to open the expected JSON file"
-                                      " at %s" % logistic_regression)
-            except ValueError:
-                raise ValueError("Failed to interpret %s."
-                                 " JSON file expected.")
-
-
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(logistic_regression, dict) and \
-                not check_model_fields(logistic_regression):
-            # if the fields used by the logistic regression are not
-            # available, use only ID to retrieve it again
-            logistic_regression = get_logistic_regression_id( \
-                logistic_regression)
-            self.resource_id = logistic_regression
-
-        if not (isinstance(logistic_regression, dict)
-                and 'resource' in logistic_regression and
-                logistic_regression['resource'] is not None):
-            query_string = ONLY_MODEL
-            logistic_regression = retrieve_resource(
-                api, self.resource_id, query_string=query_string)
-        else:
-            self.resource_id = get_logistic_regression_id(logistic_regression)
+        self.resource_id, logistic_regression = get_resource_dict( \
+            logistic_regression, "logisticregression", api=api)
 
         if 'object' in logistic_regression and \
             isinstance(logistic_regression['object'], dict):

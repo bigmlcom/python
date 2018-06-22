@@ -126,3 +126,18 @@ def i_create_an_ensemble_with_params(step, params):
     world.ensemble = resource['object']
     world.ensemble_id = resource['resource']
     world.ensembles.append(resource['resource'])
+
+
+#@step(r'I export the ensemble$')
+def i_export_ensemble(step, filename):
+    world.api.export(world.ensemble.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local ensemble from file "(.*)"')
+def i_create_local_ensemble_from_file(step, export_file):
+    world.local_ensemble = Ensemble(res_filename(export_file))
+
+
+#@step(r'the ensemble ID and the local ensemble ID match')
+def check_ensemble_id_local_id(step):
+    eq_(world.local_ensemble.resource_id, world.ensemble["resource"])

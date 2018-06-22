@@ -42,12 +42,10 @@ import math
 import json
 
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_anomaly_id, get_status)
+from bigml.api import get_status
 from bigml.util import cast
-from bigml.basemodel import retrieve_resource
-from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
-from bigml.modelfields import ModelFields, check_model_fields
+from bigml.basemodel import get_resource_dict
+from bigml.modelfields import ModelFields
 from bigml.anomalytree import AnomalyTree
 
 
@@ -75,30 +73,9 @@ class Anomaly(ModelFields):
         self.top_anomalies = None
         self.id_fields = []
 
+        self.resource_id, anomaly = get_resource_dict( \
+            anomaly, "anomaly", api=api)
 
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(anomaly, dict) and \
-                not check_model_fields(anomaly):
-            # if the fields used by the anomaly detector are not
-            # available, use only ID to retrieve it again
-            anomaly = get_anomaly_id(anomaly)
-            self.resource_id = anomaly
-
-        if not (isinstance(anomaly, dict) and 'resource' in anomaly and
-                anomaly['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
-            self.resource_id = get_anomaly_id(anomaly)
-            if self.resource_id is None:
-                raise Exception(api.error_message(anomaly,
-                                                  resource_type='anomaly',
-                                                  method='get'))
-            query_string = ONLY_MODEL
-            anomaly = retrieve_resource(api, self.resource_id,
-                                        query_string=query_string)
-        else:
-            self.resource_id = get_anomaly_id(anomaly)
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']
             self.sample_size = anomaly.get('sample_size')

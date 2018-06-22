@@ -51,27 +51,23 @@ model.python()
 import logging
 import sys
 import locale
-import json
 
 
 from functools import partial, cmp_to_key
 
 from bigml.api import FINISHED, STATUSES
-from bigml.api import BigML, get_model_id, get_status
+from bigml.api import get_status
 from bigml.util import slugify, markdown_cleanup, prefix_as_comment, utf8, \
     find_locale, cast
 from bigml.util import DEFAULT_LOCALE, PRECISION
 from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
 from bigml.boostedtree import BoostedTree
 from bigml.predicate import Predicate
-from bigml.basemodel import BaseModel, retrieve_resource, print_importance
-from bigml.basemodel import ONLY_MODEL, EXCLUDE_FIELDS
-from bigml.modelfields import check_model_fields
+from bigml.basemodel import BaseModel, get_resource_dict, print_importance
 from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
-from bigml.constants import STORAGE
 
 
 LOGGER = logging.getLogger('BigML')
@@ -261,55 +257,9 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
-        if api is None:
-            api = BigML(storage=STORAGE)
-        # the string can be a path to a JSON file
-        if isinstance(model, basestring):
-            try:
-                with open(model) as model_file:
-                    model = json.load(model_file)
-                    self.resource_id = get_model_id(model)
-                    if self.resource_id is None:
-                        raise ValueError("The JSON file does not seem"
-                                         " to contain a valid BigML model"
-                                         " representation.")
-            except IOError:
-                # if it is not a path, it can be a model id
-                self.resource_id = get_model_id(model)
-                if self.resource_id is None:
-                    if model.find('model/') > -1:
-                        raise Exception(
-                            api.error_message(model,
-                                              resource_type='model',
-                                              method='get'))
-                    else:
-                        raise IOError("Failed to open the expected JSON file"
-                                      " at %s" % model)
-            except ValueError:
-                raise ValueError("Failed to interpret %s."
-                                 " JSON file expected." % model)
+        self.resource_id, model = get_resource_dict( \
+            model, "model", api=api)
 
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(model, dict) and \
-                not fields and \
-                not check_model_fields(model):
-            # if the fields used by the model are not
-            # available, use only ID to retrieve it again
-            model = get_model_id(model)
-            self.resource_id = model
-
-        if not (isinstance(model, dict) and 'resource' in model and
-                model['resource'] is not None):
-            if fields is not None and isinstance(fields, dict):
-                query_string = EXCLUDE_FIELDS
-            else:
-                query_string = ONLY_MODEL
-            model = retrieve_resource(api, self.resource_id,
-                                      query_string=query_string,
-                                      no_check_fields=fields is not None)
-        else:
-            self.resource_id = get_model_id(model)
         BaseModel.__init__(self, model, api=api, fields=fields)
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']

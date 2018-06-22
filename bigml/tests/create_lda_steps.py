@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from read_lda_steps import i_get_the_topic_model
@@ -29,6 +29,7 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.topicmodel import TopicModel
 
 #@step(r'I create a Topic Model')
 def i_create_a_topic_model(step):
@@ -144,3 +145,19 @@ def i_create_a_topic_distribution(step, data=None):
 def i_create_a_local_topic_distribution(step, data=None):
     world.local_topic_distribution = \
         world.local_topic_model.distribution(json.loads(data))
+
+
+#@step(r'I export the topic model$')
+def i_export_topic_model(step, filename):
+    world.api.export(world.topic_model.get('resource'),
+                     filename=res_filename(filename))
+
+
+#@step(r'I create a local topic model from file "(.*)"')
+def i_create_local_topic_model_from_file(step, export_file):
+    world.local_topic_model = TopicModel(res_filename(export_file))
+
+
+#@step(r'the topic model ID and the local topic model ID match')
+def check_topic_model_id_local_id(step):
+    eq_(world.local_topic_model.resource_id, world.topic_model["resource"])

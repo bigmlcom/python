@@ -45,9 +45,9 @@ import json
 from functools import cmp_to_key
 
 from bigml.api import BigML, get_fusion_id, get_resource_type
-from bigml.model import retrieve_resource, \
-    parse_operating_point, sort_categories
-from bigml.model import ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
+from bigml.model import parse_operating_point, sort_categories
+from bigml.model import LAST_PREDICTION
+from bigml.basemodel import retrieve_resource
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast
 from bigml.supervised import SupervisedModel

@@ -46,9 +46,10 @@ import json
 from functools import cmp_to_key
 
 from bigml.api import BigML, get_ensemble_id, get_model_id
-from bigml.model import Model, retrieve_resource, print_distribution, \
+from bigml.model import Model, print_distribution, \
     parse_operating_point, sort_categories
-from bigml.model import ONLY_MODEL, LAST_PREDICTION, EXCLUDE_FIELDS
+from bigml.basemodel import retrieve_resource, ONLY_MODEL, EXCLUDE_FIELDS
+from bigml.model import LAST_PREDICTION
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE, PROBABILITY_CODE, CONFIDENCE_CODE
 from bigml.multimodel import MultiModel

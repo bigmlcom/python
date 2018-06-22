@@ -20,7 +20,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -93,3 +93,19 @@ def i_update_time_series_name(step, name):
 def i_check_time_series_name(step, name):
     time_series_name = world.time_series['name']
     eq_(name, time_series_name)
+
+
+#@step(r'I export the time series$')
+def i_export_time_series(step, filename):
+    world.api.export(world.time_series.get('resource'),
+                     filename=res_filename(filename))
+
+
+#@step(r'I create a local time series from file "(.*)"')
+def i_create_local_time_series_from_file(step, export_file):
+    world.local_time_series = TimeSeries(res_filename(export_file))
+
+
+#@step(r'the time series ID and the local time series ID match')
+def check_time_series_id_local_id(step):
+    eq_(world.local_time_series.resource_id, world.time_series["resource"])

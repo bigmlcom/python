@@ -20,7 +20,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from nose.tools import eq_, ok_, assert_less
-from world import world
+from world import world, res_filename
 
 from read_anomaly_steps import i_get_the_anomaly
 
@@ -110,3 +110,17 @@ def create_dataset_with_anomalies(step):
 #@step(r'I check that the dataset has (\d+) rows')
 def the_dataset_has_n_rows(step, rows):
     eq_(world.dataset['rows'], int(rows))
+
+#@step(r'I export the anomaly$')
+def i_export_anomaly(step, filename):
+    world.api.export(world.anomaly.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local anomaly from file "(.*)"')
+def i_create_local_anomaly_from_file(step, export_file):
+    world.local_anomaly = Anomaly(res_filename(export_file))
+
+
+#@step(r'the anomaly ID and the local anomaly ID match')
+def check_anomaly_id_local_id(step):
+    eq_(world.local_anomaly.resource_id, world.anomaly["resource"])

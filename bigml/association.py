@@ -42,10 +42,8 @@ import csv
 
 
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_association_id, get_status)
-from bigml.basemodel import retrieve_resource
-from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
+from bigml.api import get_status
+from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.associationrule import AssociationRule
 from bigml.item import Item
@@ -126,20 +124,9 @@ class Association(ModelFields):
         self.rules = []
         self.significance_level = None
 
-        if not (isinstance(association, dict) and 'resource' in association and
-                association['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
-            self.resource_id = get_association_id(association)
-            if self.resource_id is None:
-                raise Exception(api.error_message(association,
-                                                  resource_type='association',
-                                                  method='get'))
-            query_string = ONLY_MODEL
-            association = retrieve_resource(api, self.resource_id,
-                                            query_string=query_string)
-        else:
-            self.resource_id = get_association_id(association)
+        self.resource_id, association = get_resource_dict( \
+            association, "association", api=api)
+
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']
 

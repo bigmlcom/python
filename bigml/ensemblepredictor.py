@@ -34,13 +34,12 @@ import logging
 import json
 
 from bigml.api import BigML, get_ensemble_id
-from bigml.model import retrieve_resource, print_distribution
+from bigml.model import print_distribution
 from bigml.model import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
-from bigml.basemodel import BaseModel, print_importance
-from bigml.modelfields import check_model_fields, check_model_structure, \
-    lacks_info
+from bigml.basemodel import BaseModel, print_importance, retrieve_resource
+from bigml.modelfields lacks_info
 from bigml.out_model.pythonmodel import PythonModel
 
 

@@ -41,19 +41,16 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 
 """
 import logging
-import json
 
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import BigML, get_deepnet_id, get_status
+from bigml.api import get_status
 from bigml.util import cast, PRECISION
-from bigml.basemodel import retrieve_resource, extract_objective
-from bigml.basemodel import ONLY_MODEL
-from bigml.modelfields import check_model_fields, ModelFields
+from bigml.basemodel import get_resource_dict, extract_objective
+from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
-from bigml.constants import STORAGE
 
 try:
     import numpy
@@ -109,50 +106,9 @@ class Deepnet(ModelFields):
         self.preprocess = []
         self.optimizer = None
         self.missing_numerics = False
-        if api is None:
-            api = BigML(storage=STORAGE)
-        # the string can be a path to a JSON file
-        if isinstance(deepnet, basestring):
-            try:
-                with open(deepnet) as deepnet_file:
-                    deepnet = json.load(deepnet_file)
-                    self.resource_id = get_deepnet_id(deepnet)
-                    if self.resource_id is None:
-                        raise ValueError("The JSON file does not seem"
-                                         " to contain a valid BigML deepnet"
-                                         " representation.")
-            except IOError:
-                # if it is not a path, it can be a deepnet id
-                self.resource_id = get_deepnet_id(deepnet)
-                if self.resource_id is None:
-                    if deepnet.find('deepnet/') > -1:
-                        raise Exception(
-                            api.error_message(deepnet,
-                                              resource_type='deepnet',
-                                              method='get'))
-                    else:
-                        raise IOError("Failed to open the expected JSON file"
-                                      " at %s" % deepnet)
-            except ValueError:
-                raise ValueError("Failed to interpret %s."
-                                 " JSON file expected.")
+        self.resource_id, deepnet = get_resource_dict( \
+            deepnet, "deepnet", api=api)
 
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(deepnet, dict) and \
-                not check_model_fields(deepnet):
-            # if the fields used by the deepenet are not
-            # available, use only ID to retrieve it again
-            deepnet = get_deepnet_id(deepnet)
-            self.resource_id = deepnet
-
-        if not (isinstance(deepnet, dict) and 'resource' in deepnet and
-                deepnet['resource'] is not None):
-            query_string = ONLY_MODEL
-            deepnet = retrieve_resource(api, self.resource_id,
-                                        query_string=query_string)
-        else:
-            self.resource_id = get_deepnet_id(deepnet)
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
         self.input_fields = deepnet['input_fields']

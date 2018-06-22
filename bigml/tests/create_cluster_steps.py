@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from read_cluster_steps import i_get_the_cluster
@@ -29,6 +29,8 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.cluster import Cluster
+
 
 #@step(r'I create a cluster$')
 def i_create_a_cluster(step):
@@ -121,3 +123,17 @@ def closest_in_cluster(step, reference, closest):
         reference, number_of_points=1)["closest"][0]
     result = json.loads(json.dumps(result))
     eq_(closest, result)
+
+#@step(r'I export the cluster$')
+def i_export_cluster(step, filename):
+    world.api.export(world.cluster.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local cluster from file "(.*)"')
+def i_create_local_cluster_from_file(step, export_file):
+    world.local_cluster = Cluster(res_filename(export_file))
+
+
+#@step(r'the cluster ID and the local cluster ID match')
+def check_cluster_id_local_id(step):
+    eq_(world.local_cluster.resource_id, world.cluster["resource"])

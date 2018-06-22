@@ -46,12 +46,10 @@ import StringIO
 import pprint
 
 from bigml.api import FINISHED
-from bigml.api import (BigML, get_time_series_id, get_status)
+from bigml.api import get_status
 from bigml.util import utf8
-from bigml.basemodel import retrieve_resource, extract_objective
-from bigml.basemodel import ONLY_MODEL
-from bigml.model import STORAGE
-from bigml.modelfields import ModelFields, check_model_fields
+from bigml.basemodel import get_resource_dict, extract_objective
+from bigml.modelfields import ModelFields
 from bigml.tssubmodels import SUBMODELS
 from bigml.tsoutconstants import SUBMODELS_CODE, TRIVIAL_MODEL, \
     SEASONAL_CODE, FORECAST_FUNCTION, USAGE_DOC
@@ -152,32 +150,8 @@ class TimeSeries(ModelFields):
         self.field_parameters = {}
         self._forecast = {}
 
-        # checks whether the information needed for local predictions is in
-        # the first argument
-        if isinstance(time_series, dict) and \
-                not check_model_fields(time_series):
-            # if the fields used by the logistic regression are not
-            # available, use only ID to retrieve it again
-            time_series = get_time_series_id( \
-                time_series)
-            self.resource_id = time_series
-
-        if not (isinstance(time_series, dict)
-                and 'resource' in time_series and
-                time_series['resource'] is not None):
-            if api is None:
-                api = BigML(storage=STORAGE)
-            self.resource_id = get_time_series_id(time_series)
-            if self.resource_id is None:
-                raise Exception(
-                    api.error_message(time_series,
-                                      resource_type='time_series',
-                                      method='get'))
-            query_string = ONLY_MODEL
-            time_series = retrieve_resource(
-                api, self.resource_id, query_string=query_string)
-        else:
-            self.resource_id = get_time_series_id(time_series)
+        self.resource_id, time_series = get_resource_dict( \
+            time_series, "timeseries", api=api)
 
         if 'object' in time_series and \
             isinstance(time_series['object'], dict):

@@ -28,6 +28,9 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.model import Model
+from bigml.logistic import LogisticRegression
+from bigml.deepnet import Deepnet
 
 import read_model_steps as read
 
@@ -385,3 +388,57 @@ def i_update_fusion_name(step, name):
 def i_check_fusion_name(step, name):
     fusion_name = world.fusion['name']
     eq_(name, fusion_name)
+
+#@step(r'I create a local model from file "(.*)"')
+def i_create_local_model_from_file(step, export_file):
+    world.local_model = Model(res_filename(export_file))
+
+
+#@step(r'the model ID and the local model ID match')
+def check_model_id_local_id(step):
+    eq_(world.local_model.resource_id, world.model["resource"])
+
+
+#@step(r'I export the ensemble$')
+def i_export_ensemble(step, filename):
+    world.api.export(world.ensemble.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local ensemble from file "(.*)"')
+def i_create_local_ensemble_from_file(step, export_file):
+    world.local_ensemble = Ensemble(res_filename(export_file))
+
+
+#@step(r'the ensemble ID and the local ensemble ID match')
+def check_ensemble_id_local_id(step):
+    eq_(world.local_ensemble.resource_id, world.ensemble["resource"])
+
+
+#@step(r'I export the logistic regression$')
+def i_export_logistic_regression(step, filename):
+    world.api.export(world.logistic_regression.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local logistic regressin from file "(.*)"')
+def i_create_local_logistic_regression_from_file(step, export_file):
+    world.local_logistic = LogisticRegression(res_filename(export_file))
+
+
+#@step(r'the logistic ID and the local logistic ID match')
+def check_logistic_regression_id_local_id(step):
+    eq_(world.local_logistic.resource_id, world.logistic_regression["resource"])
+
+
+#@step(r'I export the deepnet$')
+def i_export_deepnet(step, filename):
+    world.api.export(world.deepnet.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local deepnet from file "(.*)"')
+def i_create_local_deepnet_from_file(step, export_file):
+    world.local_deepnet = Deepnet(res_filename(export_file))
+
+
+#@step(r'the deepnet ID and the local deepnet ID match')
+def check_deepnet_id_local_id(step):
+    eq_(world.local_deepnet.resource_id, world.deepnet["resource"])

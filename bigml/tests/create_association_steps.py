@@ -3,7 +3,7 @@ import json
 import os
 import StringIO
 from datetime import datetime, timedelta
-from world import world
+from world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import BigML
@@ -92,3 +92,19 @@ def the_first_rule_is(step, rule):
     for a_rule in world.association_rules:
         found_rules.append(a_rule.to_json())
     eq_(rule, found_rules[0])
+
+
+#@step(r'I export the association$')
+def i_export_association(step, filename):
+    world.api.export(world.association.get('resource'),
+                     filename=res_filename(filename))
+
+
+#@step(r'I create a local association from file "(.*)"')
+def i_create_local_association_from_file(step, export_file):
+    world.local_association = Association(res_filename(export_file))
+
+
+#@step(r'the association ID and the local association ID match')
+def check_association_id_local_id(step):
+    eq_(world.local_association.resource_id, world.association["resource"])

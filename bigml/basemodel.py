@@ -29,8 +29,9 @@ import os
 import json
 
 from bigml.api import FINISHED
-from bigml.api import (get_status, BigML, get_model_id,
-                       check_resource, get_resource_type)
+from bigml.api import get_status, BigML, get_model_id, ID_GETTERS, \
+    check_resource, get_resource_type
+from bigml.constants import STORAGE
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
 from bigml.modelfields import (ModelFields, check_model_structure,
@@ -91,6 +92,65 @@ def print_importance(instance, out=sys.stdout):
             fields[field]['name'],
             round(importance, 4) * 100)))
         count += 1
+
+
+def get_resource_dict(resource, resource_type, api=None):
+    """Extracting the resource JSON info as a dict from the first argument of
+       the local object constructors, that can be:
+
+        - the path to a file that contains the JSON
+        - the ID of the resource
+        - the resource dict itself
+
+    """
+    if api is None:
+        api = BigML(storage=STORAGE)
+    get_id = ID_GETTERS[resource_type]
+    resource_id = None
+    # the string can be a path to a JSON file
+    if isinstance(resource, basestring):
+        try:
+            with open(resource) as resource_file:
+                resource = json.load(resource_file)
+                resource_id = get_id(resource)
+                if resource_id is None:
+                    raise ValueError("The JSON file does not seem"
+                                     " to contain a valid BigML %s"
+                                     " representation." % resource_type)
+        except IOError:
+            # if it is not a path, it can be a model id
+            resource_id = get_id(resource)
+            if resource_id is None:
+                if resource.find("%s/" % resource_type) > -1:
+                    raise Exception(
+                        api.error_message(resource,
+                                          resource_type=resource_type,
+                                          method="get"))
+                else:
+                    raise IOError("Failed to open the expected JSON file"
+                                  " at %s." % resource)
+        except ValueError:
+            raise ValueError("Failed to interpret %s."
+                             " JSON file expected." % resource)
+
+    # checks whether the information needed for local predictions is in
+    # the first argument
+    if isinstance(resource, dict) and \
+            not check_model_fields(resource):
+        # if the fields used by the model are not
+        # available, use only ID to retrieve it again
+        resource = get_id(resource)
+        resource_id = resource
+
+    if not (isinstance(resource, dict) and 'resource' in resource and
+            resource['resource'] is not None):
+        query_string = ONLY_MODEL
+        resource = retrieve_resource(api, resource_id,
+                                     query_string=query_string)
+    else:
+        resource_id = get_id(resource)
+
+    return resource_id, resource
 
 
 class BaseModel(ModelFields):

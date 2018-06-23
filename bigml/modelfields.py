@@ -27,18 +27,12 @@ import logging
 import re
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
-from bigml.fields import DEFAULT_MISSING_TOKENS
+from bigml.fields import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
 from bigml.resourcehandler import get_resource_type, resource_is_ready
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 
 
 LOGGER = logging.getLogger('BigML')
-
-FIELDS_PARENT = { \
-    "cluster": "clusters",
-    "logisticregression": "logistic_regression",
-    "ensemble": "ensemble",
-    "deepnet": "deepnet"}
 
 
 def parse_terms(text, case_sensitive=True):

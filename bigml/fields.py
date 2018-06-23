@@ -79,6 +79,21 @@ UPDATABLE_HEADERS = {"field name": "name",
 
 ITEM_SINGULAR = {u"categories": u"category"}
 
+FIELDS_PARENT = { \
+    "model": "model",
+    "anomaly": "model",
+    "cluster": "clusters",
+    "logisticregression": "logistic_regression",
+    "ensemble": "ensemble",
+    "deepnet": "deepnet",
+    "topicmodel": "topic_model",
+    "association": "associations",
+    "fusion": "fusion",
+    "correlation": "correlations",
+    "sample": "sample",
+    "statisticaltest": "statisticaltests"}
+
+
 def get_fields_structure(resource, errors=False):
     """Returns the field structure for a resource, its locale and
        missing_tokens
@@ -101,27 +116,14 @@ def get_fields_structure(resource, errors=False):
             missing_tokens = resource.get('missing_tokens',
                                           DEFAULT_MISSING_TOKENS)
         # fields structure
-        if resource_type in [MODEL_PATH, ANOMALY_PATH]:
-            fields = resource['model']['fields']
-        elif resource_type == CLUSTER_PATH:
-            fields = resource['clusters']['fields']
-        elif resource_type == CORRELATION_PATH:
-            fields = resource['correlations']['fields']
-        elif resource_type == STATISTICAL_TEST_PATH:
-            fields = resource['statistical_tests']['fields']
-        elif resource_type == LOGISTIC_REGRESSION_PATH:
-            fields = resource['logistic_regression']['fields']
-        elif resource_type == ASSOCIATION_PATH:
-            fields = resource['associations']['fields']
-        elif resource_type == TOPIC_MODEL_PATH:
-            fields = resource['topic_model']['fields']
-        elif resource_type == ENSEMBLE_PATH:
-            fields = resource['ensemble']['fields']
-        elif resource_type == SAMPLE_PATH:
-            fields = dict([(field['id'], field) for field in
-                           resource['sample']['fields']])
+        if resource_type in FIELDS_PARENT.keys():
+            fields = resource[FIELDS_PARENT[resource_type]].get('fields', {})
         else:
-            fields = resource['fields']
+            fields = resource.get('fields', {})
+
+        if resource_type == SAMPLE_PATH:
+            fields = dict([(field['id'], field) for field in
+                           fields])
         # Check whether there's an objective id
         objective_column = None
         if resource_type == DATASET_PATH:

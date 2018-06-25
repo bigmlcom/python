@@ -137,7 +137,6 @@ def get_resource_dict(resource, resource_type, api=None):
     # the first argument
     if isinstance(resource, dict) and \
             not check_model_fields(resource):
-        print "***no check"
         # if the fields used by the model are not
         # available, use only ID to retrieve it again
         resource = get_id(resource)

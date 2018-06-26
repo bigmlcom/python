@@ -248,6 +248,10 @@ def the_logistic_prediction_is(step, prediction):
     check_prediction(world.prediction['output'], prediction)
 
 
+def the_fusion_prediction_is(step, prediction):
+    the_logistic_prediction_is(step, prediction)
+
+
 def i_create_a_logistic_prediction(step, data=None):
     if data is None:
         data = "{}"
@@ -286,12 +290,18 @@ def i_create_a_deepnet_prediction_with_op(step, data=None,
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def the_logistic_probability_is(step, probability):
     for [prediction, remote_probability] in world.prediction['probabilities']:
         if prediction == world.prediction['output']:
             break
     assert_almost_equals(round(float(remote_probability), 4),
                          round(float(probability), 4))
+
+
+def the_fusion_probability_is(step, probability):
+    the_logistic_probability_is(step, probability)
+
 
 def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:

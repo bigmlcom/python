@@ -208,6 +208,10 @@ class TestOptimlFusion(object):
                 When I create a prediction for "<data_input>"
                 Then the prediction for "<objective>" is "<prediction>"
                 And the local logistic regression probability for the prediction is "<probability>"
+                And I create a local fusion prediction for "<data_input>"
+                Then the local fusion prediction is "<prediction>"
+                And the local fusion probability for the prediction is "<probability>"
+
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
@@ -233,9 +237,13 @@ class TestOptimlFusion(object):
             compare_pred.i_retrieve_a_list_of_remote_logistic_regressions(self, example[6])
             model_create.i_create_a_fusion(self)
             model_create.the_fusion_is_finished_in_less_than(self, example[3])
+            compare_pred.i_create_a_local_fusion(self)
             prediction_create.i_create_a_fusion_prediction(self, example[7])
             prediction_create.the_prediction_is(self, example[8], example[9])
-            prediction_create.the_logistic_probability_is(self, example[10])
+            prediction_create.the_fusion_probability_is(self, example[10])
+            compare_pred.i_create_a_local_prediction(self, example[7])
+            compare_pred.the_local_prediction_is(self, example[9])
+            compare_pred.the_local_probability_is(self, example[10])
 
 
     def test_scenario5(self):
@@ -256,7 +264,10 @@ class TestOptimlFusion(object):
                 And I wait until the fusion is ready less than <time_4> secs
                 When I create a prediction for "<data_input>"
                 Then the prediction for "<objective>" is "<prediction>"
-                And the local logistic regression probability for the prediction is "<probability>"
+                And the fusion probability for the prediction is "<probability>"
+                And I create a local fusion prediction for "<data_input>"
+                Then the local fusion prediction is "<prediction>"
+                And the local fusion probability for the prediction is "<probability>"
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
@@ -285,6 +296,10 @@ class TestOptimlFusion(object):
             compare_pred.i_retrieve_a_list_of_remote_logistic_regressions(self, example[6])
             model_create.i_create_a_fusion(self)
             model_create.the_fusion_is_finished_in_less_than(self, example[3])
+            compare_pred.i_create_a_local_fusion(self)
             prediction_create.i_create_a_fusion_prediction(self, example[7])
             prediction_create.the_prediction_is(self, example[8], example[9])
-            prediction_create.the_logistic_probability_is(self, example[10])
+            prediction_create.the_fusion_probability_is(self, example[10])
+            compare_pred.i_create_a_local_prediction(self, example[7])
+            compare_pred.the_local_prediction_is(self, example[9])
+            compare_pred.the_local_probability_is(self, example[10])

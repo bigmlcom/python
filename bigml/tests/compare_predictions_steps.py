@@ -62,6 +62,7 @@ def i_create_a_local_model(step):
 #@step(r'I create a local fusion$')
 def i_create_a_local_fusion(step):
     world.local_model = Fusion(world.fusion['resource'])
+    world.local_ensemble = None
 
 #@step(r'I create a local supervised model$')
 def i_create_a_local_supervised_model(step, model_type=None):

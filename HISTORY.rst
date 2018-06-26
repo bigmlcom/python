@@ -3,6 +3,12 @@
 History
 -------
 
+4.19.3 (2018-06-26)
+~~~~~~~~~~~~~~~~~~~
+
+- Modifying local fusion object to adapt to logistic regressions with
+  no missing numerics allowed.
+
 4.19.2 (2018-06-25)
 ~~~~~~~~~~~~~~~~~~~
 

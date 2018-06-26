@@ -49,11 +49,10 @@ from functools import cmp_to_key
 
 from bigml.api import FINISHED
 from bigml.api import get_status
-from bigml.util import cast, PRECISION
+from bigml.util import cast, check_no_missing_numerics, PRECISION, NUMERIC
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.model import parse_operating_point, sort_categories
 from bigml.modelfields import ModelFields
-from bigml.cluster import OPTIONAL_FIELDS
 
 LOGGER = logging.getLogger('BigML')
 
@@ -68,7 +67,7 @@ def balance_input(input_data, fields):
     """
 
     for field in input_data:
-        if fields[field]['optype'] == 'numeric':
+        if fields[field]['optype'] == NUMERIC:
             mean = fields[field]['summary'].get('mean', 0)
             stddev = fields[field]['summary'].get( \
                 'standard_deviation', 0)
@@ -333,13 +332,7 @@ class LogisticRegression(ModelFields):
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
         if not self.missing_numerics:
-            for field_id, field in self.fields.items():
-                if (not field['optype'] in OPTIONAL_FIELDS and
-                        not field_id in input_data):
-                    raise Exception("Failed to predict. Input"
-                                    " data must contain values for all numeric"
-                                    " fields to get a logistic regression"
-                                    " prediction.")
+            check_no_missing_numerics(input_data, self.fields)
 
         if self.balance_fields:
             balance_input(input_data, self.fields)

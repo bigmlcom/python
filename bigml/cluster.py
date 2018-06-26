@@ -47,7 +47,7 @@ import csv
 
 from bigml.api import FINISHED
 from bigml.api import get_status, BigML
-from bigml.util import cast, utf8, PY3
+from bigml.util import cast, utf8, PY3, NUMERIC
 from bigml.centroid import Centroid
 from bigml.basemodel import get_resource_dict, STORAGE
 from bigml.model import print_distribution
@@ -61,7 +61,6 @@ if PY3:
 
 LOGGER = logging.getLogger('BigML')
 
-OPTIONAL_FIELDS = ['categorical', 'text', 'items', 'datetime']
 CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
                   'sum', 'sum_squares', 'variance']
 INDENT = " " * 4
@@ -260,7 +259,7 @@ class Cluster(ModelFields):
 
         for field_id, field in self.fields.items():
             if (field_id not in self.summary_fields and \
-                    field['optype'] not in OPTIONAL_FIELDS and
+                    field['optype'] == NUMERIC and
                     field_id not in input_data):
                 if average not in NUMERIC_DEFAULTS:
                     raise ValueError("The available defaults are: %s" % \

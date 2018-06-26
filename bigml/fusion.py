@@ -49,7 +49,7 @@ from bigml.model import parse_operating_point, sort_categories
 from bigml.model import LAST_PREDICTION
 from bigml.basemodel import retrieve_resource
 from bigml.multivotelist import MultiVoteList
-from bigml.util import cast
+from bigml.util import cast, check_no_missing_numerics
 from bigml.supervised import SupervisedModel
 from bigml.modelfields import ModelFields
 from bigml.constants import STORAGE
@@ -128,6 +128,7 @@ class Fusion(ModelFields):
                 raise ValueError("The resource %s has not an allowed"
                                  " supervised model type.")
         self.importance = fusion.get('importance', [])
+        self.missing_numerics = fusion.get('missing_numerics', True)
         self.model_ids = models
         if fusion.get('fusion'):
             self.fields = fusion.get( \
@@ -232,6 +233,9 @@ class Fusion(ModelFields):
                         ordered by the sorted order of the class names.
         """
         votes = MultiVoteList([])
+        if not self.missing_numerics:
+            check_no_missing_numerics(input_data, self.fields)
+
         for models_split in self.models_splits:
             models = []
             for model in models_split:
@@ -241,10 +245,16 @@ class Fusion(ModelFields):
                     models.append(SupervisedModel(model, api=self.api))
             votes_split = []
             for model in models:
-                prediction = model.predict_probability( \
-                    input_data,
-                    missing_strategy=missing_strategy,
-                    compact=True)
+                try:
+                    prediction = model.predict_probability( \
+                        input_data,
+                        missing_strategy=missing_strategy,
+                        compact=True)
+                except ValueError:
+                    # logistic regressions can raise this error if they
+                    # have missing_numerics=False and some numeric missings
+                    # are found
+                    continue
                 if self.regression:
                     prediction = prediction[0]
                 else:
@@ -319,6 +329,9 @@ class Fusion(ModelFields):
             input_data, unused_fields = new_data
         else:
             input_data = new_data
+
+        if not self.missing_numerics:
+            check_no_missing_numerics(input_data, self.fields)
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)

@@ -91,7 +91,7 @@ FIELDS_PARENT = { \
     "fusion": "fusion",
     "correlation": "correlations",
     "sample": "sample",
-    "statisticaltest": "statisticaltests"}
+    "statisticaltest": "statistical_tests"}
 
 
 def get_fields_structure(resource, errors=False):

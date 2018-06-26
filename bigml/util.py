@@ -101,6 +101,7 @@ HTTP_INTERNAL_SERVER_ERROR = 500
 
 PRECISION = 5
 
+NUMERIC = "numeric"
 
 DFT_STORAGE = "./storage"
 DFT_STORAGE_FILE = os.path.join(DFT_STORAGE, "BigML_%s.json")
@@ -587,3 +588,15 @@ def get_exponential_wait(wait_time, retry_count):
     delta = (retry_count ** 2) * wait_time / 2
     exp_factor = delta if retry_count > 1 else 0
     return wait_time + math.floor(random.random() * exp_factor)
+
+
+def check_no_missing_numerics(input_data, fields):
+    """Checks whether some numeric fields are missing in the input data
+
+    """
+    for field_id, field in fields.items():
+        if (field['optype'] == NUMERIC and
+                not field_id in input_data):
+            raise ValueError("Failed to predict. Input"
+                             " data must contain values for all numeric"
+                             " fields to get a prediction.")

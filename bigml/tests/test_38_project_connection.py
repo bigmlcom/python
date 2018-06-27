@@ -66,8 +66,8 @@ def teardown_module():
             if value['count'] != 0:
                 # assert False, ("Increment in %s: %s" % (resource_type, value))
                 print "WARNING: Increment in %s: %s" % (resource_type, value)
-
         world.api.delete_project(world.project_id)
+        world.project_id = None
     world.api = world.bck_api
     print world.api.connection_info()
 

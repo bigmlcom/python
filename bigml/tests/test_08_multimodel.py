@@ -95,7 +95,7 @@ class TestMultimodel(object):
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/grades.csv', '10', '10', '10', '{"Tutorial": 99.47, "Midterm": 53.12, "TakeHome": 87.96}', 63.33]]
+            ['data/grades.csv', '30', '30', '30', '{"Tutorial": 99.47, "Midterm": 53.12, "TakeHome": 87.96}', 63.33]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

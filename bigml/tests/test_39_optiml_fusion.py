@@ -80,7 +80,7 @@ class TestOptimlFusion(object):
 
     def test_scenario2(self):
         """
-            Scenario 2: Successfully creating a fusion from a dataset:
+            Scenario 2: Successfully creating a fusion:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -140,7 +140,7 @@ class TestOptimlFusion(object):
 
     def test_scenario3(self):
         """
-            Scenario 3: Successfully creating a fusion from a dataset:
+            Scenario 3: Successfully creating a fusion:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -191,7 +191,7 @@ class TestOptimlFusion(object):
 
     def test_scenario4(self):
         """
-            Scenario 4: Successfully creating a fusion from a dataset:
+            Scenario 4: Successfully creating a fusion:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -248,7 +248,7 @@ class TestOptimlFusion(object):
 
     def test_scenario5(self):
         """
-            Scenario 5: Successfully creating a fusion from a dataset:
+            Scenario 5: Successfully creating a fusion:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -295,6 +295,65 @@ class TestOptimlFusion(object):
             model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
             compare_pred.i_retrieve_a_list_of_remote_logistic_regressions(self, example[6])
             model_create.i_create_a_fusion(self)
+            model_create.the_fusion_is_finished_in_less_than(self, example[3])
+            compare_pred.i_create_a_local_fusion(self)
+            prediction_create.i_create_a_fusion_prediction(self, example[7])
+            prediction_create.the_prediction_is(self, example[8], example[9])
+            prediction_create.the_fusion_probability_is(self, example[10])
+            compare_pred.i_create_a_local_prediction(self, example[7])
+            compare_pred.the_local_prediction_is(self, example[9])
+            compare_pred.the_local_probability_is(self, example[10])
+
+
+    def test_scenario6(self):
+        """
+            Scenario 6: Successfully creating a fusion:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a logistic regression with "<params>"
+                And I wait until the logistic regression is ready less than <time_3> secs
+                And I create a logistic regression with "<params>"
+                And I wait until the logistic regression is ready less than <time_3> secs
+                And I retrieve a list of remote logistic regression tagged with "<tag>"
+                And I create a fusion from a list of models and weights
+                And I wait until the fusion is ready less than <time_4> secs
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And the fusion probability for the prediction is "<probability>"
+                And I create a local fusion prediction for "<data_input>"
+                Then the local fusion prediction is "<prediction>"
+                And the local fusion probability for the prediction is "<probability>"
+
+                Examples:
+                | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
+                | ../data/iris.csv | 10      | 10     | 20     | 20 | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
+        """
+        print self.test_scenario6.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '20', '20',
+             '{"tags":["my_fusion_6_tag"], "missing_numerics": true}',
+             'my_fusion_6_tag',
+             '{"petal width": 1.75, "petal length": 2.45}',
+             "000004",
+             "Iris-setosa",
+             '0.4727',
+             '{"tags":["my_fusion_6_tag"], "missing_numerics": false, "balance_fields": false }', '[1, 2]']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8], example[5])
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8], example[11])
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            compare_pred.i_retrieve_a_list_of_remote_logistic_regressions(self, example[6])
+            model_create.i_create_a_fusion_with_weights(self, example[12])
             model_create.the_fusion_is_finished_in_less_than(self, example[3])
             compare_pred.i_create_a_local_fusion(self)
             prediction_create.i_create_a_fusion_prediction(self, example[7])

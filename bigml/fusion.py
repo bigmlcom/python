@@ -47,7 +47,7 @@ from functools import cmp_to_key
 from bigml.api import BigML, get_fusion_id, get_resource_type
 from bigml.model import parse_operating_point, sort_categories
 from bigml.model import LAST_PREDICTION
-from bigml.basemodel import retrieve_resource
+from bigml.basemodel import get_resource_dict
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics
 from bigml.supervised import SupervisedModel
@@ -76,6 +76,35 @@ def rearrange_prediction(origin_classes, destination_classes, prediction):
         else:
             new_prediction = 0.0
     return new_prediction
+
+
+def get_models_weight(models_info):
+    """Parses the information about model ids and weights in the `models`
+    key of the fusion dictionary. The contents of this key can be either
+    list of the model IDs or a list of dictionaries with one entry per
+    model.
+
+    """
+    model_ids = []
+    weights = []
+    try:
+        model_info = models_info[0]
+        if isinstance(model_info, dict):
+            try:
+                model_ids = [model["id"] for model in models_info]
+            except KeyError:
+                raise ValueError("The fusion information does not contain the"
+                                 " model ids.")
+            try:
+                weights = [model["weight"] for model in models_info]
+            except KeyError:
+                weights = None
+        else:
+            model_ids = models_info
+            weights = None
+        return model_ids, weights
+    except KeyError:
+        raise ValueError("Failed to find the models in the fusion info.")
 
 
 class Fusion(ModelFields):
@@ -114,14 +143,15 @@ class Fusion(ModelFields):
         self.fields = None
         self.class_names = None
         self.importance = {}
-        fusion = self.get_fusion_resource(fusion)
-        self.resource_id = get_fusion_id(fusion)
+
+        self.resource_id, fusion = get_resource_dict( \
+            fusion, "fusion", api=api)
 
         if 'object' in fusion:
             fusion = fusion.get('object', {})
-        models = fusion['models']
-        self.model_ids = models
-        model_types = [get_resource_type(model) for model in models]
+        self.model_ids, self.weights = get_models_weight( \
+            fusion['models'])
+        model_types = [get_resource_type(model) for model in self.model_ids]
 
         for model_type in model_types:
             if model_type not in LOCAL_SUPERVISED:
@@ -129,18 +159,17 @@ class Fusion(ModelFields):
                                  " supervised model type.")
         self.importance = fusion.get('importance', [])
         self.missing_numerics = fusion.get('missing_numerics', True)
-        self.model_ids = models
         if fusion.get('fusion'):
             self.fields = fusion.get( \
                 'fusion', {}).get("fields")
             self.objective_id = fusion.get("objective_field")
 
-
-        number_of_models = len(models)
+        number_of_models = len(self.model_ids)
         if max_models is None:
-            self.models_splits = [models]
+            self.models_splits = [self.model_ids]
         else:
-            self.models_splits = [models[index:(index + max_models)] for index
+            self.models_splits = [self.model_ids[index:(index + max_models)]
+                                  for index
                                   in range(0, number_of_models, max_models)]
 
         if self.fields:
@@ -250,6 +279,7 @@ class Fusion(ModelFields):
                         input_data,
                         missing_strategy=missing_strategy,
                         compact=True)
+
                 except ValueError:
                     # logistic regressions can raise this error if they
                     # have missing_numerics=False and some numeric missings
@@ -257,7 +287,12 @@ class Fusion(ModelFields):
                     continue
                 if self.regression:
                     prediction = prediction[0]
+                    if self.weights is not None:
+                        prediction = self.weigh(prediction, model.resource_id)
                 else:
+                    if self.weights is not None:
+                        prediction = self.weigh( \
+                            prediction, model.resource_id)
                     # we need to check that all classes in the fusion
                     # are also in the composing model
                     if not self.regression and \
@@ -272,17 +307,20 @@ class Fusion(ModelFields):
                             pass
                 votes_split.append(prediction)
 
+
             votes.extend(votes_split)
         if self.regression:
+            total_weight = 1 if self.weights is None else sum(self.weights)
             prediction = sum([prediction for prediction in \
-                votes.predictions]) / float(len(votes.predictions))
+                votes.predictions]) / float(len(votes.predictions) * \
+                total_weight)
             if compact:
                 output = [prediction]
             else:
                 output = {"prediction": prediction}
 
         else:
-            output = votes.combine_to_distribution(normalize=False)
+            output = votes.combine_to_distribution(normalize=True)
             if not compact:
                 output = [{'category': class_name,
                            'probability': probability}
@@ -290,6 +328,21 @@ class Fusion(ModelFields):
                           zip(self.class_names, output)]
 
         return output
+
+    def weigh(self, prediction, model_id):
+        """Weighs the prediction according to the weight associated to the
+        current model in the fusion.
+
+        """
+        if isinstance(prediction, list):
+            for index, probability in enumerate(prediction):
+                probability *= self.weights[ \
+                        self.model_ids.index(model_id)]
+                prediction[index] = probability
+        else:
+            prediction *= self.weights[self.model_ids.index(model_id)]
+
+        return prediction
 
     def predict(self, input_data, missing_strategy=LAST_PREDICTION,
                 operating_point=None, full=False):

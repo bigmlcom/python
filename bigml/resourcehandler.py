@@ -521,7 +521,11 @@ class ResourceHandler(BigMLConnection):
     def _set_create_from_models_args(self, models, types, args=None,
                                      wait_time=3, retries=10, key=None):
         """Builds args dictionary for the create call from a list of
-        models
+        models. The first argument needs to be a list of:
+            - the model IDs
+            - dict objects with the "id" attribute set to the ID of the model
+              and the "weight" attribute set to the weight associated to that
+              model.
 
         """
         model_ids = []
@@ -531,6 +535,8 @@ class ResourceHandler(BigMLConnection):
             origin_models = models
 
         for model in origin_models:
+            if isinstance(model, dict) and model.get("id"):
+                model = model.get("id")
             check_resource_type(model, types,
                                 message=("A list of model ids "
                                          "is needed to create"
@@ -541,11 +547,15 @@ class ResourceHandler(BigMLConnection):
                                    wait_time=wait_time, retries=retries,
                                    raise_on_error=True, api=self)
 
+        if not isinstance(origin_models[0], dict) \
+                or not origin_models[0].get("id"):
+            origin_models = model_ids
+
         create_args = {}
         if args is not None:
             create_args.update(args)
 
-        create_args.update({"models": model_ids})
+        create_args.update({"models": origin_models})
 
         return create_args
 

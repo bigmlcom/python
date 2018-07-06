@@ -208,7 +208,7 @@ class TestEnsemblePrediction(object):
         """
         print self.test_scenario5.__doc__
         examples = [
-            ['data/grades.csv', '10', '10', '50', '2', '1', '{}', 69.0934]]
+            ['data/grades.csv', '30', '30', '50', '2', '1', '{}', 69.0934]]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

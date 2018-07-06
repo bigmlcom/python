@@ -154,9 +154,9 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{}', '000004', 'Iris-setosa', '0.2629'],
-            ['data/grades.csv', '10', '10', '10', '{}', '000005', '68.62224', '27.5358'],
-            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20}', '000005', '40.46667', '54.89713'],
+            ['data/iris.csv', '30', '30', '30', '{}', '000004', 'Iris-setosa', '0.2629'],
+            ['data/grades.csv', '30', '30', '30', '{}', '000005', '68.62224', '27.5358'],
+            ['data/grades.csv', '30', '30', '30', '{"Midterm": 20}', '000005', '40.46667', '54.89713'],
             ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '25.65806']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
@@ -506,7 +506,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.4028, "000009", '{"balance_fields": false}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.4052, "000009", '{"balance_fields": false}'],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -518,7 +518,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2622, "000009", '{"normalize": true}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"normalize": true}'],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -530,7 +530,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2622, "000009", '{"balance_fields": true, "normalize": true}']]
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"balance_fields": true, "normalize": true}']]
         show_doc(self.test_scenario11, examples)
         for example in examples:
             print "\nTesting with:\n", example

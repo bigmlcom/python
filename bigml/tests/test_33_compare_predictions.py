@@ -115,7 +115,7 @@ class TestComparePrediction(object):
                 | data             | time_1  | time_2 | time_3 | options | data_input                            | centroid  | distance | full_data_input
         """
         examples = [
-            ['data/iris.csv', '20', '20', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 2', '1.16436', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}'],
+            ['data/iris.csv', '30', '30', '30', '{"summary_fields": ["sepal width"]}', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}', 'Cluster 2', '1.16436', '{"petal length": 1, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"}'],
             ['data/iris.csv', '20', '20', '30', '{"default_numeric_value": "zero"}', '{"petal length": 1}', 'Cluster 4', '1.41215', '{"petal length": 1, "petal width": 0, "sepal length": 0, "sepal width": 0, "species": ""}']]
         show_doc(self.test_scenario2, examples)
         for example in examples:
@@ -153,7 +153,7 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/tiny_kdd.csv', '20', '20', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802']]
+            ['data/tiny_kdd.csv', '30', '30', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -191,8 +191,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.51133, 0.00388, 0.00574, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.44801]'],
-            ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Go until jurong point, crazy.. Available only in bugis n great world la e buffet... Cine there got amore wat..."}', '[0.39188, 0.00643, 0.00264, 0.00643, 0.08112, 0.00264, 0.37352, 0.0115, 0.00707, 0.00327, 0.00264, 0.11086]']]
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Mobile call"}', '[0.51133, 0.00388, 0.00574, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.00388, 0.44801]'],
+            ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Go until jurong point, crazy.. Available only in bugis n great world la e buffet... Cine there got amore wat..."}', '[0.39188, 0.00643, 0.00264, 0.00643, 0.08112, 0.00264, 0.37352, 0.0115, 0.00707, 0.00327, 0.00264, 0.11086]']]
         show_doc(self.test_scenario4, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -276,8 +276,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '120', '{"petal width": 4}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
-            ['data/grades.csv', '10', '10', '120', '{"Midterm": 20}', '000005', 61.61036, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '{"petal width": 4}', '000004', 'Iris-virginica', '{"boosting": {"iterations": 5}, "number_of_models": 5}'],
+            ['data/grades.csv', '30', '30', '120', '{"Midterm": 20}', '000005', 61.61036, '{"boosting": {"iterations": 5}, "number_of_models": 5}']]
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
@@ -319,12 +319,12 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}', {}],
-            ['data/iris.csv', '10', '10', '50', '{}', '000004', 'Iris-versicolor', '0.27261', '{"number_of_models": 5"}', {"operating_kind": "confidence"}],
-            ['data/grades.csv', '10', '10', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}', {}],
-            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '54.82214', '25.89672', '{"number_of_models": 5}', {"operating_kind": "confidence"}],
-            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}', {}],
-            ['data/grades.csv', '10', '10', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}', {}]]
+            ['data/iris.csv', '30', '30', '50', '{}', '000004', 'Iris-virginica', '0.33784', '{"boosting": {"iterations": 5}}', {}],
+            ['data/iris.csv', '30', '30', '50', '{}', '000004', 'Iris-versicolor', '0.27261', '{"number_of_models": 5"}', {"operating_kind": "confidence"}],
+            ['data/grades.csv', '30', '30', '50', '{}', '000005', '70.505792', '30.7161', '{"number_of_models": 5}', {}],
+            ['data/grades.csv', '30', '30', '50', '{"Midterm": 20}', '000005', '54.82214', '25.89672', '{"number_of_models": 5}', {"operating_kind": "confidence"}],
+            ['data/grades.csv', '30', '30', '50', '{"Midterm": 20}', '000005', '45.4573', '29.58403', '{"number_of_models": 5}', {}],
+            ['data/grades.csv', '30', '30', '50', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '42.814', '31.51804', '{"number_of_models": 5}', {}]]
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
@@ -436,8 +436,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag"]}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
-            ['data/grades.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_reg"]}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 43.65286]]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag"]}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_reg"]}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 43.65286]]
         show_doc(self.test_scenario10, examples)
 
         for example in examples:
@@ -491,8 +491,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_11"]}', 'my_fusion_tag_11', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
-           ['data/iris_unbalanced.csv', '10', '10', '120', '120', '{"tags":["my_fusion_tag_11_b"]}', 'my_fusion_tag_11_b', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_11"]}', 'my_fusion_tag_11', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
+           ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_11_b"]}', 'my_fusion_tag_11_b', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
         show_doc(self.test_scenario11, examples)
 
         for example in examples:

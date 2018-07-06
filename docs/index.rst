@@ -3949,14 +3949,28 @@ For example, to create a Fusion you can use this connection method:
 
 .. code-block:: python
 
-    fusion = api.create_fusion(["model/5af06df94e17277501000010"
-                                "model/5af06df84e17277502000019"
-                                "deepnet/5af06df84e17277502000016"
+    fusion = api.create_fusion(["model/5af06df94e17277501000010",
+                                "model/5af06df84e17277502000019",
+                                "deepnet/5af06df84e17277502000016",
                                 "ensemble/5af06df74e1727750100000d"],
                                 {"name": "my fusion"})
 
 The Fusion is then scheduled for creation, and you can retrieve its
 status at any time by means of ``api.status(fusion)``.
+
+Fusions can also be created by assigning some weights to each model in the
+list. In this case, the argument for the create call will be a list of
+dictionaries that contain the ``id`` and ``weight`` keys:
+
+.. code-block:: python
+
+    fusion = api.create_fusion([{"id": "model/5af06df94e17277501000010",
+                                 "weight": 10},
+                                {"id": "model/5af06df84e17277502000019",
+                                 "weight": 20},
+                                {"id": "deepnet/5af06df84e17277502000016",
+                                 "weight": 5}],
+                                {"name": "my weighted fusion"})
 
 
 Creating predictions

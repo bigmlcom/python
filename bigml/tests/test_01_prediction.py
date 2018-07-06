@@ -63,8 +63,8 @@ class TestPrediction(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal&width\u0000": 0.5}', '000004', 'Iris-setosa']]
+            ['data/iris.csv', '30', '30', '30', '{"petal width": 0.5}', '000004', 'Iris-setosa'],
+            ['data/iris_sp_chars.csv', '30', '30', '30', '{"pétal&width\u0000": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

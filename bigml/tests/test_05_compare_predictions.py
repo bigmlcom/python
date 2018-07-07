@@ -154,10 +154,10 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '30', '30', '30', '{}', '000004', 'Iris-setosa', '0.2629'],
-            ['data/grades.csv', '30', '30', '30', '{}', '000005', '68.62224', '27.5358'],
-            ['data/grades.csv', '30', '30', '30', '{"Midterm": 20}', '000005', '40.46667', '54.89713'],
-            ['data/grades.csv', '10', '10', '10', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '25.65806']]
+            ['data/iris.csv', '50', '30', '30', '{}', '000004', 'Iris-setosa', '0.2629'],
+            ['data/grades.csv', '50', '30', '30', '{}', '000005', '68.62224', '27.5358'],
+            ['data/grades.csv', '50', '30', '30', '{"Midterm": 20}', '000005', '40.46667', '54.89713'],
+            ['data/grades.csv', '50', '30', '30', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '25.65806']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
             print "\nTesting with:\n", example

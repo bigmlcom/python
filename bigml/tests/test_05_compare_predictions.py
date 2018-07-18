@@ -301,49 +301,6 @@ class TestComparePrediction(object):
             prediction_compare.i_create_a_local_prediction(self, example[5])
             prediction_compare.the_local_prediction_is(self, example[6])
 
-    def test_scenario7(self):
-        """
-            Scenario: Successfully comparing predictions with text options:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I update the source with params "<options>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a logistic regression model with objective "<objective>"
-                And I wait until the logistic regression model is ready less than <time_3> secs
-                And I create a local logistic regression model
-                When I create a logistic regression prediction for "<data_input>"
-                Then the logistic regression prediction is "<prediction>"
-                And the logistic regression probability for the prediction is "<probability>"
-                And I create a local logistic regression prediction for "<data_input>"
-                Then the local logistic regression prediction is "<prediction>"
-                And the local logistic regression probability for the prediction is "<probability>"
-
-                Examples:
-                | data             | time_1  | time_2 | objective | time_3 | options | data_input                             | prediction  | probability
-
-        """
-        examples = [
-            ['data/spam.csv', '20', '20', '180', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "A normal message"}', 'ham', 0.9169, "000000"],
-            ['data/spam.csv', '20', '20', '180', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"Message": "mobile"}', 'ham', '0.8057', "000000"],
-            ['data/movies.csv', '20', '20', '180', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Under 18', '0.8393', '000002']]
-        show_doc(self.test_scenario7, examples)
-        for example in examples:
-            print "\nTesting with:\n", example
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            source_create.i_update_source_with(self, example[4])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8])
-            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
-            prediction_compare.i_create_a_local_logistic_model(self)
-            prediction_create.i_create_a_logistic_prediction(self, example[5])
-            prediction_create.the_logistic_prediction_is(self, example[6])
-            prediction_create.the_logistic_probability_is(self, example[7])
-            prediction_compare.i_create_a_local_prediction(self, example[5])
-            prediction_compare.the_local_prediction_is(self, example[6])
-            prediction_compare.the_local_probability_is(self, example[7])
 
     def test_scenario8(self):
         """
@@ -674,3 +631,44 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario15(self):
+        """
+            Scenario: Successfully comparing predictions with text options:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a logistic regression model with objective "<objective>"
+                And I wait until the logistic regression model is ready less than <time_3> secs
+                And I create a local logistic regression model
+                When I create a logistic regression prediction for "<data_input>"
+                Then the logistic regression prediction is "<prediction>"
+                And the logistic regression probability for the prediction is "<probability>"
+                And I create a local logistic regression prediction for "<data_input>"
+                Then the local logistic regression prediction is "<prediction>"
+                And the local logistic regression probability for the prediction is "<probability>"
+
+                Examples:
+                | data             | time_1  | time_2 | objective | time_3 | options | data_input                             | prediction  | probability
+
+        """
+        examples = [
+            ['data/iris.csv', '20', '20', '180', '{"weight_field": "000000", "missing_numerics": false}', '{"petal width": 1.5, "petal length": 2, "sepal width":1}', 'Iris-versicolor', '0.9547', '000004']]
+        show_doc(self.test_scenario15, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(self, example[8], example[4])
+            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction(self, example[5])
+            prediction_create.the_logistic_prediction_is(self, example[6])
+            prediction_create.the_logistic_probability_is(self, example[7])
+            prediction_compare.i_create_a_local_prediction(self, example[5])
+            prediction_compare.the_local_prediction_is(self, example[6])
+            prediction_compare.the_local_probability_is(self, example[7])

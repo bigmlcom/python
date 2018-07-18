@@ -590,12 +590,13 @@ def get_exponential_wait(wait_time, retry_count):
     return wait_time + math.floor(random.random() * exp_factor)
 
 
-def check_no_missing_numerics(input_data, fields):
+def check_no_missing_numerics(input_data, fields, weight_field=None):
     """Checks whether some numeric fields are missing in the input data
 
     """
     for field_id, field in fields.items():
-        if (field['optype'] == NUMERIC and
+        if (field['optype'] == NUMERIC and (weight_field is None or
+                field_id != weight_field) and
                 not field_id in input_data):
             raise ValueError("Failed to predict. Input"
                              " data must contain values for all numeric"

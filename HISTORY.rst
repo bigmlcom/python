@@ -3,6 +3,12 @@
 History
 -------
 
+4.19.4 (2018-07-18)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local logistic regression predictions with weight field missing in
+  input data.
+
 4.19.3 (2018-06-26)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -123,6 +123,7 @@ class LogisticRegression(ModelFields):
             self.input_fields = logistic_regression.get("input_fields", [])
             self.dataset_field_types = logistic_regression.get(
                 "dataset_field_types", {})
+            self.weight_field = logistic_regression.get("weight_field")
             objective_field = logistic_regression['objective_fields'] if \
                 logistic_regression['objective_fields'] else \
                 logistic_regression['objective_field']
@@ -332,7 +333,8 @@ class LogisticRegression(ModelFields):
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
         if not self.missing_numerics:
-            check_no_missing_numerics(input_data, self.fields)
+            check_no_missing_numerics(input_data, self.fields,
+                                      self.weight_field)
 
         if self.balance_fields:
             balance_input(input_data, self.fields)

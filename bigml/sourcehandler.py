@@ -148,7 +148,7 @@ class SourceHandler(ResourceHandler):
         source['object'] = resource['object']
         source['error'] = resource['error']
 
-    def _stream_source(self, file_name, args=None, async=False,
+    def _stream_source(self, file_name, args=None, async_load=False,
                        progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
@@ -186,7 +186,7 @@ class SourceHandler(ResourceHandler):
             raise IOError("Error: cannot read training set. %s" %
                           str(exception))
 
-        if async:
+        if async_load:
             source = {
                 'code': HTTP_ACCEPTED,
                 'resource': resource_id,
@@ -409,7 +409,7 @@ class SourceHandler(ResourceHandler):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def create_source(self, path=None, args=None, async=False,
+    def create_source(self, path=None, args=None, async_load=False,
                       progress_bar=False, out=sys.stdout):
         """Creates a new source.
 
@@ -425,7 +425,8 @@ class SourceHandler(ResourceHandler):
         elif isinstance(path, list):
             return self._create_inline_source(path, args=args)
         elif PYTHON_2:
-            return self._stream_source(file_name=path, args=args, async=async,
+            return self._stream_source(file_name=path, args=args,
+                                       async_load=async_load,
                                        progress_bar=progress_bar, out=out)
         else:
             return self._create_local_source(file_name=path, args=args)

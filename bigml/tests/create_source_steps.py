@@ -114,7 +114,7 @@ def i_create_using_dict_data(step, data):
 def i_upload_a_file_async(step, file):
     resource = world.api.create_source(res_filename(file),
                                        {'project': world.project_id},
-                                       async=True)
+                                       async_load=True)
     world.resource = resource
 
 #@step(r'I wait until the source has been created less than (\d+) secs')

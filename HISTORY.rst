@@ -3,6 +3,11 @@
 History
 -------
 
+4.19.5 (2018-08-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing source upload `async` parameter to ensure Python 3.7 compatibility.
+
 4.19.4 (2018-07-18)
 ~~~~~~~~~~~~~~~~~~~
 

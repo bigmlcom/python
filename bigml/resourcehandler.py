@@ -51,7 +51,7 @@ RUNNABLE = -3
 TINY_RESOURCE = "full=false"
 
 # Resource types that are composed by other resources
-COMPOSED_RESOURCES = ["ensemble"]
+COMPOSED_RESOURCES = ["ensemble", "fusion"]
 
 LIST_LAST = "limit=1;full=yes;tags=%s"
 

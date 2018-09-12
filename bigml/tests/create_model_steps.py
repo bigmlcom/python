@@ -31,6 +31,7 @@ from bigml.api import get_status
 from bigml.model import Model
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
+from bigml.fusion import Fusion
 
 import read_model_steps as read
 
@@ -459,3 +460,17 @@ def i_create_local_deepnet_from_file(step, export_file):
 #@step(r'the deepnet ID and the local deepnet ID match')
 def check_deepnet_id_local_id(step):
     eq_(world.local_deepnet.resource_id, world.deepnet["resource"])
+
+#@step(r'I export the fusion$')
+def i_export_fusion(step, filename):
+    world.api.export(world.fusion.get('resource'),
+                     filename=res_filename(filename))
+
+#@step(r'I create a local fusion from file "(.*)"')
+def i_create_local_fusion_from_file(step, export_file):
+    world.local_fusion = Fusion(res_filename(export_file))
+
+
+#@step(r'the fusion ID and the local fusion ID match')
+def check_fusion_id_local_id(step):
+    eq_(world.local_fusion.resource_id, world.fusion["resource"])

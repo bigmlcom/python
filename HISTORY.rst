@@ -3,6 +3,12 @@
 History
 -------
 
+4.19.7 (2018-09-13)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug when exporting fusions with weights.
+- Local fusions now caching all models in the constructor
+
 4.19.6 (2018-09-12)
 ~~~~~~~~~~~~~~~~~~~
 

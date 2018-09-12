@@ -660,6 +660,10 @@ class ResourceHandler(BigMLConnection):
                     file_dir, resource_id.replace("/", "_"))
             if resource_type in COMPOSED_RESOURCES:
                 for component_id in resource_info["object"]["models"]:
+                    # for weighted fusions we need to retrieve the component
+                    # ID
+                    if isinstance(component_id, dict):
+                        component_id = component_id['id']
                     self.export( \
                         component_id,
                         filename=os.path.join(os.path.dirname(filename),

@@ -145,7 +145,7 @@ class Fusion(ModelFields):
         self.importance = {}
 
         self.resource_id, fusion = get_resource_dict( \
-            fusion, "fusion", api=api)
+            fusion, "fusion", api=self.api)
 
         if 'object' in fusion:
             fusion = fusion.get('object', {})
@@ -165,6 +165,15 @@ class Fusion(ModelFields):
             self.objective_id = fusion.get("objective_field")
 
         number_of_models = len(self.model_ids)
+
+        # Downloading the model information to cache it
+        if self.api.storage is not None:
+            for model_id in self.model_ids:
+                if get_resource_type(model_id) == "fusion":
+                    Fusion(model_id, api=self.api)
+                else:
+                    SupervisedModel(model_id, api=self.api)
+
         if max_models is None:
             self.models_splits = [self.model_ids]
         else:

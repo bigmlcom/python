@@ -3,6 +3,11 @@
 History
 -------
 
+4.19.8 (2018-09-18)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in create evaluation for timeseries.
+
 4.19.7 (2018-09-13)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -58,7 +58,7 @@ class EvaluationHandler(ResourceHandler):
             create_args.update(args)
 
         model_types = SUPERVISED_PATHS[:]
-        model_types.extend(TIME_SERIES_PATH)
+        model_types.append(TIME_SERIES_PATH)
 
         origin_resources_checked = self.check_origins(
             dataset, model, create_args, model_types=model_types,

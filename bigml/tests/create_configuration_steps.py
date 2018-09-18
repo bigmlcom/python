@@ -55,12 +55,13 @@ def i_update_configuration(step, changes):
 #@step(r'I wait until the configuration status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_configuration_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_configuration(step, world.configuration['resource'])
     status = get_status(world.configuration)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+           assert datetime.utcnow() - start < timedelta(seconds=delta)
            i_get_the_configuration(step, world.configuration['resource'])
            status = get_status(world.configuration)
     assert status['code'] == int(code1)

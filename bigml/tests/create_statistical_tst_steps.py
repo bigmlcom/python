@@ -61,13 +61,14 @@ def i_update_tst_name(step, name):
 #@step(r'I wait until the statistical test status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_tst_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     statistical_test_id = world.statistical_test['resource']
     i_get_the_tst(step, statistical_test_id)
     status = get_status(world.statistical_test)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_tst(step, statistical_test_id)
            status = get_status(world.statistical_test)
     eq_(status['code'], int(code1))

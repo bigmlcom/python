@@ -60,13 +60,14 @@ def i_update_sample_name(step, name):
 #@step(r'I wait until the sample status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_sample_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     sample_id = world.sample['resource']
     i_get_the_sample(step, sample_id)
     status = get_status(world.sample)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_sample(step, sample_id)
            status = get_status(world.sample)
     eq_(status['code'], int(code1))

@@ -62,13 +62,14 @@ def i_update_a_library(step, param, param_value):
 #@step(r'I wait until the library status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_library_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     library_id = world.library['resource']
     i_get_the_library(step, library_id)
     status = get_status(world.library)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_library(step, library_id)
            status = get_status(world.library)
     eq_(status['code'], int(code1))

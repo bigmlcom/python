@@ -59,12 +59,13 @@ def i_create_a_time_series_with_params(step, data="{}"):
 #@step(r'I wait until the time series status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_time_series_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     read.i_get_the_time_series(step, world.time_series['resource'])
     status = get_status(world.time_series)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            read.i_get_the_time_series(step, world.time_series['resource'])
            status = get_status(world.time_series)
     eq_(status['code'], int(code1))

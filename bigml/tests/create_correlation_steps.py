@@ -60,13 +60,14 @@ def i_update_correlation_name(step, name):
 #@step(r'I wait until the correlation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_correlation_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     correlation_id = world.correlation['resource']
     i_get_the_correlation(step, correlation_id)
     status = get_status(world.correlation)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_correlation(step, correlation_id)
            status = get_status(world.correlation)
     eq_(status['code'], int(code1))

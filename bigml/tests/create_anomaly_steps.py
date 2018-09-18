@@ -85,12 +85,13 @@ def i_create_an_anomaly_from_dataset_list(step):
 #@step(r'I wait until the anomaly detector status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_anomaly_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_anomaly(step, world.anomaly['resource'])
     status = get_status(world.anomaly)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_anomaly(step, world.anomaly['resource'])
            status = get_status(world.anomaly)
     eq_(status['code'], int(code1))

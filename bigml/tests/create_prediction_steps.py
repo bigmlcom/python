@@ -172,12 +172,13 @@ def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_prediction(step, world.prediction['resource'])
     status = get_status(world.prediction)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        assert datetime.utcnow() - start < timedelta(seconds=delta)
         i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)
     eq_(status['code'], int(code1))

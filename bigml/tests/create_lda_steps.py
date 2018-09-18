@@ -80,12 +80,13 @@ def i_update_topic_model_name(step, name):
 #@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_topic_model(step, world.topic_model['resource'])
     status = get_status(world.topic_model)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_topic_model(step, world.topic_model['resource'])
            status = get_status(world.topic_model)
     eq_(status['code'], int(code1))

@@ -73,12 +73,13 @@ def i_create_a_cluster_with_options(step, options):
 #@step(r'I wait until the cluster status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_cluster_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_cluster(step, world.cluster['resource'])
     status = get_status(world.cluster)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_cluster(step, world.cluster['resource'])
            status = get_status(world.cluster)
     eq_(status['code'], int(code1))

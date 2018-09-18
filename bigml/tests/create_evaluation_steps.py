@@ -90,12 +90,13 @@ def i_create_an_evaluation_fusion(step):
 #@step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     i_get_the_evaluation(step, world.evaluation['resource'])
     status = get_status(world.evaluation)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         i_get_the_evaluation(step, world.evaluation['resource'])
         status = get_status(world.evaluation)
     eq_(status['code'], int(code1))

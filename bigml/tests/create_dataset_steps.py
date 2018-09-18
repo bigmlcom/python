@@ -66,12 +66,13 @@ def i_create_a_dataset_with(step, data="{}"):
 #@step(r'I wait until the dataset status code is either (\d) or (\d) less than (\d+)')
 def wait_until_dataset_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     read.i_get_the_dataset(step, world.dataset['resource'])
     status = get_status(world.dataset)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         read.i_get_the_dataset(step, world.dataset['resource'])
         status = get_status(world.dataset)
     eq_(status['code'], int(code1))

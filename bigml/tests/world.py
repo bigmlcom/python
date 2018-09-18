@@ -107,6 +107,7 @@ class World(object):
             datetime.datetime.now()
         self.project_id = None
         self.print_connection_info()
+        self.delta = int(os.environ.get('BIGML_DELTA', '1'))
 
 
     def print_connection_info(self):

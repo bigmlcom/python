@@ -136,12 +136,13 @@ def the_source_has_been_created_async(step, secs):
 #@step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')
 def wait_until_source_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
+    delta = int(secs) * world.delta
     read.i_get_the_source(step, world.source['resource'])
     status = get_status(world.source)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
     eq_(status['code'], int(code1))

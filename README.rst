@@ -62,7 +62,9 @@ command for this library can produce an error if your system lacks the
 correct developer tools to compile it. In Windows, the error message
 will include a link pointing to the needed Visual Studio version and in
 OSX you'll need to install the Xcode developer tools.
-
+About
+------------
+Machine Learning is one of the most sought after courses in the industry.
 
 Installation
 ------------

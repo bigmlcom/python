@@ -1,10 +1,10 @@
 BigML Python Bindings
 =====================
-
-`BigML <https://bigml.com>`_ makes machine learning easy by taking care
+ Machine learning is the science of getting computers to act without being explicitly programmed.`BigML <https://bigml.com>`_ makes machine learning easy by taking care.
 of the details required to add data-driven decisions and predictive
 power to your company. Unlike other machine learning services, BigML
-creates
+creates.
+
 `beautiful predictive models <https://bigml.com/gallery/models>`_ that
 can be easily understood and interacted with.
 

@@ -3,6 +3,11 @@
 History
 -------
 
+4.19.9 (2018-10-24)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in create datasets for a list of one dataset only.
+
 4.19.8 (2018-09-18)
 ~~~~~~~~~~~~~~~~~~~
 

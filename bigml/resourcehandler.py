@@ -488,7 +488,9 @@ class ResourceHandler(BigMLConnection):
 
         """
         dataset_ids = []
+        single = False
         if not isinstance(datasets, list):
+            single = True
             origin_datasets = [datasets]
         else:
             origin_datasets = datasets
@@ -507,7 +509,7 @@ class ResourceHandler(BigMLConnection):
         if args is not None:
             create_args.update(args)
 
-        if len(dataset_ids) == 1:
+        if single:
             if key is None:
                 key = "dataset"
             create_args.update({key: dataset_ids[0]})

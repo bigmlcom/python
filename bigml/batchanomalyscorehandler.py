@@ -17,7 +17,7 @@
 
 """Base class for batch anomaly scores' REST calls
 
-   https://bigml.com/developers/batchanomalyscores
+   https://bigml.com/api/batchanomalyscores
 
 """
 

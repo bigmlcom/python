@@ -17,7 +17,7 @@
 
 """Base class for TopicModel's REST calls
 
-   https://bigml.com/developers/topicmodels
+   https://bigml.com/api/topicmodels
 
 """
 

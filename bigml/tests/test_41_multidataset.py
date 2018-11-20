@@ -91,7 +91,7 @@ class TestMultiDataset(object):
                 | data                | time_1  | time_2 | time_3 | rate |rates
                 | ../data/iris.csv | 10      | 10     | 10     | 0.2 |[0.2]
         """
-        print self.test_scenario1.__doc__
+        print self.test_scenario2.__doc__
         examples = [
             ['data/iris.csv', '10', '10', '10', '0.2', '[0.2]']]
         for example in examples:

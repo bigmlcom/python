@@ -17,7 +17,7 @@
 
 """Base class for predictions' REST calls
 
-   https://bigml.com/developers/predictions
+   https://bigml.com/api/predictions
 
 """
 

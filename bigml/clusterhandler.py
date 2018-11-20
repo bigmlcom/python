@@ -17,7 +17,7 @@
 
 """Base class for clusters' REST calls
 
-   https://bigml.com/developers/clusters
+   https://bigml.com/api/clusters
 
 """
 

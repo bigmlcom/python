@@ -17,7 +17,7 @@
 
 """Base class for batch centroids' REST calls
 
-   https://bigml.com/developers/batchcentroids
+   https://bigml.com/api/batchcentroids
 
 """
 

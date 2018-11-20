@@ -17,7 +17,7 @@
 
 """Base class for associationset' REST calls
 
-   https://bigml.com/developers/associationset
+   https://bigml.com/api/associationset
 
 """
 

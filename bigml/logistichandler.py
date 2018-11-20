@@ -17,7 +17,7 @@
 
 """Base class for logistic regressions' REST calls
 
-   https://bigml.com/developers/logisticregressions
+   https://bigml.com/api/logisticregressions
 
 """
 

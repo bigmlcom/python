@@ -17,7 +17,7 @@
 
 """Base class for models' REST calls
 
-   https://bigml.com/developers/models
+   https://bigml.com/api/models
 
 """
 

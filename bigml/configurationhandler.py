@@ -17,7 +17,7 @@
 
 """Base class for configurations' REST calls
 
-   https://bigml.com/developers/configurations
+   https://bigml.com/api/configurations
 
 """
 

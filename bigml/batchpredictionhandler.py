@@ -17,7 +17,7 @@
 
 """Base class for batch predictions' REST calls
 
-   https://bigml.com/developers/batchpredictions
+   https://bigml.com/api/batchpredictions
 
 """
 

@@ -17,7 +17,7 @@
 
 """Base class for fusion's REST calls
 
-   https://bigml.com/developers/fusions
+   https://bigml.com/api/fusions
 
 """
 

@@ -17,7 +17,7 @@
 
 """Base class for deepnets' REST calls
 
-   https://bigml.com/developers/deepnets
+   https://bigml.com/api/deepnets
 
 """
 

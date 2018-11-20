@@ -17,7 +17,7 @@
 
 """Base class for centroids' REST calls
 
-   https://bigml.com/developers/centroids
+   https://bigml.com/api/centroids
 
 """
 

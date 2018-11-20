@@ -17,7 +17,7 @@
 
 """Base class for forecasts' REST calls
 
-   https://bigml.com/developers/forecasts
+   https://bigml.com/api/forecasts
 
 """
 

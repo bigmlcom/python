@@ -17,7 +17,7 @@
 
 """Base class for whizzml script executions' REST calls
 
-   https://bigml.com/developers/executions
+   https://bigml.com/api/executions
 
 """
 

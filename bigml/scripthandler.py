@@ -17,7 +17,7 @@
 
 """Base class for whizzml script' REST calls
 
-   https://bigml.com/developers/scripts
+   https://bigml.com/api/scripts
 
 """
 

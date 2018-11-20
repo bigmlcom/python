@@ -17,7 +17,7 @@
 
 """Base class for time series'' REST calls
 
-   https://bigml.com/developers/timeseries
+   https://bigml.com/api/timeseries
 
 """
 

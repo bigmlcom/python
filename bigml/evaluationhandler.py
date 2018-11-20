@@ -17,7 +17,7 @@
 
 """Base class for evaluations' REST calls
 
-   https://bigml.com/developers/evaluations
+   https://bigml.com/api/evaluations
 
 """
 

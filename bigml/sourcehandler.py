@@ -17,6 +17,8 @@
 
 """Base class for sources' REST calls
 
+   https://bigml.com/api/sources
+
 """
 
 import sys

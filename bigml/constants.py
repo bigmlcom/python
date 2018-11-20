@@ -51,6 +51,8 @@ FORECAST_PATH = 'forecast'
 DEEPNET_PATH = 'deepnet'
 OPTIML_PATH = 'optiml'
 FUSION_PATH = 'fusion'
+PCA_PATH = 'pca'
+PROJECTION_PATH = 'projection'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -139,6 +141,9 @@ OPTIML_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (OPTIML_PATH, ID_PATTERN, OPTIML_PATH, SHARED_PATTERN))
 FUSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (FUSION_PATH, ID_PATTERN, FUSION_PATH, SHARED_PATTERN))
+PCA_RE =  re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (PCA_PATH, ID_PATTERN, PCA_PATH, SHARED_PATTERN))
+PROJECTION_RE = re.compile(r'^%s/%s$' % (PROJECTION_PATH, ID_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -176,6 +181,8 @@ RESOURCE_RE = {
     DEEPNET_PATH: DEEPNET_RE,
     OPTIML_PATH: OPTIML_RE,
     FUSION_PATH: FUSION_RE,
+    PCA_PATH: PCA_RE,
+    PROJECTION_PATH: PROJECTION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}

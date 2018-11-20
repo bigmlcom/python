@@ -17,7 +17,7 @@
 
 """Base class for optiml's REST calls
 
-   https://bigml.com/developers/optimls
+   https://bigml.com/api/optimls
 
 """
 

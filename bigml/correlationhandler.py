@@ -17,7 +17,7 @@
 
 """Base class for correlations' REST calls
 
-   https://bigml.com/developers/correlations
+   https://bigml.com/api/correlations
 
 """
 

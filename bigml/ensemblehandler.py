@@ -17,7 +17,7 @@
 
 """Base class for ensembles' REST calls
 
-   https://bigml.com/developers/ensembles
+   https://bigml.com/api/ensembles
 
 """
 

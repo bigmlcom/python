@@ -17,7 +17,7 @@
 
 """Base class for samples' REST calls
 
-   https://bigml.com/developers/samples
+   https://bigml.com/api/samples
 
 """
 

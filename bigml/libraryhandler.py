@@ -17,7 +17,7 @@
 
 """Base class for whizzml libraries' REST calls
 
-   https://bigml.com/developers/libraries
+   https://bigml.com/api/libraries
 
 """
 

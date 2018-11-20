@@ -17,7 +17,7 @@
 
 """Base class for anomaly scores' REST calls
 
-   https://bigml.com/developers/anomalyscores
+   https://bigml.com/api/anomalyscores
 
 """
 

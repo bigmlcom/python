@@ -17,7 +17,7 @@
 
 """Base class for datasets' REST calls
 
-   https://bigml.com/developers/datasets
+   https://bigml.com/api/datasets
 
 """
 

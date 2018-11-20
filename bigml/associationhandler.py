@@ -17,7 +17,7 @@
 
 """Base class for associations' REST calls
 
-   https://bigml.com/developers/associations
+   https://bigml.com/api/associations
 
 """
 

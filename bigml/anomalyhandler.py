@@ -17,7 +17,7 @@
 
 """Base class for anomaly detectors' REST calls
 
-   https://bigml.com/developers/anomalies
+   https://bigml.com/api/anomalies
 
 """
 

@@ -17,7 +17,7 @@
 
 """Base class for topicdistributions' REST calls
 
-   https://bigml.com/developers/topic_distributions
+   https://bigml.com/api/topic_distributions
 
 """
 

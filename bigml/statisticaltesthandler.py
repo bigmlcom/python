@@ -17,7 +17,7 @@
 
 """Base class for statisticaltests' REST calls
 
-   https://bigml.com/developers/statisticaltests
+   https://bigml.com/api/statisticaltests
 
 """
 

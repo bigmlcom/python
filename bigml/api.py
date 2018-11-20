@@ -68,6 +68,8 @@ from bigml.forecasthandler import ForecastHandler
 from bigml.deepnethandler import DeepnetHandler
 from bigml.optimlhandler import OptimlHandler
 from bigml.fusionhandler import FusionHandler
+from bigml.pcahandler import PCAHandler
+from bigml.projectionhandler import ProjectionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
@@ -99,7 +101,8 @@ from bigml.constants import (
     TOPIC_DISTRIBUTION_RE, BATCH_TOPIC_DISTRIBUTION_RE, TIME_SERIES_RE,
     TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE, OPTIML_PATH,
     OPTIML_RE, FUSION_PATH, FUSION_RE, CONFIGURATION_PATH, CONFIGURATION_RE,
-    FORECAST_PATH, SCRIPT_PATH, SCRIPT_RE,
+    FORECAST_PATH, PCA_PATH, PCA_RE, PROJECTION_PATH, PROJECTION_RE,
+    SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
     IRREGULAR_PLURALS)
 
@@ -114,7 +117,7 @@ from bigml.resourcehandler import (
     get_association_id, get_association_set_id, get_topic_model_id,
     get_topic_distribution_id, get_batch_topic_distribution_id,
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
-    get_fusion_id,
+    get_fusion_id, get_pca_id, get_projection_id,
     get_configuration_id,
     get_script_id, get_execution_id, get_library_id)
 
@@ -163,6 +166,8 @@ ID_GETTERS = {
     "statisticaltest": get_statistical_test_id,
     "sample": get_sample_id,
     "configuration": get_configuration_id,
+    "pca": get_pca_id,
+    "projection": get_projection_id,
     "script": get_script_id,
     "library": get_library_id,
     "execution": get_execution_id
@@ -177,7 +182,8 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(ConfigurationHandler, FusionHandler, OptimlHandler,
+class BigML(ProjectionHandler, PCAHandler, ConfigurationHandler, FusionHandler,
+            OptimlHandler,
             DeepnetHandler, ForecastHandler, TimeSeriesHandler,
             BatchTopicDistributionHandler, TopicDistributionHandler,
             TopicModelHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
@@ -277,6 +283,9 @@ class BigML(ConfigurationHandler, FusionHandler, OptimlHandler,
         OptimlHandler.__init__(self)
         FusionHandler.__init__(self)
         ConfigurationHandler.__init__(self)
+        PCAHandler.__init__(self)
+        ProjectionHandler.__init__(self)
+
 
         self.getters = {}
         for resource_type in RESOURCE_RE:
@@ -370,6 +379,9 @@ class BigML(ConfigurationHandler, FusionHandler, OptimlHandler,
                 elif SAMPLE_RE.match(resource_id):
                     return dict([(field['id'], field) for field in
                                  resource['object']['sample']['fields']])
+                elif PCA_RE.match(resource_id):
+                    return dict([(field['id'], field) for field in
+                                 resource['object']['pca']['fields']])
                 else:
                     return resource['object']['fields']
             return None
@@ -416,6 +428,7 @@ class BigML(ConfigurationHandler, FusionHandler, OptimlHandler,
                     or TIME_SERIES_RE.match(resource_id)
                     or DEEPNET_RE.match(resource_id)
                     or FUSION_RE.match(resource_id)
+                    or PCA_RE.match(resource_id)
                     or OPTIML_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))

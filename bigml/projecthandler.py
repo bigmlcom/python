@@ -17,7 +17,7 @@
 
 """Base class for projects' REST calls
 
-   https://bigml.com/developers/projects
+   https://bigml.com/api/projects
 
 """
 

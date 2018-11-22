@@ -332,6 +332,13 @@ def get_projection_id(projection):
     return get_resource(c.PROJECTION_PATH, projection)
 
 
+def get_batch_projection_id(batch_projection):
+    """Returns a batchprojection/id.
+
+    """
+    return get_resource(c.BATCH_PROJECTION_PATH, batch_projection)
+
+
 def get_script_id(script):
     """Returns a script/id.
 

@@ -70,6 +70,7 @@ from bigml.optimlhandler import OptimlHandler
 from bigml.fusionhandler import FusionHandler
 from bigml.pcahandler import PCAHandler
 from bigml.projectionhandler import ProjectionHandler
+from bigml.batchprojectionhandler import BatchProjectionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
@@ -97,12 +98,13 @@ from bigml.constants import (
     SAMPLE_PATH, SAMPLE_RE, CORRELATION_PATH, CORRELATION_RE,
     STATISTICAL_TEST_PATH, STATISTICAL_TEST_RE,
     LOGISTIC_REGRESSION_PATH, LOGISTIC_REGRESSION_RE, ASSOCIATION_PATH,
-    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE, TOPIC_MODEL_RE,
+    ASSOCIATION_RE, ASSOCIATION_SET_PATH, ASSOCIATION_SET_RE, TOPIC_MODEL_PATH,
+    TOPIC_MODEL_RE, TOPIC_DISTRIBUTION_PATH, BATCH_TOPIC_DISTRIBUTION_PATH,
     TOPIC_DISTRIBUTION_RE, BATCH_TOPIC_DISTRIBUTION_RE, TIME_SERIES_RE,
     TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE, OPTIML_PATH,
     OPTIML_RE, FUSION_PATH, FUSION_RE, CONFIGURATION_PATH, CONFIGURATION_RE,
     FORECAST_PATH, PCA_PATH, PCA_RE, PROJECTION_PATH, PROJECTION_RE,
-    SCRIPT_PATH, SCRIPT_RE,
+    BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
     IRREGULAR_PLURALS)
 
@@ -117,7 +119,7 @@ from bigml.resourcehandler import (
     get_association_id, get_association_set_id, get_topic_model_id,
     get_topic_distribution_id, get_batch_topic_distribution_id,
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
-    get_fusion_id, get_pca_id, get_projection_id,
+    get_fusion_id, get_pca_id, get_projection_id, get_batch_projection_id,
     get_configuration_id,
     get_script_id, get_execution_id, get_library_id)
 
@@ -137,40 +139,41 @@ STATUSES = {
 }
 
 ID_GETTERS = {
-    "project": get_project_id,
-    "source": get_source_id,
-    "dataset": get_dataset_id,
-    "model": get_model_id,
-    "ensemble": get_ensemble_id,
-    "logisticregression": get_logistic_regression_id,
-    "deepnet": get_deepnet_id,
-    "evaluation": get_evaluation_id,
-    "cluster": get_cluster_id,
-    "anomaly": get_anomaly_id,
-    "topicmodel": get_topic_model_id,
-    "association": get_association_id,
-    "timeseries": get_time_series_id,
-    "optiml": get_optiml_id,
-    "fusion": get_fusion_id,
-    "prediction": get_prediction_id,
-    "centroid": get_centroid_id,
-    "anomalyscore": get_anomaly_score_id,
-    "topicdistribution": get_topic_distribution_id,
-    "associationset": get_association_set_id,
-    "bathprediction": get_batch_prediction_id,
-    "batchcentroid": get_batch_centroid_id,
-    "batchanomalyscore": get_batch_anomaly_score_id,
-    "batchtopicdistribution": get_batch_topic_distribution_id,
-    "forecast": get_forecast_id,
-    "correlation": get_correlation_id,
-    "statisticaltest": get_statistical_test_id,
-    "sample": get_sample_id,
-    "configuration": get_configuration_id,
-    "pca": get_pca_id,
-    "projection": get_projection_id,
-    "script": get_script_id,
-    "library": get_library_id,
-    "execution": get_execution_id
+    PROJECT_PATH: get_project_id,
+    SOURCE_PATH: get_source_id,
+    DATASET_PATH: get_dataset_id,
+    MODEL_PATH: get_model_id,
+    ENSEMBLE_PATH: get_ensemble_id,
+    LOGISTIC_REGRESSION_PATH: get_logistic_regression_id,
+    DEEPNET_PATH: get_deepnet_id,
+    EVALUATION_PATH: get_evaluation_id,
+    CLUSTER_PATH: get_cluster_id,
+    ANOMALY_PATH: get_anomaly_id,
+    TOPIC_MODEL_PATH: get_topic_model_id,
+    ASSOCIATION_PATH: get_association_id,
+    TIME_SERIES_PATH: get_time_series_id,
+    OPTIML_PATH: get_optiml_id,
+    FUSION_PATH: get_fusion_id,
+    PREDICTION_PATH: get_prediction_id,
+    CENTROID_PATH: get_centroid_id,
+    ANOMALY_SCORE_PATH: get_anomaly_score_id,
+    TOPIC_DISTRIBUTION_PATH: get_topic_distribution_id,
+    ASSOCIATION_SET_PATH: get_association_set_id,
+    BATCH_PREDICTION_PATH: get_batch_prediction_id,
+    BATCH_CENTROID_PATH: get_batch_centroid_id,
+    BATCH_ANOMALY_SCORE_PATH: get_batch_anomaly_score_id,
+    BATCH_TOPIC_DISTRIBUTION_PATH: get_batch_topic_distribution_id,
+    FORECAST_PATH: get_forecast_id,
+    CORRELATION_PATH: get_correlation_id,
+    STATISTICAL_TEST_PATH: get_statistical_test_id,
+    SAMPLE_PATH: get_sample_id,
+    CONFIGURATION_PATH: get_configuration_id,
+    PCA_PATH: get_pca_id,
+    PROJECTION_PATH: get_projection_id,
+    BATCH_PROJECTION_PATH: get_batch_projection_id,
+    SCRIPT_PATH: get_script_id,
+    LIBRARY_PATH: get_library_id,
+    EXECUTION_PATH: get_execution_id
 }
 
 
@@ -182,7 +185,8 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(ProjectionHandler, PCAHandler, ConfigurationHandler, FusionHandler,
+class BigML(BatchProjectionHandler, ProjectionHandler, PCAHandler,
+            ConfigurationHandler, FusionHandler,
             OptimlHandler,
             DeepnetHandler, ForecastHandler, TimeSeriesHandler,
             BatchTopicDistributionHandler, TopicDistributionHandler,
@@ -285,6 +289,7 @@ class BigML(ProjectionHandler, PCAHandler, ConfigurationHandler, FusionHandler,
         ConfigurationHandler.__init__(self)
         PCAHandler.__init__(self)
         ProjectionHandler.__init__(self)
+        BatchProjectionHandler.__init__(self)
 
 
         self.getters = {}

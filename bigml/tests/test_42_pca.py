@@ -24,6 +24,7 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_pca_steps as pca_create
 import create_projection_steps as projection_create
+import create_batch_projection_steps as batch_proj_create
 
 class TestPCA(object):
 
@@ -104,3 +105,39 @@ class TestPCA(object):
             projection_create.the_projection_is(self, example[5])
 
         print "\nEnd of tests in: %s\n-------------------\n" % __name__
+
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully creating a batch projection:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a pca
+                And I wait until the pca is ready less than <time_3> secs
+                When I create a batch projection for the dataset with the pca
+                And I wait until the batch projection is ready less than <time_4> secs
+                And I download the created projections file to "<local_file>"
+                Then the batch projection file is like "<projections_file>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
+                | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_projections.csv |./data/batch_projections.csv |
+
+        """
+        print self.test_scenario3.__doc__
+        examples = [
+            ['data/iris.csv', '30', '30', '50', '50', 'tmp/batch_projections.csv', 'data/batch_projections.csv']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            pca_create.i_create_a_pca(self)
+            pca_create.the_pca_is_finished_in_less_than(self, example[3])
+            batch_proj_create.i_create_a_batch_projection(self)
+            batch_proj_create.the_batch_projection_is_finished_in_less_than(self, example[4])
+            batch_proj_create.i_download_projections_file(self, example[5])
+            batch_proj_create.i_check_projections(self, example[6])

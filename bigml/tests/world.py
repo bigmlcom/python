@@ -61,6 +61,7 @@ RESOURCE_TYPES = [
     'forecast',
     'pca',
     'projection',
+    'batchprojection',
     'script',
     'execution',
     'library'

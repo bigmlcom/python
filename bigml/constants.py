@@ -53,6 +53,7 @@ OPTIML_PATH = 'optiml'
 FUSION_PATH = 'fusion'
 PCA_PATH = 'pca'
 PROJECTION_PATH = 'projection'
+BATCH_PROJECTION_PATH = 'batchprojection'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -144,6 +145,8 @@ FUSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
 PCA_RE =  re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (PCA_PATH, ID_PATTERN, PCA_PATH, SHARED_PATTERN))
 PROJECTION_RE = re.compile(r'^%s/%s$' % (PROJECTION_PATH, ID_PATTERN))
+BATCH_PROJECTION_RE = re.compile(r'^%s/%s$' % (BATCH_PROJECTION_PATH,
+                                               ID_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -183,6 +186,7 @@ RESOURCE_RE = {
     FUSION_PATH: FUSION_RE,
     PCA_PATH: PCA_RE,
     PROJECTION_PATH: PROJECTION_RE,
+    BATCH_PROJECTION_PATH: BATCH_PROJECTION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}
@@ -199,7 +203,8 @@ RENAMED_RESOURCES = {
     TOPIC_MODEL_PATH: 'topic_model',
     TOPIC_DISTRIBUTION_PATH: 'topic_distribution',
     BATCH_TOPIC_DISTRIBUTION_PATH: 'batch_topic_distribution',
-    TIME_SERIES_PATH: 'time_series'
+    TIME_SERIES_PATH: 'time_series',
+    BATCH_PROJECTION_PATH: 'batch_projection'
 }
 
 IRREGULAR_PLURALS = {
@@ -214,7 +219,8 @@ IRREGULAR_PLURALS = {
     TOPIC_MODEL_PATH: 'topic_models',
     TOPIC_DISTRIBUTION_PATH: 'topic_distributions',
     TIME_SERIES_PATH: 'time_series',
-    LIBRARY_PATH: 'libraries'
+    LIBRARY_PATH: 'libraries',
+    BATCH_PROJECTION_PATH: 'batch_projections'
 }
 
 # Resource status codes

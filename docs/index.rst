@@ -3156,31 +3156,151 @@ The JSON structure for an Fusion is:
     }
 
 
-Whizzml Resources
+PCAs
+----
+
+A PCA (Principal Component Analysis) resource fits a number of orthogonal
+projects (components) to maximally capture the variance in a dataset. This
+is a dimensional reduction technique, as it can be used to reduce
+the number of inputs for the modeling step. PCA models belong to the
+unsupervised class of models (there is no objective field).
+
+The JSON structure for an PCA is:
+
+.. code-block:: python
+
+
+    {'code': 200,
+     'error': None,
+     'location': 'https://strato.dev.bigml.io/andromeda/pca/5c002572983efc0ac5000003',
+     'object': {u'category': 0,
+                u'code': 200,
+                u'columns': 2,
+                u'configuration': None,
+                u'configuration_status': False,
+                u'created': u'2018-11-29T17:44:18.359000',
+                u'creator': u'merce',
+                u'credits': 0.0,
+                u'credits_per_prediction': 0.0,
+                u'dataset': u'dataset/5c00256a983efc0acf000000',
+                u'dataset_field_types': {u'categorical': 1,
+                                         u'datetime': 0,
+                                         u'items': 0,
+                                         u'numeric': 0,
+                                         u'preferred': 2,
+                                         u'text': 1,
+                                         u'total': 2},
+                u'dataset_status': True,
+                u'description': u'',
+                u'excluded_fields': [],
+                u'fields_meta': {u'count': 2,
+                                 u'limit': 1000,
+                                 u'offset': 0,
+                                 u'query_total': 2,
+                                 u'total': 2},
+                u'input_fields': [u'000000', u'000001'],
+                u'locale': u'en-us',
+                u'max_columns': 2,
+                u'max_rows': 7,
+                u'name': u'spam 4 words',
+                u'name_options': u'standardized',
+                u'number_of_batchprojections': 2,
+                u'number_of_projections': 0,
+                u'number_of_public_projections': 0,
+                u'ordering': 0,
+                u'out_of_bag': False,
+                u'pca': {u'components': [[-0.64757,
+                                          0.83392,
+                                          0.1158,
+                                          0.83481,
+                                          ...
+                                          -0.09426,
+                                          -0.08544,
+                                          -0.03457]],
+                         u'cumulative_variance': [0.43667,
+                                                  0.74066,
+                                                  0.87902,
+                                                  0.98488,
+                                                  0.99561,
+                                                  1],
+                         u'eigenvectors': [[-0.3894,
+                                            0.50146,
+                                            0.06963,
+                                            ...
+                                            -0.56542,
+                                            -0.5125,
+                                            -0.20734]],
+                         u'fields': {u'000000': {u'column_number': 0,
+                                                 u'datatype': u'string',
+                                                 u'name': u'Type',
+                                                 ...
+                                                                    u'token_mode': u'all',
+                                                                    u'use_stopwords': False}}},
+                         u'pca_seed': u'2c249dda00fbf54ab4cdd850532a584f286af5b6',
+                         u'standardized': True,
+                         u'text_stats': {u'000001': {u'means': [0.71429,
+                                                                0.71429,
+                                                                0.42857,
+                                                                0.28571],
+                                                     u'standard_deviations': [0.75593,
+                                                                              0.75593,
+                                                                              0.53452,
+                                                                              0.48795]}},
+                         u'variance': [0.43667,
+                                       0.30399,
+                                       0.13837,
+                                       0.10585,
+                                       0.01073,
+                                       0.00439]},
+                u'price': 0.0,
+                u'private': True,
+                u'project': None,
+                u'range': None,
+                u'replacement': False,
+                u'resource': u'pca/5c002572983efc0ac5000003',
+                u'rows': 7,
+                u'sample_rate': 1.0,
+                u'shared': False,
+                u'size': 127,
+                u'source': u'source/5c00255e983efc0acd00001b',
+                u'source_status': True,
+                u'status': {u'code': 5,
+                            u'elapsed': 1571,
+                            u'message': u'The pca has been created',
+                            u'progress': 1},
+                u'subscription': True,
+                u'tags': [],
+                u'type': 0,
+                u'updated': u'2018-11-29T18:13:19.714000',
+                u'white_box': False},
+     'resource': u'pca/5c002572983efc0ac5000003'}
+
+
+WhizzML Resources
 -----------------
 
-Whizzml is a Domain Specific Language that allows the definition and
+WhizzML is a Domain Specific Language that allows the definition and
 execution of ML-centric workflows. Its objective is allowing BigML
 users to define their own composite tasks, using as building blocks
 the basic resources provided by BigML itself. Using Whizzml they can be
 glued together using a higher order, functional, Turing-complete language.
-The Whizzml code can be stored and executed in BigML using three kinds of
+The WhizzML code can be stored and executed in BigML using three kinds of
 resources: ``Scripts``, ``Libraries`` and ``Executions``.
 
-Whizzml ``Scripts`` can be executed in BigML's servers, that is,
+WhizzML ``Scripts`` can be executed in BigML's servers, that is,
 in a controlled, fully-scalable environment which takes care of their
 parallelization and fail-safe operation. Each execution uses an ``Execution``
-resource to store the arguments and results of the process. Whizzml
-``Libraries`` store generic code to be shared of reused in other Whizzml
+resource to store the arguments and results of the process. WhizzML
+``Libraries`` store generic code to be shared of reused in other WhizzML
 ``Scripts``.
 
 Scripts
 -------
 
-In BigML a ``Script`` resource stores Whizzml source code, and the results of
-its compilation. Once a Whizzml script is created, it's automatically compiled;
+In BigML a ``Script`` resource stores WhizzML source code, and the results of
+its compilation. Once a WhizzML script is created, it's automatically compiled;
 if compilation succeeds, the script can be run, that is,
-used as the input for a Whizzml execution resource.
+used as the input for a WhizzML execution resource.
 
 An example of a ``script`` that would create a ``source`` in BigML using the
 contents of a remote file is:
@@ -3249,7 +3369,7 @@ The ``script`` can also use a ``library`` resource (please, see the
 Executions
 ----------
 
-To execute in BigML a compiled Whizzml ``script`` you need to create an
+To execute in BigML a compiled WhizzML ``script`` you need to create an
 ``execution`` resource. It's also possible to execute a pipeline of
 many compiled scripts in one request.
 
@@ -4074,6 +4194,23 @@ the method a time series identifier and the input data to obtain the forecast:
         {"Final": {"horizon": 10}})
 
 
+Creating projections
+~~~~~~~~~~~~~~~~~~~~
+
+You can now use the PCA resource identifier together with some input
+parameters to ask for the corresponding projections,
+using the ``create_projection``
+method. You can also give the projection a name:
+
+.. code-block:: python
+
+    projection = api.create_projection(pca,
+                                       {"sepal length": 5,
+                                        "sepal width": 2.5},
+                                        {"name": "my projection"})
+
+
+
 Creating evaluations
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -4251,7 +4388,30 @@ in an arguments dictionary at
 creation time. For a more detailed description of the
 available attributes and its syntax, please see the `Developers API
 Documentation
-<https://tropo.dev.bigml.com/api/deepnets#dn_deepnet_arguments>`_.
+<https://bigml.com/api/deepnets#dn_deepnet_arguments>`_.
+
+Creating PCAs
+~~~~~~~~~~~~~
+
+In order to reduce the number of features used in the modeling steps,
+you can use a PCA (Principal Component Analysis) to find out the best
+combination of features that describe the variance of your data.
+As the rest of models, PCAs can be created from a dataset by
+calling the corresponding create method:
+
+.. code-block:: python
+
+    pca = api.create_pca( \
+        'dataset/5143a51a37203f2cf7000972',
+        {"name": "my PCA"})
+
+In this example, we created a PCA named
+``my PCA``. Other arguments, like ``standardized``
+can also be specified as attributes in arguments dictionary at
+creation time.
+Please see the `Developers API
+Documentation
+<https://bigml.com/api/pcas>`_.
 
 
 Creating batch predictions
@@ -4360,6 +4520,23 @@ topic model to assign a topic distribution to each input data instance:
         "name": "my batch topic distribution", "all_fields": True,
         "header": True})
 
+Creating batch projections
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Input data can also be assigned a projection in batch. You train a
+PCA with your training data and then build a dataset from your
+input data. The ``create_batch_projection`` call will need the id
+of the input data dataset and of the
+PCA to compute the projection that corresponds to each input data instance:
+
+.. code-block:: python
+
+    batch_projection = api.create_batch_projection( \
+        pca, dataset, {
+        "name": "my batch pca", "all_fields": True,
+        "header": True})
+
+
 Reading Resources
 -----------------
 
@@ -4401,6 +4578,10 @@ You can list resources with the appropriate api method:
     api.list_batch_topic_distributions()
     api.list_time_series()
     api.list_deepnets()
+    api.list_fusions()
+    api.list_pcas()
+    api.list_projections()
+    api.list_batch_projections()
     api.list_forecasts()
     api.list_scripts()
     api.list_libraries()
@@ -4548,6 +4729,10 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_forecast(\
         forecast, {"name": "new name"})
     api.update_deepnet(deepnet, {"name": "new name"})
+    api.update_fusion(fusion, {"name": "new name"})
+    api.update_pca(pca, {"name": "new name"})
+    api.update_projection(projection, {"name": "new name"})
+    api.update_batch_projection(batch_projection, {"name": "new name"})
     api.update_script(script, {"name": "new name"})
     api.update_library(library, {"name": "new name"})
     api.update_execution(execution, {"name": "new name"})
@@ -4633,7 +4818,11 @@ each type of resource.
     api.delete_batch_topic_distribution(batch_topic_distribution)
     api.delete_time_series(time_series)
     api.delete_forecast(forecast)
+    api.delete_fusion(fusion)
+    api.delete_pca(pca)
     api.delete_deepnet(deepnet)
+    api.delete_projection(projection)
+    api.delete_batch_projection(batch_projection)
     api.delete_project(project)
     api.delete_script(script)
     api.delete_library(library)
@@ -4772,8 +4961,10 @@ You can instantiate a local version of a remote model.
 This will retrieve the remote model information, using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a Model object
-that you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+that will be stored in the ``./storage`` directory and
+you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -4783,7 +4974,8 @@ parameter:
 
     local_model = Model('model/502fdbff15526876610002615',
                         api=BigML(my_username,
-                                  my_api_key))
+                                  my_api_key,
+                                  storage="my_storage"))
 
 or even use the remote model information previously retrieved to build the
 local model object:
@@ -5042,8 +5234,10 @@ You can also instantiate a local version of a remote cluster.
 This will retrieve the remote cluster information, using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``Cluster`` object
-that you can use to make local centroid predictions. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+that will be stored in the ``./storage`` directory and
+you can use to make local centroid predictions. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5053,7 +5247,8 @@ parameter:
 
     local_cluster = Cluster('cluster/502fdbff15526876610002435',
                             api=BigML(my_username,
-                                      my_api_key))
+                                      my_api_key
+                                      storage="my_storage"))
 
 or even use the remote cluster information previously retrieved to build the
 local cluster object:
@@ -5200,8 +5395,10 @@ You can also instantiate a local version of a remote anomaly.
 This will retrieve the remote anomaly detector information, using an implicitly
 built ``BigML()`` connection object (see the ``Authentication`` section for
 more details on how to set your credentials) and return an ``Anomaly`` object
-that you can use to make local anomaly scores. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+that will be stored in the ``./storage`` directory and
+you can use to make local anomaly scores. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5269,8 +5466,10 @@ This will retrieve the remote logistic regression information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``LogisticRegression``
-object that you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+object that will be stored in the ``./storage`` directory and
+you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5280,7 +5479,7 @@ parameter:
 
     local_log_regression = LogisticRegression(
         'logisticregression/502fdbff15526876610602435',
-        api=BigML(my_username, my_api_key))
+        api=BigML(my_username, my_api_key, storage="my_storage"))
 
 You can also reuse a remote logistic regression JSON structure
 as previously retrieved to build the
@@ -5388,8 +5587,10 @@ This will retrieve the remote deepnet information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``Deepnet``
-object that you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+object that will be stored in the ``./storage`` directory and
+you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5399,7 +5600,7 @@ parameter:
 
     local_deepnet = Deepnet(
         'deepnet/502fdbff15526876610602435',
-        api=BigML(my_username, my_api_key))
+        api=BigML(my_username, my_api_key, storage="my_storage"))
 
 You can also reuse a remote Deepnet JSON structure
 as previously retrieved to build the
@@ -5494,8 +5695,10 @@ This will retrieve the remote fusion information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``Fusion``
-object that you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+object that will be stored in the ``./storage`` directory and
+you can use to make local predictions. If you want to use a
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5505,7 +5708,7 @@ parameter:
 
     local_fusion = Fusion(
         'fusion/502fdbff15526876610602435',
-        api=BigML(my_username, my_api_key))
+        api=BigML(my_username, my_api_key, storage="my_storage"))
 
 You can also reuse a remote Fusion JSON structure
 as previously retrieved to build the
@@ -5597,9 +5800,11 @@ This will retrieve the remote association information, using an implicitly
 built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return an ``Association`` object
-that you can use to extract the rules found in the original dataset.
+that will be stored in the ``./storage`` directory and
+you can use to extract the rules found in the original dataset.
 If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5609,7 +5814,8 @@ parameter:
 
     local_association = Association('association/502fdcff15526876610002435',
                                     api=BigML(my_username,
-                                              my_api_key))
+                                              my_api_key
+                                              storage="my_storage"))
 
 or even use the remote association information retrieved previously
 to build the
@@ -5738,9 +5944,11 @@ This will retrieve the remote topic model information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``TopicModel``
-object that you can use to obtain local topic distributions.
+object that will be stored in the ``./storage`` directory and
+you can use to obtain local topic distributions.
 If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5750,7 +5958,7 @@ parameter:
 
     local_topic_model = TopicModel(
         'topicmodel/502fdbcf15526876210042435',
-        api=BigML(my_username, my_api_key))
+        api=BigML(my_username, my_api_key, storage="my_storage"))
 
 You can also reuse a remote topic model JSON structure
 as previously retrieved to build the
@@ -5817,9 +6025,11 @@ the remote time series information,
 using an implicitly built
 ``BigML()`` connection object (see the ``Authentication`` section for more
 details on how to set your credentials) and return a ``TimeSeries``
-object that you can use to obtain local forecasts.
+object that will be stored in the ``./storage`` directory and
+you can use to obtain local forecasts.
 If you want to use a
-specfic connection object for the remote retrieval, you can set it as second
+specfic connection object for the remote retrieval or a different storage
+directory, you can set it as second
 parameter:
 
 .. code-block:: python
@@ -5829,7 +6039,7 @@ parameter:
 
     local_time_series = TimeSeries( \
         'timeseries/502fdbcf15526876210042435',
-        api=BigML(my_username, my_api_key))
+        api=BigML(my_username, my_api_key, storage="my_storage"))
 
 You can also reuse a remote time series JSON structure
 as previously retrieved to build the
@@ -5846,11 +6056,126 @@ local time series object:
 
     local_time_series = TimeSeries(time_series)
 
-Note that in this example we used a ``limit=-1`` query string for the topic
-model retrieval. This ensures that all fields are retrieved by the get
+Note that in this example we used a ``limit=-1`` query string for the time
+series retrieval. This ensures that all fields are retrieved by the get
 method in the
 same call (unlike in the standard calls where the number of fields returned is
 limited).
+
+
+Local Forecasts
+---------------
+
+Using the local time series object, you can forecast any of the objective
+field values:
+
+.. code-block:: python
+
+    local_time_series.forecast({"Final": {"horizon": 5}, "Assignment": { \
+        "horizon": 10, "ets_models": {"criterion": "aic", "limit": 2}}})
+    {u'000005': [
+        {'point_forecast': [68.53181, 68.53181, 68.53181, 68.53181, 68.53181],
+         'model': u'A,N,N'}],
+     u'000001': [{'point_forecast': [54.776650000000004, 90.00943000000001,
+                                     83.59285000000001, 85.72403000000001,
+                                     72.87196, 93.85872, 84.80786, 84.65522,
+                                     92.52545, 88.78403],
+                  'model': u'A,N,A'},
+                 {'point_forecast': [55.882820120000005, 90.5255466567616,
+                                     83.44908577909621, 87.64524353046498,
+                                     74.32914583152592, 95.12372848262932,
+                                     86.69298716626228, 85.31630744944385,
+                                     93.62385478607113, 89.06905451921818],
+                  'model': u'A,Ad,A'}]}
+
+
+As you can see, the forecast contains the ID of the forecasted field, the
+computed points and the name of the models meeting the criterion.
+For more details about the available parameters, please check the `API
+documentation <https://bigml.com/api/forecasts>`_.
+
+
+Local PCAs
+----------
+
+The `PCA` class will create a local version of a remote PCA.
+
+.. code-block:: python
+
+    from bigml.pca import PCA
+    local_pca = PCA(
+        'pca/502fdbcf15526876210042435')
+
+
+This will create an object that stores the remote information that defines
+the PCA, needed to generate
+projections to the new dimensionally reduced components. The remote resource
+is automatically downloaded the first time the the PCA is instantiated by
+using an implicitly built
+``BigML()`` connection object (see the ``Authentication`` section for more
+details on how to set your credentials). The JSON that contains this
+information is stored in a ``./storage`` directory, which is the default
+choice. If you want to use a
+specfic connection object to define the credentials for the authentication
+in BigML or the directory where the JSON information is stored,
+you can set it as the second parameter:
+
+.. code-block:: python
+
+    from bigml.pca import PCA
+    from bigml.api import BigML
+
+    local_pca = PCA( \
+        'timeseries/502fdbcf15526876210042435',
+        api=BigML(my_username, my_api_key, storage="my_storage"))
+
+You can also reuse a remote PCA JSON structure
+as previously retrieved to build the
+local PCA object:
+
+.. code-block:: python
+
+    from bigml.pca import PCA
+    from bigml.api import BigML
+    api = BigML()
+    time_series = api.get_pca( \
+        'pca/502fdbcf15526876210042435',
+        query_string='limit=-1')
+
+    local_pca = PCA(pca)
+
+Note that in this example we used a ``limit=-1`` query string for the PCA
+retrieval. This ensures that all fields are retrieved by the get
+method in the
+same call (unlike in the standard calls where the number of fields returned is
+limited).
+
+
+Local Projections
+-----------------
+
+Using the local PCA object, you can compute the projection of
+an input data set into the new components:
+
+.. code-block:: python
+
+    local_pca.projection({"species": "Iris-versicolor"})
+    [6.03852, 8.35456, 5.04432, 0.75338, 0.06787, 0.03018]
+
+You can use the ``max_components`` and ``variance_threshold`` arguments
+to limit the number of components generated. You can also use the ``full``
+argument to produce a dictionary whose keys are the names of the generated
+components.
+
+.. code-block:: python
+
+    local_pca.projection({"species": "Iris-versicolor"}, full=yes)
+    {'PCA1': 6.03852, 'PCA2': 8.35456, 'PCA3': 5.04432, 'PCA4': 0.75338,
+     'PCA5': 0.06787, 'PCA6': 0.03018}
+
+As in the local model predictions, producing local projections can be done
+independently of BigML servers, so no cost or connection latencies are
+involved.
 
 
 Local Forecasts

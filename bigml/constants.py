@@ -142,7 +142,7 @@ OPTIML_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (OPTIML_PATH, ID_PATTERN, OPTIML_PATH, SHARED_PATTERN))
 FUSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (FUSION_PATH, ID_PATTERN, FUSION_PATH, SHARED_PATTERN))
-PCA_RE =  re.compile(r'^%s/%s|^shared/%s/%s$' % \
+PCA_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (PCA_PATH, ID_PATTERN, PCA_PATH, SHARED_PATTERN))
 PROJECTION_RE = re.compile(r'^%s/%s$' % (PROJECTION_PATH, ID_PATTERN))
 BATCH_PROJECTION_RE = re.compile(r'^%s/%s$' % (BATCH_PROJECTION_PATH,

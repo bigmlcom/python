@@ -62,7 +62,6 @@ class BatchTopicDistributionHandler(ResourceHandler):
         origin_resources_checked = self.check_origins(
             dataset, topic_model, create_args, model_types=[TOPIC_MODEL_PATH],
             wait_time=wait_time, retries=retries)
-
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_topic_distribution_url, body)

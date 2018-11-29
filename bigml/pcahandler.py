@@ -48,8 +48,7 @@ class PCAHandler(ResourceHandler):
         """
         self.pca_url = self.url + PCA_PATH
 
-    def create_pca(self, datasets,
-                         args=None, wait_time=3, retries=10):
+    def create_pca(self, datasets, args=None, wait_time=3, retries=10):
         """Creates a PCA from a `dataset`
            of a list o `datasets`.
 

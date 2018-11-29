@@ -47,6 +47,17 @@ def i_create_a_pca_from_dataset(step):
     world.pcas.append(resource['resource'])
 
 
+#@step(r'I create a PCA from a dataset$')
+def i_create_a_pca_with_params(step, params):
+    params = json.loads(params)
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_pca(dataset, params)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.pca = resource['object']
+    world.pcas.append(resource['resource'])
+
 def i_create_a_pca(step):
     i_create_a_pca_from_dataset(step)
 

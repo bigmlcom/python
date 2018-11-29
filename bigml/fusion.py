@@ -47,7 +47,7 @@ from functools import cmp_to_key
 from bigml.api import BigML, get_fusion_id, get_resource_type
 from bigml.model import parse_operating_point, sort_categories
 from bigml.model import LAST_PREDICTION
-from bigml.basemodel import get_resource_dict
+from bigml.basemodel import get_resource_dict, retrieve_resource
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics
 from bigml.supervised import SupervisedModel

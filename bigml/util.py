@@ -595,8 +595,8 @@ def check_no_missing_numerics(input_data, fields, weight_field=None):
 
     """
     for field_id, field in fields.items():
-        if (field['optype'] == NUMERIC and (weight_field is None or
-                field_id != weight_field) and
+        if (field['optype'] == NUMERIC and (weight_field is None or \
+                field_id != weight_field) and \
                 not field_id in input_data):
             raise ValueError("Failed to predict. Input"
                              " data must contain values for all numeric"

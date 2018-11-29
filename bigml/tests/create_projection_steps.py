@@ -43,7 +43,11 @@ def the_projection_is(step, projection):
     if projection is None:
         projection = "{}"
     projection = json.loads(projection)
-    eq_(world.projection['projection']['result'], projection)
+    for name, value in projection.items():
+        eq_(world.projection['projection']['result'], projection,
+            "remote: %s, %s - expected: %s" % ( \
+                name, world.projection['projection']['result'][name],
+                projection[name]))
 
 
 def wait_until_projection_status_code_is(step, code1, code2, secs):

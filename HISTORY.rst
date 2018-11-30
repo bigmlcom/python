@@ -3,6 +3,11 @@
 History
 -------
 
+4.19.10 (2018-12-01)
+~~~~~~~~~~~~~~~~~~~~
+
+- Fixing local Deepnet predictions for regressions without numpy.
+
 4.19.9 (2018-10-24)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -163,18 +163,18 @@ def propagate(x_in, layers):
 
 def sum_and_normalize(youts, is_regression):
     ysums = []
-    for i, row in enumerate(youts[0]):
-        sum_row = []
-        for j, _ in enumerate(row):
-            sum_row.append(sum([yout[i][j] for yout in youts]))
-
-        ysums.append(sum_row)
-
     out_dist = []
+
     if is_regression:
-        for ysum in ysums:
-            out_dist.append([ysum[0] / len(youts)])
+        out_dist = sum(youts) / len(youts)
     else:
+        for i, row in enumerate(youts[0]):
+            sum_row = []
+            for j, _ in enumerate(row):
+                sum_row.append(sum([yout[i][j] for yout in youts]))
+
+            ysums.append(sum_row)
+
         for ysum in ysums:
             rowsum = sum(ysum)
             out_dist.append([y / rowsum for y in ysum])

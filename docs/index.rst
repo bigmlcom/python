@@ -138,7 +138,7 @@ should include the ``project ID``:
 .. code-block:: python
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
-                project=project/53739b98d994972da7001d4a)
+                project='project/53739b98d994972da7001d4a')
 
 If the project used in a connection object
 does not belong to an existing organization but is one of the
@@ -152,7 +152,7 @@ needs to include the corresponding``organization ID``:
 .. code-block:: python
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
-                organization=organization/53739b98d994972da7025d4a)
+                organization='organization/53739b98d994972da7025d4a')
 
 
 

@@ -3160,7 +3160,7 @@ PCAs
 ----
 
 A PCA (Principal Component Analysis) resource fits a number of orthogonal
-projects (components) to maximally capture the variance in a dataset. This
+projections (components) to maximally capture the variance in a dataset. This
 is a dimensional reduction technique, as it can be used to reduce
 the number of inputs for the modeling step. PCA models belong to the
 unsupervised class of models (there is no objective field).
@@ -4959,11 +4959,12 @@ You can instantiate a local version of a remote model.
     local_model = Model('model/502fdbff15526876610002615')
 
 This will retrieve the remote model information, using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a Model object
 that will be stored in the ``./storage`` directory and
 you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5232,11 +5233,12 @@ You can also instantiate a local version of a remote cluster.
     local_cluster = Cluster('cluster/502fdbff15526876610002435')
 
 This will retrieve the remote cluster information, using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``Cluster`` object
 that will be stored in the ``./storage`` directory and
 you can use to make local centroid predictions. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5393,11 +5395,12 @@ You can also instantiate a local version of a remote anomaly.
     local_anomaly = Anomaly('anomaly/502fcbff15526876610002435')
 
 This will retrieve the remote anomaly detector information, using an implicitly
-built ``BigML()`` connection object (see the ``Authentication`` section for
+built ``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for
 more details on how to set your credentials) and return an ``Anomaly`` object
 that will be stored in the ``./storage`` directory and
 you can use to make local anomaly scores. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5464,11 +5467,12 @@ You can also instantiate a local version of a remote logistic regression.
 
 This will retrieve the remote logistic regression information,
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``LogisticRegression``
 object that will be stored in the ``./storage`` directory and
 you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5585,11 +5589,12 @@ You can also instantiate a local version of a remote Deepnet.
 
 This will retrieve the remote deepnet information,
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``Deepnet``
 object that will be stored in the ``./storage`` directory and
 you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5693,11 +5698,12 @@ You can also instantiate a local version of a remote Fusion.
 
 This will retrieve the remote fusion information,
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``Fusion``
 object that will be stored in the ``./storage`` directory and
 you can use to make local predictions. If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5798,12 +5804,13 @@ You can also instantiate a local version of a remote association resource.
 
 This will retrieve the remote association information, using an implicitly
 built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return an ``Association`` object
 that will be stored in the ``./storage`` directory and
 you can use to extract the rules found in the original dataset.
 If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -5942,12 +5949,13 @@ You can also instantiate a local version of a remote topic model.
 
 This will retrieve the remote topic model information,
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``TopicModel``
 object that will be stored in the ``./storage`` directory and
 you can use to obtain local topic distributions.
 If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -6023,12 +6031,13 @@ You can also instantiate a local version of a remote time series.
 This will create a series of models from
 the remote time series information,
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
 details on how to set your credentials) and return a ``TimeSeries``
 object that will be stored in the ``./storage`` directory and
 you can use to obtain local forecasts.
 If you want to use a
-specfic connection object for the remote retrieval or a different storage
+specific connection object for the remote retrieval or a different storage
 directory, you can set it as second
 parameter:
 
@@ -6112,11 +6121,12 @@ the PCA, needed to generate
 projections to the new dimensionally reduced components. The remote resource
 is automatically downloaded the first time the the PCA is instantiated by
 using an implicitly built
-``BigML()`` connection object (see the ``Authentication`` section for more
+``BigML()`` connection object (see the
+`Authentication <#authentication>`_ section for more
 details on how to set your credentials). The JSON that contains this
 information is stored in a ``./storage`` directory, which is the default
 choice. If you want to use a
-specfic connection object to define the credentials for the authentication
+specific connection object to define the credentials for the authentication
 in BigML or the directory where the JSON information is stored,
 you can set it as the second parameter:
 
@@ -6155,7 +6165,7 @@ Local Projections
 -----------------
 
 Using the local PCA object, you can compute the projection of
-an input data set into the new components:
+an input dataset into the new components:
 
 .. code-block:: python
 

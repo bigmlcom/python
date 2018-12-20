@@ -192,7 +192,7 @@ class PCA(ModelFields):
         # non-categorical fields missing
         input_array, missings, input_mask = self.expand_input(new_data,
                                                               unique_terms)
-        components = self.components[:]
+        components = self.eigenvectors[:]
         if max_components is not None:
             components = components[0: max_components]
         if variance_threshold is not None:

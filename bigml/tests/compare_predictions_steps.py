@@ -477,6 +477,7 @@ def the_local_projection_is(step, projection):
     if projection is None:
         projection = "{}"
     projection = json.loads(projection)
+    eq_(len(projection.keys()), len(world.local_projection.keys()))
     for name, value in projection.items():
         eq_(world.local_projection[name], projection[name],
             "local: %s, %s - expected: %s" % ( \

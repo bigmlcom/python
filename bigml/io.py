@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015-2018 BigML, Inc
+# Copyright (c) 2015-2019 BigML, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,7 +18,7 @@
 """Python 2/3 compatibility for I/O functions.
 
 :author: jao <jao@bigml.com>
-:date: Wed Apr 08, 2015-2018 17:52
+:date: Wed Apr 08, 2015-2019 17:52
 
 """
 

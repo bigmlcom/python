@@ -46,7 +46,7 @@ ONLY_MODEL = 'only_model=true;limit=-1;'
 EXCLUDE_FIELDS = 'exclude=fields;'
 
 
-def retrieve_resource(api, resource_id, query_string='',
+def retrieve_resource(api, resource_id, query_string='limit=-1;',
                       no_check_fields=False):
     """ Retrieves resource info either from a local repo or
         from the remote server

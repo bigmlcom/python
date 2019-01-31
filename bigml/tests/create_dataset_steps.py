@@ -126,6 +126,27 @@ def i_create_a_multidataset(step, ranges):
     world.datasets.append(resource['resource'])
 
 
+#@step(r'I create a multi-dataset with same datasets and the first sample rate (.*)$')
+def i_create_a_multidataset_mixed_format(step, ranges):
+    ranges = json.loads(ranges)
+    dataset = world.dataset['resource']
+    origins = []
+    for value in ranges:
+        if value == 1:
+            origins.append(dataset)
+        else:
+            origins.append({"id": dataset,
+                            "sample_rate": value})
+    world.origin_dataset = world.dataset
+    resource = world.api.create_dataset( \
+        origins)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.dataset = resource['object']
+    world.datasets.append(resource['resource'])
+
+
 #@step(r'I compare the datasets\' instances$')
 def i_compare_datasets_instances(step):
     world.datasets_instances = (world.dataset['rows'],

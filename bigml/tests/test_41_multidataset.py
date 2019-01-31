@@ -106,3 +106,35 @@ class TestMultiDataset(object):
                                                                 example[3])
             dataset_create.i_compare_datasets_instances(self)
             dataset_create.proportion_datasets_instances(self, example[4])
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully creating a sampled multi-dataset with sample:
+                Given I create a data source with "<params>" uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a multi-dataset with same dataset and the first sample rate <rates>
+                And I wait until the multi-dataset is ready less than <time_3> secs
+                When I compare the datasets' instances
+                Then the proportion of instances between datasets is <rate>
+
+                Examples:
+                | data                | time_1  | time_2 | time_3 | rate |rates
+                | ../data/iris.csv | 10      | 10     | 10     | 1.3 |[1, 0.3]
+        """
+        print self.test_scenario1.__doc__
+        examples = [
+            ['data/iris.csv', '10', '10', '10', '1.3', '[1, 0.3]']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file_with_args(self, example[0], '{}')
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            dataset_create.i_create_a_multidataset_mixed_format(self, example[5])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[3])
+            dataset_create.i_compare_datasets_instances(self)
+            dataset_create.proportion_datasets_instances(self, example[4])

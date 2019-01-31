@@ -3,6 +3,11 @@
 History
 -------
 
+4.20.2 (2019-02-02)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding new format for the list of datasets to create a multidataset from.
+
 4.20.1 (2019-02-01)
 ~~~~~~~~~~~~~~~~~~~
 

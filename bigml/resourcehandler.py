@@ -109,6 +109,8 @@ def check_resource_type(resource, expected_resource, message=None):
         expected_resources = [expected_resource]
     else:
         expected_resources = expected_resource
+    if isinstance(resource, dict) and 'id' in resource:
+        resource = resource['id']
     resource_type = get_resource_type(resource)
     if resource_type not in expected_resources:
         raise Exception("%s\nFound %s." % (message, resource_type))
@@ -520,8 +522,15 @@ class ResourceHandler(BigMLConnection):
             check_resource_type(dataset, c.DATASET_PATH,
                                 message=("A dataset id is needed to create"
                                          " the resource."))
-            dataset_ids.append(get_dataset_id(dataset).replace("shared/", ""))
-            dataset = check_resource(dataset,
+            if isinstance(dataset, dict) and 'id' in dataset:
+                dataset['id'] = dataset['id'].replace("shared/", "")
+                dataset_ids.append(dataset)
+                dataset_id = dataset['id']
+            else:
+                dataset_id = get_dataset_id(dataset).replace( \
+                    "shared/", "")
+                dataset_ids.append(dataset_id)
+            dataset = check_resource(dataset_id,
                                      query_string=c.TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True, api=self)

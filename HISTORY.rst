@@ -3,6 +3,12 @@
 History
 -------
 
+4.20.1 (2019-02-01)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local ensemble when used with externally defined connection,
+  as found by @KamalGalrani.
+
 4.20.0 (2018-12-01)
 ~~~~~~~~~~~~~~~~~~~
 

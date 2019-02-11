@@ -57,6 +57,7 @@ class PredictionHandler(ResourceHandler):
             - a simple logistic regression model
             - an ensemble
             - a deepnet
+            . a linear regression
             - a fusion
            Note that the old `by_name` argument has been deprecated.
 

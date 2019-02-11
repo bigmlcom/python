@@ -54,6 +54,7 @@ FUSION_PATH = 'fusion'
 PCA_PATH = 'pca'
 PROJECTION_PATH = 'projection'
 BATCH_PROJECTION_PATH = 'batchprojection'
+LINEAR_REGRESSION_PATH = 'linearregression'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
@@ -61,6 +62,7 @@ SUPERVISED_PATHS = [
     MODEL_PATH,
     ENSEMBLE_PATH,
     LOGISTIC_REGRESSION_PATH,
+    LINEAR_REGRESSION_PATH,
     DEEPNET_PATH,
     FUSION_PATH
 ]
@@ -68,6 +70,7 @@ MODELS_PATHS = [
     MODEL_PATH,
     ENSEMBLE_PATH,
     LOGISTIC_REGRESSION_PATH,
+    LINEAR_REGRESSION_PATH,
     DEEPNET_PATH,
     CLUSTER_PATH,
     ANOMALY_PATH,
@@ -147,6 +150,9 @@ PCA_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
 PROJECTION_RE = re.compile(r'^%s/%s$' % (PROJECTION_PATH, ID_PATTERN))
 BATCH_PROJECTION_RE = re.compile(r'^%s/%s$' % (BATCH_PROJECTION_PATH,
                                                ID_PATTERN))
+LINEAR_REGRESSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+    (LINEAR_REGRESSION_PATH, ID_PATTERN,
+     LINEAR_REGRESSION_PATH, SHARED_PATTERN))
 SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -187,6 +193,7 @@ RESOURCE_RE = {
     PCA_PATH: PCA_RE,
     PROJECTION_PATH: PROJECTION_RE,
     BATCH_PROJECTION_PATH: BATCH_PROJECTION_RE,
+    LINEAR_REGRESSION_PATH: LINEAR_REGRESSION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
     LIBRARY_PATH: LIBRARY_RE}
@@ -199,6 +206,7 @@ RENAMED_RESOURCES = {
     BATCH_ANOMALY_SCORE_PATH: 'batch_anomaly_score',
     STATISTICAL_TEST_PATH: 'statistical_test',
     LOGISTIC_REGRESSION_PATH: 'logistic_regression',
+    LINEAR_REGRESSION_PATH: 'linear_regression',
     ASSOCIATION_SET_PATH: 'association_set',
     TOPIC_MODEL_PATH: 'topic_model',
     TOPIC_DISTRIBUTION_PATH: 'topic_distribution',
@@ -215,6 +223,7 @@ IRREGULAR_PLURALS = {
     BATCH_ANOMALY_SCORE_PATH: 'batch_anomaly_scores',
     STATISTICAL_TEST_PATH: 'statistical_tests',
     LOGISTIC_REGRESSION_PATH: 'logistic_regressions',
+    LINEAR_REGRESSION_PATH: 'linear_regressions',
     ASSOCIATION_SET_PATH: 'association_sets',
     TOPIC_MODEL_PATH: 'topic_models',
     TOPIC_DISTRIBUTION_PATH: 'topic_distributions',

@@ -70,6 +70,7 @@ from bigml.optimlhandler import OptimlHandler
 from bigml.fusionhandler import FusionHandler
 from bigml.pcahandler import PCAHandler
 from bigml.projectionhandler import ProjectionHandler
+from bigml.linearhandler import LinearRegressionHandler
 from bigml.batchprojectionhandler import BatchProjectionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
@@ -104,7 +105,8 @@ from bigml.constants import (
     TIME_SERIES_PATH, FORECAST_RE, DEEPNET_PATH, DEEPNET_RE, OPTIML_PATH,
     OPTIML_RE, FUSION_PATH, FUSION_RE, CONFIGURATION_PATH, CONFIGURATION_RE,
     FORECAST_PATH, PCA_PATH, PCA_RE, PROJECTION_PATH, PROJECTION_RE,
-    BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE, SCRIPT_PATH, SCRIPT_RE,
+    BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE,
+    LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
     IRREGULAR_PLURALS)
 
@@ -120,7 +122,7 @@ from bigml.resourcehandler import (
     get_topic_distribution_id, get_batch_topic_distribution_id,
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
     get_fusion_id, get_pca_id, get_projection_id, get_batch_projection_id,
-    get_configuration_id,
+    get_configuration_id, get_linear_regression_id,
     get_script_id, get_execution_id, get_library_id)
 
 
@@ -171,6 +173,7 @@ ID_GETTERS = {
     PCA_PATH: get_pca_id,
     PROJECTION_PATH: get_projection_id,
     BATCH_PROJECTION_PATH: get_batch_projection_id,
+    LINEAR_REGRESSION_PATH: get_linear_regression_id,
     SCRIPT_PATH: get_script_id,
     LIBRARY_PATH: get_library_id,
     EXECUTION_PATH: get_execution_id
@@ -185,7 +188,8 @@ def count(listing):
         return listing['meta']['query_total']
 
 
-class BigML(BatchProjectionHandler, ProjectionHandler, PCAHandler,
+class BigML(LinearRegressionHandler, BatchProjectionHandler,
+            ProjectionHandler, PCAHandler,
             ConfigurationHandler, FusionHandler,
             OptimlHandler,
             DeepnetHandler, ForecastHandler, TimeSeriesHandler,
@@ -290,6 +294,7 @@ class BigML(BatchProjectionHandler, ProjectionHandler, PCAHandler,
         PCAHandler.__init__(self)
         ProjectionHandler.__init__(self)
         BatchProjectionHandler.__init__(self)
+        LinearRegressionHandler.__init__(self)
 
 
         self.getters = {}
@@ -387,6 +392,8 @@ class BigML(BatchProjectionHandler, ProjectionHandler, PCAHandler,
                 elif PCA_RE.match(resource_id):
                     return dict([(field['id'], field) for field in
                                  resource['object']['pca']['fields']])
+                elif LINEAR_REGRESSION_RE.match(resource_id):
+                    return resource['object']['linear_regression']['fields']
                 else:
                     return resource['object']['fields']
             return None
@@ -434,6 +441,7 @@ class BigML(BatchProjectionHandler, ProjectionHandler, PCAHandler,
                     or DEEPNET_RE.match(resource_id)
                     or FUSION_RE.match(resource_id)
                     or PCA_RE.match(resource_id)
+                    or LINEAR_REGRESSION_RE.match(resource_id)
                     or OPTIML_RE.match(resource_id)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))

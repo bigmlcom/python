@@ -601,3 +601,34 @@ def check_no_missing_numerics(input_data, fields, weight_field=None):
             raise ValueError("Failed to predict. Input"
                              " data must contain values for all numeric"
                              " fields to get a prediction.")
+
+def check_no_training_missings(input_data, fields, weight_field=None,
+                               objective_id=None):
+    """Checks whether some input fields are missing in the input data
+    while not training data has no missings in that field
+
+    """
+    for field_id, field in fields.items():
+        if (not field_id in input_data and \
+            field['summary']['missing_count'] == 0 and \
+                (weight_field is None or \
+                field_id != weight_field) and \
+                (objective_id is None or field_id != objective_id)):
+            raise ValueError("Failed to predict. Input"
+                             " data must contain values for field '%s' "
+                             "to get a prediction." % field['name'])
+
+
+def flatten(inner_array):
+    """ Flattens an array with inner arrays
+
+    """
+    new_array = []
+
+    for element in inner_array:
+        if isinstance(element, list):
+            new_array.extend(element)
+        else:
+            new_array.append(element)
+
+    return new_array

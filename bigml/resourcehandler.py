@@ -341,6 +341,13 @@ def get_batch_projection_id(batch_projection):
     return get_resource(c.BATCH_PROJECTION_PATH, batch_projection)
 
 
+def get_linear_regression_id(linear_regression):
+    """Returns a linearregression/id.
+
+    """
+    return get_resource(c.LINEAR_REGRESSION_PATH, linear_regression)
+
+
 def get_script_id(script):
     """Returns a script/id.
 

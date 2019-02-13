@@ -68,6 +68,11 @@ EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
 
 CATEGORICAL = "categorical"
 
+DUMMY = "dummy"
+CONTRAST = "contrast"
+OTHER = "other"
+PROJECTIONS = [CONTRAST, OTHER]
+
 
 def get_terms_array(terms, unique_terms, field, field_id):
     """ Returns an array that represents the frequency of terms as ordered
@@ -195,19 +200,47 @@ class LinearRegression(ModelFields):
                 input_array.append(value)
             else:
                 terms = getattr(self, EXPANSION_ATTRIBUTES[optype])[field_id]
+                length = len(terms)
                 if field_id in unique_terms:
                     new_inputs = get_terms_array( \
                         terms, unique_terms, field, field_id)
+                    if optype == CATEGORICAL:
+                        new_inputs = self.categorical_encoding( \
+                            new_inputs, field_id)
                 else:
-                    new_inputs = [0] * len(terms)
+                    if optype == CATEGORICAL:
+                        if self.field_codings[field_id][CONTRAST] or \
+                           self.field_codings[field_id][OTHER]:
+                            length = len(self.field_codings[ \
+                                field_id].get(CONTRAST,
+                                              self.field_codings[field_id][ \
+                                    OTHER]))
+                    new_inputs = [0] * length
                     missing = True
                 input_array.extend(new_inputs)
 
             if field["summary"]["missing_count"] > 0:
                 input_array.append(int(missing))
 
+        if self.bias:
+            input_array.append(1)
+
         return input_array
 
+    def categorical_encoding(self, inputs, field_id):
+        """Returns the prediction and the confidence intervals
+
+        input_data: Input data to be predicted
+        """
+
+        new_inputs = inputs[:]
+
+        projections = self.field_codings[field_id].get( \
+                CONTRAST, self.field_codings[field_id].get(OTHER))
+        if projections is not None:
+            new_inputs = flatten(dot(projections, [new_inputs]))
+
+        return new_inputs
 
     def predict(self, input_data, full=False):
         """Returns the prediction and the confidence intervals
@@ -256,55 +289,6 @@ class LinearRegression(ModelFields):
 
         return result
 
-    def category_probability(self, numeric_inputs, unique_terms, category):
-        """Computes the probability for a concrete category
-
-        """
-        probability = 0
-        norm2 = 0
-
-        # numeric input data
-        for field_id in numeric_inputs:
-            coefficients = self.get_coefficients(category, field_id)
-            probability += coefficients[0] * numeric_inputs[field_id]
-            if self.lr_normalize:
-                norm2 += math.pow(numeric_inputs[field_id], 2)
-
-        # text, items and categories
-        for field_id in unique_terms:
-            if field_id in self.input_fields:
-                coefficients = self.get_coefficients(category, field_id)
-                for term, occurrences in unique_terms[field_id]:
-                    try:
-                        one_hot = True
-                        if field_id in self.tag_clouds:
-                            index = self.tag_clouds[field_id].index(term)
-                        elif field_id in self.items:
-                            index = self.items[field_id].index(term)
-                        elif field_id in self.categories and ( \
-                                not field_id in self.field_codings or \
-                                self.field_codings[field_id].keys()[0] == \
-                                "dummy"):
-                            index = self.categories[field_id].index(term)
-                        elif field_id in self.categories:
-                            one_hot = False
-                            index = self.categories[field_id].index(term)
-                            coeff_index = 0
-                            for contribution in \
-                                    self.field_codings[field_id].values()[0]:
-                                probability += \
-                                    coefficients[coeff_index] * \
-                                    contribution[index] * occurrences
-                                coeff_index += 1
-                        if one_hot:
-                            probability += coefficients[index] * \
-                                occurrences
-                        norm2 += math.pow(occurrences, 2)
-                    except ValueError:
-                        pass
-
-
-
     def format_field_codings(self):
         """ Changes the field codings format to the dict notation
 
@@ -315,7 +299,7 @@ class LinearRegression(ModelFields):
             self.field_codings = {}
             for element in field_codings:
                 field_id = element['field']
-                if element["coding"] == "dummy":
+                if element["coding"] == DUMMY:
                     self.field_codings[field_id] = {\
                         element["coding"]: element['dummy_class']}
                 else:

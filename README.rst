@@ -257,14 +257,14 @@ all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
 You can also check other simple examples in the following documents:
 
-- `model 101 <docs/101_model.html>`_
-- `logistic regression 101 <docs/101_logistic_regression.html>`_
-- `ensemble 101 <docs/101_ensemble.html>`_
-- `cluster 101 <docs/101_cluster>`_
-- `anomaly detector 101 <docs/101_anomaly.html>`_
-- `association 101 <docs/101_association.html>`_
-- `topic model 101 <docs/101_topic_model.html>`_
-- `time series 101 <docs/101_ts.html>`_
+- `model 101 <docs/101_model.rst>`_
+- `logistic regression 101 <docs/101_logistic_regression.rst>`_
+- `ensemble 101 <docs/101_ensemble.rst>`_
+- `cluster 101 <docs/101_cluster.rst>`_
+- `anomaly detector 101 <docs/101_anomaly.rst>`_
+- `association 101 <docs/101_association.rst>`_
+- `topic model 101 <docs/101_topic_model.rst>`_
+- `time series 101 <docs/101_ts.rst>`_
 
 
 Additional Information

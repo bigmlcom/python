@@ -63,7 +63,7 @@ except ImportError:
 
 LOGGER = logging.getLogger('BigML')
 
-EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
+EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_clouds",
                         "items": "items"}
 
 CATEGORICAL = "categorical"
@@ -71,8 +71,6 @@ CATEGORICAL = "categorical"
 DUMMY = "dummy"
 CONTRAST = "contrast"
 OTHER = "other"
-PROJECTIONS = [CONTRAST, OTHER]
-
 
 def get_terms_array(terms, unique_terms, field, field_id):
     """ Returns an array that represents the frequency of terms as ordered
@@ -157,7 +155,9 @@ class LinearRegression(ModelFields):
                     numerics=True)
                 self.field_codings = linear_regression_info.get( \
                   'field_codings', {})
+                print "**before", self.field_codings
                 self.format_field_codings()
+                print "**after", self.field_codings
                 for field_id in self.field_codings:
                     if field_id not in fields and \
                             field_id in self.inverted_fields:
@@ -191,36 +191,34 @@ class LinearRegression(ModelFields):
             field = self.fields[field_id]
             optype = field["optype"]
             missing = False
+            new_inputs = []
             if optype == NUMERIC:
                 if field_id in input_data:
                     value = input_data.get(field_id, 0)
                 else:
                     missing = True
                     value = 0
-                input_array.append(value)
+                new_inputs = [value]
             else:
                 terms = getattr(self, EXPANSION_ATTRIBUTES[optype])[field_id]
                 length = len(terms)
                 if field_id in unique_terms:
                     new_inputs = get_terms_array( \
                         terms, unique_terms, field, field_id)
-                    if optype == CATEGORICAL:
-                        new_inputs = self.categorical_encoding( \
-                            new_inputs, field_id)
                 else:
-                    if optype == CATEGORICAL:
-                        if self.field_codings[field_id][CONTRAST] or \
-                           self.field_codings[field_id][OTHER]:
-                            length = len(self.field_codings[ \
-                                field_id].get(CONTRAST,
-                                              self.field_codings[field_id][ \
-                                    OTHER]))
                     new_inputs = [0] * length
                     missing = True
-                input_array.extend(new_inputs)
 
-            if field["summary"]["missing_count"] > 0:
-                input_array.append(int(missing))
+            if field["summary"]["missing_count"] > 0 or \
+                    (optype == CATEGORICAL and \
+                     self.field_codings[field_id].get(DUMMY) is None):
+                new_inputs.append(int(missing))
+
+            if optype == CATEGORICAL:
+                new_inputs = self.categorical_encoding( \
+                    new_inputs, field_id)
+
+            input_array.extend(new_inputs)
 
         if self.bias:
             input_array.append(1)
@@ -237,6 +235,7 @@ class LinearRegression(ModelFields):
 
         projections = self.field_codings[field_id].get( \
                 CONTRAST, self.field_codings[field_id].get(OTHER))
+        print "***", projections, new_inputs
         if projections is not None:
             new_inputs = flatten(dot(projections, [new_inputs]))
 

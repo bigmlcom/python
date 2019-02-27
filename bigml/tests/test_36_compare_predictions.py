@@ -24,6 +24,7 @@ import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
 import create_ensemble_steps as ensemble_create
+import create_linear_steps as linear_create
 import create_prediction_steps as prediction_create
 import compare_predictions_steps as prediction_compare
 
@@ -410,4 +411,47 @@ class TestComparePrediction(object):
             prediction_create.i_create_a_logistic_prediction_with_op_kind(self, example[4], example[8])
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_logistic_prediction_op_kind(self, example[4], example[8])
+            prediction_compare.the_local_prediction_is(self, example[6])
+
+    def test_scenario10(self):
+        """
+            Scenario: Successfully comparing predictions for linear regression:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a linear regression with objective "<objective>" and "<params>"
+                And I wait until the linear regression is ready less than <time_3> secs
+                And I create a local linear regression
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params
+
+
+        """
+        examples = [
+            ['data/grades.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000002": 1}', '000005', 29.63024, '{"input_fields": ["000000", "000001", "000002"]}'],
+            ['data/iris.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000004": "Iris-virginica"}', '000003', 1.21187, '{"input_fields": ["000000", "000001", "000004"]}'],
+            ['data/movies.csv', '10', '50', '30000', '{"000007": "Action"}', '000009', 4.33333, '{"input_fields": ["000007"]}'],
+            ['data/movies.csv', '10', '50', '30000', '{"000006": "1999"}', '000009', 2, '{"input_fields": ["000006"]}']]
+        show_doc(self.test_scenario10, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            linear_create.i_create_a_linear_regression_with_objective_and_params( \
+                self, example[5], example[7])
+            linear_create.the_linear_regression_is_finished_in_less_than( \
+                self, example[3])
+            prediction_compare.i_create_a_local_linear(self)
+            prediction_create.i_create_a_linear_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_linear_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])

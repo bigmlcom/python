@@ -199,7 +199,7 @@ You can easily generate a prediction following these steps:
     dataset = api.create_dataset(source)
     model = api.create_model(dataset)
     prediction = api.create_prediction(model, \
-        {'petal length': 2.45, 'petal width': 1.75})
+        {"petal width": 1.75, "petal length": 2.45})
 
 You can then print the prediction using the ``pprint`` method:
 
@@ -227,13 +227,33 @@ that objects are finished before using them by using ``api.ok``.
     model = api.create_model(dataset)
     api.ok(model)
     prediction = api.create_prediction(model, \
-        {'petal length': 2.45, 'petal width': 1.75})
+        {"petal width": 1.75, "petal length": 2.45})
 
-This method retrieves the remote object in its latest state and updates
-the variable used as argument with this information. Note that the prediction
+Note that the prediction
 call is not followed by the ``api.ok`` method. Predictions are so quick to be
 generated that, unlike the
 rest of resouces, will be generated synchronously as a finished object.
+
+The example assumes that your objective field (the one you want to predict)
+is the last field in the dataset. If that's not he case, you can explicitly
+set the name of this field in the creation call using the ``objective_field``
+argument:
+
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create_source('./data/iris.csv')
+    api.ok(source)
+    dataset = api.create_dataset(source)
+    api.ok(dataset)
+    model = api.create_model(dataset, {"objective_field": "species"})
+    api.ok(model)
+    prediction = api.create_prediction(model, \
+        {'sepal length': 5, 'sepal width': 2.5})
 
 
 You can also generate an evaluation for the model by using:
@@ -255,17 +275,55 @@ If you set the ``storage`` argument in the ``api`` instantiation:
 
 all the generated, updated or retrieved resources will be automatically
 saved to the chosen directory.
-You can also check other simple examples in the following documents:
 
-- `model 101 <docs/101_model.html>`_
-- `logistic regression 101 <docs/101_logistic_regression.html>`_
-- `ensemble 101 <docs/101_ensemble.html>`_
-- `cluster 101 <docs/101_cluster>`_
-- `anomaly detector 101 <docs/101_anomaly.html>`_
-- `association 101 <docs/101_association.html>`_
-- `topic model 101 <docs/101_topic_model.html>`_
-- `time series 101 <docs/101_ts.html>`_
+Alternatively, you can use the ``export`` method to explicitly
+download the JSON information
+that describes any of your resources in BigML to a particular file:
 
+.. code-block:: python
+
+    api.export('model/5acea49a08b07e14b9001068',
+               filename="my_dir/my_model.json")
+
+This example downloads the JSON for the model and stores it in
+the ``my_dir/my_model.json`` file.
+
+In the case of models that can be represented in a `PMML` syntax, the
+export method can be used to produce the corresponding `PMML` file.
+
+.. code-block:: python
+
+    api.export('model/5acea49a08b07e14b9001068',
+               filename="my_dir/my_model.pmml",
+               pmml=True)
+
+You can also retrieve the last resource with some previously given tag:
+
+.. code-block:: python
+
+     api.export_last("foo",
+                     resource_type="ensemble",
+                     filename="my_dir/my_ensemble.json")
+
+which selects the last ensemble that has a ``foo`` tag. This mechanism can
+be specially useful when retrieving retrained models that have been created
+with a shared unique keyword as tag.
+
+For a descriptive overview of the steps that you will usually need to
+follow to model
+your data and obtain predictions, please see the `basic Workflow sketch
+<api_sketch.html>`_
+document. You can also check other simple examples in the following documents:
+
+- `model 101 <101_model.html>`_
+- `logistic regression 101 <101_logistic_regression.html>`_
+- `ensemble 101 <101_ensemble.html>`_
+- `cluster 101 <101_cluster>`_
+- `anomaly detector 101 <101_anomaly.html>`_
+- `association 101 <101_association.html>`_
+- `topic model 101 <101_topic_model.html>`_
+- `deepnet 101 <101_deepnet.html>`_
+- `time series 101 <101_ts.html>`_
 
 Additional Information
 ----------------------

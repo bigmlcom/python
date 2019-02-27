@@ -203,6 +203,18 @@ def i_create_a_batch_prediction_with_anomaly(step):
     world.batch_anomaly_scores.append(resource['resource'])
 
 
+#@step(r'I create a linear batch prediction$')
+def i_create_a_linear_batch_prediction(step):
+    dataset = world.dataset.get('resource')
+    linear_regression = world.linear_regression.get('resource')
+    resource = world.api.create_batch_prediction(linear_regression, dataset)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.batch_prediction = resource['object']
+    world.batch_predictions.append(resource['resource'])
+
+
 #@step(r'I create a source from the batch prediction$')
 def i_create_a_source_from_batch_prediction(step):
     batch_prediction = world.batch_prediction.get('resource')

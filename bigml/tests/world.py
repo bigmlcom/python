@@ -62,6 +62,7 @@ RESOURCE_TYPES = [
     'pca',
     'projection',
     'batchprojection',
+    'linearregression',
     'script',
     'execution',
     'library'

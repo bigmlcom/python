@@ -30,6 +30,7 @@ from bigml.multimodel import MultiModel
 from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
 from bigml.deepnet import Deepnet
+from bigml.linear import LinearRegression
 from bigml.supervised import SupervisedModel
 from bigml.fusion import Fusion
 from bigml.pca import PCA
@@ -459,6 +460,9 @@ def i_create_a_local_logistic_prediction_op_kind( \
 def create_local_pca(step):
     world.local_pca = PCA(world.pca["resource"])
 
+#@step(r'I create a local PCA')
+def i_create_a_local_linear(step):
+    world.local_model = LinearRegression(world.linear_regression["resource"])
 
 #@step(r'I create a local projection for "(.*)"')
 def i_create_a_local_projection(step, data=None):
@@ -471,6 +475,19 @@ def i_create_a_local_projection(step, data=None):
     world.local_projection = world.local_pca.projection(data, full=True)
     for name, value in world.local_projection.items():
         world.local_projection[name] = round(value, 5)
+
+#@step(r'I create a local linear regression prediction for "(.*)"')
+def i_create_a_local_linear_prediction(step, data=None):
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    for key, value in data.items():
+        if value == "":
+            del data[key]
+    world.local_prediction = world.local_model.predict(data, full=True)
+    for name, value in world.local_prediction.items():
+        if isinstance(value, float):
+            world.local_prediction[name] = round(value, 5)
 
 
 def the_local_projection_is(step, projection):

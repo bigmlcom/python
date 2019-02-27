@@ -305,7 +305,8 @@ class ModelFields(object):
                     # equal. Then full_term will not be added to avoid
                     # duplicated counters for the term.
                     if token_mode == TM_FULL_TERM or \
-                            (token_mode == TM_ALL and terms[0] != full_term):
+                            (token_mode == TM_ALL and (len(terms) == 0 or
+                                                       terms[0] != full_term)):
                         terms.append(full_term)
                     unique_terms[field_id] = get_unique_terms(
                         terms, self.term_forms[field_id],

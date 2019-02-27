@@ -390,6 +390,7 @@ document. You can also check other simple examples in the following documents:
 
 - `model 101 <101_model.html>`_
 - `logistic regression 101 <101_logistic_regression.html>`_
+- `linear regression 101 <101_linear_regression.html>`_
 - `ensemble 101 <101_ensemble.html>`_
 - `cluster 101 <101_cluster>`_
 - `anomaly detector 101 <101_anomaly.html>`_
@@ -1808,6 +1809,43 @@ logistic function as well as the configuration parameters described in
 the `developers section <https://bigml.com/api/logisticregressions>`_ .
 
 
+Linear Regressions
+------------------
+
+A linear regression is a supervised machine learning method for
+solving regression problems. The implementation is a multiple linear regression
+that models the output as a linear combination of the predictors.
+The coefficients are estimated doing a least-squares fit on the training data.
+
+As a linear combination can only be done using numeric values, non-numeric
+fields need to be transformed to numeric ones following some rules:
+
+- Categorical fields will be encoded and each class appearance in input data
+  will convey a different contribution to the input vector.
+- Text and items fields will be expanded to several numeric predictors,
+  each one indicating the number of occurences for a specific term.
+  Text fields without term analysis are excluded from the model.
+
+Therefore, the initial input data is transformed into an input vector with one
+or may components per field. Also, if a field in the training data contains
+missing data, the components corresponding to that field will include an
+additional 1 or 0 value depending on whether the field is missing in the
+input data or not.
+
+The JSON structure for a linear regression is:
+
+.. code-block:: python
+
+    >>> api.pprint(linear_regression['object'])
+
+TODO!!!
+
+Note that the output in the snippet above has been abbreviated. As you see,
+the ``linear_regression`` attribute stores the coefficients used in the
+linear function as well as the configuration parameters described in
+the `developers section <https://bigml.com/api/linearregressions>`_ .
+
+
 Associations
 ------------
 
@@ -3053,7 +3091,7 @@ constraints that all its submodels are tree models that, moreover,
 have been built from the same base input data, but sampled in particular ways.
 
 The model types allowed to be a submodel of a fusion are:
-deepnet, ensemble, fusion, model, and logistic regression.
+deepnet, ensemble, fusion, model, logistic regression and linear regression.
 
 The JSON structure for an Fusion is:
 
@@ -3610,6 +3648,10 @@ update the contents of the associated variable:
     api.status(forecast)
     api.status(optiml)
     api.status(fusion)
+    api.status(pca)
+    api.status(projection)
+    api.status(batch_projection)
+    api.status(linear_regression)
     api.status(script)
     api.status(execution)
     api.status(library)
@@ -4114,7 +4156,7 @@ To see the prediction you can use ``pprint``:
     api.pprint(prediction)
 
 Predictions can be created using any supervised model (model, ensemble,
-logistic regression, deepnet and fusion) as first argument.
+logistic regression, linear regression, deepnet and fusion) as first argument.
 
 Creating centroids
 ~~~~~~~~~~~~~~~~~~
@@ -4317,6 +4359,37 @@ be the maximum number of iterations:
 
     args = {'boosting': {'iterations': 20}}
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
+
+
+Creating linear regressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For regression problems, you can choose also linear regressions to model
+your data. Linear regressions expect the predicted value for the objective
+field to be computable as a linear combination of the predictions.
+
+As the rest of models, linear regressions can be created from a dataset by
+calling the corresponding create method:
+
+.. code-block:: python
+
+    linear_regression = api.create_linear_regression( \
+        'dataset/5143a51a37203f2cf7000972',
+        {"name": "my linear regression",
+         "objective_field": "my_objective_field"})
+
+In this example, we created a linear regression named
+``my linear regression`` and set the objective field to be
+``my_objective_field``. Other arguments, like ``bias``,
+can also be specified as attributes in arguments dictionary at
+creation time.
+Particularly for categorical fields, there are three different available
+`field_codings`` options (``contrast``, ``other`` or the ``dummy``
+default coding). For a more detailed description of the
+``field_codings`` attribute and its syntax, please see the `Developers API
+Documentation
+<https://bigml.com/api/linearregressions#lr_linear_regression_arguments>`_.
+
 
 
 Creating logistic regressions
@@ -4571,6 +4644,7 @@ You can list resources with the appropriate api method:
     api.list_correlations()
     api.list_statistical_tests()
     api.list_logistic_regressions()
+    api.list_linear_regressions()
     api.list_associations()
     api.list_association_sets()
     api.list_topic_models()
@@ -4718,6 +4792,7 @@ problems or one of the HTTP standard error codes otherwise.
     api.update_correlation(correlation, {"name": "new name"})
     api.update_statistical_test(statistical_test, {"name": "new name"})
     api.update_logistic_regression(logistic_regression, {"name": "new name"})
+    api.update_linear_regression(linear_regression, {"name": "new name"})
     api.update_association(association, {"name": "new name"})
     api.update_association_set(association_set, {"name": "new name"})
     api.update_topic_model(topic_model, {"name": "new name"})
@@ -4811,6 +4886,7 @@ each type of resource.
     api.delete_correlation(correlation)
     api.delete_statistical_test(statistical_test)
     api.delete_logistic_regression(logistic_regression)
+    api.delete_linear_regression(linear_regression)
     api.delete_association(association)
     api.delete_association_set(association_set)
     api.delete_topic_model(topic_model)
@@ -5575,6 +5651,76 @@ to learn about
 operating points. For logistic regressions, the only available kind is
 ``probability``, that sets the threshold of probability to be reached for the
 prediction to be the positive class.
+
+Local Logistic Regression
+-------------------------
+
+You can also instantiate a local version of a remote logistic regression.
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    local_log_regression = LogisticRegression(
+        'logisticregression/502fdbff15526876610042435')
+
+This will retrieve the remote logistic regression information,
+using an implicitly built
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
+details on how to set your credentials) and return a ``LogisticRegression``
+object that will be stored in the ``./storage`` directory and
+you can use to make local predictions. If you want to use a
+specific connection object for the remote retrieval or a different storage
+directory, you can set it as second
+parameter:
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    from bigml.api import BigML
+
+    local_log_regression = LogisticRegression(
+        'logisticregression/502fdbff15526876610602435',
+        api=BigML(my_username, my_api_key, storage="my_storage"))
+
+You can also reuse a remote logistic regression JSON structure
+as previously retrieved to build the
+local logistic regression object:
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    from bigml.api import BigML
+    api = BigML()
+    logistic_regression = api.get_logistic_regression(
+        'logisticregression/502fdbff15526876610002435',
+        query_string='limit=-1')
+
+    local_log_regression = LogisticRegression(logistic_regression)
+
+Note that in this example we used a ``limit=-1`` query string for the
+logistic regression retrieval. This ensures that all fields are
+retrieved by the get method in the same call (unlike in the standard
+calls where the number of fields returned is limited).
+
+Local Linear Regression Predictions
+-----------------------------------
+
+Using the local linear regression object, you can predict the prediction for
+an input data set:
+
+.. code-block:: python
+
+    local_linear_regression.predict({"petal length": 2, "sepal length": 1.5,
+                                     "species": "Iris-setosa",
+                                     "sepal width": 0.7},
+                                     full=True)
+
+TODO!!! paste result
+
+
+To obtain a linear regression prediction, input data can only have missing
+values for fields that had already some missings in training data.
 
 Local Deepnet
 -------------

@@ -198,6 +198,10 @@ class ModelFields(object):
             if categories and field['optype'] == 'categorical':
                 self.categories[field_id] = [category for \
                     [category, _] in field['summary']['categories']]
+            if field['optype'] == 'datetime' and \
+                    hasattr(self, coeff_ids):
+                self.coeff_id  = [coeff_id for coeff_id in self.coeff_ids \
+                    if coeff_id != field_id]
             if numerics and hasattr(self, "missing_numerics") and \
                     self.missing_numerics and field['optype'] == 'numeric' \
                     and hasattr(self, "numeric_fields"):

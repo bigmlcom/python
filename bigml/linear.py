@@ -45,6 +45,13 @@ import math
 import copy
 import json
 
+try:
+    import numpy as np
+    from scipy.stats import t as student_t
+except ImportError:
+        raise ImportError("Failed to import the numpy and scipy modules needed"
+                          " for this class.")
+
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
@@ -67,6 +74,7 @@ EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_clouds",
                         "items": "items"}
 
 CATEGORICAL = "categorical"
+CONFIDENCE = 0.95
 
 DUMMY = "dummy"
 CONTRAST = "contrast"
@@ -109,9 +117,12 @@ class LinearRegression(ModelFields):
         self.coefficients = []
         self.data_field_types = {}
         self.field_codings = {}
-        self.numeric_fields = {}
         self.bias = None
-
+        self.xtx = []
+        self.inv_xtx = None
+        self.mean_squared_error = None
+        self.number_of_parameters = None
+        self.number_of_samples = None
 
         self.resource_id, linear_regression = get_resource_dict( \
             linear_regression, "linearregression", api=api)
@@ -143,6 +154,7 @@ class LinearRegression(ModelFields):
                         field_id for field_id, _ in
                         sorted(self.fields.items(),
                                key=lambda x: x[1].get("column_number"))]
+                self.coeff_ids = self.input_fields[:]
                 self.coefficients = linear_regression_info.get( \
                     'coefficients', [])
                 self.bias = linear_regression_info.get('bias', True)
@@ -155,9 +167,7 @@ class LinearRegression(ModelFields):
                     numerics=True)
                 self.field_codings = linear_regression_info.get( \
                   'field_codings', {})
-                print "**before", self.field_codings
                 self.format_field_codings()
-                print "**after", self.field_codings
                 for field_id in self.field_codings:
                     if field_id not in fields and \
                             field_id in self.inverted_fields:
@@ -165,6 +175,18 @@ class LinearRegression(ModelFields):
                             {self.inverted_fields[field_id]: \
                              self.field_codings[field_id]})
                         del self.field_codings[field_id]
+                stats = linear_regression_info["stats"]
+                if stats is not None and "xtx" in stats:
+                    self.xtx = stats["xtx"][:]
+                    self.mean_squared_error = stats["mean_squared_error"]
+                    self.number_of_parameters = stats["number_of_parameters"]
+                    self.number_of_samples = stats["number_of_samples"]
+                    # to be used in predictions
+                    self.t_crit = student_t.interval( \
+                        CONFIDENCE,
+                        self.number_of_samples - self.number_of_parameters)[1]
+                    self.inv_xtx = list(np.linalg.inv(np.array(self.xtx)))
+
             else:
                 raise Exception("The linear regression isn't finished yet")
         else:
@@ -173,7 +195,7 @@ class LinearRegression(ModelFields):
                             " in the resource:\n\n%s" %
                             linear_regression)
 
-    def expand_input(self, input_data, unique_terms):
+    def expand_input(self, input_data, unique_terms, compact=False):
         """ Creates an input array with the values in input_data and
         unique_terms and the following rules:
         - fields are ordered as input_fields
@@ -187,7 +209,7 @@ class LinearRegression(ModelFields):
           as numerics.
         """
         input_array = []
-        for index, field_id in enumerate(self.input_fields):
+        for index, field_id in enumerate(self.coeff_ids):
             field = self.fields[field_id]
             optype = field["optype"]
             missing = False
@@ -216,7 +238,7 @@ class LinearRegression(ModelFields):
 
             if optype == CATEGORICAL:
                 new_inputs = self.categorical_encoding( \
-                    new_inputs, field_id)
+                    new_inputs, field_id, compact)
 
             input_array.extend(new_inputs)
 
@@ -225,7 +247,7 @@ class LinearRegression(ModelFields):
 
         return input_array
 
-    def categorical_encoding(self, inputs, field_id):
+    def categorical_encoding(self, inputs, field_id, compact):
         """Returns the prediction and the confidence intervals
 
         input_data: Input data to be predicted
@@ -235,9 +257,16 @@ class LinearRegression(ModelFields):
 
         projections = self.field_codings[field_id].get( \
                 CONTRAST, self.field_codings[field_id].get(OTHER))
-        print "***", projections, new_inputs
         if projections is not None:
             new_inputs = flatten(dot(projections, [new_inputs]))
+
+        if compact and self.field_codings[field_id].get(DUMMY) is not None:
+            dummy_class = self.field_codings[field_id][DUMMY]
+            index = self.categories[field_id].index(dummy_class)
+            cat_new_inputs = new_inputs[0: index]
+            if len(new_inputs) > (index + 1):
+                cat_new_inputs.extend(new_inputs[index + 1 :])
+            new_inputs = cat_new_inputs
 
         return new_inputs
 
@@ -275,18 +304,45 @@ class LinearRegression(ModelFields):
 
         # Creates an input vector with the values for all expanded fields.
         input_array = self.expand_input(new_data, unique_terms)
+        compact_input_array = self.expand_input(new_data, unique_terms, True)
 
         prediction = dot([flatten(self.coefficients)], [input_array])[0][0]
 
         result = {
             "prediction": prediction}
+        if self.inv_xtx is not None:
+            result.update({"confidence_bounds": self.confidence_bounds( \
+                compact_input_array)})
 
         if full:
-            result.update({'unused_fields': unused_fields})
+            result.update({"unused_fields": unused_fields})
         else:
             result = result["prediction"]
 
         return result
+
+
+    def confidence_bounds(self, input_array):
+        """Computes the confidence interval for the prediction
+
+        """
+        product = dot(dot([input_array], self.inv_xtx),
+                      [input_array])[0][0]
+        try:
+
+            if self.mean_squared_error != 0:
+                confidence_interval = self.t_crit * math.sqrt( \
+                    self.mean_squared_error * product)
+                prediction_interval = self.t_crit * math.sqrt( \
+                    self.mean_squared_error * (product + 1))
+            else:
+                confidence_interval, prediction_interval = (0, 0)
+        except Exception:
+                confidence_interval, prediction_interval = (0, 0)
+
+        return {"confidence_interval": confidence_interval,
+                "prediction_interval": prediction_interval}
+
 
     def format_field_codings(self):
         """ Changes the field codings format to the dict notation

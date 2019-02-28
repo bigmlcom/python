@@ -463,7 +463,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.4052, "000009", '{"balance_fields": false}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.4079, "000009", '{"balance_fields": false}'],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -475,7 +475,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"normalize": true}'],
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2547, "000009", '{"normalize": true}'],
             ['data/movies.csv', '20', '20', '180', '{"fields": {"000000": {"name": "user_id", "optype": "numeric"},'
                                                   ' "000001": {"name": "gender", "optype": "categorical"},'
                                                   ' "000002": {"name": "age_range", "optype": "categorical"},'
@@ -487,7 +487,7 @@ class TestComparePrediction(object):
                                                   '"item_analysis": {"separator": "$"}},'
                                                   '"000008": {"name": "timestamp", "optype": "numeric"},'
                                                   '"000009": {"name": "rating", "optype": "categorical"}},'
-                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2623, "000009", '{"balance_fields": true, "normalize": true}']]
+                                                  '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2547, "000009", '{"balance_fields": true, "normalize": true}']]
         show_doc(self.test_scenario11, examples)
         for example in examples:
             print "\nTesting with:\n", example

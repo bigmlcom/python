@@ -88,18 +88,19 @@ class TestLinearRegression(object):
 
                 Examples:
                 | data                | time_1  | time_2 | time_3 | data_input    |objective | prediction  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5, "petal width": 1, "sepal length": 1, "species": "Iris-setosa"} | '{"PC-0": 0.46547, "PC-1": 0.13724, "PC-2": -0.01666, "PC-3": 3.28995, "PC-4": 4.60383, "PC-5": 2.22108}' |
+
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '2.27312']]
+            ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '2.27312', '{}'],
+            ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '8.19619', '{"bias": false}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            linear_create.i_create_a_linear_regression_from_dataset(self)
+            linear_create.i_create_a_linear_regression_with_objective_and_params(self, example[5], example[7])
             linear_create.the_linear_regression_is_finished_in_less_than(self, example[3])
             prediction_create.i_create_a_linear_prediction(self, example[4])
             prediction_create.the_prediction_is(self, example[5], example[6])
@@ -123,7 +124,7 @@ class TestLinearRegression(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | local_file | predictions_file       |
-                | ../data/iris.csv | 30      | 30     | 50     | 50     | ./tmp/batch_predictions.csv |./data/batch_predictions.csv |
+
 
         """
         print self.test_scenario3.__doc__

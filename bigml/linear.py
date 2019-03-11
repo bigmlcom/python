@@ -176,7 +176,7 @@ class LinearRegression(ModelFields):
                              self.field_codings[field_id]})
                         del self.field_codings[field_id]
                 stats = linear_regression_info["stats"]
-                if stats is not None and "xtx" in stats:
+                if stats is not None and stats.get("xtx") is not None:
                     self.xtx = stats["xtx"][:]
                     self.mean_squared_error = stats["mean_squared_error"]
                     self.number_of_parameters = stats["number_of_parameters"]
@@ -242,7 +242,7 @@ class LinearRegression(ModelFields):
 
             input_array.extend(new_inputs)
 
-        if self.bias:
+        if self.bias or not self.compact:
             input_array.append(1)
 
         return input_array

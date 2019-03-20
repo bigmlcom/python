@@ -160,6 +160,9 @@ class LinearRegression(ModelFields):
                 self.bias = linear_regression_info.get('bias', True)
                 self.field_codings = linear_regression_info.get( \
                      'field_codings', {})
+                self.number_of_parameters = linear_regression_info.get( \
+                    "number_of_parameters")
+
                 objective_id = extract_objective(objective_field)
                 ModelFields.__init__(
                     self, fields,
@@ -179,7 +182,6 @@ class LinearRegression(ModelFields):
                 if stats is not None and stats.get("xtx") is not None:
                     self.xtx = stats["xtx"][:]
                     self.mean_squared_error = stats["mean_squared_error"]
-                    self.number_of_parameters = stats["number_of_parameters"]
                     self.number_of_samples = stats["number_of_samples"]
                     # to be used in predictions
                     self.t_crit = student_t.interval( \

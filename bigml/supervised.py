@@ -49,6 +49,7 @@ from bigml.model import Model
 from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
+from bigml.linear import LinearRegression
 from bigml.basemodel import BaseModel
 from bigml.constants import STORAGE
 
@@ -57,7 +58,8 @@ COMPONENT_CLASSES = {
     "model": Model,
     "ensemble": Ensemble,
     "logisticregression": LogisticRegression,
-    "deepnet": Deepnet}
+    "deepnet": Deepnet,
+    "linearregression": LinearRegression}
 
 
 def extract_id(model, api):

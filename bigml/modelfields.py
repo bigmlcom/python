@@ -199,7 +199,7 @@ class ModelFields(object):
                 self.categories[field_id] = [category for \
                     [category, _] in field['summary']['categories']]
             if field['optype'] == 'datetime' and \
-                    hasattr(self, coeff_ids):
+                    hasattr(self, "coeff_ids"):
                 self.coeff_id  = [coeff_id for coeff_id in self.coeff_ids \
                     if coeff_id != field_id]
             if numerics and hasattr(self, "missing_numerics") and \

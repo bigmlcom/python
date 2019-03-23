@@ -3,6 +3,12 @@
 History
 -------
 
+4.21.0 (2019-03-22)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding REST and local methods for linear regression.
+
+
 4.20.2 (2019-02-02)
 ~~~~~~~~~~~~~~~~~~~
 

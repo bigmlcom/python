@@ -118,8 +118,7 @@ class LinearRegression(ModelFields):
         self.data_field_types = {}
         self.field_codings = {}
         self.bias = None
-        self.xtx = []
-        self.inv_xtx = None
+        self.xtx_inverse = []
         self.mean_squared_error = None
         self.number_of_parameters = None
         self.number_of_samples = None
@@ -179,15 +178,16 @@ class LinearRegression(ModelFields):
                              self.field_codings[field_id]})
                         del self.field_codings[field_id]
                 stats = linear_regression_info["stats"]
-                if stats is not None and stats.get("xtx") is not None:
-                    self.xtx = stats["xtx"][:]
+                if stats is not None and stats.get("xtx_inverse") is not None:
+                    self.xtx_inverse = stats["xtx_inverse"][:]
                     self.mean_squared_error = stats["mean_squared_error"]
                     self.number_of_samples = stats["number_of_samples"]
                     # to be used in predictions
                     self.t_crit = student_t.interval( \
                         CONFIDENCE,
                         self.number_of_samples - self.number_of_parameters)[1]
-                    self.inv_xtx = list(np.linalg.inv(np.array(self.xtx)))
+                    self.xtx_inverse = list( \
+                        np.linalg.inv(np.array(self.xtx_inverse)))
 
             else:
                 raise Exception("The linear regression isn't finished yet")
@@ -312,7 +312,7 @@ class LinearRegression(ModelFields):
 
         result = {
             "prediction": prediction}
-        if self.inv_xtx is not None:
+        if self.xtx_inverse is not None:
             result.update({"confidence_bounds": self.confidence_bounds( \
                 compact_input_array)})
 
@@ -328,22 +328,22 @@ class LinearRegression(ModelFields):
         """Computes the confidence interval for the prediction
 
         """
-        product = dot(dot([input_array], self.inv_xtx),
+        product = dot(dot([input_array], self.xtx_inverse),
                       [input_array])[0][0]
+        valid = True
         try:
-
-            if self.mean_squared_error != 0:
-                confidence_interval = self.t_crit * math.sqrt( \
-                    self.mean_squared_error * product)
-                prediction_interval = self.t_crit * math.sqrt( \
-                    self.mean_squared_error * (product + 1))
-            else:
-                confidence_interval, prediction_interval = (0, 0)
-        except Exception:
-                confidence_interval, prediction_interval = (0, 0)
+            confidence_interval = self.t_crit * math.sqrt( \
+                self.mean_squared_error * product)
+            prediction_interval = self.t_crit * math.sqrt( \
+                self.mean_squared_error * (product + 1))
+            valid = True
+        except ValueError:
+            valid = False
+            confidence_interval, prediction_interval = (0, 0)
 
         return {"confidence_interval": confidence_interval,
-                "prediction_interval": prediction_interval}
+                "prediction_interval": prediction_interval,
+                "valid": valid}
 
 
     def format_field_codings(self):

@@ -1813,7 +1813,8 @@ Linear Regressions
 ------------------
 
 A linear regression is a supervised machine learning method for
-solving regression problems. The implementation is a multiple linear regression
+solving regression problems by computing the objective as a linear
+combination of factors. The implementation is a multiple linear regression
 that models the output as a linear combination of the predictors.
 The coefficients are estimated doing a least-squares fit on the training data.
 
@@ -4497,7 +4498,7 @@ Creating linear regressions
 
 For regression problems, you can choose also linear regressions to model
 your data. Linear regressions expect the predicted value for the objective
-field to be computable as a linear combination of the predictions.
+field to be computable as a linear combination of the predictors.
 
 As the rest of models, linear regressions can be created from a dataset by
 calling the corresponding create method:

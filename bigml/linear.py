@@ -244,7 +244,7 @@ class LinearRegression(ModelFields):
 
             input_array.extend(new_inputs)
 
-        if self.bias or not self.compact:
+        if self.bias or not compact:
             input_array.append(1)
 
         return input_array

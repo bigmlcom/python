@@ -437,7 +437,7 @@ class TestComparePrediction(object):
             ['data/grades.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000002": 1}', '000005', 29.63024, '{"input_fields": ["000000", "000001", "000002"]}'],
             ['data/iris.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000004": "Iris-virginica"}', '000003', 1.21187, '{"input_fields": ["000000", "000001", "000004"]}'],
             ['data/movies.csv', '10', '50', '30000', '{"000007": "Action"}', '000009', 4.33333, '{"input_fields": ["000007"]}'],
-            ['data/movies.csv', '10', '50', '30000', '{"000006": "1999"}', '000009', 2, '{"input_fields": ["000006"]}']]
+            ['data/movies.csv', '10', '50', '30000', '{"000006": "1999"}', '000009', 0, '{"input_fields": ["000006"], "bias": false}']]
         show_doc(self.test_scenario10, examples)
 
         for example in examples:

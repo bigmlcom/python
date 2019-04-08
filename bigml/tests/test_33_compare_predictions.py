@@ -515,3 +515,55 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[8], example[9])
             prediction_compare.i_create_a_local_prediction_op(self, example[7], example[10])
             prediction_compare.the_local_prediction_is(self, example[9])
+
+    def test_scenario12(self):
+        """
+            Scenario: Successfully comparing predictions for fusions:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I create a model with "<params>"
+                And I wait until the model is ready less than <time_3> secs
+                And I retrieve a list of remote models tagged with "<tag>"
+                And I create a fusion from a list of models
+                And I wait until the fusion is ready less than <time_4> secs
+                And I create a local fusion
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | params| tag | data_input                             | objective | prediction  | params
+
+        """
+        examples = [
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag"], "sample_rate": 0.8, "seed": "bigml"}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_reg"], "sample_rate": 0.8, "seed": "bigml"}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 44.37625]]
+        show_doc(self.test_scenario12, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model_with(self, example[5])
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            model_create.i_create_a_fusion_with_weights(self)
+            model_create.the_fusion_is_finished_in_less_than(self, example[4])
+            prediction_compare.i_create_a_local_fusion(self)
+            prediction_create.i_create_a_fusion_prediction(self, example[7])
+            prediction_create.the_prediction_is(self, example[8], example[9])
+            prediction_compare.i_create_a_local_prediction(self, example[7])
+            prediction_compare.the_local_prediction_is(self, example[9])

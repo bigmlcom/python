@@ -319,10 +319,10 @@ class Fusion(ModelFields):
 
             votes.extend(votes_split)
         if self.regression:
-            total_weight = 1 if self.weights is None else sum(self.weights)
+            total_weight = len(votes.predictions) if self.weights is None \
+                else sum(self.weights)
             prediction = sum([prediction for prediction in \
-                votes.predictions]) / float(len(votes.predictions) * \
-                total_weight)
+                votes.predictions]) / float(total_weight)
             if compact:
                 output = [prediction]
             else:

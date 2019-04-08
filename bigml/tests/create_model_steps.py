@@ -349,8 +349,11 @@ def i_create_a_fusion(step):
 
 
 #@step(r'I create a fusion with weights$')
-def i_create_a_fusion_with_weights(step, weights):
-    weights = json.loads(weights)
+def i_create_a_fusion_with_weights(step, weights=None):
+    if weights is None:
+        weights = range(1, len(world.list_of_models))
+    else:
+        weights = json.loads(weights)
     models = []
     try:
         for index, model in enumerate(world.list_of_models):

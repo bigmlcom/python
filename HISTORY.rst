@@ -3,6 +3,11 @@
 History
 -------
 
+4.21.2 (2019-04-09)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local fusion regression predictions.
+
 4.21.1 (2019-04-06)
 ~~~~~~~~~~~~~~~~~~~
 

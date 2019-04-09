@@ -20,6 +20,7 @@
 
 """
 from world import world, setup_module, teardown_module, show_doc
+from bigml.util import PY3
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_model_steps as model_create
@@ -30,6 +31,7 @@ import create_anomaly_steps as anomaly_create
 import create_prediction_steps as prediction_create
 import compare_predictions_steps as prediction_compare
 import create_lda_steps as topic_create
+
 
 
 class TestComparePrediction(object):
@@ -542,9 +544,11 @@ class TestComparePrediction(object):
                 | data             | time_1  | time_2 | time_3 | params| tag | data_input                             | objective | prediction  | params
 
         """
+        tag = "my_fusion_tag_12_%s" % PY3
+        tag_reg = "my_fusion_tag_12_reg_%s" % PY3
         examples = [
-            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag"], "sample_rate": 0.8, "seed": "bigml"}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
-            ['data/grades.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_reg"], "sample_rate": 0.8, "seed": "bigml"}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 44.37625]]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["%s"], "sample_rate": 0.8, "seed": "bigml"}' % tag, tag, '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '30', '30', '120', '120', '{"tags":["%s"], "sample_rate": 0.8, "seed": "bigml"}' % tag_reg, tag_reg, '{"Midterm": 20}', '000005', 44.37625]]
         show_doc(self.test_scenario12, examples)
 
         for example in examples:

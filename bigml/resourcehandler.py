@@ -519,6 +519,17 @@ class ResourceHandler(BigMLConnection):
         """
         dataset_ids = []
         single = False
+
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        if isinstance(datasets, basestring) and datasets.startswith('shared/'):
+            origin = datasets.replace('shared/', "")
+            if get_resource_type(origin) != "dataset":
+                create_args.update({"shared_hash": origin.split("/")[1]})
+                return create_args
+
         if not isinstance(datasets, list):
             single = True
             origin_datasets = [datasets]
@@ -541,11 +552,6 @@ class ResourceHandler(BigMLConnection):
                                      query_string=c.TINY_RESOURCE,
                                      wait_time=wait_time, retries=retries,
                                      raise_on_error=True, api=self)
-
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-
         if single:
             if key is None:
                 key = "dataset"

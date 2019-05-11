@@ -3,6 +3,14 @@
 History
 -------
 
+4.21.3 (2019-05-11)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local linear regressions for non-invertible confidence bounds
+  matrices.
+- Adding the option of cloning model resources from shared clonable ones.
+- Fixing Fields object for timeseries.
+
 4.21.2 (2019-04-09)
 ~~~~~~~~~~~~~~~~~~~
 

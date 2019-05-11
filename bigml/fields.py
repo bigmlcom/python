@@ -94,6 +94,7 @@ FIELDS_PARENT = { \
     "correlation": "correlations",
     "sample": "sample",
     "pca": "pca",
+    "timeseries": "timeseries",
     "statisticaltest": "statistical_tests"}
 
 

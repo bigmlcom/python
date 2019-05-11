@@ -233,7 +233,7 @@ class BigMLConnection(object):
             self.organization = organization
         self.debug = debug
         self.general_domain = None
-        self.genearl_protocol = None
+        self.general_protocol = None
         self.prediction_domain = None
         self.prediction_protocol = None
         self.verify = None

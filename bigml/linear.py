@@ -313,7 +313,7 @@ class LinearRegression(ModelFields):
 
         result = {
             "prediction": prediction}
-        if self.xtx_inverse is not None:
+        if self.xtx_inverse:
             result.update({"confidence_bounds": self.confidence_bounds( \
                 compact_input_array)})
 

@@ -114,10 +114,13 @@ def check_model_fields(model):
     if check_model_structure(model, inner_key):
         model = model.get('object', model)
         fields = model.get("fields", model.get(inner_key, {}).get('fields'))
+        input_fields = model.get("input_fields")
         # models only need model_fields to work. The rest of resources will
         # need all fields to work
         model_fields = model.get(inner_key, {}).get( \
             'model_fields', {}).keys()
+        if input_fields is None:
+            return False
         if not model_fields:
             fields_meta = model.get('fields_meta', \
                 model.get(inner_key, {}).get('fields_meta', {}))

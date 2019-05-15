@@ -100,7 +100,12 @@ and `API key <https://bigml.com/account/apikey>`_ and are always
 transmitted over HTTPS.
 
 This module will look for your username and API key in the environment
-variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively. You can
+variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively.
+
+Unix and MacOS
+==============
+
+You can
 add the following lines to your ``.bashrc`` or ``.bash_profile`` to set
 those variables automatically when you log in:
 
@@ -108,6 +113,8 @@ those variables automatically when you log in:
 
     export BIGML_USERNAME=myusername
     export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
+
+refer to the next chapters to know how to do that in other operative systems.
 
 With that environment set up, connecting to BigML is a breeze:
 
@@ -154,6 +161,31 @@ needs to include the corresponding``organization ID``:
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
                 organization='organization/53739b98d994972da7025d4a')
 
+
+Authentication on Windows
+=========================
+
+The credentials should be permanently stored in your system using
+
+.. code-block:: bash
+
+    setx BIGML_USERNAME myusername
+    setx BIGML_API_KEY ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
+
+Note that ``setx`` will not change the environment variables of your actual
+console, so you will need to open a new one to start using them.
+
+
+Authentication on Jupyter Notebook
+==================================
+
+You can set the environment variables using the ``%env`` command in your
+cells:
+
+.. code-block:: bash
+
+    %env BIGML_USERNAME=myusername
+    %env BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
 
 
 Alternative domains

@@ -140,7 +140,7 @@ class World(object):
         """
 
         for resource_type in RESOURCE_TYPES:
-            object_list = getattr(self, plural(resource_type))
+            object_list = set(getattr(self, plural(resource_type)))
             if object_list:
                 print "Deleting %s %s" % (len(object_list),
                                           plural(resource_type))

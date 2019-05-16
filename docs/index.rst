@@ -3576,13 +3576,13 @@ To execute in BigML a compiled WhizzML ``script`` you need to create an
 many compiled scripts in one request.
 
 Each ``execution`` is run under its associated user credentials and its
-particular environment constaints. As ``scripts`` can be shared,
-you can execute the same ``script``
-several times under different
-usernames by creating different ``executions``.
+particular environment constrains. As ``scripts`` can be shared,
+different users can execute the same ``script`` using different inputs.
+Each particular execution will generate an ``execution`` resource in BigML.
 
-As an example of ``execution`` resource, let's create one for the script
-in the previous section:
+As an example of an ``execution`` resource, let's create one for the first
+script in the previous section. In this case, no inputs are required because
+the ``script`` expects none:
 
 .. code-block:: python
 
@@ -3628,15 +3628,29 @@ in the previous section:
         u'tags': [],
         u'updated': u'2016-05-18T16:58:02.035000'}
 
-
-An ``execution`` receives inputs, the ones defined in the ``script`` chosen
-to be executed, and generates a result. It can also generate outputs.
 As you can see, the execution resource contains information about the result
 of the execution, the resources that have been generated while executing and
-users can define some variables in the code to be exported as outputs. Please
-refer to the
-`Developers documentation for Executions <https://bigml.com/api/executions#we_execution_arguments>`_
-for details on how to define execution outputs.
+users can define some variables in the code to be exported as outputs.
+
+An ``execution`` receives inputs, the ones defined in the ``script`` chosen
+to be executed, and generates a result. It can also generate outputs. To
+execute a ``script`` that expects some inputs, you will need to specify the
+concrete values of these inputs, unless a default value has been assigned
+for them in the script inputs definition. Following the second example in
+the previous section, we can execute the script that creates a source from a
+URL pointing to a CSV file:
+
+.. code-block:: python
+
+    >>> from bigml.api import BigML
+    >>> api = BigML()
+    >>> execution = api.create_execution( \
+            "script": script,
+            {"inputs": [["my_remote_data",
+                         "https://static.bigml.com/csv/iris.csv"]]})
+
+For more details on executions, please refer to the
+`Developers documentation for Executions <https://bigml.com/api/executions#we_execution_arguments>`_.
 
 Libraries
 ---------

@@ -94,7 +94,7 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
            assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_anomaly(step, world.anomaly['resource'])
            status = get_status(world.anomaly)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')
 def the_anomaly_is_finished_in_less_than(step, secs):

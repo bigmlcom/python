@@ -63,7 +63,7 @@ def wait_until_projection_status_code_is(step, code1, code2, secs):
         assert datetime.utcnow() - start < timedelta(seconds=delta)
         i_get_the_projection(step, world.projection['resource'])
         status = get_status(world.projection)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 def the_projection_is_finished_in_less_than(step, secs):

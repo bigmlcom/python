@@ -72,7 +72,7 @@ def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
         assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         i_get_the_batch_prediction(step, world.batch_prediction['resource'])
         status = get_status(world.batch_prediction)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 #@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
@@ -102,7 +102,7 @@ def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
         assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
         status = get_status(world.batch_anomaly_score)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 #@step(r'I wait until the batch prediction is ready less than (\d+)')

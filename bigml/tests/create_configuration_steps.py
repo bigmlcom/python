@@ -64,7 +64,7 @@ def wait_until_configuration_status_code_is(step, code1, code2, secs):
            assert datetime.utcnow() - start < timedelta(seconds=delta)
            i_get_the_configuration(step, world.configuration['resource'])
            status = get_status(world.configuration)
-    assert status['code'] == int(code1)
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 #@step(r'I wait until the configuration is ready less than (\d+)')
 def the_configuration_is_finished_in_less_than(step, secs):

@@ -145,7 +145,7 @@ def wait_until_source_status_code_is(step, code1, code2, secs):
         assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 #@step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs):

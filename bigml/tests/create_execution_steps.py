@@ -97,7 +97,7 @@ def wait_until_execution_status_code_is(step, code1, code2, secs):
            assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_execution(step, execution_id)
            status = get_status(world.execution)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 #@step(r'I wait until the script is ready less than (\d+)')

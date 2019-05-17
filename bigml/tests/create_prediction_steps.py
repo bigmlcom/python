@@ -181,7 +181,7 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
         assert datetime.utcnow() - start < timedelta(seconds=delta)
         i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 def the_prediction_is_finished_in_less_than(step, secs):

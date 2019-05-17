@@ -72,7 +72,7 @@ def wait_until_library_status_code_is(step, code1, code2, secs):
            assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_library(step, library_id)
            status = get_status(world.library)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 #@step(r'I wait until the library is ready less than (\d+)')

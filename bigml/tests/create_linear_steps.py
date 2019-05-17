@@ -96,7 +96,7 @@ def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
            assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
            i_get_the_linear_regression(step, linear_regression_id)
            status = get_status(world.linear_regression)
-    eq_(status['code'], int(code1))
+    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 
 #@step(r'I wait until the linear is ready less than (\d+)')

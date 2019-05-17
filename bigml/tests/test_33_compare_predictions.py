@@ -438,30 +438,32 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag"]}', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
-            ['data/grades.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_reg"]}', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 43.65286]]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', 'my_fusion_tag', '{"petal width": 4}', '000004', 'Iris-virginica'],
+            ['data/grades.csv', '30', '30', '120', '120', 'my_fusion_tag_reg', '{"Midterm": 20}', '000005', 43.65286]]
         show_doc(self.test_scenario10, examples)
 
         for example in examples:
             print "\nTesting with:\n", example
+            tag = "%s_%s" % (example[5], PY3)
+            tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, tag)
             model_create.i_create_a_fusion(self)
             model_create.the_fusion_is_finished_in_less_than(self, example[4])
             prediction_compare.i_create_a_local_fusion(self)
-            prediction_create.i_create_a_fusion_prediction(self, example[7])
-            prediction_create.the_prediction_is(self, example[8], example[9])
-            prediction_compare.i_create_a_local_prediction(self, example[7])
-            prediction_compare.the_local_prediction_is(self, example[9])
+            prediction_create.i_create_a_fusion_prediction(self, example[6])
+            prediction_create.the_prediction_is(self, example[7], example[8])
+            prediction_compare.i_create_a_local_prediction(self, example[6])
+            prediction_compare.the_local_prediction_is(self, example[8])
 
 
     def test_scenario11(self):
@@ -493,30 +495,32 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_11"]}', 'my_fusion_tag_11', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
-           ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["my_fusion_tag_11_b"]}', 'my_fusion_tag_11_b', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
+            ['data/iris_unbalanced.csv', '30', '30', '120', '120', 'my_fusion_tag_11', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.1, "positive_class": "Iris-setosa"}],
+           ['data/iris_unbalanced.csv', '30', '30', '120', '120', 'my_fusion_tag_11_b', '{"petal width": 4}', '000004', 'Iris-virginica',  {"kind": "probability", "threshold": 0.9, "positive_class": "Iris-setosa"}]]
         show_doc(self.test_scenario11, examples)
 
         for example in examples:
             print "\nTesting with:\n", example
+            tag = "%s_%s" % (example[5], PY3)
+            tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, tag)
             model_create.i_create_a_fusion(self)
             model_create.the_fusion_is_finished_in_less_than(self, example[4])
             prediction_compare.i_create_a_local_fusion(self)
-            prediction_create.i_create_a_fusion_prediction_op(self, example[7], example[10])
-            prediction_create.the_prediction_is(self, example[8], example[9])
-            prediction_compare.i_create_a_local_prediction_op(self, example[7], example[10])
-            prediction_compare.the_local_prediction_is(self, example[9])
+            prediction_create.i_create_a_fusion_prediction_op(self, example[6], example[9])
+            prediction_create.the_prediction_is(self, example[7], example[8])
+            prediction_compare.i_create_a_local_prediction_op(self, example[6], example[9])
+            prediction_compare.the_local_prediction_is(self, example[8])
 
     def test_scenario12(self):
         """

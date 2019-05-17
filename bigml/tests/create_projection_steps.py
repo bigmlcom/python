@@ -60,10 +60,10 @@ def wait_until_projection_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=delta)
+        assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_projection(step, world.projection['resource'])
         status = get_status(world.projection)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+    eq_(status['code'], int(code1))
 
 
 def the_projection_is_finished_in_less_than(step, secs):

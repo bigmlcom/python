@@ -89,11 +89,11 @@ def wait_until_model_status_code_is(step, code1, code2, secs):
     status = get_status(world.model)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_model(step, world.model['resource'])
-           status = get_status(world.model)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_model(step, world.model['resource'])
+        status = get_status(world.model)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs):
@@ -216,10 +216,10 @@ def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
     status = get_status(world.logistic_regression)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
-           status = get_status(world.logistic_regression)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
+        status = get_status(world.logistic_regression)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the logistic regression model is ready less than (\d+)')
@@ -258,10 +258,10 @@ def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
     status = get_status(world.deepnet)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_deepnet_model(step, world.deepnet['resource'])
-           status = get_status(world.deepnet)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_deepnet_model(step, world.deepnet['resource'])
+        status = get_status(world.deepnet)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the deepnet model is ready less than (\d+)')
@@ -314,10 +314,10 @@ def wait_until_optiml_status_code_is(step, code1, code2, secs):
     status = get_status(world.optiml)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_optiml(step, world.optiml['resource'])
-           status = get_status(world.optiml)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_optiml(step, world.optiml['resource'])
+        status = get_status(world.optiml)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the optiml is ready less than (\d+)')
@@ -390,10 +390,10 @@ def wait_until_fusion_status_code_is(step, code1, code2, secs):
     status = get_status(world.fusion)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_fusion(step, world.fusion['resource'])
-           status = get_status(world.fusion)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_fusion(step, world.fusion['resource'])
+        status = get_status(world.fusion)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the fusion is ready less than (\d+)')

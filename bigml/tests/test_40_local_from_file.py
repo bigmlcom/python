@@ -30,6 +30,7 @@ import create_association_steps as association_create
 import create_cluster_steps as cluster_create
 import create_lda_steps as topic_create
 import compare_predictions_steps as prediction_compare
+from bigml.util import PY3
 
 class TestLocalFromFile(object):
 
@@ -357,20 +358,22 @@ class TestLocalFromFile(object):
         """
         print self.test_scenario10.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '50', './tmp/fusion.json', '{"tags":["my_fusion_tag"]}', 'my_fusion_tag']]
+            ['data/iris.csv', '10', '10', '50', './tmp/fusion.json', 'my_fusion_tag']]
         for example in examples:
             print "\nTesting with:\n", example
+            tag = "%s_%s" % (example[5], PY3)
+            tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[5])
+            model_create.i_create_a_model_with(self, tag_args)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            prediction_compare.i_retrieve_a_list_of_remote_models(self, example[6])
+            prediction_compare.i_retrieve_a_list_of_remote_models(self, tag)
             model_create.i_create_a_fusion(self)
             model_create.the_fusion_is_finished_in_less_than(self, example[3])
             model_create.i_export_fusion(self, example[4])

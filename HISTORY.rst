@@ -3,7 +3,7 @@
 History
 -------
 
-4.21.3 (2019-05-11)
+4.22.0 (2019-05-11)
 ~~~~~~~~~~~~~~~~~~~
 
 - Fixing bug in local linear regressions for non-invertible confidence bounds

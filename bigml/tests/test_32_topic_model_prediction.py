@@ -30,6 +30,7 @@ import compute_lda_prediction_steps as lda_predict
 # for near-exact equivalence with that library (with special attention
 # to random number generation).
 DUMMY_MODEL = {
+    "input_fields": ["000001"],
     "topic_model": {
         "alpha": 0.08,
         "beta": 0.1,

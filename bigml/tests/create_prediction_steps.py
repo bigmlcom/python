@@ -17,7 +17,8 @@
 
 import json
 import time
-from nose.tools import assert_almost_equals, eq_, assert_is_not_none
+from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
+    assert_less
 from datetime import datetime, timedelta
 from world import world
 from bigml.api import HTTP_CREATED
@@ -178,10 +179,10 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=delta)
+        assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+    eq_(status['code'], int(code1))
 
 
 def the_prediction_is_finished_in_less_than(step, secs):

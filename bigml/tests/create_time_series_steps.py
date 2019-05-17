@@ -64,11 +64,11 @@ def wait_until_time_series_status_code_is(step, code1, code2, secs):
     status = get_status(world.time_series)
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
-           read.i_get_the_time_series(step, world.time_series['resource'])
-           status = get_status(world.time_series)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+        time.sleep(3)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        read.i_get_the_time_series(step, world.time_series['resource'])
+        status = get_status(world.time_series)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the time series is ready less than (\d+)')
 def the_time_series_is_finished_in_less_than(step, secs):

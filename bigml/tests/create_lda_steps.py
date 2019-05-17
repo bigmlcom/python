@@ -86,10 +86,10 @@ def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+           assert_less((datetime.utcnow() - start).seconds, delta)
            i_get_the_topic_model(step, world.topic_model['resource'])
            status = get_status(world.topic_model)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the topic model is ready less than (\d+)')
 def the_topic_model_is_finished_in_less_than(step, secs):

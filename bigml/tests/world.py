@@ -36,7 +36,6 @@ RESOURCE_TYPES = [
     'optiml',
     'source',
     'dataset',
-    'model',
     'prediction',
     'evaluation',
     'ensemble',
@@ -51,6 +50,7 @@ RESOURCE_TYPES = [
     'correlation',
     'statisticaltest',
     'logisticregression',
+    'model',
     'deepnet',
     'association',
     'associationset',
@@ -151,7 +151,7 @@ class World(object):
                     while (result['code'] != HTTP_NO_CONTENT and
                            counter < MAX_RETRIES):
                         print "Delete failed for %s. Retrying" % obj_id
-                        time.sleep(3)
+                        time.sleep(3 * self.delta)
                         counter += 1
                         result = delete_method(obj_id)
                     if counter == MAX_RETRIES:

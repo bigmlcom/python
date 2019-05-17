@@ -67,10 +67,10 @@ def wait_until_correlation_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
            time.sleep(3)
-           assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+           assert_less((datetime.utcnow() - start).seconds, delta)
            i_get_the_correlation(step, correlation_id)
            status = get_status(world.correlation)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+    eq_(status['code'], int(code1))
 
 
 #@step(r'I wait until the correlation is ready less than (\d+)')

@@ -50,7 +50,7 @@ def wait_until_project_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+        assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_project(step, world.project['resource'])
         status = get_status(world.project)
     eq_(status['code'], int(code1))

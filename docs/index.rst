@@ -103,7 +103,7 @@ This module will look for your username and API key in the environment
 variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively.
 
 Unix and MacOS
-==============
+--------------
 
 You can
 add the following lines to your ``.bashrc`` or ``.bash_profile`` to set
@@ -114,7 +114,7 @@ those variables automatically when you log in:
     export BIGML_USERNAME=myusername
     export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
 
-refer to the next chapters to know how to do that in other operative systems.
+refer to the next chapters to know how to do that in other operating systems.
 
 With that environment set up, connecting to BigML is a breeze:
 
@@ -163,7 +163,7 @@ needs to include the corresponding``organization ID``:
 
 
 Authentication on Windows
-=========================
+-------------------------
 
 The credentials should be permanently stored in your system using
 
@@ -177,7 +177,7 @@ console, so you will need to open a new one to start using them.
 
 
 Authentication on Jupyter Notebook
-==================================
+----------------------------------
 
 You can set the environment variables using the ``%env`` command in your
 cells:
@@ -3635,8 +3635,8 @@ users can define some variables in the code to be exported as outputs.
 An ``execution`` receives inputs, the ones defined in the ``script`` chosen
 to be executed, and generates a result. It can also generate outputs. To
 execute a ``script`` that expects some inputs, you will need to specify the
-concrete values of these inputs, unless a default value has been assigned
-for them in the script inputs definition. Following the second example in
+concrete values of those inputs, unless a default value has been assigned
+for them in the script's inputs definition. Following the second example in
 the previous section, we can execute the script that creates a source from a
 URL pointing to a CSV file:
 

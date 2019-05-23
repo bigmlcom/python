@@ -42,6 +42,7 @@ import sys
 import logging
 import gc
 import json
+import os
 
 from functools import cmp_to_key
 
@@ -304,6 +305,7 @@ class Ensemble(ModelFields):
         # the string can be a path to a JSON file
         if isinstance(ensemble, basestring):
             try:
+                path = os.path.dirname(os.path.abspath(ensemble))
                 with open(ensemble) as ensemble_file:
                     ensemble = json.load(ensemble_file)
                     self.resource_id = get_ensemble_id(ensemble)
@@ -311,6 +313,8 @@ class Ensemble(ModelFields):
                         raise ValueError("The JSON file does not seem"
                                          " to contain a valid BigML ensemble"
                                          " representation.")
+                    else:
+                        self.api = BigML(storage=path)
             except IOError:
                 # if it is not a path, it can be an ensemble id
                 self.resource_id = get_ensemble_id(ensemble)

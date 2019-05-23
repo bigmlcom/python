@@ -208,6 +208,29 @@ You can then print the prediction using the ``pprint`` method:
     >>> api.pprint(prediction)
     species for {"petal width": 1.75, "petal length": 2.45} is Iris-setosa
 
+Certainly, any of the resources created in BigML can be configured using
+several arguments described in the `API documentation <https://bigml.com/api>`_.
+Any of these configuration arguments can be added to the ``create`` method
+as a dictionary in the last optional argument of the calls:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source_args = {"name": "my source",
+         "source_parser": {"missing_tokens": ["NULL"]}}
+    source = api.create_source('./data/iris.csv', source_args)
+    dataset_args = {"name": "my dataset"}
+    dataset = api.create_dataset(source, dataset_args)
+    model_args = {"objective_field": "species"}
+    model = api.create_model(dataset, model_args)
+    prediction_args = {"name": "my prediction"}
+    prediction = api.create_prediction(model, \
+        {"petal width": 1.75, "petal length": 2.45},
+        prediction_args)
+
 The ``iris`` dataset has a small number of instances, and usually will be
 instantly created, so the ``api.create_`` calls will probably return the
 finished resources outright. As BigML's API is asynchronous,
@@ -317,6 +340,7 @@ document. You can also check other simple examples in the following documents:
 
 - `model 101 <101_model.html>`_
 - `logistic regression 101 <101_logistic_regression.html>`_
+- `linear regression 101 <101_linear_regression.html>`_
 - `ensemble 101 <101_ensemble.html>`_
 - `cluster 101 <101_cluster>`_
 - `anomaly detector 101 <101_anomaly.html>`_
@@ -324,6 +348,7 @@ document. You can also check other simple examples in the following documents:
 - `topic model 101 <101_topic_model.html>`_
 - `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
+- `scripting 101 <101_scripting.html>`_
 
 Additional Information
 ----------------------

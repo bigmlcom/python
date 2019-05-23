@@ -41,6 +41,7 @@ fusion.predict({"petal length": 3, "petal width": 1})
 """
 import logging
 import json
+import os
 
 from functools import cmp_to_key
 
@@ -217,6 +218,7 @@ class Fusion(ModelFields):
         # the string can be a path to a JSON file
         if isinstance(fusion, basestring):
             try:
+                path = os.path.dirname(os.path.abspath(fusion))
                 with open(fusion) as fusion_file:
                     fusion = json.load(fusion_file)
                     self.resource_id = get_fusion_id(fusion)
@@ -224,6 +226,8 @@ class Fusion(ModelFields):
                         raise ValueError("The JSON file does not seem"
                                          " to contain a valid BigML fusion"
                                          " representation.")
+                    else:
+                        self.api = BigML(storage=path)
             except IOError:
                 # if it is not a path, it can be an fusion id
                 self.resource_id = get_fusion_id(fusion)

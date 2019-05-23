@@ -3,6 +3,12 @@
 History
 -------
 
+4.22.1 (2019-05-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Improving the local Ensemble and Fusion classes to use the component
+  models when a local JSON file is used as argument.
+
 4.22.0 (2019-05-11)
 ~~~~~~~~~~~~~~~~~~~
 

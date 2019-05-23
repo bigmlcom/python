@@ -313,6 +313,29 @@ You can then print the prediction using the ``pprint`` method:
     >>> api.pprint(prediction)
     species for {"petal width": 1.75, "petal length": 2.45} is Iris-setosa
 
+Certainly, any of the resources created in BigML can be configured using
+several arguments described in the `API documentation <https://bigml.com/api>`_.
+Any of these configuration arguments can be added to the ``create`` method
+as a dictionary in the last optional argument of the calls:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source_args = {"name": "my source",
+         "source_parser": {"missing_tokens": ["NULL"]}}
+    source = api.create_source('./data/iris.csv', source_args)
+    dataset_args = {"name": "my dataset"}
+    dataset = api.create_dataset(source, dataset_args)
+    model_args = {"objective_field": "species"}
+    model = api.create_model(dataset, model_args)
+    prediction_args = {"name": "my prediction"}
+    prediction = api.create_prediction(model, \
+        {"petal width": 1.75, "petal length": 2.45},
+        prediction_args)
+
 The ``iris`` dataset has a small number of instances, and usually will be
 instantly created, so the ``api.create_`` calls will probably return the
 finished resources outright. As BigML's API is asynchronous,
@@ -430,6 +453,7 @@ document. You can also check other simple examples in the following documents:
 - `topic model 101 <101_topic_model.html>`_
 - `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
+- `scripting 101 <101_scripting.html>`_
 
 Fields Structure
 ----------------
@@ -6691,14 +6715,38 @@ predict locally is:
     ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351')
     ensemble.predict({"petal length": 3, "petal width": 1})
 
-This call will download all the ensemble related info and store it in a
-``./storage`` directory ready to be used to predict, but
-you can choose another storage directory or even avoid storing at all.
+This is the simpler method to create a local Ensemble. The
+``Ensemble('ensemble/5143a51a37203f2cf7020351')`` constructor, that fetches
+all the related JSON files and stores them in an ``./storage`` directory. Next
+calls to ``Ensemble('ensemble/50c0de043b5635198300033c')`` will retrieve the
+files from this local storage, so that internet connection will only be needed
+the first time an ``Ensemble`` is built.
+
+However, that method can only be used to work with the ensembles in our
+account in BigML. If we intend to use ensembles created under an
+``Organization``, then
+we need to provide the information about the ``project`` that the ensemble
+is included in. You need to provide a connection object for that:
+
+.. code-block:: python
+
+    from bigml.ensemble import Ensemble
+    from bigml.api import BigML
+
+    # connection object that informs about the project ID and the
+    # directory where the ensemble will be stored for local use
+
+    api = BigML(project="project/5143a51a37203f2cf7020001",
+                storage="my_storage_directory")
+
+    ensemble = Ensemble('ensemble/5143a51a37203f2cf7020351', api=api)
+    ensemble.predict({"petal length": 3, "petal width": 1})
 
 The local ensemble object can be used to manage the
 three types of ensembles: ``Decision Forests`` (bagging or random) and
-the ones using ``Boosted Trees``.
-
+the ones using ``Boosted Trees``. Also, you can choose
+the storage directory or even avoid storing at all. The ``àpi`` connection
+object controls the storage strategy through the ``storage`` argument.
 
 .. code-block:: python
 
@@ -6739,14 +6787,13 @@ or even a JSON file that contains the ensemble resource:
 
 .. code-block:: python
 
-    import json
-    from bigml.ensemble import Ensemble
     from bigml.api import BigML
-    api = api.BigML()
-    ensemble_info = api.get_ensemble('ensemble/50c0de043b5635198300033c')
-    with open("./my_ensemble", "w") as ensemble_file:
-        ensemble_file.write(json.dumps(ensemble_info))
-    local_ensemble = Ensemble("./my_ensemble")
+    api = BigML()
+    api.export("ensemble/50c0de043b5635198300033c",
+               "my_directory/my_ensemble.json")
+
+    from bigml.ensemble import Ensemble
+    local_ensemble = Ensemble("./my_directory/my_ensemble.json")
 
 Note: the ensemble JSON structure is not self-contained, meaning that it
 contains references to the models that the ensemble is build of, but not the
@@ -6754,17 +6801,17 @@ information of the models themselves.
 To use an ensemble locally with no connection to
 the internet, you must make sure that not only a local copy of the ensemble
 JSON file is available in your computer, but also the JSON files corresponding
-to the models in it. This is automatically achieved when you use the
-``Ensemble('ensemble/50c0de043b5635198300033c')`` constructor, that fetches
-all the related JSON files and stores them in an ``./storage`` directory. Next
-calls to ``Ensemble('ensemble/50c0de043b5635198300033c')`` will retrieve the
-files from this local storage, so that internet connection will only be needed
-the first time an ``Ensemble`` is built.
+to the models in it. The ``export`` method takes care of storing the
+information of every model in the ensemble and storing it in the same directory
+as the ensemble JSON file. The ``Ensemble`` class will also look up for the
+model files in the same directory when using a path to an ensemble file as
+argument.
 
-On the contrary, if you have no memory limitations and want to increase
-prediction speed, you can create the ensemble from a list of local model
-objects. Then, local model objects will only be instantiated once, and
-this could increase performance for large ensembles:
+If you have no memory limitations you can create the ensemble
+from a list of local model
+objects. Then, local model objects will be always in memory and
+will only be instantiated once. This will increase
+performance for large ensembles:
 
 .. code-block:: python
 

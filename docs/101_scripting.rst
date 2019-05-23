@@ -27,7 +27,7 @@ simple scripts:
 
 In this example. the `url` used is always the same, so no inputs are provided
 to the script. This is not a realistic situation, because usually scripts
-need some inputs to be given by the user. The next example shows how to
+need user-provided inputs. The next example shows how to
 add two variables, whose values will be provided as inputs:
 
 .. code-block:: python
@@ -55,7 +55,9 @@ add two variables, whose values will be provided as inputs:
     result = execution['object']['execution']['result']
 
 In a full-fledged script, you will also produce some outputs that can be used
-in other scripts. This is an example of
+in other scripts. This is an example of a script creating a dataset from a
+source that was generated from a remote URL. Both the URL and the source
+name are provided by the user:
 
 .. code-block:: python
 

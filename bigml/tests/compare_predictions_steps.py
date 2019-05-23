@@ -42,7 +42,8 @@ from create_prediction_steps import check_prediction
 def i_retrieve_a_list_of_remote_models(step, tag):
     world.list_of_models = [ \
         world.api.get_model(model['resource']) for model in
-        world.api.list_models(query_string="tags__in=%s" % tag)['objects']]
+        world.api.list_models(query_string="project=%s;tags__in=%s" % \
+            (world.project_id, tag))['objects']]
 
 
 #@step(r'I retrieve a list of remote logistic regression tagged with "(.*)"')
@@ -50,7 +51,8 @@ def i_retrieve_a_list_of_remote_logistic_regressions(step, tag):
     world.list_of_models = [ \
         world.api.get_logistic_regression(model['resource']) for model in
         world.api.list_logistic_regressions( \
-            query_string="tags__in=%s" % tag)['objects']]
+            query_string="project=%s;tags__in=%s" % \
+                (world.project_id, tag))['objects']]
 
 
 #@step(r'I create a local model from a "(.*)" file$')

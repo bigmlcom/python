@@ -86,6 +86,7 @@ from bigml.bigmlconnection import (
     HTTP_NOT_FOUND, HTTP_METHOD_NOT_ALLOWED, HTTP_TOO_MANY_REQUESTS,
     HTTP_LENGTH_REQUIRED, HTTP_INTERNAL_SERVER_ERROR, DOWNLOAD_DIR, LOGGER)
 
+
 # Resource types and status codes
 from bigml.constants import (
     WAITING, QUEUED, STARTED, IN_PROGRESS, SUMMARIZED, FINISHED, UPLOADING,
@@ -107,7 +108,7 @@ from bigml.constants import (
     FORECAST_PATH, PCA_PATH, PCA_RE, PROJECTION_PATH, PROJECTION_RE,
     BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE,
     LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
-    EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE,
+    EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE, STATUS_PATH,
     IRREGULAR_PLURALS)
 
 from bigml.resourcehandler import (
@@ -295,6 +296,7 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         ProjectionHandler.__init__(self)
         BatchProjectionHandler.__init__(self)
         LinearRegressionHandler.__init__(self)
+        self.status_url = "%s%s" % (self.url, STATUS_PATH)
 
 
         self.getters = {}
@@ -353,6 +355,28 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         info += u"\nAuthentication string:\n"
         info += u"    %s\n" % self.auth[1:]
         return info
+
+    def get_account_status(self):
+        """Retrieve the account information: tasks, available_tasks, max_tasks, .
+
+        Returns a dictionary with the summarized information about the account
+
+        """
+        return self._status(self.status_url)
+
+    def get_tasks_status(self):
+        """Retrieve the tasks information of the account
+
+        Returns a dictionary with the summarized information about the tasks
+
+        """
+        status = self._status(self.status_url)["object"]
+        return {
+            "tasks": status["tasks"],
+            "max_tasks": status["subscription"]["max_tasks"],
+            "available_tasks": (status["subscription"]["max_tasks"]
+                                - status["tasks"]),
+            "tasks_in_progress": status["tasks_in_progress"]}
 
     def get_fields(self, resource):
         """Retrieve fields used by a resource.

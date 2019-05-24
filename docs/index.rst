@@ -3502,6 +3502,35 @@ The JSON structure for an PCA is:
      'resource': u'pca/5c002572983efc0ac5000003'}
 
 
+Account and tasks
+-----------------
+
+In BigML, every account has an associated subscription level. The subscription
+level will determine the number of tasks that can be performed in parallel in
+the platform and the allowed dataset size. This kind of information is
+available throught the methods ``.get_account_status`` and ``get_tasks_status``
+in the connection object:
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    api = BigML()
+    api.get_tasks_status()
+
+The result will be a dictionary that contains the number of tasks in use
+and their status, the maximum number of tasks and the number of tasks
+available. This information can be used to manage the complexity of sending
+new creation tasks to BigML.
+
+However, we strongly discourage the use of this kind of mechanism, because
+it's clearly suboptimal and cumbersome compared to using the scripting
+utilities in the platform described in next sections and the ``101``
+documents in the `quick start <#quick_start>`_ section. Scalability,
+reproducibility and reusability are the key points in Machine Learning
+automation and using WhizzML, BigML's Domain Specific Language for
+Machine Learning, provides them out of the box. Client-side approaches
+and/or general languages are definitely not the best fit for that.
+
 WhizzML Resources
 -----------------
 

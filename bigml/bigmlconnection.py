@@ -822,6 +822,71 @@ class BigMLConnection(object):
 
         return file_object
 
+    def _status(self, url, query_string=''):
+        """Returns the status of the account.
+
+
+        """
+        code = HTTP_INTERNAL_SERVER_ERROR
+        meta = None
+        resources = None
+        error = {
+            "status": {
+                "code": code,
+                "message": "Failed to obtain the account status info"}}
+
+        url = self._add_credentials(url) + query_string
+        if GAE_ENABLED:
+            try:
+                req_options = {
+                    'url': url,
+                    'method': urlfetch.GET,
+                    'headers': ACCEPT_JSON,
+                    'validate_certificate': self.verify
+                }
+                response = urlfetch.fetch(**req_options)
+            except urlfetch.Error, exception:
+                LOGGER.error("HTTP request error: %s",
+                             str(exception))
+                return {
+                    'code': code,
+                    'object': resources,
+                    'error': error}
+        else:
+            try:
+                response = requests.get(url, headers=ACCEPT_JSON,
+                                        verify=self.verify)
+            except (requests.ConnectionError,
+                    requests.Timeout,
+                    requests.RequestException), exc:
+                LOGGER.error("HTTP request error: %s", str(exc))
+                return {
+                    'code': code,
+                    'object': resources,
+                    'error': error}
+        try:
+            code = response.status_code
+
+            if code == HTTP_OK:
+                resource = json_load(response.content)
+                resources = resource
+                error = None
+            elif code in [HTTP_BAD_REQUEST,
+                          HTTP_UNAUTHORIZED,
+                          HTTP_NOT_FOUND,
+                          HTTP_TOO_MANY_REQUESTS]:
+                error = json_load(response.content)
+            else:
+                LOGGER.error("Unexpected error (%s)", code)
+                code = HTTP_INTERNAL_SERVER_ERROR
+        except ValueError, exc:
+            LOGGER.error("Malformed response: %s", str(exc))
+
+        return {
+            'code': code,
+            'object': resources,
+            'error': error}
+
     def error_message(self, resource, resource_type='resource', method=None):
         """Error message for each type of resource
 

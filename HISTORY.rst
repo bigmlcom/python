@@ -3,6 +3,11 @@
 History
 -------
 
+4.23.0 (2019-05-24)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding access to tasks information in the API connection object.
+
 4.22.1 (2019-05-23)
 ~~~~~~~~~~~~~~~~~~~
 

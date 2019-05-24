@@ -58,6 +58,7 @@ LINEAR_REGRESSION_PATH = 'linearregression'
 SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
+STATUS_PATH = 'status'
 SUPERVISED_PATHS = [
     MODEL_PATH,
     ENSEMBLE_PATH,

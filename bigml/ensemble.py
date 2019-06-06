@@ -166,6 +166,7 @@ class Ensemble(ModelFields):
                 self.objective_id = ensemble['object'].get("objective_field")
                 query_string = EXCLUDE_FIELDS
                 no_check_fields = True
+        self.input_fields = ensemble['object'].get('input_fields')
 
         number_of_models = len(models)
         if max_models is None:

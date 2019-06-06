@@ -164,6 +164,7 @@ class Fusion(ModelFields):
             self.fields = fusion.get( \
                 'fusion', {}).get("fields")
             self.objective_id = fusion.get("objective_field")
+        self.input_fields = fusion.get("input_fields")
 
         number_of_models = len(self.model_ids)
 

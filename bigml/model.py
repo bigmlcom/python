@@ -260,13 +260,15 @@ class Model(BaseModel):
         self.resource_id, model = get_resource_dict( \
             model, "model", api=api)
 
-        BaseModel.__init__(self, model, api=api, fields=fields)
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
 
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
+
+                self.input_fields = model["input_fields"]
+                BaseModel.__init__(self, model, api=api, fields=fields)
 
                 # boosting models are to be handled using the BoostedTree
                 # class

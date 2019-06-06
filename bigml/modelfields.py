@@ -154,6 +154,11 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
+                self.model_fields = {}
+                self.model_fields.update(
+                    dict([(field_id, field) for field_id, field in \
+                    self.fields.items() if field_id in self.input_fields and
+                    self.fields[field_id].get("preferred", True)]))
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -271,7 +276,9 @@ class ModelFields(object):
             for key, value in input_data.items():
                 if key not in self.fields:
                     key = self.inverted_fields.get(key, key)
-                if key in self.fields and \
+                # only the fields that are listed in input_fields and appear
+                # as preferred are used in predictions
+                if key in self.model_fields and \
                         (self.objective_id is None or \
                          key != self.objective_id):
                     new_input[key] = value

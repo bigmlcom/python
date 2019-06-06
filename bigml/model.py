@@ -700,8 +700,8 @@ class Model(BaseModel):
         # next
         field = (None if len(prediction.children) == 0 else
                  prediction.children[0].predicate.field)
-        if field is not None and field in self.fields:
-            field = self.fields[field]['name']
+        if field is not None and field in self.model_fields:
+            field = self.model_fields[field]['name']
         result.update({'next': field})
         del result['children']
         if not self.regression and not self.boosting:

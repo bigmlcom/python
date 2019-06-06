@@ -141,7 +141,7 @@ class LogisticRegression(ModelFields):
                 if not self.input_fields:
                     self.input_fields = [ \
                         field_id for field_id, _ in
-                        sorted(self.fields.items(),
+                        sorted(fields.items(),
                                key=lambda x: x[1].get("column_number"))]
                 self.coefficients.update(logistic_regression_info.get( \
                     'coefficients', []))
@@ -170,7 +170,7 @@ class LogisticRegression(ModelFields):
                   'field_codings', {})
                 self.format_field_codings()
                 for field_id in self.field_codings:
-                    if field_id not in fields and \
+                    if field_id not in self.fields and \
                             field_id in self.inverted_fields:
                         self.field_codings.update( \
                             {self.inverted_fields[field_id]: \
@@ -333,7 +333,7 @@ class LogisticRegression(ModelFields):
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
         if not self.missing_numerics:
-            check_no_missing_numerics(input_data, self.fields,
+            check_no_missing_numerics(input_data, self.model_fields,
                                       self.weight_field)
 
         if self.balance_fields:

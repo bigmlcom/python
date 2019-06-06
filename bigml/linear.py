@@ -151,7 +151,7 @@ class LinearRegression(ModelFields):
                 if not self.input_fields:
                     self.input_fields = [ \
                         field_id for field_id, _ in
-                        sorted(self.fields.items(),
+                        sorted(fields.items(),
                                key=lambda x: x[1].get("column_number"))]
                 self.coeff_ids = self.input_fields[:]
                 self.coefficients = linear_regression_info.get( \
@@ -299,7 +299,8 @@ class LinearRegression(ModelFields):
         cast(new_data, self.fields)
 
         # In case that the training data has no missings, input data shouldn't
-        check_no_training_missings(new_data, self.fields, self.weight_field,
+        check_no_training_missings(new_data, self.model_fields,
+                                   self.weight_field,
                                    self.objective_id)
 
         # Computes text and categorical field expansion

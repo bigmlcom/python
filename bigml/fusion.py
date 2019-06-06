@@ -276,7 +276,7 @@ class Fusion(ModelFields):
         """
         votes = MultiVoteList([])
         if not self.missing_numerics:
-            check_no_missing_numerics(input_data, self.fields)
+            check_no_missing_numerics(input_data, self.model_fields)
 
         for models_split in self.models_splits:
             models = []
@@ -397,7 +397,7 @@ class Fusion(ModelFields):
             input_data = new_data
 
         if not self.missing_numerics:
-            check_no_missing_numerics(input_data, self.fields)
+            check_no_missing_numerics(input_data, self.model_fields)
 
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)

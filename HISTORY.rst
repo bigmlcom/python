@@ -3,6 +3,11 @@
 History
 -------
 
+4.23.1 (2019-06-06)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local predictions for models with unpreferred and datetime fields.
+
 4.23.0 (2019-05-24)
 ~~~~~~~~~~~~~~~~~~~
 

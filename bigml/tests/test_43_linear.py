@@ -93,7 +93,8 @@ class TestLinearRegression(object):
         print self.test_scenario2.__doc__
         examples = [
             ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '2.27312', '{}'],
-            ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '8.19619', '{"bias": false}']]
+            ['data/grades.csv', '30', '30', '30', '{"000000": 0.5, "000001": 1, "000002": 1, "000003": 1}', "000005", '8.19619', '{"bias": false}'],
+            ['data/dates.csv', '30', '30', '30', '{"test-num1": 23, "test-num2" : 54, "test-date.day-of-month":2, "test-date.month":12, "test-date.day-of-week": 2, "test-date.year": 2012}', "000003", '48.27679', '{"bias": false}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

@@ -134,6 +134,7 @@ class Association(ModelFields):
                 isinstance(association['associations'], dict):
             status = get_status(association)
             if 'code' in status and status['code'] == FINISHED:
+                self.input_fields = association['input_fields']
                 associations = association['associations']
                 fields = associations['fields']
                 ModelFields.__init__(self, fields)

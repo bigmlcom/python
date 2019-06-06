@@ -131,6 +131,8 @@ class Cluster(ModelFields):
         self.between_ss = None
         self.ratio_ss = None
         self.critical_value = None
+        self.input_fields = []
+        self.summary_fields = []
         self.default_numeric_value = None
         self.k = None
         self.summary_fields = []
@@ -158,6 +160,7 @@ class Cluster(ModelFields):
                 self.default_numeric_value = cluster.get( \
                     "default_numeric_value")
                 self.summary_fields = cluster.get("summary_fields", [])
+                self.input_fields = cluster.get("input_fields", [])
                 self.datasets = cluster.get("cluster_datasets", {})
                 the_clusters = cluster['clusters']
                 cluster_global = the_clusters.get('global')

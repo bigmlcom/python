@@ -108,7 +108,7 @@ class TopicModel(ModelFields):
                 and isinstance(topic_model['topic_model'], dict):
             status = get_status(topic_model)
             if 'code' in status and status['code'] == FINISHED:
-
+                self.input_fields = topic_model['input_fields']
                 model = topic_model['topic_model']
                 self.topics = model['topics']
 

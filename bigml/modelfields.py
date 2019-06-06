@@ -154,6 +154,8 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
+                if not self.input_fields:
+                    self.input_fields = self.fields.keys()
                 self.model_fields = {}
                 self.model_fields.update(
                     dict([(field_id, field) for field_id, field in \

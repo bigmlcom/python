@@ -154,8 +154,14 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
-                if not self.input_fields:
-                    self.input_fields = self.fields.keys()
+                if not (hasattr(self, "input_fields") and self.input_fields):
+                    self.input_fields = [field_id for field_id, field in \
+                        sorted( \
+                        [(field_id, field) for field_id,
+                         field in self.fields.items()],
+                        key=lambda(x): x[1].get("column_number"))
+                        if not self.objective_id or
+                        field_id != self.objective_id]
                 self.model_fields = {}
                 self.model_fields.update(
                     dict([(field_id, field) for field_id, field in \

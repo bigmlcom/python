@@ -131,6 +131,7 @@ class Ensemble(ModelFields):
         self.importance = {}
         query_string = ONLY_MODEL
         no_check_fields = False
+        self.input_fields = []
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -144,6 +145,7 @@ class Ensemble(ModelFields):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
+
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
@@ -166,7 +168,7 @@ class Ensemble(ModelFields):
                 self.objective_id = ensemble['object'].get("objective_field")
                 query_string = EXCLUDE_FIELDS
                 no_check_fields = True
-        self.input_fields = ensemble['object'].get('input_fields')
+            self.input_fields = ensemble['object'].get('input_fields')
 
         number_of_models = len(models)
         if max_models is None:

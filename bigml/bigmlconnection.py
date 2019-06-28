@@ -293,8 +293,9 @@ class BigMLConnection(object):
         shared resources.
 
         """
-        return "%s%s%s" % (url, self.auth if shared_auth is None else
-                           shared_auth,
+        auth = self.auth if shared_auth is None else shared_auth
+        auth = auth if "?" not in url else ";%s" % auth[1:]
+        return "%s%s%s" % (url, auth,
                            "organization=%s;" % self.organization if
                            organization and self.organization
                            else "project=%s;" % self.project if self.project
@@ -474,7 +475,11 @@ class BigMLConnection(object):
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError, exc:
-            LOGGER.error("Malformed response: %s" % str(exc))
+            if "output_format" in query_string:
+                # output can be an xml file that is returned without storing
+                return response.content
+            else:
+                LOGGER.error("Malformed response: %s" % str(exc))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)

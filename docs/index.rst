@@ -4001,7 +4001,7 @@ uploading:
 
     source = api.create_source('./data/iris.csv',
         {'name': 'my source', 'source_parser': {'missing_tokens': ['?']}},
-        async=True)
+        async_load=True)
 
 In this case, the call fills `source` immediately with a primary resource like:
 

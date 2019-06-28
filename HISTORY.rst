@@ -3,6 +3,13 @@
 History
 -------
 
+4.24.0 (2019-06-28)
+~~~~~~~~~~~~~~~~~~~
+
+- Refactoring for multipackage compatibility.
+- Deprecating ``ensemble_id`` attribute in local ensembles.
+- Extending the BigML class to export model's alternative output formats.
+
 4.23.1 (2019-06-06)
 ~~~~~~~~~~~~~~~~~~~
 

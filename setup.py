@@ -26,9 +26,9 @@ project_path = os.path.dirname(__file__)
 # Read the version from bigml.__version__ without importing the package
 # (and thus attempting to import packages it depends on that may not be
 # installed yet)
-init_py_path = os.path.join(project_path, 'bigml', '__init__.py')
+version_py_path = os.path.join(project_path, 'bigml', 'version.py')
 version = re.search("__version__ = '([^']+)'",
-                    open(init_py_path).read()).group(1)
+                    open(version_py_path).read()).group(1)
 
 # Concatenate files into the long description
 file_contents = []

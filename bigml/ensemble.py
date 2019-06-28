@@ -115,8 +115,6 @@ class Ensemble(ModelFields):
         else:
             self.api = api
         self.resource_id = None
-        # to be deprecated
-        self.ensemble_id = None
         self.objective_id = None
         self.distributions = None
         self.distribution = None
@@ -149,7 +147,6 @@ class Ensemble(ModelFields):
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
-            self.ensemble_id = self.resource_id
 
             if lacks_info(ensemble, inner_key="ensemble"):
                 # avoid checking fields because of old ensembles

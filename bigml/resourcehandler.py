@@ -55,6 +55,8 @@ COMPOSED_RESOURCES = ["ensemble", "fusion"]
 
 LIST_LAST = "limit=1;full=yes;tags=%s"
 
+PMML_QS = "pmml=yes"
+
 
 def get_resource_type(resource):
     """Returns the associated resource type for a resource
@@ -657,7 +659,8 @@ class ResourceHandler(BigMLConnection):
 
         return dataset_id and resource_id
 
-    def export(self, resource, filename=None, pmml=False, **kwargs):
+    def export(self, resource, filename=None, pmml=False,
+               **kwargs):
         """Retrieves a remote resource when finished and stores it
            in the user-given file
 
@@ -677,6 +680,7 @@ class ResourceHandler(BigMLConnection):
             if resource_type not in c.PMML_MODELS:
                 raise ValueError("Failed to export to PMML. Only some models"
                                  " can be exported to PMML.")
+
         resource_id = get_resource_id(resource)
 
         if resource_id:
@@ -692,11 +696,17 @@ class ResourceHandler(BigMLConnection):
                                      "text and items fields cannot be "
                                      "exported to PMML.")
                 if kwargs.get("query_string"):
-                    kwargs["query_string"] += ";pmml=yes"
+                    kwargs["query_string"] += ";%s" % PMML_QS
                 else:
-                    kwargs["query_string"] = "pmml=yes"
-            resource_info = self._get("%s%s" % (self.url, resource_id),
-                                      **kwargs)
+                    kwargs["query_string"] = PMML_QS
+
+            if kwargs.get("query_string") and \
+                    "output_format" in kwargs.get("query_string"):
+                resource_info = self._get("%s%s" % (self.url,
+                                                    resource_id))
+            else:
+                resource_info = self._get("%s%s" % (self.url, resource_id),
+                                          **kwargs)
             if not is_status_final(resource_info):
                 self.ok(resource_info)
             if filename is None:
@@ -715,6 +725,11 @@ class ResourceHandler(BigMLConnection):
                                               component_id.replace("/", "_")),
                         pmml=pmml,
                         **kwargs)
+            if kwargs.get("query_string") and \
+                    "output_format" in kwargs.get("query_string"):
+                return self._download("%s%s?%s" % \
+                    (self.url, resource_id, kwargs["query_string"]), filename)
+
             if pmml and resource_info.get("object", {}).get("pmml"):
                 resource_info = resource_info.get("object", {}).get("pmml")
                 resource_info = minidom.parseString( \

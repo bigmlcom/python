@@ -134,10 +134,11 @@ class PCA(ModelFields):
                         field_id for field_id, _ in
                         sorted(self.fields.items(),
                                key=lambda x: x[1].get("column_number"))]
+                missing_tokens = pca_info.get("missing_tokens")
                 ModelFields.__init__(
                     self, fields,
                     objective_id=None, terms=True, categories=True,
-                    numerics=False)
+                    numerics=False, missing_tokens=missing_tokens)
 
                 for field_id in self.categories:
                     field = self.fields[field_id]

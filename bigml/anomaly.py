@@ -82,7 +82,9 @@ class Anomaly(ModelFields):
             self.input_fields = anomaly.get('input_fields')
             self.id_fields = anomaly.get('id_fields', [])
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
-            ModelFields.__init__(self, anomaly['model'].get('fields'))
+            ModelFields.__init__( \
+                self, anomaly['model'].get('fields'), \
+                missing_tokens=anomaly['model'].get('missing_tokens'))
             if ('top_anomalies' in anomaly['model'] and
                     isinstance(anomaly['model']['top_anomalies'], list)):
                 self.mean_depth = anomaly['model'].get('mean_depth')

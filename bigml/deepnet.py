@@ -118,10 +118,11 @@ class Deepnet(ModelFields):
             deepnet = deepnet['deepnet']
             if 'code' in status and status['code'] == FINISHED:
                 self.fields = deepnet['fields']
+                missing_tokens = deepnet.get('missing_tokens')
                 ModelFields.__init__(
                     self, self.fields,
                     objective_id=extract_objective(objective_field),
-                    terms=True, categories=True)
+                    terms=True, categories=True, missing_tokens=missing_tokens)
 
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC

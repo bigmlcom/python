@@ -214,7 +214,9 @@ class Cluster(ModelFields):
                         self.item_analysis[field_id].update(
                             field['item_analysis'])
 
-                ModelFields.__init__(self, fields)
+                missing_tokens = cluster['clusters'].get('missing_tokens')
+                ModelFields.__init__(self, fields,
+                                     missing_tokens=missing_tokens)
                 if not all([field_id in self.fields for
                             field_id in self.scales]):
                     raise Exception("Some fields are missing"

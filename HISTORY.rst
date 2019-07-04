@@ -3,6 +3,11 @@
 History
 -------
 
+4.24.1 (2019-07-05)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding missing tokens handling to local models.
+
 4.24.0 (2019-06-28)
 ~~~~~~~~~~~~~~~~~~~
 

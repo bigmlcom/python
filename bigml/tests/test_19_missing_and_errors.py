@@ -19,10 +19,13 @@
 """ Creating datasets with missing values and errors counters
 
 """
-from world import world, setup_module, teardown_module
+from world import world, setup_module, teardown_module, show_doc
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import read_dataset_steps as dataset_read
+import create_prediction_steps as prediction_create
+import compare_predictions_steps as prediction_compare
+import create_model_steps as model_create
 
 class TestMissingsAndErrors(object):
 
@@ -97,3 +100,42 @@ class TestMissingsAndErrors(object):
             dataset_read.i_get_the_errors_values(self)
             dataset_read.i_get_the_properties_values(
                 self, 'error counts', example[4])
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully comparing predictions:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the model is ready less than <time_3> secs
+                And I create a local model
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  |
+
+        """
+        examples = [
+            ['data/iris_missing.csv', '30', '{"fields": {"000000": {"optype": "numeric"}}, "source_parser": {"missing_tokens": ["foo"]}}', '30', '{"sepal length": "foo", "petal length": 3}', '000004', 'Iris-versicolor'],
+            ['data/iris_missing.csv', '30', '{"fields": {"000000": {"optype": "numeric"}}, "source_parser": {"missing_tokens": ["foo"]}}', '30', '{"sepal length": "foo", "petal length": 5, "petal width": 1.5}', '000004', 'Iris-virginica']]
+
+        show_doc(self.test_scenario3, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, example[2])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[3])
+            model_create.i_create_a_model(self)
+            model_create.the_model_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_model(self)
+            prediction_create.i_create_a_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_prediction(self, example[4])
+            prediction_compare.the_local_prediction_is(self, example[6])

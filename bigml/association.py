@@ -137,7 +137,9 @@ class Association(ModelFields):
                 self.input_fields = association['input_fields']
                 associations = association['associations']
                 fields = associations['fields']
-                ModelFields.__init__(self, fields)
+                ModelFields.__init__( \
+                    self, fields, \
+                    missing_tokens=associations.get('missing_tokens'))
                 self.complement = associations.get('complement', False)
                 self.discretization = associations.get('discretization', {})
                 self.field_discretizations = associations.get(

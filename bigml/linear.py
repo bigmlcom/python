@@ -161,12 +161,13 @@ class LinearRegression(ModelFields):
                      'field_codings', {})
                 self.number_of_parameters = linear_regression_info.get( \
                     "number_of_parameters")
+                missing_tokens = linear_regression_info.get("missing_tokens")
 
                 objective_id = extract_objective(objective_field)
                 ModelFields.__init__(
                     self, fields,
                     objective_id=objective_id, terms=True, categories=True,
-                    numerics=True)
+                    numerics=True, missing_tokens=missing_tokens)
                 self.field_codings = linear_regression_info.get( \
                   'field_codings', {})
                 self.format_field_codings()

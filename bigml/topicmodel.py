@@ -146,7 +146,9 @@ class TopicModel(ModelFields):
                     for w in range(nterms):
                         self.phi[k][w] = (assignments[w][k] + beta) / norm
 
-                ModelFields.__init__(self, model['fields'])
+                missing_tokens = model.get("missing_tokens")
+                ModelFields.__init__(self, model['fields'],
+                                     missing_tokens=missing_tokens)
             else:
                 raise Exception("The topic model isn't finished yet")
         else:

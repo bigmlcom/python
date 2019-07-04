@@ -212,9 +212,12 @@ class BaseModel(ModelFields):
                             fields[field]['summary'] = field_info['summary']
                         fields[field]['name'] = field_info['name']
                 objective_field = model['objective_fields']
+                missing_tokens = model['model'].get('missing_tokens')
+
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=extract_objective(objective_field))
+                    objective_id=extract_objective(objective_field),
+                    missing_tokens=missing_tokens)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)

@@ -6982,8 +6982,8 @@ predictions' speed can be increased and memory usage minimized by using the
     from bigml.ensemblepredictor import EnsemblePredictor
     ensemble = EnsemblePredictor('ensemble/5143a51a37203f2cf7020351',
                                  "./model_fns_directory")
-    ensemble.predict({"petal length": 3, "petal width": 1})
-    (u'Iris-versicolor', 0.91519)
+    ensemble.predict({"petal length": 3, "petal width": 1}, full=True)
+    {'prediction': u'Iris-versicolor', 'confidence': 0.91519}
 
 This constructor has two compulsory attributes: then ensemble ID (or the
 corresponding API response) and the path to a directory that contains a file
@@ -6997,7 +6997,9 @@ time you instantiate the ensemble. Once they are generated, the functions are
 retrieved from the directory.
 
 Note that only last prediction missings strategy is available for these
-predictions.
+predictions and the combiners available are ``plurality``, ``confidence`` and
+``distribution`` but no ``operating_kind`` or ``operating_point`` options
+are provided at present.
 
 Local Supervised Model
 ----------------------

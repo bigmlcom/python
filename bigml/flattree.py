@@ -172,7 +172,7 @@ class FlatTree(object):
                                self.fields[self.objective_id]['optype'])
         code += u"%sreturn {\"prediction\": %s," \
             u" \"%s\": %s}\n" % \
-            (INDENT * (depth + 1), value, metric, getattr(node, metric)
+            (INDENT * (depth + 1), value, metric, getattr(node, metric))
         return code
 
 
@@ -404,7 +404,7 @@ class FlatTree(object):
                         node.output,
                         self.fields[self.objective_id]['optype'])
                     body += u"%sreturn {\"prediction\":%s, \"%s\":%s}\n" % ( \
-                        INDENT * depth, value, metric, getattr(node, metric)
+                        INDENT * depth, value, metric, getattr(node, metric))
                     depth -= 1
 
                 functions.append(body)

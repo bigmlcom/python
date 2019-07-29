@@ -213,8 +213,7 @@ class EnsemblePredictor(object):
         """
         return self.model_ids
 
-    def predict(self, input_data, method=PLURALITY_CODE,
-                full=False):
+    def predict(self, input_data, method=PLURALITY_CODE, full=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
@@ -247,7 +246,8 @@ class EnsemblePredictor(object):
             options = {"categories": categories}
 
         result = votes.combine(method=method, options=options, full=full)
-        del result['count']
+        if isinstance(result, dict):
+            del result['count']
 
         return result
 

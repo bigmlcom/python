@@ -41,6 +41,7 @@ from bigml.multivote import PLURALITY_CODE
 from bigml.basemodel import BaseModel, print_importance, retrieve_resource
 from bigml.modelfields import lacks_info
 from bigml.out_model.pythonmodel import PythonModel
+from bigml.flattree import FlatTree
 
 
 BOOSTING = 1
@@ -212,13 +213,11 @@ class EnsemblePredictor(object):
         """
         return self.model_ids
 
-    def predict(self, input_data, by_name=True, method=PLURALITY_CODE):
+    def predict(self, input_data, method=PLURALITY_CODE,
+                full=False):
         """Makes a prediction based on the prediction made by every model.
 
         :param input_data: Test data to be used as input
-        :param by_name: Boolean that is set to True if field_names (as
-                        alternative to field ids) are used in the
-                        input_data dict
         :param method: numeric key code for the following combination
                        methods in classifications/regressions:
               0 - majority vote (plurality)/ average: PLURALITY_CODE
@@ -231,12 +230,14 @@ class EnsemblePredictor(object):
 
         # When only one group of models is found you use the
         # corresponding multimodel to predict
-        input_data_array = self.format_input_data(input_data, by_name=by_name)
         votes_split = []
         options = None
+        count = 1
         for fun in self.predict_functions:
-            votes_split.append(fun(*input_data_array))
-
+            prediction = fun(input_data)
+            prediction.update({"order": count, "count": 1})
+            count += 1
+            votes_split.append(prediction)
         votes = MultiVote(votes_split,
                           boosting_offsets=self.boosting_offsets)
         if self.boosting is not None and not self.regression:
@@ -245,7 +246,8 @@ class EnsemblePredictor(object):
                 self.fields[self.objective_id]["summary"]["categories"]]
             options = {"categories": categories}
 
-        result = votes.combine(method=method, options=options)
+        result = votes.combine(method=method, options=options, full=full)
+        del result['count']
 
         return result
 
@@ -359,32 +361,19 @@ class EnsemblePredictor(object):
         self.print_importance(out=out)
         out.flush()
 
-    def format_input_data(self, input_data, by_name=True):
-        """Transforms the typical dictionary input data structure into
-        an array whose elements are the values of inputs for the fields in the
-        input fields array. This array is the input required for the
-        models predict functions.
-
-        """
-        input_data_array = []
-        for field_id in self.input_fields:
-            field = field_id if not by_name else self.fields[field_id]["name"]
-            value = input_data.get(field)
-            input_data_array.append(value)
-
-        return input_data_array
-
     def generate_models(self, directory='./storage'):
         """Generates the functions for the models in the ensemble
 
         """
-        if not os.path.isfile(directory):
+        if not os.path.isfile(directory) and not os.path.exists(directory):
             os.makedirs(directory)
             open(os.path.join(directory, "__init__.py"), "w").close()
         for model_id in self.model_ids:
             local_model = PythonModel(model_id, api=self.api,
                                       fields=self.fields)
+            local_flat_tree = FlatTree(local_model.tree, local_model.boosting)
             with open(os.path.join(directory, "%s.py" %
                                    model_id.replace("/", "_")), "w") \
                     as handler:
-                local_model.plug_in(out=handler)
+                local_flat_tree.python(out=handler,
+                                       docstring="Model %s" % model_id )

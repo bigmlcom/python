@@ -3,6 +3,11 @@
 History
 -------
 
+4.24.2 (2019-07-30)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local EnsemblePredictor code to avoid crash when using deep trees.
+
 4.24.1 (2019-07-05)
 ~~~~~~~~~~~~~~~~~~~
 

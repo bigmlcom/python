@@ -163,26 +163,26 @@ def expand_date(date, subfields, timeformats):
     """
     expanded = {}
     try:
-        date = chronos.parse(value, format_names=time_formats)
+        parsed_date = chronos.parse(date, format_names=timeformats)
     except ValueError:
         return {}
     for fid, ftype in subfields.items():
         if ftype == "day-of-month":
-            expanded.update({fid: date.day})
+            expanded.update({fid: parsed_date.day})
         elif ftype == "day-of-week":
-            expanded.update({fid: date.weekday()+1})
+            expanded.update({fid: parsed_date.weekday()+1})
         elif ftype == "year":
-            expanded.update({fid: date.year})
+            expanded.update({fid: parsed_date.year})
         elif ftype == "month":
-            expanded.update({fid: date.month})
+            expanded.update({fid: parsed_date.month})
         elif ftype == "second":
-            expanded.update({fid: date.second})
+            expanded.update({fid: parsed_date.second})
         elif ftype == "millisecond":
-            expanded.update({fid: date.microsecond/1000})
+            expanded.update({fid: parsed_date.microsecond/1000})
         elif ftype == "hour":
-            expanded.update({fid: date.hour})
+            expanded.update({fid: parsed_date.hour})
         elif ftype == "minute":
-            expanded.update({fid: date.minute})
+            expanded.update({fid: parsed_date.minute})
     return expanded
 
 
@@ -193,9 +193,9 @@ def get_datetime_formats(fields):
     """
     timeformats = {}
     for fid, finfo in fields.items():
-        if (field_info.get('optype', False) == 'datetime'):
-            name = field_info["name"]
-            time_formats[name] = field_info.get('time_formats', {})
+        if (finfo.get('optype', False) == 'datetime'):
+            name = finfo["name"]
+            timeformats[name] = finfo.get('time_formats', {})
     return timeformats
 
 
@@ -329,7 +329,7 @@ class ModelFields(object):
         return None if value in self.missing_tokens else value
 
     def expand_datetime_fields(self, input_data):
-        "Returns the values for all the subfields
+        """Returns the values for all the subfields
         from all the datetime fields in input_data
 
         """
@@ -338,10 +338,8 @@ class ModelFields(object):
         subfields = get_datetime_subfields(self.fields)
         for name, value in input_data.items():
             if name in subfields:
-                formats = time_formats.get(name, [])
-                expanded.update(self.expand_date(value,
-                                                 subfields[name],
-                                                 formats))
+                formats = timeformats.get(name, [])
+                expanded.update(expand_date(value, subfields[name], formats))
         return expanded
 
 

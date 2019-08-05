@@ -30,6 +30,7 @@ from bigml.util import invert_dictionary, DEFAULT_LOCALE
 from bigml.fields import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
 from bigml.resourcehandler import get_resource_type, resource_is_ready
 from bigml.predicate import TM_FULL_TERM, TM_ALL
+from bigml.chronos import chronos
 
 
 LOGGER = logging.getLogger('BigML')
@@ -138,15 +139,75 @@ def check_model_fields(model):
     return False
 
 
+def get_datetime_subfields(fields):
+    """ From a dictionary of fields, returns another dictionary
+    with the subfields from each datetime field
+
+    """
+    subfields = {}
+    for fid, finfo in fields.items():
+        if (finfo.get('parent_optype', False) == 'datetime'):
+            parent_name = ".".join(finfo["name"].split(".")[:-1])
+            subfield = {fid: finfo["name"].split(".")[-1]}
+            if parent_name in subfields.keys():
+                subfields[parent_name].update(subfield)
+            else:
+                subfields[parent_name] = subfield
+    return subfields
+
+
+def expand_date(date, subfields, timeformats):
+    """ Retrieves all the values of the subfields from
+    a given date
+
+    """
+    expanded = {}
+    try:
+        date = chronos.parse(value, format_names=time_formats)
+    except ValueError:
+        return {}
+    for fid, ftype in subfields.items():
+        if ftype == "day-of-month":
+            expanded.update({fid: date.day})
+        elif ftype == "day-of-week":
+            expanded.update({fid: date.weekday()+1})
+        elif ftype == "year":
+            expanded.update({fid: date.year})
+        elif ftype == "month":
+            expanded.update({fid: date.month})
+        elif ftype == "second":
+            expanded.update({fid: date.second})
+        elif ftype == "millisecond":
+            expanded.update({fid: date.microsecond/1000})
+        elif ftype == "hour":
+            expanded.update({fid: date.hour})
+        elif ftype == "minute":
+            expanded.update({fid: date.minute})
+    return expanded
+
+
+def get_datetime_formats(fields):
+    """From a dictionary of fields, return another dictionary
+    with the time formats form each datetime field
+
+    """
+    timeformats = {}
+    for fid, finfo in fields.items():
+        if (field_info.get('optype', False) == 'datetime'):
+            name = field_info["name"]
+            time_formats[name] = field_info.get('time_formats', {})
+    return timeformats
+
+
 class ModelFields(object):
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
 
     """
 
-    def __init__(self, fields, objective_id=None, data_locale=None,
-                 missing_tokens=None, terms=False, categories=False,
-                 numerics=False):
+    def __init__(self, fields, datetime_fields, objective_id=None,
+                 data_locale=None, missing_tokens=None, terms=False,
+                 categories=False, numerics=False):
         if isinstance(fields, dict):
             try:
                 self.objective_id = objective_id
@@ -154,6 +215,8 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
+                self.datetime_fields = {}
+                self.datetime_fields.update(datetime_fields)
                 if not (hasattr(self, "input_fields") and self.input_fields):
                     self.input_fields = [field_id for field_id, field in \
                         sorted( \
@@ -264,6 +327,23 @@ class ModelFields(object):
         if isinstance(value, basestring) and not isinstance(value, unicode):
             value = unicode(value, "utf-8")
         return None if value in self.missing_tokens else value
+
+    def expand_datetime_fields(self, input_data):
+        "Returns the values for all the subfields
+        from all the datetime fields in input_data
+
+        """
+        expanded = {}
+        timeformats = get_datetime_formats(self.datetime_fields)
+        subfields = get_datetime_subfields(self.fields)
+        for name, value in input_data.items():
+            if name in subfields:
+                formats = time_formats.get(name, [])
+                expanded.update(self.expand_date(value,
+                                                 subfields[name],
+                                                 formats))
+        return expanded
+
 
     def filter_input_data(self, input_data,
                           add_unused_fields=False):

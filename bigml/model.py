@@ -236,6 +236,18 @@ def parse_operating_point(operating_point, operating_kinds, class_names):
     return kind, threshold, positive_class
 
 
+def add_expanded_dates(input_data, date_fields):
+    """Add the expanded dates in date_fields to the input_data
+    provided by the user (only if the user didn't specify it)
+
+    """
+    for i, v in date_fields.items():
+        if (i not in input_data):
+            input_data[i] = v
+    return input_data
+
+
+
 class Model(BaseModel):
     """ A lightweight wrapper around a Tree model.
 
@@ -618,6 +630,7 @@ class Model(BaseModel):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
+        datetime_fields = self.expand_datetime_fields(input_data)
         new_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
@@ -625,7 +638,7 @@ class Model(BaseModel):
             input_data, unused_fields = new_data
         else:
             input_data = new_data
-
+        input_data = add_expanded_dates(input_data, datetime_fields)
         # Strips affixes for numeric values and casts to the final field type
         cast(input_data, self.fields)
 

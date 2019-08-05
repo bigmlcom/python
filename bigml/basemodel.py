@@ -153,6 +153,13 @@ def get_resource_dict(resource, resource_type, api=None):
     return resource_id, resource
 
 
+def datetime_fields(f):
+    """Returns datetime fields from a dict of fields
+
+    """
+    return {k: v for k, v in f.items() if v.get("optype", False) == "datetime"}
+
+
 class BaseModel(ModelFields):
     """ A lightweight wrapper of the basic model information
 
@@ -198,6 +205,9 @@ class BaseModel(ModelFields):
                     fields = model['model'].get('model_fields',
                                                 model['model'].get('fields',
                                                                    []))
+                    # model_fields doesn't contain the datetime fields
+                    date_fields = datetime_fields(model['model'].get('fields',
+                                                                     []))
                     # pagination or exclusion might cause a field not to
                     # be in available fields dict
                     if not all(key in model['model']['fields']
@@ -215,7 +225,7 @@ class BaseModel(ModelFields):
                 missing_tokens = model['model'].get('missing_tokens')
 
                 ModelFields.__init__(
-                    self, fields,
+                    self, fields, date_fields,
                     objective_id=extract_objective(objective_field),
                     missing_tokens=missing_tokens)
                 self.description = model['description']

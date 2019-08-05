@@ -205,7 +205,7 @@ class ModelFields(object):
 
     """
 
-    def __init__(self, fields, datetime_fields, objective_id=None,
+    def __init__(self, fields, datetime_fields={}, objective_id=None,
                  data_locale=None, missing_tokens=None, terms=False,
                  categories=False, numerics=False):
         if isinstance(fields, dict):

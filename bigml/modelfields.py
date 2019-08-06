@@ -144,7 +144,6 @@ def get_datetime_subfields(fields):
     with the subfields from each datetime field
 
     """
-    subfields = {}
     for fid, finfo in fields.items():
         if (finfo.get('parent_optype', False) == 'datetime'):
             parent_name = ".".join(finfo["name"].split(".")[:-1])
@@ -199,15 +198,26 @@ def get_datetime_formats(fields):
     return timeformats
 
 
+def add_expanded_dates(input_data, datetime_fields):
+    """Add the expanded dates in date_fields to the input_data
+    provided by the user (only if the user didn't specify it)
+
+    """
+    for i, v in datetime_fields.items():
+        if (i not in input_data):
+            input_data[i] = v
+    return input_data
+
+
 class ModelFields(object):
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
 
     """
 
-    def __init__(self, fields, datetime_fields={}, objective_id=None,
-                 data_locale=None, missing_tokens=None, terms=False,
-                 categories=False, numerics=False):
+    def __init__(self, fields, objective_id=None, data_locale=None,
+                 missing_tokens=None, terms=False, categories=False,
+                 numerics=False):
         if isinstance(fields, dict):
             try:
                 self.objective_id = objective_id
@@ -215,8 +225,6 @@ class ModelFields(object):
                 self.inverted_fields = invert_dictionary(fields)
                 self.fields = {}
                 self.fields.update(fields)
-                self.datetime_fields = {}
-                self.datetime_fields.update(datetime_fields)
                 if not (hasattr(self, "input_fields") and self.input_fields):
                     self.input_fields = [field_id for field_id, field in \
                         sorted( \
@@ -334,7 +342,7 @@ class ModelFields(object):
 
         """
         expanded = {}
-        timeformats = get_datetime_formats(self.datetime_fields)
+        timeformats = get_datetime_formats(self.fields)
         subfields = get_datetime_subfields(self.fields)
         for name, value in input_data.items():
             if name in subfields:
@@ -350,7 +358,7 @@ class ModelFields(object):
         provides information about the ones that are not used.
 
         """
-
+        datetime_fields = self.expand_datetime_fields(input_data)
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
@@ -370,7 +378,7 @@ class ModelFields(object):
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
-
+            new_input = add_expanded_dates(new_input, datetime_fields)
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
             return result

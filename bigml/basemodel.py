@@ -206,8 +206,8 @@ class BaseModel(ModelFields):
                                                 model['model'].get('fields',
                                                                    []))
                     # model_fields doesn't contain the datetime fields
-                    date_fields = datetime_fields(model['model'].get('fields',
-                                                                     []))
+                    fields.update(datetime_fields(model['model'].get('fields',
+                                                                     {})))
                     # pagination or exclusion might cause a field not to
                     # be in available fields dict
                     if not all(key in model['model']['fields']
@@ -225,8 +225,7 @@ class BaseModel(ModelFields):
                 missing_tokens = model['model'].get('missing_tokens')
 
                 ModelFields.__init__(
-                    self, fields, date_fields,
-                    objective_id=extract_objective(objective_field),
+                    self, fields, objective_id=extract_objective(objective_field),
                     missing_tokens=missing_tokens)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',

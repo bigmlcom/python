@@ -673,7 +673,6 @@ class TestComparePrediction(object):
             prediction_compare.the_local_prediction_is(self, example[6])
             prediction_compare.the_local_probability_is(self, example[7])
 
-
     def test_scenario16(self):
         """
            Scenario: Successfully comparing predictions with raw date input:

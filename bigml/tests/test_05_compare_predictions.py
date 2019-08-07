@@ -675,7 +675,8 @@ class TestComparePrediction(object):
 
     def test_scenario16(self):
         """
-           Scenario: Successfully comparing predictions with raw date input:
+           Scenario: Successfully comparing remote and local predictions
+                     with raw date input:
                Given I create a data source uploading a "<data>" file
                And I wait until the source is ready less than <time_1> secs
                And I create a dataset
@@ -688,19 +689,37 @@ class TestComparePrediction(object):
                And I create a local prediction for "<data_input>"
                Then the local prediction is "<prediction>"
                Examples:
-               | data | time_1 | time_2 | time_3 | data_input | objective | prediction |
+               |data|time_1|time_2|time_3|data_input|objective|prediction|
         """
         examples = [
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}', '000002', -0.48558],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1920-06-30T20:21:20.320", "cat-0":"cat1"}', '000002', -0.48558],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1932-01-30T19:24:11.440", "cat-0":"cat2"}', '000002', -0.17301],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1950-11-06T05:34:05.252", "cat-0":"cat1"}', '000002', 0.44386],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1969-7-14 17:36", "cat-0":"cat2"}', '000002', -0.01935],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}', '000002', 0.79979],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}', '000002', 0.24316],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}', '000002',  -0.01935],
-            ['data/dates2.csv', '25', '25', '25', '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}', '000002', -0.01935]]
-        show_doc(self.test_scenario1, examples)
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
+             '000002', -0.48558],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1920-06-30T20:21:20.320", "cat-0":"cat1"}',
+             '000002', -0.48558],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1932-01-30T19:24:11.440",  "cat-0":"cat2"}',
+             '000002', -0.17301],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1950-11-06T05:34:05.252", "cat-0":"cat1"}',
+             '000002', 0.44386],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1969-7-14 17:36", "cat-0":"cat2"}',
+             '000002', -0.01935],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
+             '000002', 0.79979],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
+             '000002', 0.24316],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
+             '000002',  -0.01935],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
+             '000002', -0.01935]]
+        show_doc(self.test_scenario16, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -714,3 +733,74 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+    def test_scenario17(self):
+        """
+           Scenario: Successfully comparing remote and local predictions
+                     with raw date input:
+               Given I create a data source uploading a "<data>" file
+               And I wait until the source is ready less than <time_1> secs
+               And I create a dataset
+               And I wait until the dataset is ready less than <time_2> secs
+               And I create a logistic regression model
+               And I wait until the logistic regression is ready less
+               than <time_3> secs
+               And I create a local logistic regression model
+               When I create a prediction for "<data_input>"
+               Then the prediction for "<objective>" is "<prediction>"
+               And the logistic regression probability for the prediction
+               is "<probability>"
+               And I create a local prediction for "<data_input>"
+               Then the local prediction is "<prediction>"
+               And the local logistic regression probability for the
+               prediction is "<probability>"
+               Examples:
+               |data|time_1|time_2|time_3|data_input|objective|prediction
+               |probability|
+        """
+        examples = [
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1910-05-08T19:10:23.106", "target-1":0.722}',
+             'cat0', 0.7576],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1920-06-30T20:21:20.320", "target-1":0.12}',
+             'cat0', 0.7716],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1932-01-30T19:24:11.440",  "target-1":0.32}',
+             'cat0', 0.7352],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1950-11-06T05:34:05.252", "target-1":0.124}',
+             'cat0', 0.7639],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1969-7-14 17:36", "target-1":0.784}',
+             'cat0', 0.7368],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "2001-01-05T23:04:04.693", "target-1":0.451}',
+             'cat0', 0.6765],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "2011-04-01T00:16:45.747", "target-1":0.42}',
+             'cat0', 0.6999],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "1969-W29-1T17:36:39Z", "target-1":0.67}',
+             'cat0', 0.7368],
+            ['data/dates2.csv', '20', '20', '45',
+             '{"time-1": "Mon Jul 14 17:36 +0000 1969", "target-1":0.005}',
+             'cat0', 0.7368]]
+        show_doc(self.test_scenario17, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            model_create.i_create_a_logistic_model(self)
+            model_create.the_logistic_model_is_finished_in_less_than(self,
+                                                                     example[3])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction(self, example[4])
+            prediction_create.the_logistic_prediction_is(self, example[5])
+            prediction_create.the_logistic_probability_is(self, example[6])
+            prediction_compare.i_create_a_local_prediction(self, example[4])
+            prediction_compare.the_local_prediction_is(self, example[5])
+            prediction_compare.the_local_probability_is(self, example[6])

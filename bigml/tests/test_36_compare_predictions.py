@@ -454,3 +454,128 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_compare.i_create_a_local_linear_prediction(self, example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+    def test_scenario11(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for linear regression:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a linear regression
+                And I wait until the linear regression is ready
+                less than <time_3> secs
+                And I create a local linear regression
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                |data|time_1|time_2|time_3|data_input|objective|prediction
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
+             '000002',  0.0669],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1920-06-30T20:21:20.320", "cat-0":"cat1"}',
+             '000002', 0.00048],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1932-01-30T19:24:11.440",  "cat-0":"cat2"}',
+             '000002', 0.05835],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "1950-11-06T05:34:05.252", "cat-0":"cat1"}',
+             '000002', -0.0194],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
+             '000002', 0.03863],
+            ['data/dates2.csv', '20', '20', '25',
+             '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
+             '000002', 0.01441]]
+        show_doc(self.test_scenario11, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            linear_create.i_create_a_linear_regression(self)
+            linear_create.the_linear_regression_is_finished_in_less_than(self,
+                                                                         example[3])
+            prediction_compare.i_create_a_local_linear(self)
+            prediction_create.i_create_a_linear_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_linear_prediction(self,
+                                                                  example[4])
+            prediction_compare.the_local_prediction_is(self, example[6])
+
+    def test_scenario12(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for deepnet:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a deepnet
+                And I wait until the deepnet is ready
+                less than <time_3> secs
+                And I create a local deepnet
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                |data|time_1|time_2|time_3|data_input|objective|prediction
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
+             '000002', -0.03062],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1920-06-30T20:21:20.320", "cat-0":"cat1"}',
+             '000002', -0.0235],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1932-01-30T19:24:11.440",  "cat-0":"cat2"}',
+             '000002', 0.03227],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1950-11-06T05:34:05.602", "cat-0":"cat1"}',
+             '000002', -0.0593],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1969-7-14 17:36", "cat-0":"cat2"}',
+             '000002', 0.0017],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
+             '000002', 0.01125],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
+             '000002', 0.03293],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
+             '000002', -0.00481],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
+             '000002', -0.00481]]
+        show_doc(self.test_scenario12, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_deepnet(self)
+            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_deepnet(self)
+            prediction_create.i_create_a_deepnet_prediction(self, example[4])
+            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_compare.i_create_a_local_deepnet_prediction(self,
+                                                                   example[4])
+            prediction_compare.the_local_prediction_is(self, example[6])

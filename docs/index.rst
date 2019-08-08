@@ -49,7 +49,8 @@ Additional `numpy <http://www.numpy.org/>`_ and
 `scipy <http://www.scipy.org/>`_ libraries are needed in case you want to use
 local predictions for regression models (including the error information)
 using proportional missing strategy. As these are quite heavy libraries and
-they are so seldom used, they are not included in the automatic installation
+they are not heavily used in these bindings,
+they are not included in the automatic installation
 dependencies. The test suite includes some tests that will need these
 libraries to be installed.
 
@@ -5937,7 +5938,7 @@ calls where the number of fields returned is limited).
 Local Linear Regression Predictions
 -----------------------------------
 
-Using the local linear regression object, you can predict the prediction for
+Using the local ``LinearRegression`` class, you can predict the prediction for
 an input data set:
 
 .. code-block:: python
@@ -5954,6 +5955,13 @@ an input data set:
 
 To obtain a linear regression prediction, input data can only have missing
 values for fields that had already some missings in training data.
+
+The ``full=True`` in the predict method will cause the prediction to include
+``confidence bounds`` when available. Some logistic regressions will not
+contain such information by construction. Also, in order to compute these
+bounds locally, you will need ``numpy`` and ``scipy`` in place.
+As they are quite heavy libraries, they aren't automatically installed as
+dependencies of these bindings.
 
 Local Deepnet
 -------------

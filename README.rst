@@ -52,7 +52,8 @@ Additional `numpy <http://www.numpy.org/>`_ and
 `scipy <http://www.scipy.org/>`_ libraries are needed in case you want to use
 local predictions for regression models (including the error information)
 using proportional missing strategy. As these are quite heavy libraries and
-they are so seldom used, they are not included in the automatic installation
+they are not heavily used in these bindings,
+they are not included in the automatic installation
 dependencies. The test suite includes some tests that will need these
 libraries to be installed.
 
@@ -62,7 +63,6 @@ command for this library can produce an error if your system lacks the
 correct developer tools to compile it. In Windows, the error message
 will include a link pointing to the needed Visual Studio version and in
 OSX you'll need to install the Xcode developer tools.
-
 
 Installation
 ------------
@@ -121,7 +121,12 @@ and `API key <https://bigml.com/account/apikey>`_ and are always
 transmitted over HTTPS.
 
 This module will look for your username and API key in the environment
-variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively. You can
+variables ``BIGML_USERNAME`` and ``BIGML_API_KEY`` respectively.
+
+Unix and MacOS
+--------------
+
+You can
 add the following lines to your ``.bashrc`` or ``.bash_profile`` to set
 those variables automatically when you log in:
 
@@ -129,6 +134,8 @@ those variables automatically when you log in:
 
     export BIGML_USERNAME=myusername
     export BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
+
+refer to the next chapters to know how to do that in other operating systems.
 
 With that environment set up, connecting to BigML is a breeze:
 
@@ -144,6 +151,125 @@ class as follows:
 
     api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291')
 
+These credentials will allow you to manage any resource in your user
+environment.
+
+In BigML a user can also work for an ``organization``.
+In this case, the organization administrator should previously assign
+permissions for the user to access one or several particular projects
+in the organization.
+Once permissions are granted, the user can work with resources in a project
+according to his permission level by creating a special constructor for
+each project. The connection constructor in this case
+should include the ``project ID``:
+
+.. code-block:: python
+
+    api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
+                project='project/53739b98d994972da7001d4a')
+
+If the project used in a connection object
+does not belong to an existing organization but is one of the
+projects under the user's account, all the resources
+created or updated with that connection will also be assigned to the
+specified project.
+
+When the resource to be managed is a ``project`` itself, the connection
+needs to include the corresponding``organization ID``:
+
+.. code-block:: python
+
+    api = BigML('myusername', 'ae579e7e53fb9abd646a6ff8aa99d4afe83ac291',
+                organization='organization/53739b98d994972da7025d4a')
+
+
+Authentication on Windows
+-------------------------
+
+The credentials should be permanently stored in your system using
+
+.. code-block:: bash
+
+    setx BIGML_USERNAME myusername
+    setx BIGML_API_KEY ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
+
+Note that ``setx`` will not change the environment variables of your actual
+console, so you will need to open a new one to start using them.
+
+
+Authentication on Jupyter Notebook
+----------------------------------
+
+You can set the environment variables using the ``%env`` command in your
+cells:
+
+.. code-block:: bash
+
+    %env BIGML_USERNAME=myusername
+    %env BIGML_API_KEY=ae579e7e53fb9abd646a6ff8aa99d4afe83ac291
+
+
+Alternative domains
+-------------------
+
+
+The main public domain for the API service is ``bigml.io``, but there are some
+alternative domains, either for Virtual Private Cloud setups or
+the australian subdomain (``au.bigml.io``). You can change the remote
+server domain
+to the VPC particular one by either setting the ``BIGML_DOMAIN`` environment
+variable to your VPC subdomain:
+
+.. code-block:: bash
+
+    export BIGML_DOMAIN=my_VPC.bigml.io
+
+or setting it when instantiating your connection:
+
+.. code-block:: python
+
+    api = BigML(domain="my_VPC.bigml.io")
+
+The corresponding SSL REST calls will be directed to your private domain
+henceforth.
+
+You can also set up your connection to use a particular PredictServer
+only for predictions. In order to do so, you'll need to specify a ``Domain``
+object, where you can set up the general domain name as well as the
+particular prediction domain name.
+
+.. code-block:: python
+
+    from bigml.domain import Domain
+    from bigml.api import BigML
+
+    domain_info = Domain(prediction_domain="my_prediction_server.bigml.com",
+                         prediction_protocol="http")
+
+    api = BigML(domain=domain_info)
+
+Finally, you can combine all the options and change both the general domain
+server, and the prediction domain server.
+
+.. code-block:: python
+
+    from bigml.domain import Domain
+    from bigml.api import BigML
+    domain_info = Domain(domain="my_VPC.bigml.io",
+                         prediction_domain="my_prediction_server.bigml.com",
+                         prediction_protocol="https")
+
+    api = BigML(domain=domain_info)
+
+Some arguments for the Domain constructor are more unsual, but they can also
+be used to set your special service endpoints:
+
+- protocol (string) Protocol for the service
+  (when different from HTTPS)
+- verify (boolean) Sets on/off the SSL verification
+- prediction_verify (boolean) Sets on/off the SSL verification
+  for the prediction server (when different from the general
+  SSL verification)
 
 **Note** that the previously existing ``dev_mode`` flag:
 
@@ -157,6 +283,7 @@ The existing resources that were previously
 created in this environment have been moved
 to a special project in the now unique ``Production Environment``, so this
 flag is no longer needed to work with them.
+
 
 Quick Start
 -----------

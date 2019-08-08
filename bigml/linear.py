@@ -48,9 +48,9 @@ import json
 try:
     import numpy as np
     from scipy.stats import t as student_t
+    STATS = True
 except ImportError:
-        raise ImportError("Failed to import the numpy and scipy modules needed"
-                          " for this class.")
+    STATS = False
 
 from functools import cmp_to_key
 
@@ -179,7 +179,8 @@ class LinearRegression(ModelFields):
                              self.field_codings[field_id]})
                         del self.field_codings[field_id]
                 stats = linear_regression_info["stats"]
-                if stats is not None and stats.get("xtx_inverse") is not None:
+                if STATS and stats is not None and \
+                        stats.get("xtx_inverse") is not None:
                     self.xtx_inverse = stats["xtx_inverse"][:]
                     self.mean_squared_error = stats["mean_squared_error"]
                     self.number_of_samples = stats["number_of_samples"]

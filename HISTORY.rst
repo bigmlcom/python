@@ -3,6 +3,12 @@
 History
 -------
 
+4.24.3 (2019-08-08)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local LinearRegression to work even if `numpy` and `scipy` are
+  not installed.
+
 4.24.2 (2019-07-30)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -144,6 +144,7 @@ def get_datetime_subfields(fields):
     with the subfields from each datetime field
 
     """
+    subfields = {}
     for fid, finfo in fields.items():
         if (finfo.get('parent_optype', False) == 'datetime'):
             parent_name = ".".join(finfo["name"].split(".")[:-1])

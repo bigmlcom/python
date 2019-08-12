@@ -42,7 +42,12 @@ LOGGER = logging.getLogger('BigML')
 # Query string to ask for fields: only the ones in the model, with summary
 # (needed for the list of terms in text fields) and
 # no pagination (all the model fields)
-ONLY_MODEL = 'only_model=true;limit=-1;'
+
+# We need datefields in the download models, and apian sometimes
+# remove them when we use only_model=true so we will set it to
+# false until the problem in apian is fixed
+
+ONLY_MODEL = 'only_model=false;limit=-1;'
 EXCLUDE_FIELDS = 'exclude=fields;'
 
 

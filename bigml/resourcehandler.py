@@ -406,7 +406,6 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
        parameter.
 
     """
-
     if isinstance(resource, basestring):
         resource_id = resource
     else:

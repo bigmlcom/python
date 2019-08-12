@@ -301,3 +301,80 @@ class TestComparePrediction(object):
             compare_predictions.create_local_pca(self)
             compare_predictions.i_create_a_local_projection(self, example[5])
             compare_predictions.the_local_projection_is(self, example[7])
+
+    def test_scenario7(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for PCAs:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a PC
+                And I wait until the PCA is ready less than <time_3> secs
+                And I create a local PCA
+                When I create a projection for "<input_data>"
+                Then the projection is "<projection>"
+                And I create a local projection for "<data_input>"
+                Then the local projection is "<projection>"
+
+                Examples:
+                | data | time_1  | time_2 | time_3 | input_data | projection
+
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1910-05-08T19:10:23.106","cat-0":"cat2","target-2":0.4}',
+             '{"PC8": -0.92246, "PC9": 1.41056, "PC2": -0.83797, "PC3": 0.2074,\
+               "PC1": 1.08468, "PC10": 1.61991, "PC11": 0.88544, "PC4": -1.57731,\
+               "PC5": -2.29749, "PC7": -0.66676, "PC6": 0.72566}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
+             '{"PC8": -0.30951, "PC9": 0.31458, "PC2": 0.86655, "PC3": 1.1263,\
+               "PC1": 0.62323, "PC10": 1.56642, "PC11": 1.80044, "PC4": 1.58003,\
+               "PC5": -0.1768, "PC7": 0.08585, "PC6": -1.53659}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
+             '{"PC8": -0.04247, "PC9": 2.54584, "PC2": 0.00171, "PC3": 1.7694,\
+               "PC1": 0.53266, "PC10": 2.03106, "PC11": -0.1989, "PC4": -1.01355,\
+               "PC5": -0.76426, "PC7": -0.95266, "PC6": -0.31077}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
+             '{"PC8": -0.29975, "PC9": -0.51572, "PC2": 0.49632, "PC3": -0.25607,\
+             "PC1": 0.70735, "PC10": -0.08599, "PC11": 1.52925, "PC4": 0.31737,\
+             "PC5": 0.20286, "PC7": 3.3763, "PC6": -0.87227}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1969-7-14 17:36","cat-0":"cat2","target-2":0.9}',
+             '{"PC8": -0.77856, "PC9": 3.28052, "PC2": 8.40403, "PC3": 0.98418,\
+               "PC1": 0.95467, "PC10": 10.42571, "PC11": -1.04828, "PC4": -3.49208,\
+               "PC5": -2.20306, "PC7": 2.03382, "PC6": -0.71462}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"2001-01-05T23:04:04.693","cat-0":"cat2","target-2":0.01}',
+             '{"PC8": 0.18359, "PC9": 1.08653, "PC2": -0.28475, "PC3": 1.03671,\
+               "PC1": 2.64935, "PC10": 1.30982, "PC11": 0.1075, "PC4": -2.46244,\
+               "PC5": 0.20631, "PC7": -0.48199, "PC6": 1.20524}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"2011-04-01T00:16:45.747","cat-0":"cat2","target-2":0.32}',
+             '{"PC8": -1.00922, "PC9": 0.04512, "PC2": -1.33697, "PC3": -0.72902,\
+               "PC1": 0.56277, "PC10": 0.02041, "PC11": -0.9963, "PC4": -3.33465,\
+               "PC5": 0.20216, "PC7": 0.39652, "PC6": -0.50427}'],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1969-W29-1T17:36:39Z","cat-0":"cat1","target-2":0.87}',
+             '{"PC8": -0.67238, "PC9": -1.86794, "PC2": 3.2382, "PC3": 12.92446,\
+               "PC1": 5.87214, "PC10": -1.89682, "PC11": 5.61512, "PC4": 0.53176,\
+               "PC5": -0.68324, "PC7": 7.12539, "PC6": -3.66043}']]
+        show_doc(self.test_scenario7, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            pca_create.i_create_a_pca(self)
+            pca_create.the_pca_is_finished_in_less_than(self, example[3])
+            projection_create.i_create_a_projection(self, example[4])
+            projection_create.the_projection_is(self, example[5])
+            compare_predictions.create_local_pca(self)
+            compare_predictions.i_create_a_local_projection(self, example[4])
+            compare_predictions.the_local_projection_is(self, example[5])

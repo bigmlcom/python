@@ -575,3 +575,121 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(self, example[8], example[9])
             prediction_compare.i_create_a_local_prediction(self, example[7])
             prediction_compare.the_local_prediction_is(self, example[9])
+
+    def test_scenario13(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for anomaly detectors
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an anomaly detector
+                And I wait until the anomaly detector is ready less
+                than <time_3> secs
+                And I create a local anomaly detector
+                When I create an anomaly score for "<data_input>"
+                Then the anomaly score is "<score>"
+                And I create a local anomaly score for "<data_input>"
+                Then the local anomaly score is "<score>"
+
+                Examples:
+                |data|time_1|time_2|time_3|data_input|score|
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1910-05-08T19:10:23.106","cat-0":"cat2","target-2":0.4}',
+             0.5202],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
+             0.50005],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
+             0.52849],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
+             0.53114],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1969-7-14 17:36","cat-0":"cat2","target-2":0.9}',
+             0.93678],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"2001-01-05T23:04:04.693","cat-0":"cat2","target-2":0.01}',
+             0.5514],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"2011-04-01T00:16:45.747","cat-0":"cat2","target-2":0.32}',
+             0.52959],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1969-W29-1T17:36:39Z","cat-0":"cat1","target-2":0.87}',
+             0.93678],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"Mon Jul 14 17:36 +0000 1969","cat-0":"cat1","target-2":0}',
+             0.93678]]
+        show_doc(self.test_scenario13, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            anomaly_create.i_create_an_anomaly(self)
+            anomaly_create.the_anomaly_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_create.i_create_an_anomaly_score(self, example[4])
+            prediction_create.the_anomaly_score_is(self, example[5])
+            prediction_compare.i_create_a_local_anomaly_score(self, example[4])
+            prediction_compare.the_local_anomaly_score_is(self, example[5])
+
+    def test_scenario14(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for cluster
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a cluster
+                And I wait until the cluster is ready less than <time_3> secs
+                And I create a local cluster
+                When I create a centroid for "<data_input>"
+                Then the centroid is "<centroid>" with distance "<distance>"
+                And I create a local centroid for "<data_input>"
+                Then the local centroid is "<centroid>" with
+                distance "<distance>"
+
+                Examples headers:
+                |data|time_1|time_2|time_3|data_input|centroid|distance|
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1910-05-08T19:10:23.106","cat-0":"cat2","target-2":0.4}',
+             "Cluster 1", 0.94135],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
+             "Cluster 6", 0.77264],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
+             "Cluster 1", 0.88974],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
+             "Cluster 7", 0.94638]]
+        show_doc(self.test_scenario14, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            cluster_create.i_create_a_cluster(self)
+            cluster_create.the_cluster_is_finished_in_less_than(self,
+                                                                example[3])
+            prediction_compare.i_create_a_local_cluster(self)
+            prediction_create.i_create_a_centroid(self, example[4])
+            prediction_create.the_centroid_is_with_distance(self,
+                                                            example[5],
+                                                            example[6])
+            prediction_compare.i_create_a_local_centroid(self, example[4])
+            prediction_compare.the_local_centroid_is(self,
+                                                     example[5],
+                                                     example[6])

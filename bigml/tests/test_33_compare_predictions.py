@@ -600,31 +600,31 @@ class TestComparePrediction(object):
         examples = [
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1910-05-08T19:10:23.106","cat-0":"cat2","target-2":0.4}',
-             0.5202],
+             0.52477],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
-             0.50005],
+             0.50654],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
-             0.52849],
+             0.54343],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
-             0.53114],
+             0.5202],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1969-7-14 17:36","cat-0":"cat2","target-2":0.9}',
-             0.93678],
+             0.93639],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"2001-01-05T23:04:04.693","cat-0":"cat2","target-2":0.01}',
-             0.5514],
+             0.54911],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"2011-04-01T00:16:45.747","cat-0":"cat2","target-2":0.32}',
-             0.52959],
+             0.52477],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1969-W29-1T17:36:39Z","cat-0":"cat1","target-2":0.87}',
              0.93678],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"Mon Jul 14 17:36 +0000 1969","cat-0":"cat1","target-2":0}',
-             0.93678]]
+             0.93717]]
         show_doc(self.test_scenario13, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -663,16 +663,16 @@ class TestComparePrediction(object):
         examples = [
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1910-05-08T19:10:23.106","cat-0":"cat2","target-2":0.4}',
-             "Cluster 1", 0.94135],
+             "Cluster 2", 0.92112],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
-             "Cluster 6", 0.77264],
+             "Cluster 3", 0.77389],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
-             "Cluster 1", 0.88974],
+             "Cluster 0", 0.87855],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
-             "Cluster 7", 0.94638]]
+             "Cluster 6", 0.83506]]
         show_doc(self.test_scenario14, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -693,3 +693,41 @@ class TestComparePrediction(object):
             prediction_compare.the_local_centroid_is(self,
                                                      example[5],
                                                      example[6])
+
+    def test_scenario15(self):
+        """
+            Scenario: Successfully comparing association sets:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I update the source with params "<options>"
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a model
+                And I wait until the association is ready less than <time_3> secs
+                And I create a local association
+                When I create an association set for "<data_input>"
+                Then the association set is like the contents of
+                "<association_set_file>"
+                And I create a local association set for "<data_input>"
+                Then the local association set is like the contents of
+                "<association_set_file>"
+
+        """
+        examples = [['data/dates2.csv', '20', '30', '80', '{"target-2": -1}',
+                     'data/associations/association_set2.json']]
+        show_doc(self.test_scenario15, examples)
+
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            association_create.i_create_an_association_from_dataset(self)
+            association_create.the_association_is_finished_in_less_than(self,
+                                                                        example[3])
+            #prediction_compare.i_create_a_local_association(self)
+            prediction_create.i_create_an_association_set(self, example[4])
+            prediction_compare.the_association_set_is_like_file(self, example[5])
+            #prediction_compare.i_create_a_local_association_set(self, example[6])
+            #prediction_compare.the_local_association_set_is_like_file(self, example[5])

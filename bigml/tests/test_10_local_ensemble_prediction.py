@@ -241,40 +241,37 @@ class TestEnsemblePrediction(object):
         examples = [
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
-             '000002', 1.25646],
+             '000002', -0.11052],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1920-06-30T20:21:20.320", "cat-0":"cat1"}',
-             '000002', 0.9483],
+             '000002', 0.79179],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1932-01-30T19:24:11.450", "cat-0":"cat2"}',
-             '000002',  -0.22173],
+             '000002',  -1.00834],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1950-11-06T05:34:05.252", "cat-0":"cat1"}',
-             '000002',  -0.8311],
+             '000002',  -0.14442],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1969-7-14 17:36", "cat-0":"cat2"}',
-             '000002', -0.00617],
+             '000002', -0.05469],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
-             '000002',  -0.82588],
-            ['data/dates2.csv', 10, 10, 50,
-             '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
-             '000002', 0.2546],
+             '000002',  -0.23387],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
-             '000002',   -0.00617],
+             '000002', -0.05469],
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
-             '000002', -0.00617]]
+             '000002', -0.05469]]
         print self.test_scenario6.__doc__
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
-            # source_create.the_source_is_finished(self, example[1])
+            source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
-            # dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
             ensemble_create.i_create_an_ensemble(self)
-            # ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
             ensemble_create.create_local_ensemble(self)
             prediction_create.i_create_an_ensemble_prediction(self, example[4])
             prediction_create.the_prediction_is(self, example[5], example[6])

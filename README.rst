@@ -39,6 +39,7 @@ The basic third-party dependencies are the
 `poster <http://atlee.ca/software/poster/#download>`_,
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ and
 `requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
+`bigml-chronos <https://pypi.org/project/bigml-chronos>`_
 libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package

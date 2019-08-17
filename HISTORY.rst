@@ -3,6 +3,12 @@
 History
 -------
 
+4.25.0 (2019-08-18)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding the ability to parse datetime fields locally for local predictions
+  (uses bigml-chronos as a dependency).
+
 4.24.3 (2019-08-08)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -12,7 +12,7 @@ install:
   - pip install numpy
   - pip install scipy
   - pip install pystemmer
-  - python setup.py develop
+  - pip install .
 script:
   - export TESTS=$(for t in $BML_TESTS; do ls bigml/tests/*$t*;done|paste -sd ",")
   - echo $TESTS

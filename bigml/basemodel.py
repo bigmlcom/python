@@ -158,11 +158,12 @@ def get_resource_dict(resource, resource_type, api=None):
     return resource_id, resource
 
 
-def datetime_fields(f):
+def datetime_fields(fields):
     """Returns datetime fields from a dict of fields
 
     """
-    return {k: v for k, v in f.items() if v.get("optype", False) == "datetime"}
+    return {k: v for k, v in fields.items() \
+            if v.get("optype", False) == "datetime"}
 
 
 class BaseModel(ModelFields):

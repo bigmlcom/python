@@ -35,6 +35,11 @@ from bigml.chronos import chronos
 
 LOGGER = logging.getLogger('BigML')
 
+DATE_FNS = {
+    "day-of-month": lambda (x): x.day,
+    "day-of-week": lambda (x): x.weekday() + 1,
+    "millisecond": lambda(x): x.microsecond / 1000}
+
 
 def parse_terms(text, case_sensitive=True):
     """Returns the list of parsed terms
@@ -146,9 +151,10 @@ def get_datetime_subfields(fields):
     """
     subfields = {}
     for fid, finfo in fields.items():
-        if (finfo.get('parent_optype', False) == 'datetime'):
-            parent_name = ".".join(finfo["name"].split(".")[:-1])
-            subfield = {fid: finfo["name"].split(".")[-1]}
+        if finfo.get('parent_optype', False) == 'datetime':
+            parent_id = finfo["parent_ids"][0]
+            parent_name = fields[parent_id]["name"]
+            subfield = {fid: finfo["datatype"]}
             if parent_name in subfields.keys():
                 subfields[parent_name].update(subfield)
             else:
@@ -167,22 +173,11 @@ def expand_date(date, subfields, timeformats):
     except ValueError:
         return {}
     for fid, ftype in subfields.items():
-        if ftype == "day-of-month":
-            expanded.update({fid: parsed_date.day})
-        elif ftype == "day-of-week":
-            expanded.update({fid: parsed_date.weekday()+1})
-        elif ftype == "year":
-            expanded.update({fid: parsed_date.year})
-        elif ftype == "month":
-            expanded.update({fid: parsed_date.month})
-        elif ftype == "second":
-            expanded.update({fid: parsed_date.second})
-        elif ftype == "millisecond":
-            expanded.update({fid: parsed_date.microsecond/1000})
-        elif ftype == "hour":
-            expanded.update({fid: parsed_date.hour})
-        elif ftype == "minute":
-            expanded.update({fid: parsed_date.minute})
+        date_fn = DATE_FNS.get(ftype)
+        if date_fn is not None:
+            expanded.update({fid: date_fn(parsed_date)})
+        else:
+            expanded.update({fid: getattr(parsed_date, ftype)})
     return expanded
 
 
@@ -192,8 +187,8 @@ def get_datetime_formats(fields):
 
     """
     timeformats = {}
-    for fid, finfo in fields.items():
-        if (finfo.get('optype', False) == 'datetime'):
+    for _, finfo in fields.items():
+        if finfo.get('optype', False) == 'datetime':
             name = finfo["name"]
             timeformats[name] = finfo.get('time_formats', {})
     return timeformats
@@ -204,9 +199,9 @@ def add_expanded_dates(input_data, datetime_fields):
     provided by the user (only if the user didn't specify it)
 
     """
-    for i, v in datetime_fields.items():
-        if (i not in input_data):
-            input_data[i] = v
+    for index, value in datetime_fields.items():
+        if index not in input_data:
+            input_data[index] = value
     return input_data
 
 
@@ -231,13 +226,13 @@ class ModelFields(object):
                         sorted( \
                         [(field_id, field) for field_id,
                          field in self.fields.items()],
-                        key=lambda(x): x[1].get("column_number"))
-                        if not self.objective_id or
+                        key=lambda(x): x[1].get("column_number")) \
+                        if not self.objective_id or \
                         field_id != self.objective_id]
                 self.model_fields = {}
                 self.model_fields.update(
                     dict([(field_id, field) for field_id, field in \
-                    self.fields.items() if field_id in self.input_fields and
+                    self.fields.items() if field_id in self.input_fields and \
                     self.fields[field_id].get("preferred", True)]))
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
@@ -288,7 +283,7 @@ class ModelFields(object):
                     [category, _] in field['summary']['categories']]
             if field['optype'] == 'datetime' and \
                     hasattr(self, "coeff_ids"):
-                self.coeff_id  = [coeff_id for coeff_id in self.coeff_ids \
+                self.coeff_id = [coeff_id for coeff_id in self.coeff_ids \
                     if coeff_id != field_id]
             if numerics and hasattr(self, "missing_numerics") and \
                     self.missing_numerics and field['optype'] == 'numeric' \

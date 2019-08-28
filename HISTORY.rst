@@ -3,6 +3,11 @@
 History
 -------
 
+4.25.1 (2019-08-28)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local Fusion object when retrienving from storage.
+
 4.25.0 (2019-08-18)
 ~~~~~~~~~~~~~~~~~~~
 

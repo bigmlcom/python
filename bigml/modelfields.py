@@ -125,7 +125,8 @@ def check_model_fields(model):
         # need all fields to work
         model_fields = model.get(inner_key, {}).get( \
             'model_fields', {}).keys()
-        if input_fields is None:
+        # fusions don't have input fields
+        if input_fields is None and inner_key != "fusion":
             return False
         if not model_fields:
             fields_meta = model.get('fields_meta', \

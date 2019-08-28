@@ -21,6 +21,7 @@
 """
 from world import world, setup_module, teardown_module
 import create_model_steps as model_create
+import create_linear_steps as linear_create
 import create_source_steps as source_create
 import create_dataset_steps as dataset_create
 import create_ensemble_steps as ensemble_create
@@ -379,3 +380,35 @@ class TestLocalFromFile(object):
             model_create.i_export_fusion(self, example[4])
             model_create.i_create_local_fusion_from_file(self, example[4])
             model_create.check_fusion_id_local_id(self)
+
+
+    def test_scenario11(self):
+        """
+            Scenario 11: Successfully creating a local linear regression from an exported file:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a linear regression
+                And I wait until the linear regression is ready less than <time_3> secs
+                And I export the linear regression to "<exported_file>"
+                When I create a local linear regression from the file "<exported_file>"
+                Then the linear regression ID and the local linear regression ID match
+                Examples:
+                | data                | time_1  | time_2 | time_3 | exported_file
+                | ../data/grades.csv | 10      | 10     | 50 | ./tmp/linear.json
+        """
+        print self.test_scenario11.__doc__
+        examples = [
+            ['data/grades.csv', '20', '20', '50', './tmp/linear.json']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            linear_create.i_create_a_linear_regression_from_dataset(self)
+            linear_create.the_linear_regression_is_finished_in_less_than(self, example[3])
+            model_create.i_export_linear_regression(self, example[4])
+            model_create.i_create_local_linear_regression_from_file(self, example[4])
+            model_create.check_linear_regression_id_local_id(self)

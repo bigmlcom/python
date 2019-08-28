@@ -36,7 +36,6 @@ The basic third-party dependencies are the
 `poster <http://atlee.ca/software/poster/#download>`_,
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ and
 `requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
-`bigml-chronos <https://pypi.org/project/bigml-chronos>`_
 libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package
@@ -455,6 +454,7 @@ document. You can also check other simple examples in the following documents:
 - `topic model 101 <101_topic_model.html>`_
 - `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
+- `fusion 101 <101_fusion.html>`_
 - `scripting 101 <101_scripting.html>`_
 
 Fields Structure

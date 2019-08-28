@@ -28,8 +28,10 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.api import BigML
 from bigml.model import Model
 from bigml.logistic import LogisticRegression
+from bigml.linear import LinearRegression
 from bigml.deepnet import Deepnet
 from bigml.fusion import Fusion
 
@@ -417,7 +419,9 @@ def i_check_fusion_name(step, name):
 
 #@step(r'I create a local model from file "(.*)"')
 def i_create_local_model_from_file(step, export_file):
-    world.local_model = Model(res_filename(export_file))
+    world.local_model = Model( \
+        res_filename(export_file),
+        api=BigML("wrong-user", "wrong-api-key"))
 
 
 #@step(r'the model ID and the local model ID match')
@@ -432,7 +436,9 @@ def i_export_ensemble(step, filename):
 
 #@step(r'I create a local ensemble from file "(.*)"')
 def i_create_local_ensemble_from_file(step, export_file):
-    world.local_ensemble = Ensemble(res_filename(export_file))
+    world.local_ensemble = Ensemble( \
+        res_filename(export_file),
+        api=BigML("wrong-user", "wrong-api-key"))
 
 
 #@step(r'the ensemble ID and the local ensemble ID match')
@@ -447,7 +453,9 @@ def i_export_logistic_regression(step, filename):
 
 #@step(r'I create a local logistic regressin from file "(.*)"')
 def i_create_local_logistic_regression_from_file(step, export_file):
-    world.local_logistic = LogisticRegression(res_filename(export_file))
+    world.local_logistic = LogisticRegression( \
+        res_filename(export_file),
+        api=BigML("wrong-user", "wrong-api-key"))
 
 
 #@step(r'the logistic ID and the local logistic ID match')
@@ -462,7 +470,8 @@ def i_export_deepnet(step, filename):
 
 #@step(r'I create a local deepnet from file "(.*)"')
 def i_create_local_deepnet_from_file(step, export_file):
-    world.local_deepnet = Deepnet(res_filename(export_file))
+    world.local_deepnet = Deepnet(res_filename(export_file),
+                                  api=BigML("wrong-user", "wrong-api-key"))
 
 
 #@step(r'the deepnet ID and the local deepnet ID match')
@@ -476,9 +485,28 @@ def i_export_fusion(step, filename):
 
 #@step(r'I create a local fusion from file "(.*)"')
 def i_create_local_fusion_from_file(step, export_file):
-    world.local_fusion = Fusion(res_filename(export_file))
+    world.local_fusion = Fusion( \
+        res_filename(export_file), api=BigML("wrong-user", "wrong-api-key"))
 
 
 #@step(r'the fusion ID and the local fusion ID match')
 def check_fusion_id_local_id(step):
     eq_(world.local_fusion.resource_id, world.fusion["resource"])
+
+
+#@step(r'I export the linear regression$')
+def i_export_linear_regression(step, filename):
+    world.api.export(world.linear_regression.get('resource'),
+                     filename=res_filename(filename))
+
+
+#@step(r'I create a local linear regression from file "(.*)"')
+def i_create_local_linear_regression_from_file(step, export_file):
+    world.local_linear_regression = LinearRegression( \
+        res_filename(export_file), api=BigML("wrong-user", "wrong-api-key"))
+
+
+#@step(r'the linear regression ID and the local linear regression ID match')
+def check_linear_regression_id_local_id(step):
+    eq_(world.local_linear_regression.resource_id,
+        world.linear_regression["resource"])

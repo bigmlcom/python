@@ -476,6 +476,7 @@ document. You can also check other simple examples in the following documents:
 - `topic model 101 <101_topic_model.html>`_
 - `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
+- `fusion 101 <101_fusion.html>`_
 - `scripting 101 <101_scripting.html>`_
 
 Additional Information

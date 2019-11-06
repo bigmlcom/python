@@ -390,8 +390,9 @@ class Cluster(ModelFields):
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        reference_point, _ = self._prepare_for_distance( \
+        reference_point, text_coords = self._prepare_for_distance( \
             reference_point)
+        reference_point.update(text_coords)
         # mimic centroid structure to use it in distance computation
         point_info = {"center": reference_point}
         reference = Centroid(point_info)

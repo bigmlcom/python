@@ -533,12 +533,6 @@ class TestComparePrediction(object):
 
                 Examples:
                 |data|time_1|time_2|time_3|data_input|objective|prediction
-
-        """
-        examples = [
-            ['data/dates2.csv', '20', '45', '60',
-             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
-             '000002', -0.07857],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1920-06-45T20:21:20.320", "cat-0":"cat1"}',
              '000002', -0.11711],
@@ -559,7 +553,14 @@ class TestComparePrediction(object):
              '000002', -0.11711],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
-             '000002', -0.11711]]
+             '000002', -0.11711]
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
+             '000002', 0.1439],
+]
         show_doc(self.test_scenario12, examples)
 
         for example in examples:
@@ -568,7 +569,7 @@ class TestComparePrediction(object):
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_deepnet(self)
+            model_create.i_create_a_no_suggest_deepnet(self)
             model_create.the_deepnet_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_deepnet(self)
             prediction_create.i_create_a_deepnet_prediction(self, example[4])

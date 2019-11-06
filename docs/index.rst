@@ -3700,7 +3700,7 @@ URL pointing to a CSV file:
     >>> from bigml.api import BigML
     >>> api = BigML()
     >>> execution = api.create_execution( \
-            "script": script,
+            script,
             {"inputs": [["my_remote_data",
                          "https://static.bigml.com/csv/iris.csv"]]})
 

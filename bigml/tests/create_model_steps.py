@@ -238,6 +238,19 @@ def i_create_a_deepnet(step):
     world.deepnet = resource['object']
     world.deepnets.append(resource['resource'])
 
+
+#@step(r'I create a non-suggested deepnet model$')
+def i_create_a_no_suggest_deepnet(step):
+    dataset = world.dataset.get('resource')
+    resource = world.api.create_deepnet(dataset, {"suggest_structure": False,
+                                                  "max_iterations": 100,
+                                                  "deepnet_seed": "bigml"})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.deepnet = resource['object']
+    world.deepnets.append(resource['resource'])
+
 #@step(r'I create a deepnet model with objective "(.*?)" and parms "(.*)"$')
 def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):
     dataset = world.dataset.get('resource')

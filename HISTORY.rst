@@ -3,6 +3,11 @@
 History
 -------
 
+4.25.2 (2019-11-06)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in local Cluster object when using text or item fields.
+
 4.25.1 (2019-08-28)
 ~~~~~~~~~~~~~~~~~~~
 

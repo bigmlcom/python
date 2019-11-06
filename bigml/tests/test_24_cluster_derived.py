@@ -131,7 +131,11 @@ class TestClusterDerived(object):
              '{"distance": 0.001894153207990619, "data":'
              ' {"petal length": "1.4", "petal width": "0.2",'
              ' "sepal width": "3.0", "sepal length": "4.9",'
-             ' "species": "Iris-setosa"}}']]
+             ' "species": "Iris-setosa"}}'],
+            ['data/spam_4w.csv', '10', '10', '40',
+             '{"Message": "mobile"}',
+             '{"distance": 0.0, "data":'
+             ' {"Message": "mobile", "Type": "spam"}}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -142,3 +146,36 @@ class TestClusterDerived(object):
             cluster_create.the_cluster_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_cluster(self)
             cluster_create.closest_in_cluster(self, example[4], example[5])
+
+
+    def test_scenario4(self):
+        """
+            Scenario: Successfully getting the closest centroid in a cluster:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a cluster
+                And I wait until the cluster is ready less than <time_3> secs
+                And I create a local cluster
+                Then the centroid in the cluster closest to "<reference>" is "<closest>"
+
+                Examples:
+                | data | time_1  | time_2 | time_3 | reference | closest |
+
+        """
+        print self.test_scenario4.__doc__
+        examples = [
+            ['data/spam_4w.csv', '10', '10', '40',
+             '{"Message": "free"}',
+             '000005']]
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            cluster_create.i_create_a_cluster(self)
+            cluster_create.the_cluster_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_cluster(self)
+            cluster_create.closest_centroid_in_cluster(self, example[4], example[5])

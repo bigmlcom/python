@@ -125,6 +125,15 @@ def closest_in_cluster(step, reference, closest):
     result = json.loads(json.dumps(result))
     eq_(closest, result)
 
+#@step(r'the centroid in the cluster closest to "(.*)" is "(.*)"')
+def closest_centroid_in_cluster(step, reference, closest_id):
+    local_cluster = world.local_cluster
+    reference = json.loads(reference)
+    result = local_cluster.sorted_centroids( \
+        reference)
+    result = result["centroids"][0]["centroid_id"]
+    eq_(closest_id, result)
+
 #@step(r'I export the cluster$')
 def i_export_cluster(step, filename):
     world.api.export(world.cluster.get('resource'),

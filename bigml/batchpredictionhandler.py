@@ -46,7 +46,8 @@ class BatchPredictionHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.batch_prediction_url = self.url + BATCH_PREDICTION_PATH
+        self.batch_prediction_url = (self.prediction_base_url +
+                                     BATCH_PREDICTION_PATH)
 
     def create_batch_prediction(self, model, dataset,
                                 args=None, wait_time=3, retries=10):

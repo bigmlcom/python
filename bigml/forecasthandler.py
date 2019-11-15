@@ -46,7 +46,7 @@ class ForecastHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.forecast_url = self.url + FORECAST_PATH
+        self.forecast_url = self.prediction_base_url + FORECAST_PATH
 
     def create_forecast(self, time_series, input_data=None,
                         args=None, wait_time=3, retries=10):

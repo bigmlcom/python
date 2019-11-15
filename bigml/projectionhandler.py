@@ -47,7 +47,7 @@ class ProjectionHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.projection_url = self.url + PROJECTION_PATH
+        self.projection_url = self.prediction_base_url + PROJECTION_PATH
 
     def create_projection(self, pca, input_data=None,
                           args=None, wait_time=3, retries=10):

@@ -239,7 +239,7 @@ class BigMLConnection(object):
         self.verify = None
         self.verify_prediction = None
         self.url = None
-        self.prediction_url = None
+        self.prediction_base_url = None
 
         self._set_api_urls(domain=domain)
 
@@ -276,7 +276,7 @@ class BigMLConnection(object):
         self.verify = domain.verify
         self.verify_prediction = domain.verify_prediction
         self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
-        self.prediction_url = BIGML_URL % (
+        self.prediction_base_url = BIGML_URL % (
             self.prediction_protocol, self.prediction_domain)
 
 

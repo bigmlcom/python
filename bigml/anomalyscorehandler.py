@@ -48,7 +48,7 @@ class AnomalyScoreHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.anomaly_score_url = self.url + ANOMALY_SCORE_PATH
+        self.anomaly_score_url = self.prediction_base_url + ANOMALY_SCORE_PATH
 
     def create_anomaly_score(self, anomaly, input_data=None,
                              args=None, wait_time=3, retries=10):

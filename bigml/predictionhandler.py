@@ -47,7 +47,7 @@ class PredictionHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.prediction_url = self.prediction_url + PREDICTION_PATH
+        self.prediction_url = self.prediction_base_url + PREDICTION_PATH
 
     def create_prediction(self, model, input_data=None,
                           args=None, wait_time=3, retries=10):

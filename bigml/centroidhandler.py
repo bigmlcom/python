@@ -47,7 +47,7 @@ class CentroidHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.centroid_url = self.url + CENTROID_PATH
+        self.centroid_url = self.prediction_base_url + CENTROID_PATH
 
     def create_centroid(self, cluster, input_data=None,
                         args=None, wait_time=3, retries=10):

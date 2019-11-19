@@ -41,7 +41,7 @@ PYTHON_VERSION = sys.version_info[0:3]
 PYTHON_REQUESTS_CHANGE = (2, 7, 9)
 REQUESTS_VERSION = "requests==2.5.3" if \
     PYTHON_VERSION < PYTHON_REQUESTS_CHANGE else "requests"
-INSTALL_REQUIRES = ["unidecode", "bigml-chronos"]
+INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.3.7"]
 if PYTHON_VERSION[0] < 3:
     INSTALL_REQUIRES.append('poster')
 else:
@@ -63,6 +63,7 @@ setuptools.setup(
     packages = ['bigml', 'bigml.tests', 'bigml.laminar', 'bigml.out_model',
                 'bigml.out_tree', 'bigml.tests.my_ensemble'],
     package_data={'bigml':['out_model/static/*']},
+    namespace_packages=['bigml'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

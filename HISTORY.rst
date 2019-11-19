@@ -3,6 +3,11 @@
 History
 -------
 
+4.25.3 (2019-11-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug when installing bigml-chronos submodule.
+
 4.25.2 (2019-11-06)
 ~~~~~~~~~~~~~~~~~~~
 

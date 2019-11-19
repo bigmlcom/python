@@ -46,7 +46,8 @@ class BatchProjectionHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.batch_projection_url = self.url + BATCH_PROJECTION_PATH
+        self.batch_projection_url = self.prediction_base_url + \
+            BATCH_PROJECTION_PATH
 
     def create_batch_projection(self, pca, dataset,
                                 args=None, wait_time=3, retries=10):

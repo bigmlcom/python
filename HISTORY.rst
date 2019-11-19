@@ -7,6 +7,8 @@ History
 ~~~~~~~~~~~~~~~~~~~
 
 - Fixing bug when installing bigml-chronos submodule.
+- Extending the ability to use an alternative url to all predictions,
+  centroids, anomaly scores, etc. Also to their batch versions.
 
 4.25.2 (2019-11-06)
 ~~~~~~~~~~~~~~~~~~~

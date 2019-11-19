@@ -46,7 +46,8 @@ class BatchCentroidHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.batch_centroid_url = self.url + BATCH_CENTROID_PATH
+        self.batch_centroid_url = self.prediction_base_url \
+            + BATCH_CENTROID_PATH
 
     def create_batch_centroid(self, cluster, dataset,
                               args=None, wait_time=3, retries=10):

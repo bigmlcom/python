@@ -46,7 +46,8 @@ class BatchAnomalyScoreHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.batch_anomaly_score_url = self.url + BATCH_ANOMALY_SCORE_PATH
+        self.batch_anomaly_score_url = self.prediction_base_url + \
+            BATCH_ANOMALY_SCORE_PATH
 
     def create_batch_anomaly_score(self, anomaly, dataset,
                                    args=None, wait_time=3, retries=10):

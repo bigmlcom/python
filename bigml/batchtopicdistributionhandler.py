@@ -46,7 +46,7 @@ class BatchTopicDistributionHandler(ResourceHandler):
            instantiated independently.
 
         """
-        self.batch_topic_distribution_url = self.url + \
+        self.batch_topic_distribution_url = self.prediction_base_url + \
             BATCH_TOPIC_DISTRIBUTION_PATH
 
     def create_batch_topic_distribution(self, topic_model, dataset,

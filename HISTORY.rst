@@ -3,6 +3,19 @@
 History
 -------
 
+4.26.0 (2019-11-27)
+~~~~~~~~~~~~~~~~~~~
+
+- Extending the ability to use an alternative url to all predictions,
+  centroids, anomaly scores, etc. Also to their batch versions.
+
+4.25.3 (2019-11-26)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing bigml-chronos dependency version according to its new internal
+  structure. The previous version caused problems when used in some external
+  projects.
+
 4.25.2 (2019-11-06)
 ~~~~~~~~~~~~~~~~~~~
 

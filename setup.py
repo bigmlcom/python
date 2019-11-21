@@ -63,7 +63,6 @@ setuptools.setup(
     packages = ['bigml', 'bigml.tests', 'bigml.laminar', 'bigml.out_model',
                 'bigml.out_tree', 'bigml.tests.my_ensemble'],
     package_data={'bigml':['out_model/static/*']},
-    namespace_packages=['bigml'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

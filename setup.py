@@ -75,6 +75,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+    namespace_packages=['bigml'],
     test_suite='nose.collector',
     use_2to3=True
 )

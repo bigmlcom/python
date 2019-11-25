@@ -156,10 +156,10 @@ def get_datetime_subfields(fields):
             parent_id = finfo["parent_ids"][0]
             parent_name = fields[parent_id]["name"]
             subfield = {fid: finfo["datatype"]}
-            if parent_name in subfields.keys():
-                subfields[parent_name].update(subfield)
+            if parent_id in subfields.keys():
+                subfields[parent_id].update(subfield)
             else:
-                subfields[parent_name] = subfield
+                subfields[parent_id] = subfield
     return subfields
 
 
@@ -188,10 +188,9 @@ def get_datetime_formats(fields):
 
     """
     timeformats = {}
-    for _, finfo in fields.items():
+    for f_id, finfo in fields.items():
         if finfo.get('optype', False) == 'datetime':
-            name = finfo["name"]
-            timeformats[name] = finfo.get('time_formats', {})
+            timeformats[f_id] = finfo.get('time_formats', {})
     return timeformats
 
 
@@ -235,6 +234,9 @@ class ModelFields(object):
                     dict([(field_id, field) for field_id, field in \
                     self.fields.items() if field_id in self.input_fields and \
                     self.fields[field_id].get("preferred", True)]))
+                # if any of the model fields is a generated datetime field
+                # we need to add the parent datetime field
+                self.model_fields = self.add_datetime_parents()
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -341,12 +343,20 @@ class ModelFields(object):
         expanded = {}
         timeformats = get_datetime_formats(self.fields)
         subfields = get_datetime_subfields(self.fields)
-        for name, value in input_data.items():
-            if name in subfields:
-                formats = timeformats.get(name, [])
-                expanded.update(expand_date(value, subfields[name], formats))
+        for f_id, value in input_data.items():
+            if f_id in subfields:
+                formats = timeformats.get(f_id, [])
+                expanded.update(expand_date(value, subfields[f_id], formats))
         return expanded
 
+    def add_datetime_parents(self):
+        """Adding the fields information for the fields that generate other
+        datetime fields used in the model
+        """
+        subfields = get_datetime_subfields(self.fields)
+        for f_id in subfields.keys():
+            self.model_fields[f_id] = self.fields[f_id]
+        return self.model_fields
 
     def filter_input_data(self, input_data,
                           add_unused_fields=False):
@@ -355,7 +365,6 @@ class ModelFields(object):
         provides information about the ones that are not used.
 
         """
-        datetime_fields = self.expand_datetime_fields(input_data)
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
@@ -375,6 +384,7 @@ class ModelFields(object):
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
+            datetime_fields = self.expand_datetime_fields(new_input)
             new_input = add_expanded_dates(new_input, datetime_fields)
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input

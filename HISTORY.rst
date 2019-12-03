@@ -3,6 +3,14 @@
 History
 -------
 
+4.27.0 (2019-12-03)
+~~~~~~~~~~~~~~~~~~~
+
+- Extending the custom formats for datetimes allowed as input for local
+  predictions.
+- Fixing datetimes allowed as input for local predictions. They can be
+  provided by name or ID.
+
 4.26.0 (2019-11-27)
 ~~~~~~~~~~~~~~~~~~~
 

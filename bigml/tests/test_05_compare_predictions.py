@@ -571,7 +571,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa', "tmp/my_model.json", "my_test"],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', "tmp/my_model.json", "my_test"],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model.json", "my_test"],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model.json", "my_test"]]
+            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model_2.json", "my_test"]]
         show_doc(self.test_scenario13, examples)
         for example in examples:
             print "\nTesting with:\n", example

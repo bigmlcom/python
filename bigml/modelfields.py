@@ -230,6 +230,7 @@ class ModelFields(object):
                         if not self.objective_id or \
                         field_id != self.objective_id]
                 self.model_fields = {}
+                self.datetime_parents = []
                 self.model_fields.update(
                     dict([(field_id, field) for field_id, field in \
                     self.fields.items() if field_id in self.input_fields and \
@@ -356,7 +357,17 @@ class ModelFields(object):
         subfields = get_datetime_subfields(self.fields)
         for f_id in subfields.keys():
             self.model_fields[f_id] = self.fields[f_id]
+            self.datetime_parents.append(f_id)
         return self.model_fields
+
+    def remove_parent_datetimes(self, input_data):
+        """Removes the parents of datetime fields
+
+        """
+        for f_id in self.datetime_parents:
+            if f_id in input_data:
+                del input_data[f_id]
+        return input_data
 
     def filter_input_data(self, input_data,
                           add_unused_fields=False):
@@ -386,6 +397,7 @@ class ModelFields(object):
                     unused_fields.append(key)
             datetime_fields = self.expand_datetime_fields(new_input)
             new_input = add_expanded_dates(new_input, datetime_fields)
+            new_input = self.remove_parent_datetimes(new_input)
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
             return result

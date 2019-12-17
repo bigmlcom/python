@@ -610,11 +610,10 @@ def check_no_training_missings(input_data, fields, weight_field=None,
     """
     for field_id, field in fields.items():
         if (field["optype"] != "datetime" and \
-                (not field_id in input_data and \
+                field_id not in input_data and \
                 field['summary']['missing_count'] == 0 and \
-                (weight_field is None or \
-                field_id != weight_field) and \
-                (objective_id is None or field_id != objective_id))):
+                (weight_field is None or field_id != weight_field) and \
+                (objective_id is None or field_id != objective_id)):
             raise ValueError("Failed to predict. Input"
                              " data must contain values for field '%s' "
                              "to get a prediction." % field['name'])

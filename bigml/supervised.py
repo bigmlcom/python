@@ -113,10 +113,15 @@ class SupervisedModel(BaseModel):
     def __init__(self, model, api=None):
 
         if api is None:
-            api = BigML(storage=STORAGE)
+            try:
+                self.api = BigML(storage=STORAGE)
+            except AttributeError:
+                self.api = BigML('', '', storage=STORAGE)
+        else:
+            self.api = api
         resource_id, model = extract_id(model, api)
         resource_type = get_resource_type(resource_id)
-        kwargs = {"api": api}
+        kwargs = {"api": self.api}
         local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)
         self.__class__.__bases__ = local_model.__class__.__bases__
         for attr, value in local_model.__dict__.items():

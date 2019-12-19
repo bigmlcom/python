@@ -123,9 +123,10 @@ class Association(ModelFields):
         self.search_strategy = DEFAULT_SEARCH_STRATEGY
         self.rules = []
         self.significance_level = None
+        self.api = api
 
         self.resource_id, association = get_resource_dict( \
-            association, "association", api=api)
+            association, "association", api=self.api)
 
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']

@@ -106,8 +106,9 @@ class Deepnet(ModelFields):
         self.preprocess = []
         self.optimizer = None
         self.missing_numerics = False
+        self.api = api
         self.resource_id, deepnet = get_resource_dict( \
-            deepnet, "deepnet", api=api)
+            deepnet, "deepnet", api=self.api)
 
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']

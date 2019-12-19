@@ -72,9 +72,9 @@ class Anomaly(ModelFields):
         self.iforest = None
         self.top_anomalies = None
         self.id_fields = []
-
+        self.api = api
         self.resource_id, anomaly = get_resource_dict( \
-            anomaly, "anomaly", api=api)
+            anomaly, "anomaly", api=self.api)
 
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']

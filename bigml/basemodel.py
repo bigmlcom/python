@@ -71,6 +71,12 @@ def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
             raise ValueError("The file %s contains no JSON")
         except IOError:
             pass
+    if api.auth == '?username=;api_key=;':
+        raise ValueError("The credentials information is missing. This"
+                         " information is needed to download resource %s"
+                         " for the first time and store it locally for further"
+                         " use. Please export BIGML_USERNAME"
+                         " and BIGML_API_KEY."  % resource_id)
     api_getter = api.getters[get_resource_type(resource_id)]
     resource = check_resource(resource_id, api_getter, query_string)
     return resource
@@ -108,8 +114,14 @@ def get_resource_dict(resource, resource_type, api=None):
         - the resource dict itself
 
     """
+
     if api is None:
-        api = BigML(storage=STORAGE)
+        try:
+            self.api = BigML(storage=STORAGE)
+        except AttributeError:
+            self.api = BigML('', '', storage=STORAGE) # API connection with
+            # False credentials
+
     get_id = ID_GETTERS[resource_type]
     resource_id = None
     # the string can be a path to a JSON file

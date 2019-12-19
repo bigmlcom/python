@@ -257,8 +257,9 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
+        self.api = api
         self.resource_id, model = get_resource_dict( \
-            model, "model", api=api)
+            model, "model", api=self.api)
 
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']

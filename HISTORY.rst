@@ -3,6 +3,12 @@
 History
 -------
 
+4.27.1 (2019-12-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Avoiding asking for credential in classes that predict locally when the
+  complete information is provided so no connection is needed.
+
 4.27.0 (2019-12-03)
 ~~~~~~~~~~~~~~~~~~~
 

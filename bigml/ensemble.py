@@ -111,7 +111,10 @@ class Ensemble(ModelFields):
                  cache_get=None):
 
         if api is None:
-            self.api = BigML(storage=STORAGE)
+            try:
+                self.api = BigML(storage=STORAGE)
+            except AttributeError:
+                self.api = BigML('', '', storage=STORAGE)
         else:
             self.api = api
         self.resource_id = None

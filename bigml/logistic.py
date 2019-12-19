@@ -110,11 +110,12 @@ class LogisticRegression(ModelFields):
         self.lr_normalize = None
         self.balance_fields = None
         self.regularization = None
+        self.api = api
 
         old_coefficients = False
 
         self.resource_id, logistic_regression = get_resource_dict( \
-            logistic_regression, "logisticregression", api=api)
+            logistic_regression, "logisticregression", api=self.api)
 
         if 'object' in logistic_regression and \
             isinstance(logistic_regression['object'], dict):

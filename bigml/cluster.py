@@ -146,10 +146,13 @@ class Cluster(ModelFields):
         self.api = api
 
         if self.api is None:
-            self.api = BigML(storage=STORAGE)
+            try:
+                self.api = BigML(storage=STORAGE)
+            except AttributeError:
+                self.api = BigML('', '', storage=STORAGE)
 
         self.resource_id, cluster = get_resource_dict( \
-            cluster, "cluster", api=api)
+            cluster, "cluster", api=self.api)
 
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']

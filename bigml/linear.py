@@ -122,9 +122,9 @@ class LinearRegression(ModelFields):
         self.mean_squared_error = None
         self.number_of_parameters = None
         self.number_of_samples = None
-
+        self.api = api
         self.resource_id, linear_regression = get_resource_dict( \
-            linear_regression, "linearregression", api=api)
+            linear_regression, "linearregression", api=self.api)
 
         if 'object' in linear_regression and \
             isinstance(linear_regression['object'], dict):

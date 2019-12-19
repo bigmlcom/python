@@ -149,9 +149,10 @@ class TimeSeries(ModelFields):
         self.time_range = {}
         self.field_parameters = {}
         self._forecast = {}
+        self.api = api
 
         self.resource_id, time_series = get_resource_dict( \
-            time_series, "timeseries", api=api)
+            time_series, "timeseries", api=self.api)
 
         if 'object' in time_series and \
             isinstance(time_series['object'], dict):

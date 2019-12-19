@@ -97,9 +97,10 @@ class TopicModel(ModelFields):
         self.phi = None
         self.term_to_index = None
         self.topics = []
+        self.api = api
 
         self.resource_id, topic_model = get_resource_dict( \
-            topic_model, "topicmodel", api=api)
+            topic_model, "topicmodel", api=self.api)
 
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']

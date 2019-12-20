@@ -54,7 +54,6 @@ from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics
 from bigml.supervised import SupervisedModel
 from bigml.modelfields import ModelFields
-from bigml.constants import STORAGE
 
 
 

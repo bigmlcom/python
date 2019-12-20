@@ -75,6 +75,8 @@ from bigml.batchprojectionhandler import BatchProjectionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
+from bigml.constants import STORAGE
+
 
 
 # Repeating constants and functions for backwards compatibility
@@ -542,7 +544,7 @@ def get_api_connection(api, store=True, context=None):
     if api is None or not isinstance(api, BigML):
         if context is None:
             context = {}
-        context.update({storage: STORAGE} if store else {})
+        context.update({"storage": STORAGE} if store else {})
         try:
             api = BigML(**context)
         except AttributeError:

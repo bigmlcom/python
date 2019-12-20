@@ -52,7 +52,6 @@ from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
 from bigml.basemodel import BaseModel
-from bigml.constants import STORAGE
 
 
 COMPONENT_CLASSES = {
@@ -113,13 +112,7 @@ class SupervisedModel(BaseModel):
 
     def __init__(self, model, api=None):
 
-        if api is None:
-            try:
-                self.api = BigML(storage=STORAGE)
-            except AttributeError:
-                self.api = BigML('', '', storage=STORAGE)
-        else:
-            self.api = get_api_connection(api)
+        self.api = get_api_connection(api)
         resource_id, model = extract_id(model, api)
         resource_type = get_resource_type(resource_id)
         kwargs = {"api": self.api}

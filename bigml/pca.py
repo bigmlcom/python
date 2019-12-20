@@ -44,7 +44,7 @@ import math
 
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import cast, NUMERIC
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
@@ -104,9 +104,10 @@ class PCA(ModelFields):
         self.item_analysis = {}
         self.standardize = None
         self.famd_j = 1
+        self.api = get_api_connection(api)
 
         self.resource_id, pca = get_resource_dict( \
-            pca, "pca", api=api)
+            pca, "pca", api=self.api)
 
         if 'object' in pca and \
             isinstance(pca['object'], dict):

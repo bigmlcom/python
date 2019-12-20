@@ -31,7 +31,6 @@ import json
 from bigml.api import FINISHED
 from bigml.api import get_status, BigML, get_model_id, ID_GETTERS, \
     check_resource, get_resource_type, get_api_connection
-from bigml.constants import STORAGE
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
 from bigml.modelfields import (ModelFields, check_model_structure,

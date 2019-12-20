@@ -58,7 +58,6 @@ from bigml.basemodel import BaseModel, print_importance
 from bigml.modelfields import ModelFields, lacks_info
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast
-from bigml.constants import STORAGE
 
 
 BOOSTING = 1

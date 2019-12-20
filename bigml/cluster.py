@@ -49,7 +49,7 @@ from bigml.api import FINISHED
 from bigml.api import get_status, BigML, get_api_connection
 from bigml.util import cast, utf8, PY3, NUMERIC
 from bigml.centroid import Centroid
-from bigml.basemodel import get_resource_dict, STORAGE
+from bigml.basemodel import get_resource_dict
 from bigml.model import print_distribution
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields

@@ -46,7 +46,7 @@ import os
 
 from functools import cmp_to_key
 
-from bigml.api import BigML, get_ensemble_id, get_model_id
+from bigml.api import BigML, get_ensemble_id, get_model_id, get_api_connection
 from bigml.model import Model, print_distribution, \
     parse_operating_point, sort_categories
 from bigml.basemodel import retrieve_resource, ONLY_MODEL, EXCLUDE_FIELDS
@@ -110,13 +110,7 @@ class Ensemble(ModelFields):
                  max_models=None,
                  cache_get=None):
 
-        if api is None:
-            try:
-                self.api = BigML(storage=STORAGE)
-            except AttributeError:
-                self.api = BigML('', '', storage=STORAGE)
-        else:
-            self.api = api
+
         self.resource_id = None
         self.objective_id = None
         self.distributions = None
@@ -132,6 +126,7 @@ class Ensemble(ModelFields):
         self.importance = {}
         query_string = ONLY_MODEL
         no_check_fields = False
+        self.api = get_api_connection(api)
         self.input_fields = []
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):

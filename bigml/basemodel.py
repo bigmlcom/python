@@ -30,7 +30,7 @@ import json
 
 from bigml.api import FINISHED
 from bigml.api import get_status, BigML, get_model_id, ID_GETTERS, \
-    check_resource, get_resource_type
+    check_resource, get_resource_type, get_api_connection
 from bigml.constants import STORAGE
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
@@ -115,13 +115,6 @@ def get_resource_dict(resource, resource_type, api=None):
 
     """
 
-    if api is None:
-        try:
-            self.api = BigML(storage=STORAGE)
-        except AttributeError:
-            self.api = BigML('', '', storage=STORAGE) # API connection with
-            # False credentials
-
     get_id = ID_GETTERS[resource_type]
     resource_id = None
     # the string can be a path to a JSON file
@@ -193,24 +186,23 @@ class BaseModel(ModelFields):
         else:
             # If only the model id is provided, the short version of the model
             # resource is used to build a basic summary of the model
-            if api is None:
-                api = BigML()
+            self.api = get_api_connection(api)
             self.resource_id = get_model_id(model)
             if self.resource_id is None:
-                raise Exception(api.error_message(model,
-                                                  resource_type='model',
-                                                  method='get'))
+                raise Exception(self.api.error_message(model,
+                                                       resource_type='model',
+                                                       method='get'))
             if fields is not None and isinstance(fields, dict):
                 query_string = EXCLUDE_FIELDS
             else:
                 query_string = ONLY_MODEL
-            model = retrieve_resource(api, self.resource_id,
+            model = retrieve_resource(self.api, self.resource_id,
                                       query_string=query_string)
             # Stored copies of the model structure might lack some necessary
             # keys
             if not check_model_structure(model):
-                model = api.get_model(self.resource_id,
-                                      query_string=query_string)
+                model = self.api.get_model(self.resource_id,
+                                           query_string=query_string)
 
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']

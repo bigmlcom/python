@@ -48,7 +48,7 @@ import json
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import cast, check_no_missing_numerics, PRECISION, NUMERIC
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.model import parse_operating_point, sort_categories
@@ -110,7 +110,7 @@ class LogisticRegression(ModelFields):
         self.lr_normalize = None
         self.balance_fields = None
         self.regularization = None
-        self.api = api
+        self.api = get_api_connection(api)
 
         old_coefficients = False
 

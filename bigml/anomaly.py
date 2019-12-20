@@ -42,7 +42,7 @@ import math
 import json
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import cast
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
@@ -72,7 +72,7 @@ class Anomaly(ModelFields):
         self.iforest = None
         self.top_anomalies = None
         self.id_fields = []
-        self.api = api
+        self.api = get_api_connection(api)
         self.resource_id, anomaly = get_resource_dict( \
             anomaly, "anomaly", api=self.api)
 

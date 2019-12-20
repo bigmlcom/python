@@ -46,7 +46,7 @@ import re
 import csv
 
 from bigml.api import FINISHED
-from bigml.api import get_status, BigML
+from bigml.api import get_status, BigML, get_api_connection
 from bigml.util import cast, utf8, PY3, NUMERIC
 from bigml.centroid import Centroid
 from bigml.basemodel import get_resource_dict, STORAGE
@@ -143,13 +143,7 @@ class Cluster(ModelFields):
         self.item_analysis = {}
         self.items = {}
         self.datasets = {}
-        self.api = api
-
-        if self.api is None:
-            try:
-                self.api = BigML(storage=STORAGE)
-            except AttributeError:
-                self.api = BigML('', '', storage=STORAGE)
+        self.api = get_api_connection(api)
 
         self.resource_id, cluster = get_resource_dict( \
             cluster, "cluster", api=self.api)

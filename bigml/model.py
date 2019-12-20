@@ -56,7 +56,7 @@ import locale
 from functools import partial, cmp_to_key
 
 from bigml.api import FINISHED, STATUSES
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import slugify, markdown_cleanup, prefix_as_comment, utf8, \
     find_locale, cast
 from bigml.util import DEFAULT_LOCALE, PRECISION
@@ -257,7 +257,7 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
-        self.api = api
+        self.api = get_api_connection(api)
         self.resource_id, model = get_resource_dict( \
             model, "model", api=self.api)
 

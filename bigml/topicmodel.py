@@ -47,7 +47,7 @@ except ImportError:
 
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 
@@ -97,7 +97,7 @@ class TopicModel(ModelFields):
         self.phi = None
         self.term_to_index = None
         self.topics = []
-        self.api = api
+        self.api = get_api_connection(api)
 
         self.resource_id, topic_model = get_resource_dict( \
             topic_model, "topicmodel", api=self.api)

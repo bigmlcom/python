@@ -46,7 +46,7 @@ import StringIO
 import pprint
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import utf8
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
@@ -149,7 +149,7 @@ class TimeSeries(ModelFields):
         self.time_range = {}
         self.field_parameters = {}
         self._forecast = {}
-        self.api = api
+        self.api = get_api_connection(api)
 
         self.resource_id, time_series = get_resource_dict( \
             time_series, "timeseries", api=self.api)

@@ -42,7 +42,7 @@ import csv
 
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.associationrule import AssociationRule
@@ -123,7 +123,7 @@ class Association(ModelFields):
         self.search_strategy = DEFAULT_SEARCH_STRATEGY
         self.rules = []
         self.significance_level = None
-        self.api = api
+        self.api = get_api_connection(api)
 
         self.resource_id, association = get_resource_dict( \
             association, "association", api=self.api)

@@ -55,7 +55,7 @@ except ImportError:
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import cast, check_no_training_missings, PRECISION, NUMERIC, \
     flatten
 from bigml.basemodel import get_resource_dict, extract_objective
@@ -122,7 +122,7 @@ class LinearRegression(ModelFields):
         self.mean_squared_error = None
         self.number_of_parameters = None
         self.number_of_samples = None
-        self.api = api
+        self.api = get_api_connection(api)
         self.resource_id, linear_regression = get_resource_dict( \
             linear_regression, "linearregression", api=self.api)
 

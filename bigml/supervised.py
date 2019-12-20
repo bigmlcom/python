@@ -44,7 +44,8 @@ model.predict({"petal length": 3, "petal width": 1,
 import json
 
 
-from bigml.api import get_resource_id, get_resource_type, BigML
+from bigml.api import get_resource_id, get_resource_type, BigML, \
+    get_api_connection
 from bigml.model import Model
 from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
@@ -118,7 +119,7 @@ class SupervisedModel(BaseModel):
             except AttributeError:
                 self.api = BigML('', '', storage=STORAGE)
         else:
-            self.api = api
+            self.api = get_api_connection(api)
         resource_id, model = extract_id(model, api)
         resource_type = get_resource_type(resource_id)
         kwargs = {"api": self.api}

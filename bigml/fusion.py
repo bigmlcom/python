@@ -45,7 +45,8 @@ import os
 
 from functools import cmp_to_key
 
-from bigml.api import BigML, get_fusion_id, get_resource_type
+from bigml.api import BigML, get_fusion_id, get_resource_type, \
+    get_api_connection
 from bigml.model import parse_operating_point, sort_categories
 from bigml.model import LAST_PREDICTION
 from bigml.basemodel import get_resource_dict, retrieve_resource
@@ -130,13 +131,6 @@ class Fusion(ModelFields):
 
     def __init__(self, fusion, api=None, max_models=None):
 
-        if api is None:
-            try:
-                self.api = BigML(storage=STORAGE)
-            except AttributeError:
-                self.api = BigML('', '', storage=STORAGE)
-        else:
-            self.api = api
         self.resource_id = None
         self.models_ids = None
         self.objective_id = None
@@ -147,6 +141,7 @@ class Fusion(ModelFields):
         self.fields = None
         self.class_names = None
         self.importance = {}
+        self.api = get_api_connection(api)
 
         self.resource_id, fusion = get_resource_dict( \
             fusion, "fusion", api=self.api)

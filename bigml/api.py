@@ -528,3 +528,27 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
             download_url = "%s%s%s%s" % (self.url, batch_prediction_id,
                                          DOWNLOAD_DIR, self.auth)
             return self._create_remote_source(download_url, args=args)
+
+
+def get_api_connection(api, store=True, context=None):
+    """Checks whether there's a valid api connection. If there's not
+    such object, it creates a default connection with the credentials
+    and other attributes provided in the context dictionary
+
+        api: (BigML) customized api connection (if provided)
+        store: (boolean) use storage when creating the connection
+        context: (dict) parameters to be provided when creating the connection
+    """
+    if api is None or not isinstance(api, BigML):
+        if context is None:
+            context = {}
+        context.update({storage: STORAGE} if store else {})
+        try:
+            api = BigML(**context)
+        except AttributeError:
+            context.update({"username": "", "api_key": ""})
+            api = BigML(**context)
+            # API connection with
+            # False credentials is returned. It can only access the
+            # local resources stored in the storage directory when present
+    return api

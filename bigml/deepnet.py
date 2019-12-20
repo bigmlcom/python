@@ -45,7 +45,7 @@ import logging
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import get_status
+from bigml.api import get_status, get_api_connection
 from bigml.util import cast, PRECISION
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
@@ -106,7 +106,7 @@ class Deepnet(ModelFields):
         self.preprocess = []
         self.optimizer = None
         self.missing_numerics = False
-        self.api = api
+        self.api = get_api_connection(api)
         self.resource_id, deepnet = get_resource_dict( \
             deepnet, "deepnet", api=self.api)
 

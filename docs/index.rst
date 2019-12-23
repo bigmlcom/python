@@ -5238,6 +5238,96 @@ object can be instantiated by giving the path to this file as first argument:
     local_model.predict({"petal length": 3, "petal width": 1})
     Iris-versicolor
 
+These bindings define a particular class for each type of Machine Learning
+model that is able to interpret the corresponding JSON and create
+the local predictions. The classes can be instantiated using:
+
+- The ID of the resource: In this case, the class looks for the JSON
+  information of the resource first locally (expecting to find a file
+  in the local storage directory --``./storage`` by default --
+  whose name is the ID of the model after replacing ``/`` by ``_``)
+  and also remotely if absent.
+
+.. code-block:: python
+
+    from bigml.model import Model
+    from bigml.api import BigML
+
+    local_model = Model('model/502fdbff15526876610002615')
+
+- A dictionary containing the resource information. In this case, the class
+  checks that this information belongs to a finished resource and
+  contains the attributes needed to create predictions, like the fields
+  structure. If any of these attributes is absent, retrieves the ID of the
+  model and tries to download the correct JSON from the API to store it
+  locally for further use.
+
+
+.. code-block:: python
+
+    from bigml.anomaly import Anomaly
+    from bigml.api import BigML
+    api = BigML()
+    anomaly = api.get_anomaly('anomaly/502fdbff15526876610002615',
+                              query_string='only_model=true;limit=-1')
+
+    local_anomaly = Anomaly(anomaly)
+
+- A path to the file that contains the JSON information for the resource.
+  In this case, the
+  file is read and the same checks mentioned above are done. If any of these
+  checks fails, it tries to retrieve the correct JSON from the API to store
+  it locally for further use.
+
+.. code-block:: python
+
+    from bigml.logistic import LogisticRegression
+    local_logistic_regression = LogisticRegression('./my_logistic.json')
+
+Internally, these classes need a connection object (``api = BigML()``) to:
+
+- Know the local storage in your file system.
+- Download the JSON of the resource if the information provided is not the
+  full finished resource content.
+
+Users can provide the connection as a second argument when instantiating the
+class:
+
+.. code-block:: python
+
+    from bigml.cluster import Cluster
+    from bigml.api import BigML
+
+    local_cluster = Cluster('cluster/502fdbff15526876610002435',
+                            api=BigML(my_username,
+                                      my_api_key
+                                      storage="my_storage"))
+
+If no connection is provided, a default connection will be
+instantiated internally. This default connection will use ``./storage``
+as default storage directory and the credentials used to connect to
+the API when needed are retrieved from the ``BIGML_USERNAME`` and
+``BIGML_API_KEY`` environment variables. If no credentials are found in your
+environment, any attempt to download the information will raise a condition
+asking the user to set these variables.
+
+Ensembles and composite objects, like Fusions, need more than one resource
+to be downloaded and stored locally for the class to work. In this case,
+the class needs all the component models,
+so providing only a local file or a dictionary containing the
+JSON for the resource is not enough for the ``Ensemble`` or ``Fusion``
+objects to be fully instantiated. If you only provide that partial information,
+the class will use the internal API connection the first time
+to download the components.
+However, using the ``api.export`` method for ensembles or fusions
+will download these component models for you
+and will store them in the same directory as the file used to store
+the ensemble or fusion information. After that, you can
+instantiate the object using the path to the file where the ensemble
+or fusion information was stored. The class will look internally for the
+rest of components in the same directory and find them, so no connection to
+the API will be done.
+
 If you use a tag to label the resource, you can also ask for the last resource
 that has the tag:
 
@@ -5274,8 +5364,7 @@ details on how to set your credentials) and return a Model object
 that will be stored in the ``./storage`` directory and
 you can use to make local predictions. If you want to use a
 specific connection object for the remote retrieval or a different storage
-directory, you can set it as second
-parameter:
+directory, you can set it as second parameter:
 
 .. code-block:: python
 

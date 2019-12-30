@@ -34,11 +34,13 @@ from bigml.out_tree.pythontree import PythonTree, PythonBoostedTree
 
 # templates for static Python
 BIGML_SCRIPT = os.path.dirname(__file__)
-TERM_TEMPLATE = "%s/static/term_analysis.py" % BIGML_SCRIPT
-ITEMS_TEMPLATE = "%s/static/items_analysis.py" % BIGML_SCRIPT
-HADOOP_CSV_TEMPLATE = "%s/static/python_hadoop_csv.py" % \
+TERM_TEMPLATE = "%s/static/term_analysis.txt" % BIGML_SCRIPT
+ITEMS_TEMPLATE = "%s/static/items_analysis.txt" % BIGML_SCRIPT
+HADOOP_CSV_TEMPLATE = "%s/static/python_hadoop_csv.txt" % \
     BIGML_SCRIPT
-HADOOP_NEXT_TEMPLATE = "%s/static/python_hadoop_next.py" % \
+HADOOP_NEXT_TEMPLATE = "%s/static/python_hadoop_next.txt" % \
+    BIGML_SCRIPT
+HADOOP_REDUCER_TEMPLATE = "%s/static/python_hadoop_reducer.txt" % \
     BIGML_SCRIPT
 MAX_ARGS_LENGTH = -1 # in this version, the argument will be the input array
 
@@ -253,7 +255,7 @@ for values in csv:
 
         """
 
-        with open(HADOOP_NEXT_TEMPLATE) as template_hander:
+        with open(HADOOP_REDUCER_TEMPLATE) as template_hander:
             output = template_handler.read()
         out.write(output)
         out.flush()

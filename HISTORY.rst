@@ -3,6 +3,12 @@
 History
 -------
 
+4.27.2 (2019-12-31)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing warning message and template files in generated code for hadoop
+  actionable models.
+
 4.27.1 (2019-12-19)
 ~~~~~~~~~~~~~~~~~~~
 

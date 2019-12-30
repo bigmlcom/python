@@ -53,8 +53,8 @@ CONFIDENCE_METRICS = [CONFIDENCE, PROBABILITY]
 
 # templates for static Python
 BIGML_SCRIPT = os.path.dirname(__file__)
-TERM_TEMPLATE = "%s/out_model/static/term_analysis.py" % BIGML_SCRIPT
-ITEMS_TEMPLATE = "%s/out_model/static/items_analysis.py" % BIGML_SCRIPT
+TERM_TEMPLATE = "%s/out_model/static/term_analysis.txt" % BIGML_SCRIPT
+ITEMS_TEMPLATE = "%s/out_model/static/items_analysis.txt" % BIGML_SCRIPT
 
 
 nodes = {}

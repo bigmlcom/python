@@ -3,11 +3,12 @@
 History
 -------
 
-4.27.2 (2019-12-31)
+4.27.2 (2020-01-03)
 ~~~~~~~~~~~~~~~~~~~
 
 - Fixing warning message and template files in generated code for hadoop
   actionable models.
+- Fixing local ensembles that asked for credentials before needing them.
 
 4.27.1 (2019-12-19)
 ~~~~~~~~~~~~~~~~~~~

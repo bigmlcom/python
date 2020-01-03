@@ -33,7 +33,7 @@ import os
 import logging
 import json
 
-from bigml.api import BigML, get_ensemble_id
+from bigml.api import get_ensemble_id, get_api_connection
 from bigml.model import print_distribution
 from bigml.constants import STORAGE
 from bigml.multivote import MultiVote
@@ -68,10 +68,6 @@ class EnsemblePredictor(object):
 
     def __init__(self, ensemble, model_fns_dir, api=None):
 
-        if api is None:
-            self.api = BigML(storage=STORAGE)
-        else:
-            self.api = api
         self.resource_id = None
         # to be deprecated
         self.ensemble_id = None
@@ -87,6 +83,7 @@ class EnsemblePredictor(object):
         self.class_names = None
         self.importance = {}
         self.predict_functions = []
+        self.api = get_api_connection(api)
 
         ensemble = self.get_ensemble_resource(ensemble)
         self.resource_id = get_ensemble_id(ensemble)
@@ -190,6 +187,8 @@ class EnsemblePredictor(object):
                         raise ValueError("The JSON file does not seem"
                                          " to contain a valid BigML ensemble"
                                          " representation.")
+                    else:
+                        self.api.storage = path
             except IOError:
                 # if it is not a path, it can be an ensemble id
                 self.resource_id = get_ensemble_id(ensemble)

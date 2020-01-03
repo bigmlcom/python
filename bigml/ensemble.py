@@ -46,7 +46,7 @@ import os
 
 from functools import cmp_to_key
 
-from bigml.api import BigML, get_ensemble_id, get_model_id, get_api_connection
+from bigml.api import get_ensemble_id, get_model_id, get_api_connection
 from bigml.model import Model, print_distribution, \
     parse_operating_point, sort_categories
 from bigml.basemodel import retrieve_resource, ONLY_MODEL, EXCLUDE_FIELDS
@@ -311,7 +311,7 @@ class Ensemble(ModelFields):
                                          " to contain a valid BigML ensemble"
                                          " representation.")
                     else:
-                        self.api = BigML(storage=path)
+                        self.api.storage = path
             except IOError:
                 # if it is not a path, it can be an ensemble id
                 self.resource_id = get_ensemble_id(ensemble)

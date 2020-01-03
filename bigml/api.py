@@ -544,7 +544,8 @@ def get_api_connection(api, store=True, context=None):
     if api is None or not isinstance(api, BigML):
         if context is None:
             context = {}
-        context.update({"storage": STORAGE} if store else {})
+        storage = context.get("storage") or STORAGE
+        context.update({"storage": storage} if store else {})
         try:
             api = BigML(**context)
         except AttributeError:

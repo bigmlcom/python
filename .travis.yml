@@ -10,7 +10,6 @@ env:
   - BML_TESTS="13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 30 31 32 34 39"
   - BML_TESTS="23 37 38 40 41"
   - BML_TESTS="42 43"
-  - BML_TESTS="44"
 install:
   - pip install numpy
   - pip install scipy

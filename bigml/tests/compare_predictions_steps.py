@@ -417,7 +417,14 @@ def the_local_association_set_is_like_file(step, filename):
     """
     with open(filename) as filehandler:
         file_result = json.load(filehandler)
-    eq_(world.local_association_set, file_result)
+        for index in range(0, len(file_result)):
+            result = file_result[index]
+            assert_almost_equal( \
+                result['score'],
+                world.local_association_set[index]['score'],
+                places=5)
+            eq_(result['rules'],
+                world.local_association_set[index]['rules'])
 
 #@step(r'I create a local prediction for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):

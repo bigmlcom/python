@@ -72,16 +72,7 @@ class TestComparePrediction(object):
              0.52477],
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"1920-06-30T20:21:20.320","cat-0":"cat1","target-2":0.2}',
-             0.50654],
-            ['data/dates2.csv', '20', '30', '60',
-             '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
-             0.54343],
-            ['data/dates2.csv', '20', '30', '60',
-             '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
-             0.5202],
-            ['data/dates2.csv', '20', '30', '60',
-             '{"time-1":"1969-7-14 17:36","cat-0":"cat2","target-2":0.9}',
-             0.93639]]
+             0.50654]]
         show_doc(self.test_scenario1, examples)
         for example in examples:
             print "\nTesting with:\n", example
@@ -121,6 +112,54 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1932-01-30T19:24:11.440","cat-0":"cat2","target-2":0.1}',
+             0.54343],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1950-11-06T05:34:05.602","cat-0":"cat1" ,"target-2":0.9}',
+             0.5202],
+            ['data/dates2.csv', '20', '30', '60',
+             '{"time-1":"1969-7-14 17:36","cat-0":"cat2","target-2":0.9}',
+             0.93639]]
+        show_doc(self.test_scenario1b, examples)
+        for example in examples:
+            print "\nTesting with:\n", example
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            anomaly_create.i_create_an_anomaly(self)
+            anomaly_create.the_anomaly_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_create.i_create_an_anomaly_score(self, example[4])
+            prediction_create.the_anomaly_score_is(self, example[5])
+            prediction_compare.i_create_a_local_anomaly_score(self, example[4])
+            prediction_compare.the_local_anomaly_score_is(self, example[5])
+
+
+
+    def test_scenario1c(self):
+        """
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for anomaly detectors
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create an anomaly detector
+                And I wait until the anomaly detector is ready less
+                than <time_3> secs
+                And I create a local anomaly detector
+                When I create an anomaly score for "<data_input>"
+                Then the anomaly score is "<score>"
+                And I create a local anomaly score for "<data_input>"
+                Then the local anomaly score is "<score>"
+
+                Examples:
+                |data|time_1|time_2|time_3|data_input|score|
+
+        """
+        examples = [
+            ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"2001-01-05T23:04:04.693","cat-0":"cat2","target-2":0.01}',
              0.54911],
             ['data/dates2.csv', '20', '30', '60',
@@ -132,7 +171,7 @@ class TestComparePrediction(object):
             ['data/dates2.csv', '20', '30', '60',
              '{"time-1":"Mon Jul 14 17:36 +0000 1969","cat-0":"cat1","target-2":0}',
              0.93717]]
-        show_doc(self.test_scenario1, examples)
+        show_doc(self.test_scenario1c, examples)
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])
@@ -234,8 +273,8 @@ class TestComparePrediction(object):
             association_create.i_create_an_association_from_dataset(self)
             association_create.the_association_is_finished_in_less_than(self,
                                                                         example[3])
-            #prediction_compare.i_create_a_local_association(self)
+            prediction_compare.i_create_a_local_association(self)
             prediction_create.i_create_an_association_set(self, example[4])
             prediction_compare.the_association_set_is_like_file(self, example[5])
-            #prediction_compare.i_create_a_local_association_set(self, example[6])
-            #prediction_compare.the_local_association_set_is_like_file(self, example[5])
+            prediction_compare.i_create_a_local_association_set(self, example[4])
+            prediction_compare.the_local_association_set_is_like_file(self, example[5])

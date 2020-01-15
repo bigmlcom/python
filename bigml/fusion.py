@@ -60,7 +60,7 @@ from bigml.modelfields import ModelFields
 LOGGER = logging.getLogger('BigML')
 OPERATING_POINT_KINDS = ["probability"]
 LOCAL_SUPERVISED = ["model", "ensemble", "logisticregression", "deepnet",
-                    "fusion"]
+                    "linearregression", "fusion"]
 
 
 def rearrange_prediction(origin_classes, destination_classes, prediction):
@@ -154,7 +154,7 @@ class Fusion(ModelFields):
         for model_type in model_types:
             if model_type not in LOCAL_SUPERVISED:
                 raise ValueError("The resource %s has not an allowed"
-                                 " supervised model type.")
+                                 " supervised model type." % model_type)
         self.importance = fusion.get('importance', [])
         self.missing_numerics = fusion.get('missing_numerics', True)
         if fusion.get('fusion'):
@@ -279,18 +279,19 @@ class Fusion(ModelFields):
         for models_split in self.models_splits:
             models = []
             for model in models_split:
-                if get_resource_type(model) == "fusion":
+                model_type = get_resource_type(model)
+                if model_type == "fusion":
                     models.append(Fusion(model, api=self.api))
                 else:
                     models.append(SupervisedModel(model, api=self.api))
             votes_split = []
             for model in models:
                 try:
+                    kwargs = {"compact": True}
+                    if model_type in ["model", "ensemble", "fusion"]:
+                        kwargs.update({"missing_strategy": missing_strategy})
                     prediction = model.predict_probability( \
-                        input_data,
-                        missing_strategy=missing_strategy,
-                        compact=True)
-
+                        input_data, **kwargs)
                 except ValueError:
                     # logistic regressions can raise this error if they
                     # have missing_numerics=False and some numeric missings
@@ -317,8 +318,6 @@ class Fusion(ModelFields):
                             # class_names should be defined, but just in case
                             pass
                 votes_split.append(prediction)
-
-
             votes.extend(votes_split)
         if self.regression:
             total_weight = len(votes.predictions) if self.weights is None \

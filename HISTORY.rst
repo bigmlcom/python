@@ -3,6 +3,11 @@
 History
 -------
 
+4.27.3 (2020-01-15)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local Fusion class to allow using linear regressions.
+
 4.27.2 (2020-01-03)
 ~~~~~~~~~~~~~~~~~~~
 

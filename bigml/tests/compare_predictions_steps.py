@@ -55,6 +55,15 @@ def i_retrieve_a_list_of_remote_logistic_regressions(step, tag):
                 (world.project_id, tag))['objects']]
 
 
+#@step(r'I retrieve a list of remote linear regression tagged with "(.*)"')
+def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
+    world.list_of_models = [ \
+        world.api.get_linear_regression(model['resource']) for model in
+        world.api.list_linear_regressions( \
+            query_string="project=%s;tags__in=%s" % \
+                (world.project_id, tag))['objects']]
+
+
 #@step(r'I create a local model from a "(.*)" file$')
 def i_create_a_local_model_from_file(step, model_file):
     world.local_model = Model(res_filename(model_file))

@@ -328,6 +328,21 @@ class LinearRegression(ModelFields):
         return result
 
 
+    def predict_probability(self, input_data, compact=False):
+        """Method to homogeinize predictions in fusions and composites
+
+        """
+
+        prediction = self.predict(input_data, full=not compact)
+
+        if compact:
+            output = [prediction]
+        else:
+            output = prediction
+
+        return output
+
+
     def confidence_bounds(self, input_array):
         """Computes the confidence interval for the prediction
 

@@ -46,7 +46,9 @@ class TestExecution(object):
                 And I wait until the execution is ready less than <time_2> secs
                 And I update the execution with "<param>", "<param_value>"
                 And I wait until the execution is ready less than <time_3> secs
+                And I create a local execution
                 Then the script id is correct, the value of "<param>" is "<param_value>" and the result is "<result>"
+                And the local execution result is "<result>"
 
                 Examples:
 
@@ -65,7 +67,9 @@ class TestExecution(object):
             execution_create.the_execution_is_finished(self, example[2])
             execution_create.i_update_an_execution(self, example[4], example[5])
             execution_create.the_execution_is_finished(self, example[3])
+            execution_create.create_local_execution(self)
             execution_create.the_execution_and_attributes(self, example[4], example[5], example[6])
+            execution_create.the_local_execution_result_is(self, example[6])
 
     def test_scenario2(self):
         """

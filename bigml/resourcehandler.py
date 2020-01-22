@@ -435,7 +435,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
                 exception_on_error(resource)
             return resource
         elif code == c.FAULTY:
-            raise ValueError(status)
+            raise ValueError(resource)
         time.sleep(get_exponential_wait(wait_time, counter))
         # retries for the finished status use a query string that gets the
         # minimal available resource

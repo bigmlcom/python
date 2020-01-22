@@ -27,6 +27,8 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+from bigml.execution import Execution
+
 
 from read_execution_steps import i_get_the_execution
 
@@ -34,7 +36,6 @@ from read_execution_steps import i_get_the_execution
 #@step(r'the script id is correct, the value of "(.*)" is "(.*)" and the result is "(.*)"')
 def the_execution_and_attributes(step, param, param_value, result):
     eq_(world.script['resource'], world.execution['script'])
-    print world.execution['execution']['results']
     eq_(world.execution['execution']['results'][0], result)
     res_param_value = world.execution[param]
     eq_(res_param_value, param_value,
@@ -46,7 +47,6 @@ def the_execution_ids_and_attributes(step, number_of_scripts,
                                      param, param_value, result):
     scripts = world.scripts[-number_of_scripts:]
     eq_(scripts, world.execution['scripts'])
-    print world.execution['execution']['results']
     eq_(world.execution['execution']['results'], result)
     res_param_value = world.execution[param]
     eq_(res_param_value, param_value,
@@ -103,3 +103,11 @@ def wait_until_execution_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the script is ready less than (\d+)')
 def the_execution_is_finished(step, secs):
     wait_until_execution_status_code_is(step, FINISHED, FAULTY, secs)
+
+#@step(r'I create a local execution')
+def create_local_execution(step):
+    world.local_execution = Execution(world.execution)
+
+#@step(r'And the local execution result is "(.*)"')
+def the_local_execution_result_is(step, result):
+    str(world.local_execution.result) == result

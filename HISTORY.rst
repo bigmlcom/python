@@ -3,6 +3,12 @@
 History
 -------
 
+4.28.0 (2020-01-23)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding Execution local utility to extract the outputs and results from an
+  execution.
+
 4.27.3 (2020-01-15)
 ~~~~~~~~~~~~~~~~~~~
 

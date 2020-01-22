@@ -3688,7 +3688,8 @@ of the execution, the resources that have been generated while executing and
 users can define some variables in the code to be exported as outputs.
 
 An ``execution`` receives inputs, the ones defined in the ``script`` chosen
-to be executed, and generates a result. It can also generate outputs. To
+to be executed, and generates a result. It can also generate outputs and
+create resources. To
 execute a ``script`` that expects some inputs, you will need to specify the
 concrete values of those inputs, unless a default value has been assigned
 for them in the script's inputs definition. Following the second example in
@@ -3704,8 +3705,37 @@ URL pointing to a CSV file:
             {"inputs": [["my_remote_data",
                          "https://static.bigml.com/csv/iris.csv"]]})
 
-For more details on executions, please refer to the
+For more details on executions' structure, please refer to the
 `Developers documentation for Executions <https://bigml.com/api/executions#we_execution_arguments>`_.
+
+
+The results of an execution can be easily obtained by using the ``Execution``
+class. This class can be used to instantiate a local object that will
+expose the result, outputs and output resources generated in the execution
+in its attributes.
+
+
+.. code-block:: python
+
+    from bigml.execution import Execution
+    execution = Execution("execution/5cae5ad4b72c6609d9000468")
+    print "The result of the execution is %s" % execution.result
+    print " and the output for variable 'my_variable': %s" % \
+        execution.outputs["my_variable"]
+    print "The resources created in the execution are: %s" % \
+        execution.output_resources
+
+Also, if the execution fails, the error information can be found in the
+corresponding attributes:
+
+.. code-block:: python
+
+    from bigml.execution import Execution
+    execution = Execution("execution/5cae5ad4b72c6609d9000468")
+    print "The status of the execution is %s" % execution.status
+    print "The execution failed at %s with error %s: %s" % ( \
+        execution.error_location, execution.error, execution.error_message)
+
 
 Libraries
 ---------

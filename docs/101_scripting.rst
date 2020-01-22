@@ -85,3 +85,15 @@ name are provided by the user:
     api.ok(execution)
     # step 3: retrieving the result (e.g. "dataset/5cae5ad4b72c6609d9000356")
     result = execution['object']['execution']['result']
+
+You can also use the ``Execution`` class to easily access the results,
+outputs and output resources of an existing execution.
+Just intantiate the  class with the execution resource or ID:
+
+.. code-block:: python
+
+    from bigml.execution import Execution
+    execution = Execution("execution/5cae5ad4b72c6609d9000468")
+    print "The result of the execution is %s" % execution.result
+    print " and the output for variable 'my_variable': %s" % \
+        execution.outputs["my_variable"]

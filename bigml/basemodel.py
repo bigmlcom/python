@@ -51,7 +51,7 @@ EXCLUDE_FIELDS = 'exclude=fields;'
 
 
 def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
-                      no_check_fields=False):
+                      no_check_fields=False, retries=None):
     """ Retrieves resource info either from a local repo or
         from the remote server
 
@@ -77,7 +77,8 @@ def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
                          " use. Please export BIGML_USERNAME"
                          " and BIGML_API_KEY."  % resource_id)
     api_getter = api.getters[get_resource_type(resource_id)]
-    resource = check_resource(resource_id, api_getter, query_string)
+    resource = check_resource(resource_id, api_getter, query_string,
+                              retries=retries)
     return resource
 
 

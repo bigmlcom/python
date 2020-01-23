@@ -68,7 +68,7 @@ def get_resource_dict(resource, resource_type, api=None):
 
     if not (isinstance(resource, dict) and 'resource' in resource and
             resource['resource'] is not None):
-        resource = retrieve_resource(api, resource_id)
+        resource = retrieve_resource(api, resource_id, retries=0)
     else:
         resource_id = get_id(resource)
 
@@ -87,6 +87,7 @@ class Execution(object):
         self.output_resources = None
         self.result = None
         self.status = None
+        self.source_location = None
         self.error = None
         self.error_message = None
         self.error_location = None
@@ -103,13 +104,14 @@ class Execution(object):
                     resource)
                 pass
             self.resource_id = execution["resource"]
-            self.error = execution["status"]
+            self.error = execution["status"]["error"]
             self.error_message = self.error.get("message")
             self.error_location = self.error.get("source_location")
 
         if 'object' in execution and isinstance(execution['object'], dict):
             execution = execution['object']
         self.status = execution["status"]
+        self.source_location = self.status["source_location"]
         if 'execution' in execution and isinstance(execution['execution'], dict):
             execution = execution.get('execution')
             self.result = execution.get("result")

@@ -3725,6 +3725,11 @@ in its attributes.
     print "The resources created in the execution are: %s" % \
         execution.output_resources
 
+As an execution is in progress, the ``execution.result`` attribute will
+contain the value of the last evaluated expression at that point.
+Therefore, the value of the ``result`` attribute will change untill it
+will contain the final result of the execution when finished.
+
 Also, if the execution fails, the error information can be found in the
 corresponding attributes:
 

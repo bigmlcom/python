@@ -111,7 +111,7 @@ class Execution(object):
         if 'object' in execution and isinstance(execution['object'], dict):
             execution = execution['object']
         self.status = execution["status"]
-        self.source_location = self.status["source_location"]
+        self.source_location = self.status.get("source_location")
         if 'execution' in execution and isinstance(execution['execution'], dict):
             execution = execution.get('execution')
             self.result = execution.get("result")

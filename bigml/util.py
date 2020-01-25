@@ -376,14 +376,15 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH,
        :param reset: whether the line has to be reused and cursor reset to
               the beggining of it
     """
-
+    print "*** before reset", reset
     if reset:
         clear_console_line(out=out, length=length)
         reset_console_line(out=out, length=length)
     if (out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty()
             and not PY3):
         os_encoding = locale.getpreferredencoding()
-        message = message.decode('utf8').encode(os_encoding)
+        print "***", os_encoding
+        message = message.decode('utf8').encode(os_encoding, 'replace')
     out.write(message)
     if reset:
         reset_console_line(out=out, length=length)

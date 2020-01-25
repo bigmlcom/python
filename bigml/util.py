@@ -382,7 +382,6 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH,
     if (out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty()
             and not PY3):
         os_encoding = sys.stdout.encoding
-        print "***", os_encoding
         message = message.decode('utf8').encode(os_encoding, 'replace')
     out.write(message)
     if reset:

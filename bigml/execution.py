@@ -91,6 +91,7 @@ class Execution(object):
         self.error = None
         self.error_message = None
         self.error_location = None
+        self.call_stack = None
         self.api = get_api_connection(api)
 
         try:
@@ -104,21 +105,24 @@ class Execution(object):
                     resource)
                 pass
             self.resource_id = execution["resource"]
-            self.error = execution["status"]["error"]
-            self.error_message = self.error.get("message")
-            self.error_location = self.error.get("source_location")
-
         if 'object' in execution and isinstance(execution['object'], dict):
             execution = execution['object']
-        self.status = execution["status"]
-        self.source_location = self.status.get("source_location")
-        if 'execution' in execution and isinstance(execution['execution'], dict):
-            execution = execution.get('execution')
-            self.result = execution.get("result")
-            self.outputs = dict((output[0], output[1]) \
-                for output in execution.get("outputs"))
-            self.output_types = dict((output[0], output[2]) \
-                for output in execution.get("outputs"))
-            self.output_resources = dict((res["variable"], res["id"]) \
-                for res in execution.get("output_resources"))
-            self.execution = execution
+            self.status = execution["status"]
+            self.error = self.status.get("error")
+            if self.error is not None:
+                self.error_message = self.status.get("message")
+                self.error_location = self.status.get("source_location")
+                self.call_stack = self.status.get("call_stack")
+            else:
+                self.source_location = self.status.get("source_location")
+                if 'execution' in execution and \
+                        isinstance(execution['execution'], dict):
+                    execution = execution.get('execution')
+                    self.result = execution.get("result")
+                    self.outputs = dict((output[0], output[1]) \
+                        for output in execution.get("outputs"))
+                    self.output_types = dict((output[0], output[2]) \
+                        for output in execution.get("outputs"))
+                    self.output_resources = dict((res["variable"], res["id"]) \
+                        for res in execution.get("output_resources"))
+                    self.execution = execution

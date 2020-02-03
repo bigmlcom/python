@@ -56,7 +56,7 @@ copyright = u'2011 - 2020, The BigML Team'
 # Read the version from bigml.__version__ without importing the package
 # (and thus attempting to import packages it depends on that may not be
 # installed yet).
-init_py_path = os.path.join(project_path, 'bigml', '__init__.py')
+init_py_path = os.path.join(project_path, 'bigml', 'version.py')
 version = re.search("__version__ = '([^']+)'",
                     open(init_py_path).read()).group(1)
 # The full version, including alpha/beta/rc tags.

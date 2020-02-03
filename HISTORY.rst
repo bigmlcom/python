@@ -3,6 +3,14 @@
 History
 -------
 
+4.28.1 (2020-02-04)
+~~~~~~~~~~~~~~~~~~~
+
+- Changing api.ok method to avoid raising exceptions when retrieving a
+  faulty resource.
+- Adding call stack info to local Execution class.
+- Fixing docs builder.
+
 4.28.0 (2020-01-23)
 ~~~~~~~~~~~~~~~~~~~
 

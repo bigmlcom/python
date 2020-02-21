@@ -3862,6 +3862,17 @@ In this code, ``api.create_source`` will probably return a non-finished
 contents of the ``source`` variable with the retrieved information until it
 reaches a ``bigml.api.FINISHED`` or ``bigml.api.FAILED`` status.
 
+HTTP transient conditions can affect the ``api.ok`` method, as it needs to
+connect to the BigML servers to retrieve the resource information. Using the
+``error_retries`` parameter, you can set the  number of times that the
+retrieval will be tried before failing.
+
+.. code-block:: python
+
+    dataset = api.get_dataset("dataset/5e4ee08e440ca13244102dbd")
+    api.ok(dataset, error_retries=5)
+
+
 If you don't want the contents of the variable to be updated, you can
 also use the ``check_resource`` function:
 

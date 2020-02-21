@@ -389,12 +389,16 @@ def exception_on_error(resource):
     """Raises exception if resource has error
 
     """
-    if resource['error'] is not None:
-        raise Exception(resource['error']['status']['message'])
+    if resource.get('error') is not None:
+        raise Exception(resource.get('error', \
+            {}).get('status', {}).get('message'))
+
+    if resource.get('status', {}).get('error') is not None:
+        raise Exception(resource.get('status', {}).get('message'))
 
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
-                   retries=None, raise_on_error=False, api=None):
+                   retries=None, raise_on_error=False, api=None, debug=False):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, the
@@ -406,13 +410,11 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
        parameter.
 
     """
-    if isinstance(resource, basestring):
-        resource_id = resource
-    else:
-        resource_id = get_resource_id(resource)
     resource_id = get_resource_id(resource)
     if resource_id is None:
         raise ValueError("Failed to extract a valid resource id to check.")
+    if debug:
+        print "Checking resource: %s" % resource_id
     kwargs = {'query_string': query_string}
 
     if get_method is None and hasattr(api, 'get_resource'):
@@ -421,14 +423,21 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         raise ValueError("You must supply either the get_method or the api"
                          " connection info to retrieve the resource")
     if isinstance(resource, basestring):
-        resource = get_method(resource, **kwargs)
+        if debug:
+            print "Getting resource %s" % resource_id
+        resource = get_method(resource_id, **kwargs)
     counter = 0
     while retries is None or counter < retries:
         counter += 1
         status = get_status(resource)
         code = status['code']
+        if debug:
+            print "The resource has status code: %s" % code
         if code == c.FINISHED:
             if counter > 1:
+                if debug:
+                    print "Getting resource %s with args %s" % (resource_id,
+                                                                kwargs)
                 # final get call to retrieve complete resource
                 resource = get_method(resource, **kwargs)
             if raise_on_error:
@@ -438,13 +447,18 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             if raise_on_error:
                 exception_on_error(resource)
             return resource
-        time.sleep(get_exponential_wait(wait_time, counter))
+        wait_time = get_exponential_wait(wait_time, counter)
+        if debug:
+            print "Sleeping %s" % wait_time
+        time.sleep(wait_time)
         # retries for the finished status use a query string that gets the
         # minimal available resource
         if kwargs.get('query_string') is not None:
             tiny_kwargs = {'query_string': c.TINY_RESOURCE}
         else:
             tiny_kwargs = {}
+        if debug:
+            print "Getting only status for resource %s" % resource_id
         resource = get_method(resource, **tiny_kwargs)
     if raise_on_error:
         exception_on_error(resource)
@@ -497,22 +511,53 @@ class ResourceHandler(BigMLConnection):
                              **kwargs)
 
     def ok(self, resource, query_string='', wait_time=1,
-           retries=None, raise_on_error=False):
+           max_requests=None, raise_on_error=False, retries=None,
+           error_retries=None, debug=False):
         """Waits until the resource is finished or faulty, updates it and
            returns True on success
 
+             resource: (string|map) Resource ID or structure
+             query_string: (string) Filters used on the resource attributes
+             wait_time: (integer) Time to sleep between get requests
+             max_requests: (integer) Maximum number of get requests
+             raise_on_error: (boolean) Whether to raise errors or log them
+             retries: (integer) Now `max_requests` (deprecated)
+             error_retries: (integer) Retries for transient HTTP errors
+             debug: (boolean) Whether to print traces for every get call
+
         """
         if http_ok(resource):
-            resource.update(check_resource(resource,
-                                           query_string=query_string,
-                                           wait_time=wait_time,
-                                           retries=retries,
-                                           raise_on_error=raise_on_error,
-                                           api=self))
-            return True
+            try:
+                resource.update(check_resource(resource,
+                                               query_string=query_string,
+                                               wait_time=wait_time,
+                                               retries=max_requests,
+                                               raise_on_error=raise_on_error,
+                                               api=self,
+                                               debug=debug))
+                if resource['error'] and resource['error'].get( \
+                        'status', {}).get('type') == c.TRANSIENT and \
+                        error_retries is not None and error_retries > 0:
+                    return self.ok(resource, query_string, wait_time,
+                                   max_requests, raise_on_error,
+                                   error_retries - 1, debug)
+                else:
+                    return True
+            except Exception as err:
+                if error_retries is not None and error_retries > 0:
+                    return self.ok(resource, query_string, wait_time,
+                                   max_requests, raise_on_error,
+                                   error_retries - 1, debug)
+                else:
+                    LOGGER.error("The resource info couldn't be retrieved")
+                    if raise_on_error:
+                        exception_on_error({"resource": resource["resource"],
+                                            "error": err})
         else:
             LOGGER.error("The resource couldn't be created: %s",
                          resource['error'])
+            if raise_on_error:
+                exception_on_error(resource)
 
     def _set_create_from_datasets_args(self, datasets, args=None,
                                        wait_time=3, retries=10, key=None):

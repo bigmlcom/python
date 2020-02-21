@@ -580,7 +580,7 @@ def plural(text, num):
 def get_exponential_wait(wait_time, retry_count):
     """Computes the exponential wait time used in next request using the
     base values provided by the user:
-        - wait_time: starting wait time
+        - wait_time: starting wait time (seconds)
         - retries: total number of retries
         - retries_left: retries left
 

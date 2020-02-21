@@ -250,3 +250,6 @@ TINY_RESOURCE = "full=false"
 
 # Default storage folder
 STORAGE = "./storage"
+
+# label for transient HTTP errors
+TRANSIENT = "transient"

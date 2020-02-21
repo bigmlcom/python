@@ -3,6 +3,12 @@
 History
 -------
 
+4.28.2 (2020-02-21)
+~~~~~~~~~~~~~~~~~~~
+
+- Improving api.ok method to allow retries to avoid transient HTTP failures.
+- Deprecating the `retries` argument in api.ok.
+
 4.28.1 (2020-02-04)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -39,6 +39,8 @@ except ImportError:
     import requests
 
 
+import bigml.constants as c
+
 from bigml.util import (check_dir,
                         maybe_save, get_exponential_wait)
 from bigml.util import DEFAULT_LOCALE, PY3
@@ -363,6 +365,7 @@ class BigMLConnection(object):
                 except urlfetch.Error, exception:
                     LOGGER.error("HTTP request error: %s",
                                  str(exception))
+                    error["status"]["type"] = c.TRANSIENT
                     return maybe_save(resource_id, self.storage, code,
                                       location, resource, error)
             else:
@@ -375,6 +378,7 @@ class BigMLConnection(object):
                         requests.RequestException), exc:
                     LOGGER.error("HTTP request error: %s", str(exc))
                     code = HTTP_INTERNAL_SERVER_ERROR
+                    error["status"]["type"] = c.TRANSIENT
                     return maybe_save(resource_id, self.storage, code,
                                       location, resource, error)
             try:
@@ -446,6 +450,7 @@ class BigMLConnection(object):
             except urlfetch.Error, exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
+                error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
                                   location, resource, error)
         else:
@@ -456,6 +461,7 @@ class BigMLConnection(object):
                     requests.Timeout,
                     requests.RequestException), exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
+                error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
                                   location, resource, error)
         try:
@@ -529,6 +535,7 @@ class BigMLConnection(object):
             except urlfetch.Error, exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
+                error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
                     'meta': meta,
@@ -542,6 +549,7 @@ class BigMLConnection(object):
                     requests.Timeout,
                     requests.RequestException), exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
+                error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
                     'meta': meta,
@@ -611,6 +619,7 @@ class BigMLConnection(object):
             except urlfetch.Error, exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
+                error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
                                   location, resource, error)
         else:
@@ -622,6 +631,7 @@ class BigMLConnection(object):
                     requests.Timeout,
                     requests.RequestException), exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
+                error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
                                   location, resource, error)
         try:
@@ -673,6 +683,7 @@ class BigMLConnection(object):
             except urlfetch.Error, exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
+                error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
                     'error': error}
@@ -683,6 +694,7 @@ class BigMLConnection(object):
                     requests.Timeout,
                     requests.RequestException), exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
+                error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
                     'error': error}

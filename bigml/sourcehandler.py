@@ -286,6 +286,9 @@ class SourceHandler(ResourceHandler):
                     resource = json_load(content)
                     resource_id = resource['resource']
                     error = {}
+                    if self.debug:
+                        LOGGER.debug("Data: %s", body)
+                        LOGGER.debug("Response: %s", content)
             except ValueError:
                 LOGGER.error("Malformed response.")
             except urllib2.HTTPError, exception:
@@ -297,6 +300,9 @@ class SourceHandler(ResourceHandler):
                             HTTP_TOO_MANY_REQUESTS]:
                     content = exception.read()
                     error = json_load(content)
+                    if self.debug:
+                        LOGGER.debug("Data: %s", body)
+                        LOGGER.debug("Response: %s", content)
                     LOGGER.error(self.error_message(error, method='create'))
                 else:
                     LOGGER.error("Unexpected error (%s)", code)

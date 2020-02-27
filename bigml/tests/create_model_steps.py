@@ -118,6 +118,11 @@ def i_create_a_model_with(step, data="{}"):
 def i_create_a_model_with_missing_splits(step):
     i_create_a_model_with(step, data='{"missing_splits": true}')
 
+#@step(r'I create a model with missing splits')
+def i_create_a_weighted_model_with_missing_splits(step):
+    i_create_a_model_with(step, data='{"missing_splits": true, "balance_objective": true}')
+
+
 #@step(r'I make the model public')
 def make_the_model_public(step):
     resource = world.api.update_model(world.model['resource'],

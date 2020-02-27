@@ -290,6 +290,19 @@ def the_local_prediction_confidence_is(step, confidence):
     confidence = round(float(confidence), 4)
     eq_(local_confidence, confidence)
 
+
+#@step(r'the highest local prediction\'s confidence for "(.*)" is "(.*)"')
+def the_highest_local_prediction_confidence_is(step, input_data, confidence):
+    input_data = json.loads(input_data)
+    local_confidence = world.local_model.predict_confidence(input_data)
+    if isinstance(local_confidence, dict):
+        local_confidence = round(float(local_confidence["confidence"]), 4)
+    else:
+        local_confidence = round(float(max([pred["confidence"] for pred in local_confidence])), 4)
+    confidence = round(float(confidence), 4)
+    eq_(local_confidence, confidence)
+
+
 #@step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction):
     if (isinstance(world.local_prediction, list) or

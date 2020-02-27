@@ -423,10 +423,12 @@ class Model(BaseModel):
                                   full=True)
 
         distribution = prediction['distribution']
+        population = prediction['count']
 
         for class_info in distribution:
             name = class_info[0]
-            category_map[name] = ws_confidence(name, distribution)
+            category_map[name] = ws_confidence(name, distribution,
+                                               ws_n=population)
 
         return self._to_output(category_map, compact, "confidence")
 

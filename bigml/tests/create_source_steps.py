@@ -102,7 +102,8 @@ def i_create_using_dict_data(step, data):
         dict_data = [row for row in reader]
     # create source
     resource = world.api.create_source(dict_data,
-                                       {'project': world.project_id})
+                                       {'project': world.project_id,
+                                        'format': 'json_rows'})
     # update status
     world.status = resource['code']
     world.location = resource['location']

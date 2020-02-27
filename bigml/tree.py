@@ -366,9 +366,11 @@ class Tree(object):
                         confidence = None
                 else:
                     prediction = mean(distribution)
+                    # weighted trees use the unweighted population to
+                    # compute the associated error
                     confidence = round(regression_error(
                         unbiased_sample_variance(distribution, prediction),
-                        total_instances), PRECISION)
+                        population), PRECISION)
                 return Prediction(
                     prediction,
                     path,
@@ -414,7 +416,7 @@ class Tree(object):
                 path,
                 self.confidence,
                 distribution=output_distribution,
-                count=get_instances(output_distribution),
+                count=self.count,
                 median=None if not self.regression else self.median,
                 distribution_unit=output_unit,
                 children=self.children,

@@ -8,6 +8,7 @@ History
 
 - Improving api.ok method to allow retries to avoid transient HTTP failures.
 - Deprecating the `retries` argument in api.ok.
+- Fixing local predictions confidence for weighted models.
 
 4.28.1 (2020-02-04)
 ~~~~~~~~~~~~~~~~~~~

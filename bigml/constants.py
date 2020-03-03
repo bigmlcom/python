@@ -59,6 +59,8 @@ SCRIPT_PATH = 'script'
 EXECUTION_PATH = 'execution'
 LIBRARY_PATH = 'library'
 STATUS_PATH = 'status'
+EXTERNAL_CONNECTOR_PATH = 'externalconnector'
+
 SUPERVISED_PATHS = [
     MODEL_PATH,
     ENSEMBLE_PATH,
@@ -160,6 +162,9 @@ EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (EXECUTION_PATH, ID_PATTERN, EXECUTION_PATH, SHARED_PATTERN))
 LIBRARY_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (LIBRARY_PATH, ID_PATTERN, LIBRARY_PATH, SHARED_PATTERN))
+EXTERNAL_CONNECTOR_RE = re.compile(r'^%s/%s$' % \
+    (EXTERNAL_CONNECTOR_PATH, ID_PATTERN))
+
 
 RESOURCE_RE = {
     SOURCE_PATH: SOURCE_RE,
@@ -197,7 +202,8 @@ RESOURCE_RE = {
     LINEAR_REGRESSION_PATH: LINEAR_REGRESSION_RE,
     SCRIPT_PATH: SCRIPT_RE,
     EXECUTION_PATH: EXECUTION_RE,
-    LIBRARY_PATH: LIBRARY_RE}
+    LIBRARY_PATH: LIBRARY_RE,
+    EXTERNAL_CONNECTOR_PATH: EXTERNAL_CONNECTOR_RE}
 
 
 RENAMED_RESOURCES = {
@@ -213,7 +219,8 @@ RENAMED_RESOURCES = {
     TOPIC_DISTRIBUTION_PATH: 'topic_distribution',
     BATCH_TOPIC_DISTRIBUTION_PATH: 'batch_topic_distribution',
     TIME_SERIES_PATH: 'time_series',
-    BATCH_PROJECTION_PATH: 'batch_projection'
+    BATCH_PROJECTION_PATH: 'batch_projection',
+    EXTERNAL_CONNECTOR_PATH: 'external_connector'
 }
 
 IRREGULAR_PLURALS = {
@@ -230,7 +237,8 @@ IRREGULAR_PLURALS = {
     TOPIC_DISTRIBUTION_PATH: 'topic_distributions',
     TIME_SERIES_PATH: 'time_series',
     LIBRARY_PATH: 'libraries',
-    BATCH_PROJECTION_PATH: 'batch_projections'
+    BATCH_PROJECTION_PATH: 'batch_projections',
+    EXTERNAL_CONNECTOR_PATH: 'external_connectors'
 }
 
 # Resource status codes
@@ -281,3 +289,11 @@ FIELDS_PARENT = { \
     "timeseries": "timeseries",
     "statisticaltest": "statistical_tests"}
 ALL_FIELDS = "limit=-1"
+
+EXTERNAL_CONNECTION_ATTRS = { \
+    "BIGML_EXTERNAL_CONN_HOST": "host",
+    "BIGML_EXTERNAL_CONN_PORT": "port",
+    "BIGML_EXTERNAL_CONN_USER": "user",
+    "BIGML_EXTERNAL_CONN_PWD": "password",
+    "BIGML_EXTERNAL_CONN_DB": "database",
+    "BIGML_EXTERNAL_CONN_SOURCE": "source"}

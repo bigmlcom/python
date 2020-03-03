@@ -78,7 +78,7 @@ from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
 from bigml.constants import STORAGE, ALL_FIELDS
-
+from bigml.externalconnectorhandler import ExternalConnectorHandler
 
 
 # Repeating constants and functions for backwards compatibility
@@ -113,7 +113,8 @@ from bigml.constants import (
     BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE,
     LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE, STATUS_PATH,
-    IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT)
+    IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT,
+    EXTERNAL_CONNECTOR_PATH, EXTERNAL_CONNECTOR_RE)
 
 from bigml.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -128,7 +129,7 @@ from bigml.resourcehandler import (
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
     get_fusion_id, get_pca_id, get_projection_id, get_batch_projection_id,
     get_configuration_id, get_linear_regression_id,
-    get_script_id, get_execution_id, get_library_id)
+    get_script_id, get_execution_id, get_library_id, get_external_connector_id)
 
 
 # Map status codes to labels
@@ -181,7 +182,8 @@ ID_GETTERS = {
     LINEAR_REGRESSION_PATH: get_linear_regression_id,
     SCRIPT_PATH: get_script_id,
     LIBRARY_PATH: get_library_id,
-    EXECUTION_PATH: get_execution_id
+    EXECUTION_PATH: get_execution_id,
+    EXTERNAL_CONNECTOR_PATH: get_external_connector_id
 }
 
 
@@ -191,6 +193,7 @@ def count(listing):
     """
     if 'meta' in listing and 'query_total' in listing['meta']:
         return listing['meta']['query_total']
+
 
 
 def get_fields(resource):
@@ -217,7 +220,8 @@ def get_fields(resource):
     return fields
 
 
-class BigML(LinearRegressionHandler, BatchProjectionHandler,
+class BigML(ExternalConnectorHandler,
+            LinearRegressionHandler, BatchProjectionHandler,
             ProjectionHandler, PCAHandler,
             ConfigurationHandler, FusionHandler,
             OptimlHandler,
@@ -247,18 +251,17 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         error: An error code and message
 
     """
-    def __init__(self, username=None, api_key=None, dev_mode=False,
+    def __init__(self, username=None, api_key=None,
                  debug=False, set_locale=False, storage=None, domain=None,
-                 project=None, organization=None):
+                 project=None, organization=None, short_debug=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
         values of the `BIGML_USERNAME` and `BIGML_API_KEY` environment
         variables respectively.
 
-        If `dev_mode` is set to `True`, the API will be used in development
-        mode where the size of your datasets are limited but you are not
-        charged any credits.
+        `dev_mode` has been deprecated. Now all resources coexisit in the
+        same production environment.
 
         If storage is set to a directory name, the resources obtained in
         CRU operations will be stored in the given directory.
@@ -283,10 +286,11 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         """
 
         BigMLConnection.__init__(self, username=username, api_key=api_key,
-                                 dev_mode=dev_mode, debug=debug,
+                                 debug=debug,
                                  set_locale=set_locale, storage=storage,
                                  domain=domain, project=project,
-                                 organization=organization)
+                                 organization=organization,
+                                 short_debug=short_debug)
         ResourceHandler.__init__(self)
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
@@ -324,6 +328,7 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         ProjectionHandler.__init__(self)
         BatchProjectionHandler.__init__(self)
         LinearRegressionHandler.__init__(self)
+        ExternalConnectorHandler.__init__(self)
         self.status_url = "%s%s" % (self.url, STATUS_PATH)
 
 
@@ -365,8 +370,10 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
             info += u"    using %s protocol\n" % self.general_protocol
         info += u"    SSL verification %s\n" % (
             "on" if self.verify else "off")
+        if self.short_debug:
+            short = "(shortened)"
         if self.debug:
-            info += u"    Debug on\n"
+            info += u"    Debug on %s\n" % short
         if self.general_domain != self.prediction_domain:
             info += u"    %s (predictions only)\n" % self.prediction_domain
             if self.prediction_protocol != BIGML_PROTOCOL:

@@ -18,8 +18,8 @@
 import time
 import json
 import os
-from datetime import datetime, timedelta
-from world import world
+from datetime import datetime
+from world import world, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -90,12 +90,14 @@ def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
     linear_regression_id = world.linear_regression['resource']
     i_get_the_linear_regression(step, linear_regression_id)
     status = get_status(world.linear_regression)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_linear_regression(step, linear_regression_id)
-           status = get_status(world.linear_regression)
+        count += 1
+        logged_wait(start, delta, count, "source")
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        i_get_the_linear_regression(step, linear_regression_id)
+        status = get_status(world.linear_regression)
     eq_(status['code'], int(code1))
 
 

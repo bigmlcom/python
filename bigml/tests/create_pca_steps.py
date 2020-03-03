@@ -18,8 +18,8 @@
 import time
 import json
 import os
-from datetime import datetime, timedelta
-from world import world
+from datetime import datetime
+from world import world, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -79,12 +79,14 @@ def wait_until_pca_status_code_is(step, code1, code2, secs):
     pca_id = world.pca['resource']
     i_get_the_pca(step, pca_id)
     status = get_status(world.pca)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_pca(step, pca_id)
-           status = get_status(world.pca)
+        count += 1
+        logged_wait(start, delta, count, "pca")
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        i_get_the_pca(step, pca_id)
+        status = get_status(world.pca)
     eq_(status['code'], int(code1))
 
 

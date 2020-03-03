@@ -19,8 +19,8 @@ import json
 import time
 from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
     assert_less
-from datetime import datetime, timedelta
-from world import world
+from datetime import datetime
+from world import world, logged_wait
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
@@ -176,9 +176,11 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_prediction(step, world.prediction['resource'])
     status = get_status(world.prediction)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
+        count += 1
+        logged_wait(start, delta, count, "prediction")
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)

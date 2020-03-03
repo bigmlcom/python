@@ -64,11 +64,11 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '30', '50', '30000', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
-            ['data/iris.csv', '30', '50', '30000', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-setosa', '{}'],
-            ['data/iris_missing2.csv', '30', '50', '30000', '{}', '000004', 'Iris-setosa', '{}'],
-            ['data/grades.csv', '30', '50', '30000', '{}', '000005', 42.15473, '{}'],
-            ['data/spam.csv', '30', '50', '30000', '{}', '000000', 'ham', '{}']]
+            ['data/iris.csv', '30', '50', '60', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
+            ['data/iris.csv', '30', '50', '60', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-setosa', '{}'],
+            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-setosa', '{}'],
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 42.15473, '{}'],
+            ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1, examples)
 
         for example in examples:
@@ -149,7 +149,7 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal width": 4}', '000004', 'Iris-versicolor', '{}', {"kind": "probability", "threshold": 1, "positive_class": "Iris-virginica"}]]
+            ['data/iris.csv', '10', '50', '60', '{"petal width": 4}', '000004', 'Iris-versicolor', '{}', {"kind": "probability", "threshold": 1, "positive_class": "Iris-virginica"}]]
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
@@ -272,8 +272,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2.46}', '000004', 'Iris-setosa', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2.46}', '000004', 'Iris-setosa', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
@@ -355,8 +355,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
         show_doc(self.test_scenario8, examples)
 
         for example in examples:
@@ -395,8 +395,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '30000', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 5}', '000004', 'Iris-versicolor', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
         show_doc(self.test_scenario9, examples)
 
         for example in examples:
@@ -433,10 +433,10 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/grades.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000002": 1}', '000005', 29.63024, '{"input_fields": ["000000", "000001", "000002"]}'],
-            ['data/iris.csv', '10', '50', '30000', '{"000000": 1, "000001": 1, "000004": "Iris-virginica"}', '000003', 1.21187, '{"input_fields": ["000000", "000001", "000004"]}'],
-            ['data/movies.csv', '10', '50', '30000', '{"000007": "Action"}', '000009', 4.33333, '{"input_fields": ["000007"]}'],
-            ['data/movies.csv', '10', '50', '30000', '{"000006": "1999"}', '000009', 3.28427, '{"input_fields": ["000006"], "bias": false}']]
+            ['data/grades.csv', '10', '50', '60', '{"000000": 1, "000001": 1, "000002": 1}', '000005', 29.63024, '{"input_fields": ["000000", "000001", "000002"]}'],
+            ['data/iris.csv', '10', '50', '60', '{"000000": 1, "000001": 1, "000004": "Iris-virginica"}', '000003', 1.21187, '{"input_fields": ["000000", "000001", "000004"]}'],
+            ['data/movies.csv', '10', '50', '60', '{"000007": "Action"}', '000009', 4.33333, '{"input_fields": ["000007"]}'],
+            ['data/movies.csv', '10', '50', '60', '{"000006": "1999"}', '000009', 3.28427, '{"input_fields": ["000006"], "bias": false}']]
         show_doc(self.test_scenario10, examples)
 
         for example in examples:

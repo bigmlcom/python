@@ -24,10 +24,14 @@ import shutil
 import time
 import pkg_resources
 import datetime
+import pprint
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
+from bigml.externalconnectorhandler import get_env_connection_info
+from bigml.util import get_exponential_wait
+from nose.tools import assert_less
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -65,7 +69,8 @@ RESOURCE_TYPES = [
     'linearregression',
     'script',
     'execution',
-    'library'
+    'library',
+    'externalconnector'
 ]
 
 irregular_plurals = {}
@@ -103,6 +108,11 @@ class World(object):
             self.debug = bool(os.environ.get('BIGML_DEBUG', 0))
         except ValueError:
             pass
+        self.short_debug = False
+        try:
+            self.short_debug = bool(os.environ.get('BIGML_SHORT_DEBUG', 0))
+        except ValueError:
+            pass
         self.clear()
         self.dataset_ids = []
         self.fields_properties_dict = {}
@@ -117,13 +127,26 @@ class World(object):
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
         self.API_KEY = os.environ.get('BIGML_API_KEY')
+        self.EXTERNAL_CONN = get_env_connection_info()
+
         if self.USERNAME is None or self.API_KEY is None:
             assert False, ("Tests use the BIGML_USERNAME and BIGML_API_KEY"
                            " environment variables to authenticate the"
                            " connection, but they seem to be unset. Please,"
                            "set them before testing.")
-        self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
+        self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug,
+                         short_debug=self.short_debug)
         print self.api.connection_info()
+        print self.external_connection_info()
+
+    def external_connection_info(self):
+        """Printable string: The information used to connect to a external
+        data source
+
+        """
+        info = u"External data connection config:\n%s" % \
+            pprint.pformat(self.EXTERNAL_CONN, indent=4)
+        return info
 
     def clear(self):
         """Clears the stored resources' ids
@@ -181,7 +204,7 @@ def teardown_module():
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
-    if not world.debug:
+    if not world.debug and not world.short_debug:
         world.delete_resources()
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
@@ -201,3 +224,17 @@ def teardown_class():
     world.local_ensemble = None
     world.local_model = None
     world.local_deepnet = None
+
+def logged_wait(start, delta, count, res_description):
+    """Comparing the elapsed time to the expected delta and waiting for
+       the next sleep period.
+
+    """
+    wait_time = min(get_exponential_wait(delta / 100.0, count), delta)
+    print "Sleeping %s" % wait_time
+    time.sleep(wait_time)
+    elapsed = (datetime.datetime.utcnow() - start).seconds
+    if elapsed > delta / 2.0:
+        print "%s seconds waiting for %s" % \
+            (elapsed, res_description)
+    assert_less(elapsed, delta)

@@ -130,7 +130,7 @@ def json_load(content):
 # Patch for requests
 #
 ##############################################################################
-def patch_requests():
+def patch_requests(short_debug):
     """ Monkey patches requests to get debug output.
 
     """
@@ -140,7 +140,9 @@ def patch_requests():
         """
         response = original_request(method, url, **kwargs)
         logging.debug("Data: %s", response.request.body)
-        logging.debug("Response: %s", response.content)
+        response_content = response.content[0:256] if short_debug else \
+        response.content
+        logging.debug("Response: %s\n", response_content)
         return response
     original_request = requests.api.request
     requests.api.request = debug_request
@@ -159,16 +161,16 @@ class BigMLConnection(object):
         error: An error code and message
 
     """
-    def __init__(self, username=None, api_key=None, dev_mode=False,
+    def __init__(self, username=None, api_key=None,
                  debug=False, set_locale=False, storage=None, domain=None,
-                 project=None, organization=None):
+                 project=None, organization=None, short_debug=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
         values of the `BIGML_USERNAME` and `BIGML_API_KEY` environment
         variables respectively.
 
-        dev_mode` has been deprecated. Now all resources coexist in the
+        `dev_mode` has been deprecated. Now all resources coexist in the
         same production environment. Existing resources generated in
         development mode have been archived under a special project and
         are now accessible in production mode.
@@ -195,15 +197,12 @@ class BigMLConnection(object):
 
         """
 
-        if dev_mode:
-            LOGGER.warning("Development mode is deprecated and the dev_mode"
-                           " flag will be removed.")
 
         logging_level = logging.ERROR
-        if debug:
+        if debug or short_debug:
             try:
                 logging_level = logging.DEBUG
-                patch_requests()
+                patch_requests(short_debug)
             except Exception:
                 # when using GAE will fail
                 pass
@@ -234,6 +233,7 @@ class BigMLConnection(object):
         if organization is not None:
             self.organization = organization
         self.debug = debug
+        self.short_debug = short_debug
         self.general_domain = None
         self.general_protocol = None
         self.prediction_domain = None

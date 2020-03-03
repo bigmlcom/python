@@ -19,8 +19,8 @@ import time
 import json
 import os
 from nose.tools import eq_, assert_less
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -62,9 +62,11 @@ def wait_until_time_series_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_time_series(step, world.time_series['resource'])
     status = get_status(world.time_series)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
+        count += 1
+        logged_wait(start, delta, count, "timeseries")
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_time_series(step, world.time_series['resource'])
         status = get_status(world.time_series)

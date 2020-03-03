@@ -371,6 +371,13 @@ def get_library_id(library):
     return get_resource(c.LIBRARY_PATH, library)
 
 
+def get_external_connector_id(library):
+    """Returns a externalconnector/id.
+
+    """
+    return get_resource(c.EXTERNAL_CONNECTOR_PATH, library)
+
+
 def get_resource_id(resource):
     """Returns the resource id if it falls in one of the registered types
 

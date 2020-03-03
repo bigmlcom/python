@@ -18,8 +18,8 @@
 import time
 import json
 import os
-from datetime import datetime, timedelta
-from world import world
+from datetime import datetime
+from world import world, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -91,12 +91,14 @@ def wait_until_execution_status_code_is(step, code1, code2, secs):
     execution_id = world.execution['resource']
     i_get_the_execution(step, execution_id)
     status = get_status(world.execution)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_execution(step, execution_id)
-           status = get_status(world.execution)
+        count += 1
+        logged_wait(start, delta, count, "execution")
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        i_get_the_execution(step, execution_id)
+        status = get_status(world.execution)
     eq_(status['code'], int(code1))
 
 

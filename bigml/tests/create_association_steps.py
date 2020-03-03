@@ -2,8 +2,8 @@ import time
 import json
 import os
 import StringIO
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import BigML
@@ -13,6 +13,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.association import Association
+from bigml.util import get_exponential_wait
 
 from read_association_steps import i_get_the_association
 
@@ -62,12 +63,13 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
     association_id = world.association['resource']
     i_get_the_association(step, association_id)
     status = get_status(world.association)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_association(step, association_id)
-           status = get_status(world.association)
+        count += 1
+        logged_wait(start, delta, count, "association")
+        i_get_the_association(step, association_id)
+        status = get_status(world.association)
     eq_(status['code'], int(code1))
 
 

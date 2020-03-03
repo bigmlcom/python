@@ -17,8 +17,8 @@
 
 import time
 import json
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_OK
@@ -26,6 +26,7 @@ from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
+
 
 import read_dataset_steps as read
 
@@ -69,10 +70,11 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_dataset(step, world.dataset['resource'])
     status = get_status(world.dataset)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "dataset")
         read.i_get_the_dataset(step, world.dataset['resource'])
         status = get_status(world.dataset)
     eq_(status['code'], int(code1))

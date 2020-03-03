@@ -20,8 +20,8 @@ import json
 import requests
 import csv
 import traceback
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -66,10 +66,11 @@ def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_batch_prediction(step, world.batch_prediction['resource'])
     status = get_status(world.batch_prediction)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "batchprediction")
         i_get_the_batch_prediction(step, world.batch_prediction['resource'])
         status = get_status(world.batch_prediction)
     eq_(status['code'], int(code1))
@@ -81,10 +82,11 @@ def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_batch_centroid(step, world.batch_centroid['resource'])
     status = get_status(world.batch_centroid)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+        count += 1
+        logged_wait(start, delta, count, "batchcentroid")
         i_get_the_batch_centroid(step, world.batch_centroid['resource'])
         status = get_status(world.batch_centroid)
     eq_(status['code'], int(code1))
@@ -96,10 +98,11 @@ def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
     status = get_status(world.batch_anomaly_score)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+        count += 1
+        logged_wait(start, delta, count, "batchanomalyscore")
         i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
         status = get_status(world.batch_anomaly_score)
     eq_(status['code'], int(code1), msg="%s seconds waited." % delta)

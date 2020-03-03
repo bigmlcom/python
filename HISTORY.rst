@@ -3,6 +3,11 @@
 History
 -------
 
+4.29.1 (2020-03-03)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug when disabling SSL verification in predictions only.
+
 4.29.0 (2020-02-29)
 ~~~~~~~~~~~~~~~~~~~
 

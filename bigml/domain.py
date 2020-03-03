@@ -123,13 +123,15 @@ class Domain(object):
         if self.verify is None:
             self.verify = self.general_domain.lower().endswith(DEFAULT_DOMAIN)
         if  self.prediction_protocol == BIGML_PROTOCOL and \
-                (prediction_verify or BIGML_PREDICTION_SSL_VERIFY is not None):
+                (prediction_verify is not None or \
+                 BIGML_PREDICTION_SSL_VERIFY is not None):
             try:
                 self.verify_prediction = prediction_verify \
                     if prediction_verify is not None else \
                     bool(int(BIGML_PREDICTION_SSL_VERIFY))
             except ValueError:
                 pass
+
         if self.verify_prediction is None:
             self.verify_prediction = (
                 (self.prediction_domain.lower().endswith(DEFAULT_DOMAIN) and

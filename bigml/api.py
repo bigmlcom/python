@@ -78,7 +78,7 @@ from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
 from bigml.constants import STORAGE, ALL_FIELDS
-
+from bigml.externalconnectorhandler import ExternalConnectorHandler
 
 
 # Repeating constants and functions for backwards compatibility
@@ -113,7 +113,8 @@ from bigml.constants import (
     BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE,
     LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE, STATUS_PATH,
-    IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT)
+    IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT,
+    EXTERNAL_CONNECTOR_PATH, EXTERNAL_CONNECTOR_RE)
 
 from bigml.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -128,7 +129,7 @@ from bigml.resourcehandler import (
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
     get_fusion_id, get_pca_id, get_projection_id, get_batch_projection_id,
     get_configuration_id, get_linear_regression_id,
-    get_script_id, get_execution_id, get_library_id)
+    get_script_id, get_execution_id, get_library_id, get_external_connector_id)
 
 
 # Map status codes to labels
@@ -181,7 +182,8 @@ ID_GETTERS = {
     LINEAR_REGRESSION_PATH: get_linear_regression_id,
     SCRIPT_PATH: get_script_id,
     LIBRARY_PATH: get_library_id,
-    EXECUTION_PATH: get_execution_id
+    EXECUTION_PATH: get_execution_id,
+    EXTERNAL_CONNECTOR_PATH: get_external_connector_id
 }
 
 
@@ -191,6 +193,7 @@ def count(listing):
     """
     if 'meta' in listing and 'query_total' in listing['meta']:
         return listing['meta']['query_total']
+
 
 
 def get_fields(resource):
@@ -217,7 +220,8 @@ def get_fields(resource):
     return fields
 
 
-class BigML(LinearRegressionHandler, BatchProjectionHandler,
+class BigML(ExternalConnectorHandler,
+            LinearRegressionHandler, BatchProjectionHandler,
             ProjectionHandler, PCAHandler,
             ConfigurationHandler, FusionHandler,
             OptimlHandler,
@@ -324,6 +328,7 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         ProjectionHandler.__init__(self)
         BatchProjectionHandler.__init__(self)
         LinearRegressionHandler.__init__(self)
+        ExternalConnectorHandler.__init__(self)
         self.status_url = "%s%s" % (self.url, STATUS_PATH)
 
 

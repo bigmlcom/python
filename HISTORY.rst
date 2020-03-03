@@ -3,6 +3,11 @@
 History
 -------
 
+4.31.0 (2020-04-22)
+~~~~~~~~~~~~~~~~~~~
+
+- Adding REST methods to manage external data connections.
+
 4.30.2 (2020-04-20)
 ~~~~~~~~~~~~~~~~~~~
 

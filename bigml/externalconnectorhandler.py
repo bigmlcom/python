@@ -28,9 +28,8 @@ except ImportError:
 
 
 from bigml.resourcehandler import ResourceHandler
-from bigml.resourcehandler import (check_resource_type,
-                                   get_external_connector_id, get_resource_type,
-                                   check_resource)
+from bigml.resourcehandler import check_resource_type, \
+    get_external_connector_id, get_resource_type, check_resource
 from bigml.constants import EXTERNAL_CONNECTOR_PATH, TINY_RESOURCE
 
 
@@ -88,7 +87,7 @@ class ExternalConnectorHandler(ResourceHandler):
             return self._get("%s%s" % (self.url, external_connector_id),
                              query_string=query_string)
 
-    def list_external_connector(self, query_string=''):
+    def list_external_connectors(self, query_string=''):
         """Lists all your external connectors.
 
         """

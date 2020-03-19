@@ -3,6 +3,11 @@
 History
 -------
 
+4.29.2 (2020-03-20)
+~~~~~~~~~~~~~~~~~~~
+
+- Improving exception handling when retrieving resources.
+
 4.29.1 (2020-03-03)
 ~~~~~~~~~~~~~~~~~~~
 

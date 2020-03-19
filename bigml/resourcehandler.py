@@ -392,9 +392,11 @@ def exception_on_error(resource):
     if resource.get('error') is not None:
         raise Exception(resource.get('error', \
             {}).get('status', {}).get('message'))
-
-    if resource.get('status', {}).get('error') is not None:
-        raise Exception(resource.get('status', {}).get('message'))
+    if resource.get('object', resource).get('status', {}).get('error') \
+        is not None:
+            status = resource.get('object', resource).get( \
+                'status', {})
+            raise Exception(status.get('cause', status).get('message'))
 
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,

@@ -403,7 +403,16 @@ If you set the ``storage`` argument in the ``api`` instantiation:
     api = BigML(storage='./storage')
 
 all the generated, updated or retrieved resources will be automatically
-saved to the chosen directory.
+saved to the chosen directory. Once they are stored locally, the
+``retrieve_resource`` method will look for the resource information
+first in the local storage before trying to download the information from
+the API.
+
+.. code-block:: python
+
+    dataset = api.retrieve_resource("dataset/5e8e5672c7736e3d830037b5",
+                                    query_string="limit=-1")
+
 
 Alternatively, you can use the ``export`` method to explicitly
 download the JSON information
@@ -455,6 +464,7 @@ document. You can also check other simple examples in the following documents:
 - `deepnet 101 <101_deepnet.html>`_
 - `time series 101 <101_ts.html>`_
 - `fusion 101 <101_fusion.html>`_
+- `optiml 101 <101_optiml.html>`_
 - `scripting 101 <101_scripting.html>`_
 
 Fields Structure
@@ -485,15 +495,19 @@ use ``get_fields``:
                        u'optype': u'categorical'}}
 
 When the number of fields becomes very large, it can be useful to exclude or
-filter them. This can be done using a query string expression, for instance:
+paginate them. This can be done using a query string expression, for instance:
 
 .. code-block:: python
 
-    >>> source = api.get_source(source, "limit=10&order_by=name")
+    >>> source = api.get_source(source, "offset=0;limit=10&order_by=name")
 
 would include in the retrieved dictionary the first 10 fields sorted by name.
+There's a limit to the number of fields that will be included by default in
+a resource description. If your resource has more than ``1000`` fields,
+you can either paginate or force all the fields to be returned by using
+``limit=-1`` as query string-
 
-To handle the field structure you can use the ``Fields`` class. See the
+To handle field structures you can use the ``Fields`` class. See the
 `Fields`_ section.
 
 Dataset

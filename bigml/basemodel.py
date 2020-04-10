@@ -56,30 +56,11 @@ def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
         from the remote server
 
     """
-    if api.storage is not None:
-        try:
-            stored_resource = "%s%s%s" % (api.storage, os.sep,
-                                          resource_id.replace("/", "_"))
-            with open(stored_resource) as resource_file:
-                resource = json.loads(resource_file.read())
-            # we check that the stored resource has enough fields information
-            # for local predictions to work. Otherwise we should retrieve it.
-            if no_check_fields or check_model_fields(resource):
-                return resource
-        except ValueError:
-            raise ValueError("The file %s contains no JSON")
-        except IOError:
-            pass
-    if api.auth == '?username=;api_key=;':
-        raise ValueError("The credentials information is missing. This"
-                         " information is needed to download resource %s"
-                         " for the first time and store it locally for further"
-                         " use. Please export BIGML_USERNAME"
-                         " and BIGML_API_KEY."  % resource_id)
-    api_getter = api.getters[get_resource_type(resource_id)]
-    resource = check_resource(resource_id, api_getter, query_string,
-                              retries=retries)
-    return resource
+
+    check_local_fn = None if no_check_fields else check_model_fields
+    return api.retrieve_resource(resource_id, query_string=query_string,
+                                 check_local_fn=check_local_fn,
+                                 retries=retries)
 
 
 def extract_objective(objective_field):

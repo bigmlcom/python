@@ -48,23 +48,14 @@ import csv
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
-from bigml.api import get_resource_type
+from bigml.api import get_resource_type, get_fields
 from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, PREDICTION_PATH, MODEL_PATH, CLUSTER_PATH,
     ANOMALY_PATH, SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
     LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH, TOPIC_MODEL_PATH,
-    ENSEMBLE_PATH, PCA_PATH, LINEAR_REGRESSION_PATH)
+    ENSEMBLE_PATH, PCA_PATH, LINEAR_REGRESSION_PATH, FIELDS_PARENT,
+    RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS)
 from bigml.io import UnicodeReader, UnicodeWriter
-
-RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
-                         PREDICTION_PATH, CLUSTER_PATH, ANOMALY_PATH,
-                         SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
-                         LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH,
-                         TOPIC_MODEL_PATH, ENSEMBLE_PATH, PCA_PATH,
-                         LINEAR_REGRESSION_PATH]
-DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
-                          "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
-                          "#VALUE!", "#NULL!", "NaN", "#N/A", "#NUM!", "?"]
 
 LIST_LIMIT = 10
 SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
@@ -80,23 +71,6 @@ UPDATABLE_HEADERS = {"field name": "name",
 
 ITEM_SINGULAR = {u"categories": u"category"}
 
-FIELDS_PARENT = { \
-    "model": "model",
-    "anomaly": "model",
-    "cluster": "clusters",
-    "logisticregression": "logistic_regression",
-    "linearregression": "linear_regression",
-    "ensemble": "ensemble",
-    "deepnet": "deepnet",
-    "topicmodel": "topic_model",
-    "association": "associations",
-    "fusion": "fusion",
-    "correlation": "correlations",
-    "sample": "sample",
-    "pca": "pca",
-    "timeseries": "timeseries",
-    "statisticaltest": "statistical_tests"}
-
 
 def get_fields_structure(resource, errors=False):
     """Returns the field structure for a resource, its locale and
@@ -108,26 +82,19 @@ def get_fields_structure(resource, errors=False):
     except ValueError:
         raise ValueError("Unknown resource structure")
     field_errors = None
-    if resource_type in RESOURCES_WITH_FIELDS:
-        resource = resource.get('object', resource)
-        # locale and missing tokens
-        if resource_type == SOURCE_PATH:
-            resource_locale = resource['source_parser']['locale']
-            missing_tokens = resource[
-                'source_parser']['missing_tokens']
-        else:
-            resource_locale = resource.get('locale', DEFAULT_LOCALE)
-            missing_tokens = resource.get('missing_tokens',
-                                          DEFAULT_MISSING_TOKENS)
-        # fields structure
-        if resource_type in FIELDS_PARENT.keys():
-            fields = resource[FIELDS_PARENT[resource_type]].get('fields', {})
-        else:
-            fields = resource.get('fields', {})
+    resource = resource.get('object', resource)
+    # locale and missing tokens
+    if resource_type == SOURCE_PATH:
+        resource_locale = resource['source_parser']['locale']
+        missing_tokens = resource[
+            'source_parser']['missing_tokens']
+    else:
+        resource_locale = resource.get('locale', DEFAULT_LOCALE)
+        missing_tokens = resource.get('missing_tokens',
+                                      DEFAULT_MISSING_TOKENS)
 
-        if resource_type == SAMPLE_PATH:
-            fields = dict([(field['id'], field) for field in
-                           fields])
+    fields = get_fields(resource)
+    if resource_type in RESOURCES_WITH_FIELDS:
         # Check whether there's an objective id
         objective_column = None
         if resource_type == DATASET_PATH:

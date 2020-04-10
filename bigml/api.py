@@ -34,11 +34,13 @@ api.pprint(prediction)
 """
 import sys
 import pprint
+import os
+import json
 
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.resourcehandler import ResourceHandler
+from bigml.resourcehandler import ResourceHandler, check_resource
 from bigml.sourcehandler import SourceHandler
 from bigml.datasethandler import DatasetHandler
 from bigml.modelhandler import ModelHandler
@@ -75,7 +77,7 @@ from bigml.batchprojectionhandler import BatchProjectionHandler
 from bigml.scripthandler import ScriptHandler
 from bigml.executionhandler import ExecutionHandler
 from bigml.libraryhandler import LibraryHandler
-from bigml.constants import STORAGE
+from bigml.constants import STORAGE, ALL_FIELDS
 
 
 
@@ -111,7 +113,7 @@ from bigml.constants import (
     BATCH_PROJECTION_PATH, BATCH_PROJECTION_RE,
     LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE, STATUS_PATH,
-    IRREGULAR_PLURALS)
+    IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT)
 
 from bigml.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -189,6 +191,30 @@ def count(listing):
     """
     if 'meta' in listing and 'query_total' in listing['meta']:
         return listing['meta']['query_total']
+
+
+def get_fields(resource):
+    """Returns the field information in a resource dictionary structure
+
+    """
+    try:
+        resource_type = get_resource_type(resource)
+    except ValueError:
+        raise ValueError("Unknown resource structure. Failed to find"
+                         " a valid resource dictionary as argument.")
+
+    if resource_type in RESOURCES_WITH_FIELDS:
+        resource = resource.get('object', resource)
+        # fields structure
+        if resource_type in FIELDS_PARENT.keys():
+            fields = resource[FIELDS_PARENT[resource_type]].get('fields', {})
+        else:
+            fields = resource.get('fields', {})
+
+        if resource_type == SAMPLE_PATH:
+            fields = dict([(field['id'], field) for field in
+                           fields])
+    return fields
 
 
 class BigML(LinearRegressionHandler, BatchProjectionHandler,
@@ -388,49 +414,13 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
 
         """
 
-        def _get_fields_key(resource):
-            """Returns the fields key from a resource dict
-
-            """
-            if resource['code'] in [HTTP_OK, HTTP_ACCEPTED]:
-                if (MODEL_RE.match(resource_id) or
-                        ANOMALY_RE.match(resource_id)):
-                    return resource['object']['model']['model_fields']
-                elif CLUSTER_RE.match(resource_id):
-                    return resource['object']['clusters']['fields']
-                elif CORRELATION_RE.match(resource_id):
-                    return resource['object']['correlations']['fields']
-                elif STATISTICAL_TEST_RE.match(resource_id):
-                    return resource['object']['statistical_tests']['fields']
-                elif LOGISTIC_REGRESSION_RE.match(resource_id):
-                    return resource['object']['logistic_regression']['fields']
-                elif ASSOCIATION_RE.match(resource_id):
-                    return resource['object']['associations']['fields']
-                elif TOPIC_MODEL_RE.match(resource_id):
-                    return resource['object']['topic_model']['fields']
-                elif TIME_SERIES_RE.match(resource_id):
-                    return resource['object']['time_series']['fields']
-                elif DEEPNET_RE.match(resource_id):
-                    return resource['object']['deepnet']['fields']
-                elif SAMPLE_RE.match(resource_id):
-                    return dict([(field['id'], field) for field in
-                                 resource['object']['sample']['fields']])
-                elif PCA_RE.match(resource_id):
-                    return dict([(field['id'], field) for field in
-                                 resource['object']['pca']['fields']])
-                elif LINEAR_REGRESSION_RE.match(resource_id):
-                    return resource['object']['linear_regression']['fields']
-                else:
-                    return resource['object']['fields']
-            return None
-
         if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
-        elif (isinstance(resource, basestring) and (
-                SOURCE_RE.match(resource) or DATASET_RE.match(resource) or
-                MODEL_RE.match(resource) or PREDICTION_RE.match(resource))):
+        elif isinstance(resource, basestring) and get_resource_type(resource) \
+                in RESOURCES_WITH_FIELDS:
             resource_id = resource
-            resource = self._get("%s%s" % (self.url, resource_id))
+            resource = self.retrieve_resource(resource,
+                                              query_string=ALL_FIELDS)
         else:
             LOGGER.error("Wrong resource id")
             return
@@ -438,10 +428,10 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         # a get remote call is used to retrieve the resource by id.
         fields = None
         try:
-            fields = _get_fields_key(resource)
+            fields = get_fields(resource)
         except KeyError:
             resource = self._get("%s%s" % (self.url, resource_id))
-            fields = _get_fields_key(resource)
+            fields = get_fields(resource)
 
         return fields
 
@@ -530,6 +520,39 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
             download_url = "%s%s%s%s" % (self.url, batch_prediction_id,
                                          DOWNLOAD_DIR, self.auth)
             return self._create_remote_source(download_url, args=args)
+
+    def retrieve_resource(self, resource_id, query_string=None,
+                          check_local_fn=None, retries=None):
+        """ Retrieves resource info either from the local repo or
+            from the remote server
+
+        """
+        if query_string is None:
+            query_string = ''
+        if self.storage is not None:
+            try:
+                stored_resource = os.path.join(self.storage,
+                                              resource_id.replace("/", "_"))
+                with open(stored_resource) as resource_file:
+                    resource = json.loads(resource_file.read())
+                # we check that the stored resource has the information
+                # needed (for instance, input_fields for predicting)
+                if check_local_fn is None or check_local_fn(resource):
+                    return resource
+            except ValueError:
+                raise ValueError("The file %s contains no JSON")
+            except IOError:
+                pass
+        if self.auth == '?username=;api_key=;':
+            raise ValueError("The credentials information is missing. This"
+                             " information is needed to download resource %s"
+                             " for the first time and store it locally for further"
+                             " use. Please export BIGML_USERNAME"
+                             " and BIGML_API_KEY."  % resource_id)
+        api_getter = self.getters[get_resource_type(resource_id)]
+        resource = check_resource(resource_id, api_getter, query_string,
+                                  retries=retries)
+        return resource
 
 
 def get_api_connection(api, store=True, context=None):

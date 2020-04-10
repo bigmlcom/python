@@ -27,7 +27,7 @@ import logging
 import re
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
-from bigml.fields import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
+from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
 from bigml.resourcehandler import get_resource_type, resource_is_ready
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml_chronos import chronos
@@ -61,6 +61,40 @@ def parse_items(text, regexp):
         return []
     pattern = re.compile(regexp, flags=re.U)
     return [term.strip() for term in pattern.split(text)]
+
+
+def check_model_fields(model):
+    """Checks the model structure to see whether it contains the required
+    fields information
+
+    """
+    inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
+    if check_model_structure(model, inner_key):
+        model = model.get('object', model)
+        fields = model.get("fields", model.get(inner_key, {}).get('fields'))
+        input_fields = model.get("input_fields")
+        # models only need model_fields to work. The rest of resources will
+        # need all fields to work
+        model_fields = model.get(inner_key, {}).get( \
+            'model_fields', {}).keys()
+        # fusions don't have input fields
+        if input_fields is None and inner_key != "fusion":
+            return False
+        if not model_fields:
+            fields_meta = model.get('fields_meta', \
+                model.get(inner_key, {}).get('fields_meta', {}))
+            try:
+                return fields_meta['count'] == fields_meta['total']
+            except KeyError:
+                # stored old models will not have the fields_meta info, so
+                # we return True to avoid failing in this case
+                return True
+        else:
+            if fields is None:
+                return False
+            return all([field_id in fields.keys() \
+                for field_id in model_fields])
+    return False
 
 
 def check_model_structure(model, inner_key="model"):
@@ -109,40 +143,6 @@ def get_unique_terms(terms, term_forms, tag_cloud):
                 terms_set[term] = 0
             terms_set[term] += 1
     return terms_set.items()
-
-
-def check_model_fields(model):
-    """Checks the model structure to see whether it contains the required
-    fields information
-
-    """
-    inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
-    if check_model_structure(model, inner_key):
-        model = model.get('object', model)
-        fields = model.get("fields", model.get(inner_key, {}).get('fields'))
-        input_fields = model.get("input_fields")
-        # models only need model_fields to work. The rest of resources will
-        # need all fields to work
-        model_fields = model.get(inner_key, {}).get( \
-            'model_fields', {}).keys()
-        # fusions don't have input fields
-        if input_fields is None and inner_key != "fusion":
-            return False
-        if not model_fields:
-            fields_meta = model.get('fields_meta', \
-                model.get(inner_key, {}).get('fields_meta', {}))
-            try:
-                return fields_meta['count'] == fields_meta['total']
-            except KeyError:
-                # stored old models will not have the fields_meta info, so
-                # we return True to avoid failing in this case
-                return True
-        else:
-            if fields is None:
-                return False
-            return all([field_id in fields.keys() \
-                for field_id in model_fields])
-    return False
 
 
 def get_datetime_subfields(fields):

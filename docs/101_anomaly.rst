@@ -29,6 +29,19 @@ create an anomaly detector to produce a single anomaly score.
     # assigning an anomaly score to it
     anomaly_score = api.create_anomaly_score(anomaly, input_data)
 
+
+If you want to configure some of the attributes of your anomaly detector,
+like the number of top anomalies retrieved,
+you can use the second argument in the create call.
+
+    # step 5: creating an anomaly detector with a list of the 20 top anomalies
+    anomaly = api.create_anomaly(dataset, {"top_n": 20})
+    # waiting for the anomaly detector to be finished
+    api.ok(anomaly)
+
+You can check all the available creation arguments in the `API documentation
+<https://bigml.com/api/anomalies#an_anomaly_detector_arguments>`_.
+
 If you want to assign scores to the original dataset (or a different dataset),
 you can do so by creating
 a `batch_anomaly_score` resource. In the example, we'll be assuming you already

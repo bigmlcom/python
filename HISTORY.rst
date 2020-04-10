@@ -3,6 +3,12 @@
 History
 -------
 
+4.30.0 (2020-04-10)
+~~~~~~~~~~~~~~~~~~~
+
+- Allowing the BigML class to retrieve any resource from local storage and
+  extract its fields.
+
 4.29.2 (2020-03-20)
 ~~~~~~~~~~~~~~~~~~~
 

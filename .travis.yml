@@ -13,6 +13,7 @@ env:
 install:
   - pip install numpy
   - pip install scipy
+  - pip install cython
   - pip install pystemmer==2.0.0
   - pip install .
 script:

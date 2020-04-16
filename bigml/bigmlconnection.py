@@ -288,7 +288,7 @@ class BigMLConnection(object):
 
         The organization argument is a boolean that controls authentication
         profiles in organizations. When set to true,
-        the organization ID is used to access the projects in an
+        the organization ID is used to access the projects and tasks in an
         organization. If false, a particular project ID must be used.
 
         The shared_auth string provides the alternative credentials for
@@ -839,7 +839,7 @@ class BigMLConnection(object):
 
         return file_object
 
-    def _status(self, url, query_string=''):
+    def _status(self, url, query_string='', organization=None):
         """Returns the status of the account.
 
 
@@ -852,7 +852,8 @@ class BigMLConnection(object):
                 "code": code,
                 "message": "Failed to obtain the account status info"}}
 
-        url = self._add_credentials(url) + query_string
+        url = self._add_credentials(url, organization=organization) \
+            + query_string
         if GAE_ENABLED:
             try:
                 req_options = {

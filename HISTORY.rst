@@ -3,6 +3,11 @@
 History
 -------
 
+4.30.1 (2020-04-16)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing tasks status info for organizations.
+
 4.30.0 (2020-04-10)
 ~~~~~~~~~~~~~~~~~~~
 

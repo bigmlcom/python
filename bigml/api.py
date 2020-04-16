@@ -390,6 +390,9 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         Returns a dictionary with the summarized information about the account
 
         """
+        if self.organization is not None:
+            return self._status(self.status_url,
+                                organization=self.organization)
         return self._status(self.status_url)
 
     def get_tasks_status(self):
@@ -398,7 +401,11 @@ class BigML(LinearRegressionHandler, BatchProjectionHandler,
         Returns a dictionary with the summarized information about the tasks
 
         """
-        status = self._status(self.status_url)["object"]
+        if self.organization is not None:
+            status = self._status(self.status_url,
+                                  organization=self.organization)["object"]
+        else:
+            status = self._status(self.status_url)["object"]
         return {
             "tasks": status["tasks"],
             "max_tasks": status["subscription"]["max_tasks"],

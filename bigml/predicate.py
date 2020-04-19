@@ -133,9 +133,13 @@ class Predicate(object):
     def __init__(self, operation, field, value, term=None):
         self.operator = operation
         self.missing = False
+
         if self.operator.endswith("*"):
             self.operator = self.operator[0: -1]
             self.missing = True
+        elif operation == 'in' and None in value:
+            self.missing = True
+
         self.field = field
         self.value = value
         self.term = term

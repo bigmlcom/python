@@ -143,6 +143,7 @@ class Anomaly(ModelFields):
                             "resource.")
         for tree in self.iforest:
             depth_sum += tree.depth(input_data)[0]
+
         observed_mean_depth = float(depth_sum) / len(self.iforest)
         return math.pow(2, - observed_mean_depth / self.expected_mean_depth)
 

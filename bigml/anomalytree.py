@@ -82,4 +82,5 @@ class AnomalyTree(object):
                 if child.predicates.apply(input_data, self.fields):
                     path.append(child.predicates.to_rule(self.fields))
                     return child.depth(input_data, path=path, depth=depth + 1)
+
         return depth, path

@@ -378,13 +378,15 @@ class ModelFields(object):
         """
         unused_fields = []
         new_input = {}
-        if isinstance(input_data, dict):
+        tmp_input = {}
+        tmp_input.update(input_data)
+        if isinstance(tmp_input, dict):
             # remove all missing values
-            for key, value in input_data.items():
+            for key, value in tmp_input.items():
                 value = self.normalize(value)
                 if value is None:
-                    del input_data[key]
-            for key, value in input_data.items():
+                    del tmp_input[key]
+            for key, value in tmp_input.items():
                 if key not in self.fields:
                     key = self.inverted_fields.get(key, key)
                 # only the fields that are listed in input_fields and appear

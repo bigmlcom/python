@@ -7,6 +7,22 @@ the status code will be ``bigml.api.HTTP_OK`` if the resource can be
 retrieved without problems, or one of the HTTP standard error codes
 otherwise.
 
+To retrieve an existing resource, you just need to use the corresponding
+``get_[resouce type]`` method. There's a query string argument
+that can be used to filter out or limit the attributes obtained:
+
+.. code-block:: python
+
+    # gets the source information with no filters
+    api.get_source("source/5143a51a37203f2cf7000956")
+    # gets the dataset information with only 10 of the fields
+    api.get_dataset("dataset/5143a51a37203f2cf7000936",
+                    query_string="limit=10")
+    # gets the model information excluding the model predicates tree
+    api.get_model("model/5143a51a37203f2cf7000956",
+                  query_string="exclude=root")
+
+
 Listing Resources
 -----------------
 

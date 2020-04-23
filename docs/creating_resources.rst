@@ -192,7 +192,7 @@ and you can use its project id to get, update or delete it:
 assigned to it, so please be extra-careful when using
 the ``api.delete_project`` call.
 
-Creating external connectors
+Creating External Connectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create an external connector to an existing database you need to use the
@@ -231,7 +231,7 @@ connector. All other arguments should be placed in the second parameter:
          "name": "My elasticsearch"})
 
 
-Creating sources
+Creating Sources
 ~~~~~~~~~~~~~~~~
 
 To create a source from a local data file, you can use the
@@ -326,7 +326,7 @@ method. For example, to get the status of our source we would use:
 
     api.status(source)
 
-Creating datasets
+Creating Datasets
 ~~~~~~~~~~~~~~~~~
 
 Once you have created a source, you can create a dataset. The only
@@ -422,7 +422,7 @@ to reference the dataset to be created. For instance,
 would generate a new dataset containing the subset of instances in the cluster
 associated to the centroid id ``000000``.
 
-Creating models
+Creating Models
 ~~~~~~~~~~~~~~~
 
 Once you have created a dataset you can create a model from it. If you don't
@@ -464,7 +464,7 @@ a concrete centroid can be built by providing the cluster and centroid ids:
 
 if no centroid id is provided, the first one appearing in the cluster is used.
 
-Creating clusters
+Creating Clusters
 ~~~~~~~~~~~~~~~~~
 
 If your dataset has no fields showing the objective information to
@@ -485,7 +485,7 @@ Let's create a cluster from a given dataset:
 
 that will create a cluster with 5 centroids.
 
-Creating anomaly detectors
+Creating Anomaly Detectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If your problem is finding the anomalous data in your dataset, you can
@@ -505,7 +505,7 @@ Let's create an anomaly detector from a given dataset:
 that will create an anomaly resource with a `top_anomalies` block of the
 most anomalous points.
 
-Creating associations
+Creating Associations
 ~~~~~~~~~~~~~~~~~~~~~
 
 To find relations between the field values you can create an association
@@ -539,7 +539,7 @@ list of ids as the first argument in the api call
         "range": [1, 10]})
 
 
-Creating topic models
+Creating Topic Models
 ~~~~~~~~~~~~~~~~~~~~~
 
 To find which topics do your documents refer to you can create a topic model.
@@ -571,7 +571,7 @@ list of ids as the first argument in the api call
         "name": "my topics", "number_of_topics": 32})
 
 
-Creating time series
+Creating Time Series
 ~~~~~~~~~~~~~~~~~~~~
 
 To forecast the behaviour of any numeric variable that depends on its
@@ -625,8 +625,8 @@ The OptiML is then scheduled for creation, and you can retrieve its
 status at any time by means of ``api.status(optiml)``.
 
 
-Creating Fusion
-~~~~~~~~~~~~~~~
+Creating Fusions
+~~~~~~~~~~~~~~~~
 
 To create a Fusion, the only required argument is a list of models.
 You can also
@@ -662,7 +662,7 @@ dictionaries that contain the ``id`` and ``weight`` keys:
                                 {"name": "my weighted fusion"})
 
 
-Creating predictions
+Creating Predictions
 ~~~~~~~~~~~~~~~~~~~~
 
 You can now use the model resource identifier together with some input
@@ -685,7 +685,7 @@ To see the prediction you can use ``pprint``:
 Predictions can be created using any supervised model (model, ensemble,
 logistic regression, linear regression, deepnet and fusion) as first argument.
 
-Creating centroids
+Creating Centroids
 ~~~~~~~~~~~~~~~~~~
 
 To obtain the centroid associated to new input data, you
@@ -707,7 +707,7 @@ You can also give the centroid predicition a name:
                                     "diabetes": "true"},
                                     {"name": "my centroid"})
 
-Creating anomaly scores
+Creating Anomaly Scores
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 To obtain the anomaly score associated to new input data, you
@@ -719,7 +719,7 @@ detector identifier and the input data to obtain the score:
     anomaly_score = api.create_anomaly_score(anomaly, {"src_bytes": 350},
                                              args={"name": "my score"})
 
-Creating association sets
+Creating Association Sets
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using the association resource, you can obtain the consequent items associated
@@ -734,7 +734,7 @@ ID or object and the next one is the input data.
         args={"name": "my association set"})
 
 
-Creating topic distributions
+Creating Topic Distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To obtain the topic distributions associated to new input data, you
@@ -749,7 +749,7 @@ the method a topic model identifier and the input data to obtain the score:
         args={"name": "my topic distribution"})
 
 
-Creating forecasts
+Creating Forecasts
 ~~~~~~~~~~~~~~~~~~
 
 To obtain the forecast associated to a numeric variable, you
@@ -763,7 +763,7 @@ the method a time series identifier and the input data to obtain the forecast:
         {"Final": {"horizon": 10}})
 
 
-Creating projections
+Creating Projections
 ~~~~~~~~~~~~~~~~~~~~
 
 You can now use the PCA resource identifier together with some input
@@ -780,7 +780,7 @@ method. You can also give the projection a name:
 
 
 
-Creating evaluations
+Creating Evaluations
 ~~~~~~~~~~~~~~~~~~~~
 
 Once you have created a supervised learning model,
@@ -888,8 +888,8 @@ be the maximum number of iterations:
     ensemble = api.create_ensemble('dataset/5143a51a37203f2cf7000972', args)
 
 
-Creating linear regressions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating Linear Regressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For regression problems, you can choose also linear regressions to model
 your data. Linear regressions expect the predicted value for the objective
@@ -950,7 +950,7 @@ Documentation
 <https://bigml.com/api/logisticregressions#lr_logistic_regression_arguments>`_.
 
 
-Creating deepnets
+Creating Deepnets
 ~~~~~~~~~~~~~~~~~
 
 Deepnets can also solve classification and regression problems.
@@ -1014,7 +1014,7 @@ Documentation
 <https://bigml.com/api/pcas>`_.
 
 
-Creating batch predictions
+Creating Batch Predictions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have shown how to create predictions individually, but when the amount
@@ -1073,7 +1073,7 @@ This code will create a new source object, that can be used again as starting
 point to generate datasets.
 
 
-Creating batch centroids
+Creating Batch Centroids
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 As described in the previous section, it is also possible to make centroids'
@@ -1089,7 +1089,7 @@ cluster used to assign a centroid to each instance:
         "name": "my batch centroid", "all_fields": True,
         "header": True})
 
-Creating batch anomaly scores
+Creating Batch Anomaly Scores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Input data can also be assigned an anomaly score in batch. You train an
@@ -1104,7 +1104,7 @@ anomaly detector to assign an anomaly score to each input data instance:
         "name": "my batch anomaly score", "all_fields": True,
         "header": True})
 
-Creating batch topic distributions
+Creating Batch Topic Distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Input data can also be assigned a topic distribution in batch. You train a
@@ -1120,7 +1120,7 @@ topic model to assign a topic distribution to each input data instance:
         "name": "my batch topic distribution", "all_fields": True,
         "header": True})
 
-Creating batch projections
+Creating Batch Projections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Input data can also be assigned a projection in batch. You train a

@@ -737,10 +737,12 @@ via environment variables, as explained
 in the authentication section. Also some of the tests need other environment
 variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization
 members and ``BIGML_EXTERNAL_HOST``, ``BIGML_EXTERNAL_PORT``,
-``BIGML_EXTERNAL_DB``, ``BIGML_EXTERNAL_CONN_USERNAME``,
-``BIGML_EXTERNAL_CONN_PWD`` in order to test external data connectors.
+``BIGML_EXTERNAL_DB``, ``BIGML_EXTERNAL_CONN_USER``,
+``BIGML_EXTERNAL_CONN_PWD`` and ``BIGML_EXTERNAL_CONN_SOURCE``
+in order to test external data connectors.
 
- With that in place, you can run the test suite simply by issuing
+With that in place, you can run the test suite simply by issuing
+
 .. code-block:: bash
 
     $ python setup.py nosetests

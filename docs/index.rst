@@ -734,7 +734,13 @@ Running the Tests
 The test will be run using `nose <https://nose.readthedocs.org/en/latest/>`_ ,
 that is installed on setup, and you'll need to set up your authentication
 via environment variables, as explained
-below. With that in place, you can run the test suite simply by issuing
+in the authentication section. Also some of the tests need other environment
+variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization
+members and ``BIGML_EXTERNAL_HOST``, ``BIGML_EXTERNAL_PORT``,
+``BIGML_EXTERNAL_DB``, ``BIGML_EXTERNAL_CONN_USERNAME``,
+``BIGML_EXTERNAL_CONN_PWD`` in order to test external data connectors.
+
+ With that in place, you can run the test suite simply by issuing
 .. code-block:: bash
 
     $ python setup.py nosetests

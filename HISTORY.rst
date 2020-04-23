@@ -11,7 +11,7 @@ History
 4.30.2 (2020-04-20)
 ~~~~~~~~~~~~~~~~~~~
 
-- Fixing local anomaly scors for datasets with significant amounts of missings.
+- Fixing local anomaly scores for datasets with significant amounts of missings.
 - Fixing input data modification for local predictions when fields are not
   used in the models.
 

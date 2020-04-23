@@ -20,7 +20,7 @@
    https://bigml.com/api/externalconnectors
 
 """
-
+import os
 try:
     import simplejson as json
 except ImportError:
@@ -30,7 +30,23 @@ except ImportError:
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import check_resource_type, \
     get_external_connector_id, get_resource_type, check_resource
-from bigml.constants import EXTERNAL_CONNECTOR_PATH, TINY_RESOURCE
+from bigml.constants import EXTERNAL_CONNECTOR_PATH, TINY_RESOURCE, \
+    EXTERNAL_CONNECTION_ATTRS
+
+
+def get_env_connection_info():
+    """Retrieves the information to use in the external connection from
+    environment variables.
+
+    """
+    # try to use environment variables values
+    connection_info = {}
+    for external_key in EXTERNAL_CONNECTION_ATTRS.keys():
+        if os.environ.get(external_key):
+            connection_info.update( \
+                {EXTERNAL_CONNECTION_ATTRS[external_key]:
+                 os.environ.get(external_key)})
+    return connection_info
 
 
 class ExternalConnectorHandler(ResourceHandler):
@@ -59,13 +75,21 @@ class ExternalConnectorHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
+        if connection_info is None:
+            connection_info = get_env_connection_info()
+
         if not isinstance(connection_info, dict):
             raise Exception("To create an external connector you need to"
-                            " provide a dictionary with the connection "
+                            " provide a dictionary with the connection"
                             " information. Please refer to the API external"
                             " connector docs for details.")
 
+        source = connection_info.get("source", "postgresql")
+        if "source" in connection_info:
+            del connection_info["source"]
+
         create_args.update({"connection": connection_info})
+        create_args.update({"source": source})
         body = json.dumps(create_args)
         return self._create(self.external_connector_url, body)
 

@@ -91,6 +91,16 @@ def i_create_using_url(step, url):
     # save reference
     world.sources.append(resource['resource'])
 
+#@step(r'I create a data source using the connection ".*"')
+def i_create_using_connector(step, connector):
+    resource = world.api.create_source(connector, {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
+
 #@step(r'I create a data source from inline data slurped from "(.*)"')
 def i_create_using_dict_data(step, data):
     # slurp CSV file to local variable

@@ -104,6 +104,18 @@ class SourceHandler(ResourceHandler):
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
+    def _create_connector_source(self, connector, args=None):
+        """Creates a new source using an external connector
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+        create_args.update({"external_data": connector})
+        create_args = self._add_project(create_args)
+        body = json.dumps(create_args)
+        return self._create(self.source_url, body)
+
     def _create_inline_source(self, src_obj, args=None):
         """Create source from inline data
 
@@ -432,6 +444,8 @@ class SourceHandler(ResourceHandler):
             return self._create_remote_source(path, args=args)
         elif isinstance(path, list):
             return self._create_inline_source(path, args=args)
+        elif isinstance(path, dict):
+            return self._create_connector_source(path, args=args)
         elif PYTHON_2:
             return self._stream_source(file_name=path, args=args,
                                        async_load=async_load,

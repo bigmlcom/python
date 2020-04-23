@@ -192,10 +192,10 @@ and you can use its project id to get, update or delete it:
 assigned to it, so please be extra-careful when using
 the ``api.delete_project`` call.
 
-Creating external connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating external connectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create an external connection to an existing database you need to use the
+To create an external connector to an existing database you need to use the
 ``create_external_connector`` method. The only required parameter is the
 dictionary that contains the information needed to connect to the particular
 database/table. The attributes of the connection dictionary needed for the
@@ -263,6 +263,16 @@ or maybe reading the content from stdin:
 .. code-block:: python
 
     content = StringIO.StringIO(sys.stdin.read())
+    source = api.create_source(content,
+        {'name': 'my stdin source', 'source_parser': {'missing_tokens': ['?']}})
+
+or from an existing external connector:
+
+.. code-block:: python
+
+    content = {"source": "postgresql",
+               "externalconnector_id": "5ea1d2f7c7736e160900001c",
+               "query": "select * from table_name"}
     source = api.create_source(content,
         {'name': 'my stdin source', 'source_parser': {'missing_tokens': ['?']}})
 

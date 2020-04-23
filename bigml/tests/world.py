@@ -24,10 +24,12 @@ import shutil
 import time
 import pkg_resources
 import datetime
+import pprint
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
+from bigml.externalconnectorhandler import get_env_connection_info
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -65,7 +67,8 @@ RESOURCE_TYPES = [
     'linearregression',
     'script',
     'execution',
-    'library'
+    'library',
+    'externalconnector'
 ]
 
 irregular_plurals = {}
@@ -117,6 +120,8 @@ class World(object):
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
         self.API_KEY = os.environ.get('BIGML_API_KEY')
+        self.EXTERNAL_CONN = get_env_connection_info()
+
         if self.USERNAME is None or self.API_KEY is None:
             assert False, ("Tests use the BIGML_USERNAME and BIGML_API_KEY"
                            " environment variables to authenticate the"
@@ -124,6 +129,16 @@ class World(object):
                            "set them before testing.")
         self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug)
         print self.api.connection_info()
+        print self.external_connection_info()
+
+    def external_connection_info(self):
+        """Printable string: The information used to connect to a external
+        data source
+
+        """
+        info = u"External data connection config:\n%s" % \
+            pprint.pformat(self.EXTERNAL_CONN, indent=4)
+        return info
 
     def clear(self):
         """Clears the stored resources' ids

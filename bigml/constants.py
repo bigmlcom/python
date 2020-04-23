@@ -289,3 +289,11 @@ FIELDS_PARENT = { \
     "timeseries": "timeseries",
     "statisticaltest": "statistical_tests"}
 ALL_FIELDS = "limit=-1"
+
+EXTERNAL_CONNECTION_ATTRS = { \
+    "BIGML_EXTERNAL_CONN_HOST": "host",
+    "BIGML_EXTERNAL_CONN_PORT": "port",
+    "BIGML_EXTERNAL_CONN_USERNAME": "user",
+    "BIGML_EXTERNAL_CONN_PWD": "password",
+    "BIGML_EXTERNAL_CONN_DB": "database",
+    "BIGML_EXTERNAL_CONN_SOURCE": "source"}

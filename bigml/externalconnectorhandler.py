@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Base class for whizzml script external connectors' REST calls
+"""Base class for external connectors' REST calls
 
    https://bigml.com/api/externalconnectors
 

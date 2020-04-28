@@ -214,7 +214,8 @@ hosted locally at port ``9200`` by calling:
 
 where the first argument contains the infromation about the host
 and ``source`` contains the type of database to connec to (allowed types are:
-``elasticsearch``, ``postgresql``, ``mysql``, ``sqlserver``).
+``elasticsearch``, ``postgresql``, ``mysql``, ``sqlserver``). If no ``source``
+type is set, ``postgresql`` will be used as default value.
 
 You can add other properties to that second argument, like the name
 to be used for this external

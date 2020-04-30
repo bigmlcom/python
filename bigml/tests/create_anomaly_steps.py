@@ -18,9 +18,9 @@
 import time
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from nose.tools import eq_, ok_, assert_less
-from world import world, res_filename
+from world import world, res_filename, logged_wait
 
 from read_anomaly_steps import i_get_the_anomaly
 
@@ -30,6 +30,8 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.anomaly import Anomaly
+from bigml.util import get_exponential_wait
+
 
 #@step(r'I check the anomaly detector stems from the original dataset list')
 def i_check_anomaly_datasets_and_datasets_ids(step):
@@ -88,15 +90,13 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_anomaly(step, world.anomaly['resource'])
     status = get_status(world.anomaly)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           if (datetime.utcnow() - start).seconds % 60 == 3:
-                print "Waiting for anomaly for %s seconds" % \
-                    (datetime.utcnow() - start).seconds
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_anomaly(step, world.anomaly['resource'])
-           status = get_status(world.anomaly)
+        count += 1
+        logged_wait(start, delta, count, "anomaly")
+        i_get_the_anomaly(step, world.anomaly['resource'])
+        status = get_status(world.anomaly)
     print "Anomaly created."
     eq_(status['code'], int(code1))
 

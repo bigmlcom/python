@@ -21,8 +21,8 @@ import csv
 import sys
 
 
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -52,9 +52,11 @@ def wait_until_external_connector_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_external_connector(step, world.external_connector['resource'])
     status = get_status(world.external_connector)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
+        count += 1
+        logged_wait(start, delta, count, "externalconnector")
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_external_connector(step, world.external_connector['resource'])
         status = get_status(world.external_connector)

@@ -18,10 +18,10 @@
 import os
 import time
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib import urlencode
 from nose.tools import eq_, assert_less
-from world import world
+from world import world, logged_wait
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -47,9 +47,11 @@ def wait_until_project_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_project(step, world.project['resource'])
     status = get_status(world.project)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
+        count += 1
+        logged_wait(start, delta, count, "project")
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_project(step, world.project['resource'])
         status = get_status(world.project)

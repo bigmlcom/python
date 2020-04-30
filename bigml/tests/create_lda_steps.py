@@ -18,8 +18,8 @@
 import time
 import json
 import os
-from datetime import datetime, timedelta
-from world import world, res_filename
+from datetime import datetime
+from world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from read_lda_steps import i_get_the_topic_model
@@ -83,12 +83,14 @@ def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_topic_model(step, world.topic_model['resource'])
     status = get_status(world.topic_model)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-           time.sleep(3)
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_topic_model(step, world.topic_model['resource'])
-           status = get_status(world.topic_model)
+        count += 1
+        logged_wait(start, delta, count, "topicmodel")
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        i_get_the_topic_model(step, world.topic_model['resource'])
+        status = get_status(world.topic_model)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the topic model is ready less than (\d+)')

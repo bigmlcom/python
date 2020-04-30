@@ -18,7 +18,7 @@
 import json
 import time
 from nose.tools import assert_almost_equals, eq_
-from datetime import datetime, timedelta
+from datetime import datetime
 from world import world
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY

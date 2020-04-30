@@ -30,6 +30,8 @@ from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
 from bigml.externalconnectorhandler import get_env_connection_info
+from bigml.util import get_exponential_wait
+from nose.tools import assert_less
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -216,3 +218,16 @@ def teardown_class():
     world.local_ensemble = None
     world.local_model = None
     world.local_deepnet = None
+
+def logged_wait(start, delta, count, res_description):
+    """Comparing the elapsed time to the expected delta and waiting for
+       the next sleep period.
+
+    """
+    wait_time = min(get_exponential_wait(delta / 10.0, count), delta)
+    time.sleep(wait_time)
+    elapsed = (datetime.datetime.utcnow() - start).seconds
+    if elapsed > delta / 2.0:
+        print "%s seconds waiting for %s" % \
+            (elapsed, res_description)
+    assert_less(elapsed, delta)

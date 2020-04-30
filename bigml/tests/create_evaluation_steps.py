@@ -17,8 +17,8 @@
 
 import time
 import json
-from datetime import datetime, timedelta
-from world import world
+from datetime import datetime
+from world import world, logged_wait
 from nose.tools import eq_, assert_less, assert_greater
 
 from bigml.api import HTTP_CREATED
@@ -93,9 +93,11 @@ def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_evaluation(step, world.evaluation['resource'])
     status = get_status(world.evaluation)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
+        count += 1
+        logged_wait(start, delta, count, "evaluation")
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_evaluation(step, world.evaluation['resource'])
         status = get_status(world.evaluation)

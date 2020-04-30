@@ -58,7 +58,7 @@ def wait_until_configuration_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_configuration(step, world.configuration['resource'])
     status = get_status(world.configuration)
-    counter = 0
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1

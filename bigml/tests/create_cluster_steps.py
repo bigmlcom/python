@@ -76,7 +76,7 @@ def wait_until_cluster_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_cluster(step, world.cluster['resource'])
     status = get_status(world.cluster)
-    counter = 0
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1

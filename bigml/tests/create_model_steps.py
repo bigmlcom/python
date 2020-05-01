@@ -223,10 +223,11 @@ def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
     status = get_status(world.logistic_regression)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "logisticregression")
         read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
         status = get_status(world.logistic_regression)
     eq_(status['code'], int(code1))
@@ -278,10 +279,11 @@ def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
     start = datetime.utcnow()
     delta = int(secs) * world.delta
     status = get_status(world.deepnet)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "deepnet")
         read.i_get_the_deepnet_model(step, world.deepnet['resource'])
         status = get_status(world.deepnet)
     eq_(status['code'], int(code1))
@@ -334,10 +336,11 @@ def wait_until_optiml_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_optiml(step, world.optiml['resource'])
     status = get_status(world.optiml)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "optiml")
         read.i_get_the_optiml(step, world.optiml['resource'])
         status = get_status(world.optiml)
     eq_(status['code'], int(code1))
@@ -410,10 +413,11 @@ def wait_until_fusion_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     read.i_get_the_fusion(step, world.fusion['resource'])
     status = get_status(world.fusion)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "fusion")
         read.i_get_the_fusion(step, world.fusion['resource'])
         status = get_status(world.fusion)
     eq_(status['code'], int(code1))

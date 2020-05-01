@@ -66,10 +66,11 @@ def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_batch_prediction(step, world.batch_prediction['resource'])
     status = get_status(world.batch_prediction)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less((datetime.utcnow() - start).seconds, delta)
+        count += 1
+        logged_wait(start, delta, count, "batchprediction")
         i_get_the_batch_prediction(step, world.batch_prediction['resource'])
         status = get_status(world.batch_prediction)
     eq_(status['code'], int(code1))
@@ -85,7 +86,7 @@ def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "batchprediction")
+        logged_wait(start, delta, count, "batchcentroid")
         assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         i_get_the_batch_centroid(step, world.batch_centroid['resource'])
         status = get_status(world.batch_centroid)
@@ -98,10 +99,11 @@ def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
     delta = int(secs) * world.delta
     i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
     status = get_status(world.batch_anomaly_score)
+    count = 0
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
-        time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
+        count += 1
+        logged_wait(start, delta, count, "batchanomalyscore")
         i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
         status = get_status(world.batch_anomaly_score)
     eq_(status['code'], int(code1), msg="%s seconds waited." % delta)

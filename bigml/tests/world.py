@@ -108,6 +108,11 @@ class World(object):
             self.debug = bool(os.environ.get('BIGML_DEBUG', 0))
         except ValueError:
             pass
+        self.short_debug = False
+        try:
+            self.short_debug = bool(os.environ.get('BIGML_SHORT_DEBUG', 0))
+        except ValueError:
+            pass
         self.clear()
         self.dataset_ids = []
         self.fields_properties_dict = {}

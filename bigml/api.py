@@ -251,18 +251,17 @@ class BigML(ExternalConnectorHandler,
         error: An error code and message
 
     """
-    def __init__(self, username=None, api_key=None, dev_mode=False,
+    def __init__(self, username=None, api_key=None,
                  debug=False, set_locale=False, storage=None, domain=None,
-                 project=None, organization=None):
+                 project=None, organization=None, short_debug=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
         values of the `BIGML_USERNAME` and `BIGML_API_KEY` environment
         variables respectively.
 
-        If `dev_mode` is set to `True`, the API will be used in development
-        mode where the size of your datasets are limited but you are not
-        charged any credits.
+        `dev_mode` has been deprecated. Now all resources coexisit in the
+        same production environment.
 
         If storage is set to a directory name, the resources obtained in
         CRU operations will be stored in the given directory.
@@ -287,10 +286,11 @@ class BigML(ExternalConnectorHandler,
         """
 
         BigMLConnection.__init__(self, username=username, api_key=api_key,
-                                 dev_mode=dev_mode, debug=debug,
+                                 debug=debug,
                                  set_locale=set_locale, storage=storage,
                                  domain=domain, project=project,
-                                 organization=organization)
+                                 organization=organization,
+                                 short_debug=short_debug)
         ResourceHandler.__init__(self)
         SourceHandler.__init__(self)
         DatasetHandler.__init__(self)
@@ -370,8 +370,10 @@ class BigML(ExternalConnectorHandler,
             info += u"    using %s protocol\n" % self.general_protocol
         info += u"    SSL verification %s\n" % (
             "on" if self.verify else "off")
+        if self.short_debug:
+            short = "(shortened)"
         if self.debug:
-            info += u"    Debug on\n"
+            info += u"    Debug on %s\n" % short
         if self.general_domain != self.prediction_domain:
             info += u"    %s (predictions only)\n" % self.prediction_domain
             if self.prediction_protocol != BIGML_PROTOCOL:

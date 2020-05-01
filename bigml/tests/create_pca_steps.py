@@ -84,9 +84,9 @@ def wait_until_pca_status_code_is(step, code1, code2, secs):
            status['code'] != int(code2)):
         count += 1
         logged_wait(start, delta, count, "pca")
-           assert_less((datetime.utcnow() - start).seconds, delta)
-           i_get_the_pca(step, pca_id)
-           status = get_status(world.pca)
+        assert_less((datetime.utcnow() - start).seconds, delta)
+        i_get_the_pca(step, pca_id)
+        status = get_status(world.pca)
     eq_(status['code'], int(code1))
 
 

@@ -87,7 +87,6 @@ def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
            status['code'] != int(code2)):
         count += 1
         logged_wait(start, delta, count, "batchcentroid")
-        assert_less(datetime.utcnow() - start, timedelta(seconds=delta))
         i_get_the_batch_centroid(step, world.batch_centroid['resource'])
         status = get_status(world.batch_centroid)
     eq_(status['code'], int(code1))

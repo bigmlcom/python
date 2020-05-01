@@ -142,7 +142,7 @@ def patch_requests(short_debug):
         logging.debug("Data: %s", response.request.body)
         response_content = response.content[0:256] if short_debug else \
         response.content
-        logging.debug("Response: %s", response_content)
+        logging.debug("Response: %s\n", response_content)
         return response
     original_request = requests.api.request
     requests.api.request = debug_request

@@ -204,7 +204,7 @@ def teardown_module():
     if os.path.exists('./tmp'):
         shutil.rmtree('./tmp')
 
-    if not world.debug:
+    if not world.debug and not world.short_debug:
         world.delete_resources()
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
@@ -230,7 +230,8 @@ def logged_wait(start, delta, count, res_description):
        the next sleep period.
 
     """
-    wait_time = min(get_exponential_wait(delta / 10.0, count), delta)
+    wait_time = min(get_exponential_wait(delta / 100.0, count), delta)
+    print "Sleeping %s" % wait_time
     time.sleep(wait_time)
     elapsed = (datetime.datetime.utcnow() - start).seconds
     if elapsed > delta / 2.0:

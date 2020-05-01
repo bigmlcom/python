@@ -130,8 +130,10 @@ def i_upload_a_file_async(step, file):
 #@step(r'I wait until the source has been created less than (\d+) secs')
 def the_source_has_been_created_async(step, secs):
     start = datetime.utcnow()
+    read.i_get_the_source(step, world.source['resource'])
     status = get_status(world.resource)
     count = 0
+    delta = int(secs) * world.delta
     while status['code'] == UPLOADING:
         count += 1
         logged_wait(start, delta, count, "source")

@@ -1,3 +1,4 @@
+install: travis_wait 15 mvn install
 language: python
 python:
   - "2.7"

@@ -19,4 +19,4 @@ install:
 script:
   - export TESTS=$(for t in $BML_TESTS; do ls bigml/tests/*$t*;done|paste -sd ",")
   - echo $TESTS
-  - travis_wait 15 python setup.py nosetests --nocapture --tests=$TESTS
+  - travis_wait 40 python setup.py nosetests --nocapture --tests=$TESTS

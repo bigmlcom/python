@@ -22,4 +22,4 @@ install:
   - echo $TESTS
   - python setup.py nosetests --nocapture --tests=$TESTS
   # Killing background sleep loop
-  - kill %1
+  - kill $!

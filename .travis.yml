@@ -16,10 +16,7 @@ install:
   - pip install cython
   - pip install pystemmer==2.0.0
   - pip install .
-  # Output something every 9 minutes or Travis kills the job after 10m
-  - while sleep 540; do echo "=====[ $SECONDS seconds still running ]====="; done &
+script:
   - export TESTS=$(for t in $BML_TESTS; do ls bigml/tests/*$t*;done|paste -sd ",")
   - echo $TESTS
-  - python setup.py nosetests --nocapture --tests=$TESTS
-  # Killing background sleep loop
-  - kill $!
+  - travis_wait 40 python setup.py nosetests --nocapture --tests=$TESTS

@@ -3,6 +3,11 @@
 History
 -------
 
+4.31.1 (2020-05-06)
+~~~~~~~~~~~~~~~~~~~
+
+- Improving docs and adding TOC for new structure.
+
 4.31.0 (2020-04-22)
 ~~~~~~~~~~~~~~~~~~~
 

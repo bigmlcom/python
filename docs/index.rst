@@ -1,3 +1,27 @@
+.. toctree::
+
+index
+ml_resources
+creating_resources
+101_model
+101_ensemble
+101_deepnet
+101_linear_regression
+101_logistic_regression
+101_fusion
+101_ts
+101_optiml
+101_cluster
+101_anomaly
+101_topic_model
+101_association
+reading_resources
+updating_resources
+deleting_resources
+local_resources
+whizzml_resources
+
+
 BigML Python Bindings
 =====================
 

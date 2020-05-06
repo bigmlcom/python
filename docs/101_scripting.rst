@@ -86,6 +86,29 @@ name are provided by the user:
     # step 3: retrieving the result (e.g. "dataset/5cae5ad4b72c6609d9000356")
     result = execution['object']['execution']['result']
 
+And of course, you will usually store your code, inputs and outputs in files.
+The ``create_script`` method can receive as first argument the path to a file
+that contains the source code and the rest of arguments can be retrieved from
+a JSON file using the standard tools available in Python. The previous
+example could also be created from a file that contains the WhizzML code
+and a metadata file that contains the inputs and outputs description as a
+JSON.
+
+.. code-block:: python
+
+    import json
+    from bigml.api import BigML
+    # step 0: creating a connection to the service (default credentials)
+    api = BigML()
+    # step 1: creating a script from the code stored in `my_script.whizzml`
+    #         and the inputs and outputs metadata stored in `metadata.json`
+
+    with open('./metadata.json') as json_file:
+        metadata = json.load(json_file)
+    script = api.create_script("./my_script.whizzml", metadata)
+    # waiting for the script to be finished.
+    api.ok(script)
+
 You can also use the ``Execution`` class to easily access the results,
 outputs and output resources of an existing execution.
 Just intantiate the  class with the execution resource or ID:

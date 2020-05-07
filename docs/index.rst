@@ -752,6 +752,43 @@ automation and using WhizzML, BigML's Domain Specific Language for
 Machine Learning, provides them out of the box. Client-side approaches
 and/or general languages are definitely not the best fit for that.
 
+Environment variables
+---------------------
+
+The bindings will read some configuration values from environment variables.
+
+- BIGML_USERNAME: The name of the user in BigML
+- BIGML_API_KEY: The API key for authentication in BigML
+
+For VPCs or on-site API installs,
+other than the general public ``bigml.io`` domain:
+
+- BIGML_DOMAIN: The domain of the BigML API endpoints
+- BIGML_PROTOCOL: ``http`` or ``https``
+- BIGML_SSL_VERIFY: (``0``/``1``) to set SSL verification
+
+If you are using a Predict Server (or a different API url only for predictions)
+
+- BIGML_PREDICTION_DOMAIN: The domain of the BigML API prediction endpoint
+- BIGML_PREDICTION_PROTOCOL: ``http`` or ``https`` for prediction domain
+- BIGML_PREDICTION_SSL_VERIFY: (``0``/``1``) to set SSL verification for
+                               predictions
+
+For users working in an organization:
+
+- BIGML_ORGANIZATION: The ID of the organization
+
+To use external data connectors:
+
+- BIGML_EXTERNAL_CONN_HOST: Host name or IP for the external database
+- BIGML_EXTERNAL_CONN_PORT: Port for the exteranl database
+- BIGML_EXTERNAL_CONN_DB: Database name
+- BIGML_EXTERNAL_CONN_USER: Database user name
+- BIGML_EXTERNAL_CONN_PWD: Database user password
+- BIGML_EXTERNAL_CONN_SOURCE: Type of database: ``mysql``, ``postgresql``,
+``elasticsearch``, etc. (see details in the
+`API documentation <https://bigml.com/api/externalconnectors>`_)
+
 Running the Tests
 -----------------
 
@@ -760,8 +797,8 @@ that is installed on setup, and you'll need to set up your authentication
 via environment variables, as explained
 in the authentication section. Also some of the tests need other environment
 variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization
-members and ``BIGML_EXTERNAL_HOST``, ``BIGML_EXTERNAL_PORT``,
-``BIGML_EXTERNAL_DB``, ``BIGML_EXTERNAL_CONN_USER``,
+members and ``BIGML_EXTERNAL_CONN_HOST``, ``BIGML_EXTERNAL_CONN_PORT``,
+``BIGML_EXTERNAL_CONN_DB``, ``BIGML_EXTERNAL_CONN_USER``,
 ``BIGML_EXTERNAL_CONN_PWD`` and ``BIGML_EXTERNAL_CONN_SOURCE``
 in order to test external data connectors.
 

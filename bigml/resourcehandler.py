@@ -407,7 +407,8 @@ def exception_on_error(resource):
 
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
-                   retries=None, raise_on_error=False, api=None, debug=False):
+                   retries=None, raise_on_error=False,
+                   max_elapsed_estimate=float('inf'), api=None, debug=False):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, the
@@ -422,6 +423,8 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     resource_id = get_resource_id(resource)
     if resource_id is None:
         raise ValueError("Failed to extract a valid resource id to check.")
+    if wait_time <=0:
+        raise ValueError("The time to wait needs to be positive.")
     if debug:
         print "Checking resource: %s" % resource_id
     kwargs = {'query_string': query_string}
@@ -436,6 +439,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             print "Getting resource %s" % resource_id
         resource = get_method(resource_id, **kwargs)
     counter = 0
+    elapsed = 0
     while retries is None or counter < retries:
         counter += 1
         status = get_status(resource)
@@ -456,10 +460,20 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             if raise_on_error:
                 exception_on_error(resource)
             return resource
-        wait_time = get_exponential_wait(wait_time, counter)
+        _wait_time = get_exponential_wait(wait_time, counter)
+        _max_wait = max_elapsed_estimate - _wait_time
+        _wait_time = min(max_wait, _wait_time)
+        if _wait_time <= 0:
+            # when the max_expected_elapsed time is met, we still wait for
+            # the resource to be finished but we restart all counters and
+            # the exponentially growing time is initialized
+            _wait_time = wait_time
+            counter = 0
+            elapsed = 0
         if debug:
-            print "Sleeping %s" % wait_time
-        time.sleep(wait_time)
+            print "Sleeping %s" % _wait_time
+        time.sleep(_wait_time)
+        elapsed += _wait_time
         # retries for the finished status use a query string that gets the
         # minimal available resource
         if kwargs.get('query_string') is not None:
@@ -521,29 +535,35 @@ class ResourceHandler(BigMLConnection):
 
     def ok(self, resource, query_string='', wait_time=1,
            max_requests=None, raise_on_error=False, retries=None,
-           error_retries=None, debug=False):
+           error_retries=None, max_elapsed_estimate=float('inf'), debug=False):
         """Waits until the resource is finished or faulty, updates it and
            returns True on success
 
              resource: (string|map) Resource ID or structure
              query_string: (string) Filters used on the resource attributes
-             wait_time: (integer) Time to sleep between get requests
+             wait_time: (number) Time to sleep between get requests
              max_requests: (integer) Maximum number of get requests
              raise_on_error: (boolean) Whether to raise errors or log them
              retries: (integer) Now `max_requests` (deprecated)
              error_retries: (integer) Retries for transient HTTP errors
+             max_elapsed_estimate: (integer) Elapsed number of seconds that we
+                                    expect the resource to be finished in.
+                                    This is not a hard limit for the method
+                                    to end, but an estimation of time to wait.
              debug: (boolean) Whether to print traces for every get call
 
         """
         if http_ok(resource):
             try:
-                resource.update(check_resource(resource,
-                                               query_string=query_string,
-                                               wait_time=wait_time,
-                                               retries=max_requests,
-                                               raise_on_error=raise_on_error,
-                                               api=self,
-                                               debug=debug))
+                resource.update(check_resource( \
+                    resource,
+                    query_string=query_string,
+                    wait_time=wait_time,
+                    retries=max_requests,
+                    max_elapsed_estimate=max_elapsed_estimate,
+                    raise_on_error=raise_on_error,
+                    api=self,
+                    debug=debug))
                 if resource['error'] and resource['error'].get( \
                         'status', {}).get('type') == c.TRANSIENT and \
                         error_retries is not None and error_retries > 0:
@@ -556,7 +576,9 @@ class ResourceHandler(BigMLConnection):
                 if error_retries is not None and error_retries > 0:
                     return self.ok(resource, query_string, wait_time,
                                    max_requests, raise_on_error,
-                                   error_retries - 1, debug)
+                                   error_retries - 1,
+                                   max_elapsed_estimate,
+                                   debug)
                 else:
                     LOGGER.error("The resource info couldn't be retrieved")
                     if raise_on_error:

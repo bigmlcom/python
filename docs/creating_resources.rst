@@ -72,6 +72,25 @@ retrieval will be tried before failing.
     dataset = api.get_dataset("dataset/5e4ee08e440ca13244102dbd")
     api.ok(dataset, error_retries=5)
 
+The ``api.ok`` method is repeatedly calling the API but it sleeps for some
+time between calls. The sleeping time is set by using an exponential function
+that generates a random number in a range. The upper limit of that range is
+increasing with the number of retries. The parameters like the initial
+waiting time, the number of retries or the estimate of the maximum elapsed
+time can be provided to fit every particular case.
+
+
+.. code-block:: python
+
+    dataset = api.get_dataset("anomaly/5e4ee08e440ca13244102dbd")
+    api.ok(dataset, wait_time=60, max_elapsed_estimate=300)
+    # if the first call response is not a finished resource, the
+    # method will sleep for 60 seconds and increase this sleep time
+    # boundary till the elapsed time goes over 5 minutes. When that
+    # happens and the resource is still not created, counters are
+    # initialized again and the sleep period will start from 60s
+    # repeating the increasing process.
+
 
 If you don't want the contents of the variable to be updated, you can
 also use the ``check_resource`` function:

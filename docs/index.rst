@@ -757,35 +757,35 @@ Environment variables
 
 The bindings will read some configuration values from environment variables.
 
-- BIGML_USERNAME: The name of the user in BigML
-- BIGML_API_KEY: The API key for authentication in BigML
+- ``BIGML_USERNAME``: The name of the user in BigML
+- ``BIGML_API_KEY``: The API key for authentication in BigML
 
 For VPCs or on-site API installs,
 other than the general public ``bigml.io`` domain:
 
-- BIGML_DOMAIN: The domain of the BigML API endpoints
-- BIGML_PROTOCOL: ``http`` or ``https``
-- BIGML_SSL_VERIFY: (``0``/``1``) to set SSL verification
+- ``BIGML_DOMAIN``: The domain of the BigML API endpoints
+- ``BIGML_PROTOCOL``: ``http`` or ``https``
+- ``BIGML_SSL_VERIFY``: (``0``/``1``) to set SSL verification
 
 If you are using a Predict Server (or a different API url only for predictions)
 
-- BIGML_PREDICTION_DOMAIN: The domain of the BigML API prediction endpoint
-- BIGML_PREDICTION_PROTOCOL: ``http`` or ``https`` for prediction domain
-- BIGML_PREDICTION_SSL_VERIFY: (``0``/``1``) to set SSL verification for
-                               predictions
+- ``BIGML_PREDICTION_DOMAIN``: The domain of the BigML API prediction endpoint
+- ``BIGML_PREDICTION_PROTOCOL``: ``http`` or ``https`` for prediction domain
+- ``BIGML_PREDICTION_SSL_VERIFY``: (``0`` / ``1``) to set SSL verification for
+                                   predictions
 
 For users working in an organization:
 
-- BIGML_ORGANIZATION: The ID of the organization
+- ``BIGML_ORGANIZATION``: The ID of the organization
 
 To use external data connectors:
 
-- BIGML_EXTERNAL_CONN_HOST: Host name or IP for the external database
-- BIGML_EXTERNAL_CONN_PORT: Port for the exteranl database
-- BIGML_EXTERNAL_CONN_DB: Database name
-- BIGML_EXTERNAL_CONN_USER: Database user name
-- BIGML_EXTERNAL_CONN_PWD: Database user password
-- BIGML_EXTERNAL_CONN_SOURCE: Type of database: ``mysql``, ``postgresql``,
+- ``BIGML_EXTERNAL_CONN_HOST``: Host name or IP for the external database
+- ``BIGML_EXTERNAL_CONN_PORT``: Port for the exteranl database
+- ``BIGML_EXTERNAL_CONN_DB``: Database name
+- ``BIGML_EXTERNAL_CONN_USER``: Database user name
+- ``BIGML_EXTERNAL_CONN_PWD``: Database user password
+- ``BIGML_EXTERNAL_CONN_SOURCE``: Type of database: ``mysql``, ``postgresql``,
 ``elasticsearch``, etc. (see details in the
 `API documentation <https://bigml.com/api/externalconnectors>`_)
 

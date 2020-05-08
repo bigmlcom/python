@@ -370,8 +370,7 @@ class BigML(ExternalConnectorHandler,
             info += u"    using %s protocol\n" % self.general_protocol
         info += u"    SSL verification %s\n" % (
             "on" if self.verify else "off")
-        if self.short_debug:
-            short = "(shortened)"
+        short = "(shortened)" if self.short_debug else ""
         if self.debug:
             info += u"    Debug on %s\n" % short
         if self.general_domain != self.prediction_domain:
@@ -564,8 +563,8 @@ class BigML(ExternalConnectorHandler,
                              " use. Please export BIGML_USERNAME"
                              " and BIGML_API_KEY."  % resource_id)
         api_getter = self.getters[get_resource_type(resource_id)]
-        resource = check_resource(resource_id, api_getter, query_string,
-                                  retries=retries)
+        resource = check_resource(resource_id, query_string=query_string,
+                                  api=self, retries=retries)
         return resource
 
 

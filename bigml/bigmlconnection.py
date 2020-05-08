@@ -140,8 +140,11 @@ def patch_requests(short_debug):
         """
         response = original_request(method, url, **kwargs)
         logging.debug("Data: %s", response.request.body)
-        response_content = response.content[0:256] if short_debug else \
-        response.content
+        response_content = "Download status is %s" % response.status_code \
+            if "download" in url else \
+            response.content
+        response_content = response_content[0:256] if short_debug else \
+        response_content
         logging.debug("Response: %s\n", response_content)
         return response
     original_request = requests.api.request

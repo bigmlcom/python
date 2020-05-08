@@ -425,6 +425,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         raise ValueError("Failed to extract a valid resource id to check.")
     if wait_time <=0:
         raise ValueError("The time to wait needs to be positive.")
+    debug = debug or api.debug or api.short_debug
     if debug:
         print "Checking resource: %s" % resource_id
     kwargs = {'query_string': query_string}
@@ -462,7 +463,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             return resource
         _wait_time = get_exponential_wait(wait_time, counter)
         _max_wait = max_elapsed_estimate - _wait_time
-        _wait_time = min(max_wait, _wait_time)
+        _wait_time = min(_max_wait, _wait_time)
         if _wait_time <= 0:
             # when the max_expected_elapsed time is met, we still wait for
             # the resource to be finished but we restart all counters and
@@ -568,25 +569,27 @@ class ResourceHandler(BigMLConnection):
                         'status', {}).get('type') == c.TRANSIENT and \
                         error_retries is not None and error_retries > 0:
                     return self.ok(resource, query_string, wait_time,
-                                   max_requests, raise_on_error,
-                                   error_retries - 1, debug)
+                                   max_requests, raise_on_error, retries,
+                                   error_retries - 1, max_elapsed_estimate,
+                                   debug)
                 else:
                     return True
             except Exception as err:
                 if error_retries is not None and error_retries > 0:
                     return self.ok(resource, query_string, wait_time,
-                                   max_requests, raise_on_error,
+                                   max_requests, raise_on_error, retries,
                                    error_retries - 1,
                                    max_elapsed_estimate,
                                    debug)
                 else:
-                    LOGGER.error("The resource info couldn't be retrieved")
+                    LOGGER.error("The resource info for %s couldn't"
+                                 " be retrieved" % resource["resource"])
                     if raise_on_error:
                         exception_on_error({"resource": resource["resource"],
                                             "error": err})
         else:
-            LOGGER.error("The resource couldn't be created: %s",
-                         resource['error'])
+            LOGGER.error("The resource %s couldn't be retrieved: %s" %
+                         (resource["location"], resource['error']))
             if raise_on_error:
                 exception_on_error(resource)
 

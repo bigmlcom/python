@@ -419,7 +419,9 @@ class Cluster(ModelFields):
         if centroid_dataset in [None, ""]:
             centroid_dataset = self.api.create_dataset( \
                 self.resource_id, {"centroid": centroid_id})
-            self.api.ok(centroid_dataset)
+            self.datasets[centroid_id] = centroid_dataset[ \
+                "resource"].replace("dataset/", "")
+            self.api.ok(centroid_dataset, raise_on_error=True)
         else:
             centroid_dataset = self.api.check_resource( \
                 "dataset/%s" % centroid_dataset)

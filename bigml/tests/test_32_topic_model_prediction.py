@@ -137,11 +137,11 @@ class TestTopicModel(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | topic_model_name | params
-                | ../data/spam.csv | 100      | 100     | 200     | 500 | my new topic model name | '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}'
+                | ../data/spam.csv | 100      | 100     | 100     | 100 | my new topic model name | '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}'
         """
         print self.test_scenario2.__doc__
         examples = [
-            ['data/spam.csv', '100', '100', '10000', '500', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
+            ['data/spam.csv', '100', '100', '100', '100', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

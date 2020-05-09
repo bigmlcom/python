@@ -425,7 +425,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         raise ValueError("Failed to extract a valid resource id to check.")
     if wait_time <=0:
         raise ValueError("The time to wait needs to be positive.")
-    debug = debug or api.debug or api.short_debug
+    debug = debug or (api is not None and (api.debug or api.short_debug))
     if debug:
         print "Checking resource: %s" % resource_id
     kwargs = {'query_string': query_string}

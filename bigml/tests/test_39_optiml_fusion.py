@@ -62,7 +62,7 @@ class TestOptimlFusion(object):
         """
         print self.test_scenario1.__doc__
         examples = [
-            ['data/iris.csv', '10', '10', '10000', '20', 'my new optiml name']]
+            ['data/iris.csv', '10', '10', '100', '20', 'my new optiml name']]
         for example in examples:
             print "\nTesting with:\n", example
             source_create.i_upload_a_file(self, example[0])

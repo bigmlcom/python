@@ -72,7 +72,7 @@ class TestOptimlFusion(object):
             model_create.i_create_an_optiml_with_objective_and_params( \
                 self, parms='{"max_training_time": %s, "model_types": '
                             '["model", "logisticregression"]}' % \
-                    (int(float(example[3])/1000) - 1))
+                    (int(float(example[3])/10) - 1))
             model_create.the_optiml_is_finished_in_less_than(self, example[3])
             model_create.i_update_optiml_name(self, example[5])
             model_create.the_optiml_is_finished_in_less_than(self, example[4])

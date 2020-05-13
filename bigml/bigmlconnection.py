@@ -390,7 +390,7 @@ class BigMLConnection(object):
                     if 'location' in response.headers:
                         location = response.headers['location']
                     resource = json_load(response.content)
-                    resource_id = resource['resource']
+                    resource_id = resource.get('resource')
                     error = None
                 elif code in [HTTP_BAD_REQUEST,
                               HTTP_UNAUTHORIZED,

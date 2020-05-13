@@ -3,6 +3,11 @@
 History
 -------
 
+4.31.2 (2020-05-14)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing problems creating ephemeral prediction resources.
+
 4.31.1 (2020-05-06)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -3,6 +3,12 @@
 History
 -------
 
+4.32.0 (2020-05-19)
+~~~~~~~~~~~~~~~~~~~
+
+- Allowing scripts to be created from gists using the create_script method.
+- Improving training examples generation in Fields class.
+
 4.31.2 (2020-05-14)
 ~~~~~~~~~~~~~~~~~~~
 

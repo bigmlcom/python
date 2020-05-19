@@ -103,3 +103,36 @@ class TestExecution(object):
             execution_create.i_update_an_execution(self, example[4], example[5])
             execution_create.the_execution_is_finished(self, example[3])
             execution_create.the_execution_ids_and_attributes(self, 2, example[4], example[5], example[6])
+
+    def test_scenario3(self):
+        """
+            Scenario: Successfully creating a whizzml script execution from a local or remote file:
+                Given I create a whizzml script from a excerpt of code "<source_code>"
+                And I wait until the script is ready less than <time_1> secs
+                And I create a whizzml script from a excerpt of code "<source_code>"
+                And I wait until the script is ready less than <time_1> secs
+                And I create a whizzml script execution from the last two scripts
+                And I wait until the execution is ready less than <time_2> secs
+                And I update the execution with "<param>", "<param_value>"
+                And I wait until the execution is ready less than <time_3> secs
+                Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
+
+                Examples:
+
+                | source_code      | time_1  | time_2  | time_3  | param | param_value | result
+        """
+        print self.test_scenario3.__doc__
+        examples = [
+            ['data/one_plus_one.whizzml', '10', '10', '10', 'name', 'my execution', 2],
+            ['https://gist.github.com/mmerce/49e0a69cab117b6a11fb490140326020', '10', '10', '10', 'name', 'my execution', 2]
+
+]
+        for example in examples:
+            print "\nTesting with:\n", example
+            script_create.i_create_a_script_from_file_or_url(self, example[0])
+            script_create.the_script_is_finished(self, example[1])
+            execution_create.i_create_an_execution(self)
+            execution_create.the_execution_is_finished(self, example[2])
+            execution_create.i_update_an_execution(self, example[4], example[5])
+            execution_create.the_execution_is_finished(self, example[3])
+            execution_create.the_execution_and_attributes(self, example[4], example[5], example[6])

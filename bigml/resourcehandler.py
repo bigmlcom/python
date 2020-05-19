@@ -421,6 +421,8 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
 
     """
     resource_id = get_resource_id(resource)
+    if isinstance(resource, dict) and resource.get("resource") is None:
+        return resource
     if resource_id is None:
         raise ValueError("Failed to extract a valid resource id to check.")
     if wait_time <=0:

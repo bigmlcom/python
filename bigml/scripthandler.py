@@ -22,17 +22,50 @@
 """
 
 import os
+import requests
+import re
 try:
     import simplejson as json
 except ImportError:
     import json
 
+from urlparse import urljoin
 
 from bigml.resourcehandler import ResourceHandler
 from bigml.resourcehandler import (check_resource_type,
                                    get_script_id, get_resource_type,
                                    check_resource)
 from bigml.constants import SCRIPT_PATH, TINY_RESOURCE
+from bigml.util import is_url
+from bigml.bigmlconnection import HTTP_OK
+
+
+def retrieve_script_args(gist_url):
+    """Retrieves the information to create a script from a public
+       gist url
+
+    """
+
+    response = requests.get(gist_url)
+    if response.status_code == HTTP_OK:
+        pattern = "\"[^\"]*?\/raw\/[^\"]*"
+        urls = re.findall(pattern, response.content)
+        script_args = {}
+
+        for url in urls:
+            url = urljoin(gist_url, url.replace("\"", ""))
+            if url.endswith(".whizzml"):
+                response = requests.get(url)
+                if response.status_code == HTTP_OK:
+                    script_args["source_code"] = response.content
+            if url.endswith(".json"):
+                response = requests.get(url, \
+                    headers={"content-type": "application/json"})
+                if response.status_code == HTTP_OK:
+                    script_args["json"] = response.content
+        return script_args
+    else:
+        raise ValueError("The url did not contain the expected structure.")
 
 
 class ScriptHandler(ResourceHandler):
@@ -77,13 +110,18 @@ class ScriptHandler(ResourceHandler):
                 create_args.update({
                     "origin": script_id})
         elif isinstance(source_code, basestring):
-            try:
-                if os.path.exists(source_code):
-                    with open(source_code) as code_file:
-                        source_code = code_file.read()
-            except IOError:
-                raise IOError("Could not open the source code file %s." %
-                              source_code)
+            if is_url(source_code):
+                script_args = retrieve_script_args(source_code)
+                source_code = script_args.get("source_code")
+                create_args.update(json.loads(script_args.get("json")))
+            else:
+                try:
+                    if os.path.exists(source_code):
+                        with open(source_code) as code_file:
+                            source_code = code_file.read()
+                except IOError:
+                    raise IOError("Could not open the source code file %s." %
+                                  source_code)
             create_args.update({
                 "source_code": source_code})
         else:

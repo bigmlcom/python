@@ -44,6 +44,7 @@ fields =  Fields(prediction['object']['fields'])
 import sys
 import json
 import csv
+import random
 
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
@@ -590,9 +591,11 @@ class Fields(object):
                               " %s- Please, check your arguments." %
                               out_file)
 
-    def training_data_example(self):
+    def training_data_example(self, missings=False):
         """Generates an example of training data based on the contents of the
         summaries of every field
+
+        If missings is set to true, missing values are allowed
 
         """
         training_data = {}
@@ -601,13 +604,33 @@ class Fields(object):
                 value = None
                 optype = field.get("optype")
                 if optype == "numeric":
-                    value = field["summary"]["mean"]
+                    if missings and random.randint(0, 5) > 3:
+                        value = None
+                    else:
+                        mean = field["summary"]["mean"]
+                        sigma = field["summary"]["standard_deviation"]
+                        value = random.gauss(mean, sigma)
                 if optype == "categorical":
-                    value = field["summary"]["categories"][0][0]
+                    if missings and random.randint(0, 5) > 3:
+                        value = None
+                    else:
+                        categories_number = len(field["summary"]["categories"])
+                        index = random.randint(0, categories_number - 1)
+                        value = field["summary"]["categories"][index][0]
                 if optype == "text":
-                    value = field["summary"]["tag_cloud"][0][0]
+                    if missings and random.randint(0, 5) > 3:
+                        value = None
+                    else:
+                        text_number = len(field["summary"]["tag_cloud"])
+                        index = random.randint(0, text_number - 1)
+                        value = field["summary"]["tag_cloud"][index][0]
                 if optype == "items":
-                    value = field["summary"]["items"][0][0]
+                    if missings and random.randint(0, 5) > 3:
+                        value = None
+                    else:
+                        items_number = len(field["summary"]["items"])
+                        index = random.randint(0, items_number - 1)
+                        value = field["summary"]["items"][index][0]
                 if value is not None:
                     training_data.update({field["name"]: value})
         return training_data

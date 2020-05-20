@@ -109,6 +109,21 @@ JSON.
     # waiting for the script to be finished.
     api.ok(script)
 
+Or load the files from a gist url:
+
+.. code-block:: python
+
+    import json
+    from bigml.api import BigML
+    # step 0: creating a connection to the service (default credentials)
+    api = BigML()
+    # step 1: creating a script from a gist
+
+    gist_url = "https://gist.github.com/mmerce/49e0a69cab117b6a11fb490140326020"
+    script = api.create_script(gist_url)
+    # waiting for the script to be finished.
+    api.ok(script)
+
 You can also use the ``Execution`` class to easily access the results,
 outputs and output resources of an existing execution.
 Just intantiate the  class with the execution resource or ID:

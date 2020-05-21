@@ -47,9 +47,10 @@ def retrieve_script_args(gist_url):
     """
 
     response = requests.get(gist_url)
+    response.encoding = "utf8"
     if response.status_code == HTTP_OK:
-        pattern = "\"[^\"]*?\/raw\/[^\"]*"
-        urls = re.findall(pattern, response.content)
+        pattern = r"\"[^\"]*?\/raw\/[^\"]*"
+        urls = re.findall(pattern, response.text)
         script_args = {}
 
         for url in urls:
@@ -57,12 +58,12 @@ def retrieve_script_args(gist_url):
             if url.endswith(".whizzml"):
                 response = requests.get(url)
                 if response.status_code == HTTP_OK:
-                    script_args["source_code"] = response.content
+                    script_args["source_code"] = response.text
             if url.endswith(".json"):
                 response = requests.get(url, \
                     headers={"content-type": "application/json"})
                 if response.status_code == HTTP_OK:
-                    script_args["json"] = response.content
+                    script_args["json"] = response.text
         return script_args
     else:
         raise ValueError("The url did not contain the expected structure.")

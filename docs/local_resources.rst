@@ -227,6 +227,7 @@ properties use the ``full=True`` argument:
 .. code-block:: python
 
     local_model.predict({"petal length": 3, "petal width": 1}, full=True)
+
 that will return:
 
 .. code-block:: python
@@ -366,7 +367,7 @@ the ``cast_prediction`` function:
                         unused_fields=False):
 
 whose first argument is the prediction obtained with the ``full=True``
-argument, the second one defines the type of output (``None```to obtain
+argument, the second one defines the type of output (``None`` to obtain
 the prediction output only, "list" or "dict") and the rest of booleans
 cause the corresponding property to be included or not.
 
@@ -709,7 +710,7 @@ an input data set:
 As you can see, the prediction contains the predicted category and the
 associated probability. It also shows the distribution of probabilities for
 all the possible categories in the objective field. If you only need the
-predicted value, you can remove the ``full``argument.
+predicted value, you can remove the ``full`` argument.
 
 You must keep in mind, though, that to obtain a logistic regression
 prediction, input data
@@ -752,7 +753,6 @@ and an example of it would be:
                        "threshold": 0.8}
     local_logistic.predict(inputData, operating_point=operating_point)
 
-
 You can check the
 `Operating point's predictions <#operating-point's-predictions>`_ section
 to learn about
@@ -763,7 +763,7 @@ prediction to be the positive class.
 Local Logistic Regression
 -------------------------
 
-You can also instantiate a local version of a remote logistic regression.
+You can also instantiate a local version of a remote logistic regression:
 
 .. code-block:: python
 
@@ -1897,6 +1897,7 @@ instantiate the corresponding local object, so that you can use its
 ``predict`` method to produce local predictions:
 
 .. code-block:: python
+
     from bigml.supervised import SupervisedModel
     local_supervised_1 = SupervisedModel( \
         "logisticregression/5143a51a37203f2cf7020351")

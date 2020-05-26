@@ -1,25 +1,26 @@
 .. toctree::
+   :hidden:
 
-index
-ml_resources
-creating_resources
-101_model
-101_ensemble
-101_deepnet
-101_linear_regression
-101_logistic_regression
-101_fusion
-101_ts
-101_optiml
-101_cluster
-101_anomaly
-101_topic_model
-101_association
-reading_resources
-updating_resources
-deleting_resources
-local_resources
-whizzml_resources
+   ml_resources
+   creating_resources
+   101_model
+   101_ensemble
+   101_deepnet
+   101_linear_regression
+   101_logistic_regression
+   101_fusion
+   101_ts
+   101_optiml
+   101_cluster
+   101_anomaly
+   101_topic_model
+   101_association
+   101_scripting
+   reading_resources
+   updating_resources
+   deleting_resources
+   local_resources
+   whizzml_resources
 
 
 BigML Python Bindings
@@ -787,7 +788,7 @@ To use external data connectors:
 - ``BIGML_EXTERNAL_CONN_PWD``: Database user password
 - ``BIGML_EXTERNAL_CONN_SOURCE``: Type of database: ``mysql``, ``postgresql``,
   ``elasticsearch``, etc. (see details in the
-  `API documentation <https://bigml.com/api/externalconnectors>`_)
+  `API documentation for external connectors <https://bigml.com/api/externalconnectors>`_)
 
 Running the Tests
 -----------------

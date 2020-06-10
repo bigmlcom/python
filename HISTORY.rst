@@ -3,6 +3,12 @@
 History
 -------
 
+4.32.1 (2020-06-10)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local anomaly scores prediction for corner cases of samples with
+  one row.
+
 4.32.0 (2020-05-19)
 ~~~~~~~~~~~~~~~~~~~
 

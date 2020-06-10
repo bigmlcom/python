@@ -96,8 +96,8 @@ class Anomaly(ModelFields):
                                         "Score will"
                                         " not be available")
                     else:
-                        default_depth = (
-                            2 * (DEPTH_FACTOR + \
+                        default_depth = self.mean_depth if \
+                            self.sample_size == 1 else (2 * (DEPTH_FACTOR + \
                             math.log(self.sample_size - 1) - \
                             (float(self.sample_size - 1) / self.sample_size)))
                         self.expected_mean_depth = min(self.mean_depth,
@@ -128,7 +128,9 @@ class Anomaly(ModelFields):
             value between 0 and 1.
 
         """
-
+        # corner case with only one record
+        if self.sample_size == 1:
+            return 1
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data)
 

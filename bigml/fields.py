@@ -607,9 +607,12 @@ class Fields(object):
                     if missings and random.randint(0, 5) > 3:
                         value = None
                     else:
-                        mean = field["summary"]["mean"]
-                        sigma = field["summary"]["standard_deviation"]
-                        value = random.gauss(mean, sigma)
+                        try:
+                            mean = field["summary"]["mean"]
+                            sigma = field["summary"]["standard_deviation"]
+                            value = random.gauss(mean, sigma)
+                        except TypeError:
+                            value = None
                 if optype == "categorical":
                     if missings and random.randint(0, 5) > 3:
                         value = None

@@ -135,7 +135,9 @@ class World(object):
                            " connection, but they seem to be unset. Please,"
                            "set them before testing.")
         self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug,
-                         short_debug=self.short_debug)
+                         short_debug=self.short_debug, storage=(None if
+                         not (self.debug or self.short_debug) else
+                         "./debug_storage"))
         print self.api.connection_info()
         print self.external_connection_info()
 
@@ -182,6 +184,23 @@ class World(object):
                                " exhausted. Failed to delete.")
 
 
+    def store_resources(self):
+        """Stores the created objects
+
+        """
+
+        for resource_type in RESOURCE_TYPES:
+            object_list = set(getattr(self, plural(resource_type)))
+            if object_list:
+                print "Deleting %s %s" % (len(object_list),
+                                          plural(resource_type))
+                store_method = self.api.getters[resource_type]
+                for obj_id in object_list:
+                    counter = 0
+                    result = store_method(obj_id)
+                    api.ok(result)
+
+
 world = World()
 
 def res_filename(file):
@@ -214,6 +233,8 @@ def teardown_module():
                 print "WARNING: Increment in %s: %s" % (resource_type, value)
         world.api.delete_project(world.project_id)
         world.project_id = None
+    else:
+        world.store_resources()
 
 
 def teardown_class():

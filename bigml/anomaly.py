@@ -54,6 +54,17 @@ LOGGER = logging.getLogger('BigML')
 DEPTH_FACTOR = 0.5772156649
 
 
+def norm_factor(sample_size, mean_depth):
+    """Computing the normalization factor for simple anomaly detectors
+
+    """
+    if mean_depth is not None:
+        default_depth = mean_depth if sample_size == 1 else \
+            (2 * (DEPTH_FACTOR + math.log(sample_size - 1) - \
+            (float(sample_size - 1) / sample_size)))
+        return min(mean_depth, default_depth)
+
+
 class Anomaly(ModelFields):
     """ A lightweight wrapper around an anomaly detector.
 
@@ -88,6 +99,10 @@ class Anomaly(ModelFields):
             if ('top_anomalies' in anomaly['model'] and
                     isinstance(anomaly['model']['top_anomalies'], list)):
                 self.mean_depth = anomaly['model'].get('mean_depth')
+                self.normalization_factor = anomaly['model'].get( \
+                    'normalization_factor')
+                self.nodes_mean_depth = anomaly['model'].get( \
+                    'nodes_mean_depth')
                 status = get_status(anomaly)
                 if 'code' in status and status['code'] == FINISHED:
                     self.expected_mean_depth = None
@@ -96,12 +111,10 @@ class Anomaly(ModelFields):
                                         "Score will"
                                         " not be available")
                     else:
-                        default_depth = self.mean_depth if \
-                            self.sample_size == 1 else (2 * (DEPTH_FACTOR + \
-                            math.log(self.sample_size - 1) - \
-                            (float(self.sample_size - 1) / self.sample_size)))
-                        self.expected_mean_depth = min(self.mean_depth,
-                                                       default_depth)
+                        self.norm = self.normalization_factor if \
+                            self.normalization_factor is not None else \
+                            norm_factor(self.sample_size, self.mean_depth)
+
                     iforest = anomaly['model'].get('trees', [])
                     if iforest:
                         self.iforest = [
@@ -129,7 +142,7 @@ class Anomaly(ModelFields):
 
         """
         # corner case with only one record
-        if self.sample_size == 1:
+        if self.sample_size == 1 and self.normalization_factor is None:
             return 1
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data)
@@ -144,10 +157,11 @@ class Anomaly(ModelFields):
                             "Anomaly object from a complete anomaly detector "
                             "resource.")
         for tree in self.iforest:
-            depth_sum += tree.depth(input_data)[0]
+            tree_depth, _ = tree.depth(input_data)
+            depth_sum += tree_depth
 
         observed_mean_depth = float(depth_sum) / len(self.iforest)
-        return math.pow(2, - observed_mean_depth / self.expected_mean_depth)
+        return math.pow(2, - observed_mean_depth / self.norm)
 
     def anomalies_filter(self, include=True):
         """Returns the LISP expression needed to filter the subset of

@@ -106,6 +106,8 @@ NUMERIC = "numeric"
 DFT_STORAGE = "./storage"
 DFT_STORAGE_FILE = os.path.join(DFT_STORAGE, "BigML_%s.json")
 
+DECIMAL_DIGITS= 5
+
 
 def python_map_type(value):
     """Maps a BigML type to equivalent Python types.
@@ -435,12 +437,12 @@ def cast(input_data, fields):
                                  (fields[key]['name'], value))
         # numerics given as strings
         elif (
-                (fields[key]['optype'] == 'numeric' and
+                (fields[key]['optype'] == NUMERIC and
                  isinstance(value, basestring)) or
-                (fields[key]['optype'] != 'numeric' and
+                (fields[key]['optype'] != NUMERIC and
                  not isinstance(value, basestring))):
             try:
-                if fields[key]['optype'] == 'numeric':
+                if fields[key]['optype'] == NUMERIC:
                     value = strip_affixes(value, fields[key])
                 input_data.update({key:
                                    map_type(fields[key]
@@ -450,11 +452,13 @@ def cast(input_data, fields):
                                  u"\"%s\" for value %s." %
                                  (fields[key]['name'],
                                   value))
-        elif (fields[key]['optype'] == 'numeric' and
+        elif (fields[key]['optype'] == NUMERIC and
               isinstance(value, bool)):
             raise ValueError(u"Mismatch input data type in field "
                              u"\"%s\" for value %s. Numeric expected." %
                              (fields[key]['name'], value))
+        if fields[key]['optype'] == NUMERIC:
+            input_data.update({key: round(value, DECIMAL_DIGITS)})
 
 
 def check_dir(path):

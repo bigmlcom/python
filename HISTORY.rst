@@ -3,6 +3,12 @@
 History
 -------
 
+4.32.2 (2020-06-15)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing local anomaly scores for new anomaly detectors with feedback and
+  setting the maximum input data precision to five digits.
+
 4.32.1 (2020-06-10)
 ~~~~~~~~~~~~~~~~~~~
 

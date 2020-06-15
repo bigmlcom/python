@@ -198,7 +198,7 @@ class World(object):
                 for obj_id in object_list:
                     counter = 0
                     result = store_method(obj_id)
-                    api.ok(result)
+                    self.api.ok(result)
 
 
 world = World()

@@ -46,6 +46,7 @@ class AnomalyTree(object):
             for child in tree['children']:
                 children.append(AnomalyTree(child, self.fields))
         self.children = children
+        self.weight = tree.get('weight')
 
     def list_fields(self, out):
         """Lists a description of the model's fields.
@@ -71,16 +72,18 @@ class AnomalyTree(object):
 
         if path is None:
             path = []
+
+        weight = 1 if self.weight is None else self.weight
         # root node: if predicates are met, depth becomes 1, otherwise is 0
-        if depth == 0:
-            if not self.predicates.apply(input_data, self.fields):
-                return depth, path
-            depth += 1
+        if not self.predicates.apply(input_data, self.fields):
+            return depth, path
+        depth += weight
 
         if self.children:
             for child in self.children:
                 if child.predicates.apply(input_data, self.fields):
                     path.append(child.predicates.to_rule(self.fields))
-                    return child.depth(input_data, path=path, depth=depth + 1)
+                    return child.depth(input_data, path=path,
+                                       depth=depth)
 
         return depth, path

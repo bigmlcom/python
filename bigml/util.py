@@ -457,7 +457,7 @@ def cast(input_data, fields):
             raise ValueError(u"Mismatch input data type in field "
                              u"\"%s\" for value %s. Numeric expected." %
                              (fields[key]['name'], value))
-        if fields[key]['optype'] == NUMERIC:
+        if fields[key]['optype'] == NUMERIC and isinstance(value, float):
             input_data.update({key: round(value, DECIMAL_DIGITS)})
 
 

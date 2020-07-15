@@ -3,6 +3,12 @@
 History
 -------
 
+4.32.3 (2020-07-15)
+~~~~~~~~~~~~~~~~~~~
+
+- Extending the Fields class to check the attributes that can be updated in
+  a source or dataset fields structure to avoid failing fields updates.
+
 4.32.2 (2020-06-15)
 ~~~~~~~~~~~~~~~~~~~
 

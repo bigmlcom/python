@@ -663,10 +663,14 @@ needed to update your source:
 
     fields = Fields(source)
     fields_update_info = fields.new_fields_structure("my_fields_summary.csv")
-    source = api.update_source(source, fields_update_info)
+    source = api.update_source(source, \
+        fields.filter_fields_update(fields_update_info))
 
-For both sources and datasets, the updatable attributes are name, label and
-description. In ``sources`` you can also update the type of the field, and
+where ``filter_fields_update`` will make sure that only the attributes that
+can be updated in a source will be sent in the update request.
+For both sources and datasets, the updatable attributes are ``name``, ``label``
+and ``description``.
+In ``sources`` you can also update the type of the field (``optype``), and
 in ``datasets`` you can update the ``preferred`` attribute.
 
 In addition to that, you can also easily ``pair`` a list of values with fields

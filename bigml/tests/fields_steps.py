@@ -16,7 +16,7 @@
 # under the License.
 
 from world import world, res_filename
-from bigml.fields import Fields
+from bigml.fields import Fields, get_resource_type
 from bigml.io import UnicodeReader
 
 from nose.tools import eq_
@@ -69,3 +69,18 @@ def check_summary_like_expected(step, summary_file, expected_file):
         for line in expected_handler:
             expected_contents.append(line)
     eq_(summary_contents, expected_contents)
+
+#@step(r'I update the "<.*>" with the file "<.*>"')
+def update_with_summary_file(step, resource, summary_file):
+    fields = Fields(resource)
+    changes = fields.filter_fields_update( \
+        fields.new_fields_structure(res_filename(summary_file)))
+    resource_type = get_resource_type(resource)
+    resource = world.api.updaters[resource_type](resource, changes)
+    world.api.ok(resource)
+    setattr(world, resource_type, resource)
+
+
+#@step(r'I check the source has field ".*" as ".*"')
+def check_resource_field_type(step, resource, field_id, optype):
+    eq_(resource["object"]["fields"][field_id]["optype"], optype)

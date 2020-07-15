@@ -17,7 +17,7 @@
 
 """A local Predictive Anomaly Detector.
 
-This module defines an Anomaly Detector to score anomlies in a dataset locally
+This module defines an Anomaly Detector to score anomalies in a dataset locally
 or embedded into your application without needing to send requests to
 BigML.io.
 
@@ -134,9 +134,9 @@ class Anomaly(ModelFields):
             To produce an anomaly score, we evaluate each tree in the iforest
             for its depth result (see the depth method in the AnomalyTree
             object for details). We find the average of these depths
-            to produce an `observed_mean_depth`. We calculate an
-            `expected_mean_depth` using the `sample_size` and `mean_depth`
-            parameters which come as part of the forest message.
+            and calculate an expected mean depth using the `sample_size`
+            and `mean_depth` parameters which come as part of the forest
+            message.
             We combine those values as seen below, which should result in a
             value between 0 and 1.
 

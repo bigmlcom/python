@@ -154,6 +154,7 @@ class Fields(object):
         # structure. The structure is checked and fields structure is returned
         # if a resource type is matched.
         try:
+            self.resource_type = get_resource_type(resource_or_fields)
             resource_info = get_fields_structure(resource_or_fields, True)
             (self.fields,
              resource_locale,
@@ -580,12 +581,13 @@ class Fields(object):
                 raise ValueError("The first column should contain either the"
                                  " column or ID of the fields. Failed to find"
                                  " %s as either of them." % field_id)
+        new_fields_structure = {"fields": new_fields_structure}
         if out_file is None:
-            return {"fields": new_fields_structure}
+            return new_fields_structure
         else:
             try:
                 with open(out_file, "w") as out:
-                    json.dump({"fields": new_fields_structure}, out)
+                    json.dump(new_fields_structure, out)
             except IOError:
                 raise IOError("Failed writing the fields structure file in"
                               " %s- Please, check your arguments." %
@@ -637,3 +639,20 @@ class Fields(object):
                 if value is not None:
                     training_data.update({field["name"]: value})
         return training_data
+
+    def filter_fields_update(self, update_body):
+        """Filters the updatable attributes according to the type of resource
+
+        """
+        fields_info = update_body.get("fields")
+        if self.resource_type and fields_info is not None:
+            if self.resource_type == "dataset":
+                for field_id, field in fields_info.items():
+                    if field.get("optype") is not None:
+                        del field["optype"]
+            elif self.resource_type == "source":
+                for field_id, field in fields_info.items():
+                    if field.get("preferred") is not None:
+                        del field["preferred"]
+            update_body["fields"] = fields_info
+        return update_body

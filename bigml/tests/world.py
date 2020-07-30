@@ -29,7 +29,7 @@ import pprint
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
-from bigml.externalconnectorhandler import get_env_connection_info
+from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
 from bigml.util import get_exponential_wait
 from nose.tools import assert_less
 
@@ -204,7 +204,7 @@ class World(object):
 world = World()
 
 def res_filename(file):
-    return pkg_resources.resource_filename('bigml', "../../../%s" % file)
+    return pkg_resources.resource_filename('bigml', "../%s" % file)
 
 def setup_module():
     """Operations to be performed before each module

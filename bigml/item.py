@@ -21,7 +21,7 @@
 """
 
 from bigml.associationrule import SUPPORTED_LANGUAGES
-from bigml.predicate import term_matches, item_matches
+from bigml.minmodels.predicate_utils import term_matches, item_matches
 
 class Item(object):
     """ Object encapsulating an Association resource item as described in

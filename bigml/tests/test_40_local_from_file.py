@@ -31,7 +31,6 @@ from . import create_association_steps as association_create
 from . import create_cluster_steps as cluster_create
 from . import create_lda_steps as topic_create
 from . import compare_predictions_steps as prediction_compare
-from bigml.util import PY3
 
 class TestLocalFromFile(object):
 
@@ -362,7 +361,7 @@ class TestLocalFromFile(object):
             ['data/iris.csv', '10', '10', '50', './tmp/fusion.json', 'my_fusion_tag']]
         for example in examples:
             print("\nTesting with:\n", example)
-            tag = "%s_%s" % (example[5], PY3)
+            tag = example[5]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])

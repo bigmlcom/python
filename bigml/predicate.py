@@ -25,8 +25,7 @@ to save the node's predicate info.
 import re
 
 from bigml.minmodels.predicate_utils import TM_TOKENS, TM_FULL_TERM, TM_ALL, \
-    FULL_TERM_PATTERN
-
+    FULL_TERM_PATTERN, OPERATOR_CODE
 from bigml.minmodels.predicate_utils import apply_predicate
 from bigml.util import plural
 
@@ -149,6 +148,6 @@ class Predicate(object):
 
         """
 
-        return apply_predicate(self.operator, self.field, self.value,
-                               self.term, self.missing, input_data,
+        return apply_predicate(OPERATOR_CODE.get(self.operator), self.field,
+                               self.value, self.term, self.missing, input_data,
                                fields[self.field])

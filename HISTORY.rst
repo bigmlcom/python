@@ -3,6 +3,13 @@
 History
 -------
 
+5.0.0 (2020-07-30)
+~~~~~~~~~~~~~~~~~~~
+
+- Deprecating support for Python 2.7.X versions. Only Python 3 supported
+  from this version on.
+- Adding compact Local Anomaly scorer:  Minomaly.
+
 4.32.3 (2020-07-15)
 ~~~~~~~~~~~~~~~~~~~
 

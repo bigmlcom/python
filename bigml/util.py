@@ -36,7 +36,6 @@ import unidecode
 
 import bigml.constants as c
 
-PY3 = sys.version > '3'
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
 LOCALE_SYNONYMS = {
@@ -381,10 +380,6 @@ def console_log(message, out=sys.stdout, length=PROGRESS_BAR_WIDTH,
     if reset:
         clear_console_line(out=out, length=length)
         reset_console_line(out=out, length=length)
-    if (out == sys.stdout and sys.platform == "win32" and sys.stdout.isatty()
-            and not PY3):
-        os_encoding = sys.stdout.encoding
-        message = message.decode('utf8').encode(os_encoding, 'replace')
     out.write(message)
     if reset:
         reset_console_line(out=out, length=length)

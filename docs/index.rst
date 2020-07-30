@@ -55,14 +55,15 @@ in our `Campfire chatroom <https://bigmlinc.campfirenow.com/f20a0>`_.
 Requirements
 ------------
 
-Python 2.7 and Python 3 are currently supported by these bindings.
+Only ``Python 3`` versions are currently supported by these bindings.
+Support for Python 2.7.X ended in version ``4.32.3``.
 
 The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
-`poster <http://atlee.ca/software/poster/#download>`_,
-`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ and
-`requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
-libraries. These
+`unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_,
+`requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_,
+`numpy <http://www.numpy.org/>`_ and
+`scipy <http://www.scipy.org/>`_ libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package
 instead of `requests`.
@@ -70,15 +71,6 @@ instead of `requests`.
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
 libraries is ``simplejson`` is not found.
-
-Additional `numpy <http://www.numpy.org/>`_ and
-`scipy <http://www.scipy.org/>`_ libraries are needed in case you want to use
-local predictions for regression models (including the error information)
-using proportional missing strategy. As these are quite heavy libraries and
-they are not heavily used in these bindings,
-they are not included in the automatic installation
-dependencies. The test suite includes some tests that will need these
-libraries to be installed.
 
 Also in order to use local `Topic Model` predictions, you will need to install
 `pystemmer <https://pypi.python.org/pypi/PyStemmer>`_. Using the `pip install`

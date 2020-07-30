@@ -23,7 +23,6 @@
 
 import sys
 import os
-import urllib.request, urllib.error, urllib.parse
 import numbers
 try:
     #added to allow GAE to work
@@ -41,19 +40,8 @@ except ImportError:
 
 from threading import Thread
 
-
-PYTHON_2_7_9 = len(urllib.request.urlopen.__defaults__) > 2
-PYTHON_2 = sys.version_info < (3, 0)
-
-if PYTHON_2:
-    from poster.encode import multipart_encode, MultipartParam
-if PYTHON_2_7_9:
-    from bigml.sslposter import StreamingHTTPSHandler, register_openers
-elif PYTHON_2:
-    from poster.streaminghttp import StreamingHTTPSHandler, register_openers
-else:
-    from requests_toolbelt import MultipartEncoder
-    import mimetypes
+from requests_toolbelt import MultipartEncoder
+import mimetypes
 
 from bigml.util import (localize, clear_console_line, reset_console_line,
                         console_log, is_url)
@@ -68,11 +56,8 @@ from bigml.api_handlers.resourcehandler import check_resource_type, \
 from bigml.constants import SOURCE_PATH, UPLOADING
 from bigml.api_handlers.resourcehandler import ResourceHandler, LOGGER
 
-if PYTHON_2:
-    register_openers()
-else:
-    import requests
-    from bigml.util import maybe_save
+import requests
+from bigml.util import maybe_save
 
 class SourceHandler(ResourceHandler):
 
@@ -138,202 +123,9 @@ class SourceHandler(ResourceHandler):
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
-    def _upload_source(self, args, source, out=sys.stdout):
-        """Uploads a source asynchronously.
-
-        """
-
-        def update_progress(param, current, total):
-            """Updates source's progress.
-
-            """
-            progress = round(current * 1.0 / total, 2)
-            if progress < 1.0:
-                source['object']['status']['progress'] = progress
-
-        resource = self._process_source(source['resource'], source['location'],
-                                        source['object'],
-                                        args=args, progress_bar=True,
-                                        callback=update_progress, out=out)
-        source['code'] = resource['code']
-        source['resource'] = resource['resource']
-        source['location'] = resource['location']
-        source['object'] = resource['object']
-        source['error'] = resource['error']
-
-    def _stream_source(self, file_name, args=None, async_load=False,
-                       progress_bar=False, out=sys.stdout):
-        """Creates a new source.
-
-        """
-
-        def draw_progress_bar(param, current, total):
-            """Draws a text based progress report.
-
-            """
-            pct = 100 - ((total - current) * 100) / (total)
-            console_log("Uploaded %s out of %s bytes [%s%%]" % (
-                localize(current), localize(total), pct), reset=True)
-        create_args = {}
-        if args is not None:
-            create_args.update(args)
-        if 'source_parser' in create_args:
-            create_args['source_parser'] = json.dumps(
-                create_args['source_parser'])
-
-        resource_id = None
-        location = None
-        resource = None
-        error = None
-
-        try:
-            if isinstance(file_name, str):
-                create_args.update({os.path.basename(file_name):
-                                    open(file_name, "rb")})
-            else:
-                create_args = list(create_args.items())
-                name = 'Stdin input'
-                create_args.append(MultipartParam(name, filename=name,
-                                                  fileobj=file_name))
-        except IOError as exception:
-            raise IOError("Error: cannot read training set. %s" %
-                          str(exception))
-
-        if async_load:
-            source = {
-                'code': HTTP_ACCEPTED,
-                'resource': resource_id,
-                'location': location,
-                'object': {'status': {'message': 'The upload is in progress',
-                                      'code': UPLOADING,
-                                      'progress': 0.0}},
-                'error': error}
-            upload_args = (create_args, source)
-            thread = Thread(target=self._upload_source,
-                            args=upload_args,
-                            kwargs={'out': out})
-            thread.start()
-            return source
-        return self._process_source(resource_id, location, resource,
-                                    args=create_args,
-                                    progress_bar=progress_bar,
-                                    callback=draw_progress_bar, out=out)
-
-    def _process_source(self, resource_id, location, resource,
-                        args=None, progress_bar=False, callback=None,
-                        out=sys.stdout):
-        """Creates a new source.
-
-        """
-        code = HTTP_INTERNAL_SERVER_ERROR
-        error = {
-            "status": {
-                "code": code,
-                "message": "The resource couldn't be created"}}
-
-        if args is None:
-            args = {}
-        args = self._add_project(args, True)
-
-        if progress_bar and callback is not None:
-            body, headers = multipart_encode(args, cb=callback)
-        else:
-            body, headers = multipart_encode(args)
-
-        url = self._add_credentials(self.source_url)
-
-        if GAE_ENABLED:
-            try:
-                response = urlfetch.fetch(url=url,
-                                          payload="".join(body),
-                                          method=urlfetch.POST,
-                                          headers=headers)
-                code = response.status_code
-                content = response.content
-                if code in [HTTP_CREATED]:
-                    if 'location' in response.headers:
-                        location = response.headers['location']
-                    resource = json_load(response.content)
-                    resource_id = resource['resource']
-                    error = {}
-                elif code in [HTTP_BAD_REQUEST,
-                              HTTP_UNAUTHORIZED,
-                              HTTP_PAYMENT_REQUIRED,
-                              HTTP_FORBIDDEN,
-                              HTTP_NOT_FOUND,
-                              HTTP_TOO_MANY_REQUESTS]:
-                    error = json_load(response.content)
-                    LOGGER.error(self.error_message(error, method='create'))
-                elif code != HTTP_ACCEPTED:
-                    LOGGER.error("Unexpected error (%s)", code)
-                    code = HTTP_INTERNAL_SERVER_ERROR
-            except urlfetch.Error as exception:
-                LOGGER.error("Error establishing connection: %s",
-                             str(exception))
-        else:
-            try:
-                request = urllib.request.Request(url,
-                                          body, headers)
-                # try using the new SSL checking in python 2.7.9
-                try:
-                    if not self.verify and PYTHON_2_7_9:
-                        context = ssl.create_default_context(
-                            ssl.Purpose.CLIENT_AUTH)
-                        context.verify_mode = ssl.CERT_NONE
-                        https_handler = StreamingHTTPSHandler(context=context)
-                        opener = urllib.request.build_opener(https_handler)
-                        urllib.request.install_opener(opener)
-                        response = urllib.request.urlopen(request)
-                    else:
-                        response = urllib.request.urlopen(request)
-                except AttributeError:
-                    response = urllib.request.urlopen(request)
-                clear_console_line(out=out)
-                reset_console_line(out=out)
-                code = response.getcode()
-                if code == HTTP_CREATED:
-                    location = response.headers['location']
-                    content = response.read()
-                    resource = json_load(content)
-                    resource_id = resource['resource']
-                    error = {}
-                    if self.debug:
-                        LOGGER.debug("Data: %s", body)
-                        LOGGER.debug("Response: %s", content)
-            except ValueError:
-                LOGGER.error("Malformed response.")
-            except urllib.error.HTTPError as exception:
-                code = exception.code
-                if code in [HTTP_BAD_REQUEST,
-                            HTTP_UNAUTHORIZED,
-                            HTTP_PAYMENT_REQUIRED,
-                            HTTP_NOT_FOUND,
-                            HTTP_TOO_MANY_REQUESTS]:
-                    content = exception.read()
-                    error = json_load(content)
-                    if self.debug:
-                        LOGGER.debug("Data: %s", body)
-                        LOGGER.debug("Response: %s", content)
-                    LOGGER.error(self.error_message(error, method='create'))
-                else:
-                    LOGGER.error("Unexpected error (%s)", code)
-                    code = HTTP_INTERNAL_SERVER_ERROR
-
-            except urllib.error.URLError as exception:
-                LOGGER.error("Error establishing connection: %s",
-                             str(exception))
-                error = exception.args
-        return {
-            'code': code,
-            'resource': resource_id,
-            'location': location,
-            'object': resource,
-            'error': error}
-
     def _create_local_source(self, file_name, args=None):
         """Creates a new source using a local file.
 
-        This function is only used from Python 3. No async-prepared.
 
         """
         create_args = {}
@@ -433,6 +225,7 @@ class SourceHandler(ResourceHandler):
         """Creates a new source.
 
            The source can be a local file path or a URL.
+           TODO: add async load and progress bar in Python 3
 
         """
 
@@ -445,10 +238,6 @@ class SourceHandler(ResourceHandler):
             return self._create_inline_source(path, args=args)
         elif isinstance(path, dict):
             return self._create_connector_source(path, args=args)
-        elif PYTHON_2:
-            return self._stream_source(file_name=path, args=args,
-                                       async_load=async_load,
-                                       progress_bar=progress_bar, out=out)
         else:
             return self._create_local_source(file_name=path, args=args)
 

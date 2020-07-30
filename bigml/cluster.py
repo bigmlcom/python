@@ -44,10 +44,12 @@ import sys
 import math
 import re
 import csv
+import codecs
+
 
 from bigml.api import FINISHED
 from bigml.api import get_status, BigML, get_api_connection
-from bigml.util import cast, utf8, PY3, NUMERIC
+from bigml.util import cast, utf8, NUMERIC
 from bigml.centroid import Centroid
 from bigml.basemodel import get_resource_dict
 from bigml.model import print_distribution
@@ -55,8 +57,6 @@ from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
 from bigml.io import UnicodeWriter
 
-if PY3:
-    import codecs
 
 
 LOGGER = logging.getLogger('BigML')
@@ -428,9 +428,8 @@ class Cluster(ModelFields):
         # download dataset to compute local predictions
         downloaded_data = self.api.download_dataset( \
             centroid_dataset["resource"])
-        if PY3:
-            text_reader = codecs.getreader("utf-8")
-            downloaded_data = text_reader(downloaded_data)
+        text_reader = codecs.getreader("utf-8")
+        downloaded_data = text_reader(downloaded_data)
         reader = csv.DictReader(downloaded_data)
         points = []
         for row in reader:

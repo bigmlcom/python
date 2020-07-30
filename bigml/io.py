@@ -15,7 +15,7 @@
 # under the License.
 
 
-"""Python 2/3 compatibility for I/O functions.
+"""Python I/O functions.
 
 :author: jao <jao@bigml.com>
 :date: Wed Apr 08, 2015-2020 17:52
@@ -24,11 +24,9 @@
 
 import csv
 
-from bigml.util import PY3
-
 
 class UnicodeReader(object):
-    """Adapter to handle Python 2 to 3 conversion when reading files
+    """Adapter to read and write files
 
     """
     def __init__(self, filename, dialect=csv.excel,
@@ -49,13 +47,9 @@ class UnicodeReader(object):
         """
         if self.filename.__class__.__name__ == 'UTF8Recoder':
             self.file_handler = self.filename
-        elif PY3:
+        else:
             self.file_handler = open(self.filename, 'rt',
                                      encoding=self.encoding, newline='')
-        else:
-            self.file_handler = open(self.filename, 'rb')
-        self.reader = csv.reader(self.file_handler, dialect=self.dialect,
-                                 **self.kwargs)
         return self
 
     def __enter__(self):
@@ -74,10 +68,7 @@ class UnicodeReader(object):
         """Reading records
 
         """
-        row = next(self.reader)
-        if PY3:
-            return row
-        return [s.decode(self.encoding) for s in row]
+        return next(self.reader)
 
     def __iter__(self):
         """Iterator
@@ -113,13 +104,8 @@ class UnicodeWriter(object):
         """Opening the file
 
         """
-        if PY3:
-            self.file_handler = open(self.filename, 'wt',
-                                     encoding=self.encoding, newline='')
-        else:
-            self.file_handler = open(self.filename, 'wb')
-        self.writer = csv.writer(self.file_handler, dialect=self.dialect,
-                                 **self.kwargs)
+        self.file_handler = open(self.filename, 'wt',
+                                 encoding=self.encoding, newline='')
         return self
 
     def close_writer(self):
@@ -144,9 +130,6 @@ class UnicodeWriter(object):
         """Writer emulating CSV writerow
 
         """
-        if not PY3:
-            row = [(s if not isinstance(s, str) else
-                    s.encode(self.encoding)) for s in row]
         self.writer.writerow(row)
 
     def writerows(self, rows):

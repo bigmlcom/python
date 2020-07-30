@@ -26,7 +26,7 @@ import csv
 
 
 class UnicodeReader(object):
-    """Adapter to read and write files
+    """Adapter to read files
 
     """
     def __init__(self, filename, dialect=csv.excel,
@@ -50,6 +50,8 @@ class UnicodeReader(object):
         else:
             self.file_handler = open(self.filename, 'rt',
                                      encoding=self.encoding, newline='')
+        self.reader = csv.reader(self.file_handler, dialect=self.dialect,
+                                 **self.kwargs)
         return self
 
     def __enter__(self):
@@ -85,7 +87,7 @@ class UnicodeReader(object):
 
 
 class UnicodeWriter(object):
-    """Adapter to handle Python 2 to 3 conversion when writing to files
+    """Adapter to write files
 
     """
     def __init__(self, filename, dialect=csv.excel,
@@ -106,6 +108,8 @@ class UnicodeWriter(object):
         """
         self.file_handler = open(self.filename, 'wt',
                                  encoding=self.encoding, newline='')
+        self.writer = csv.writer(self.file_handler, dialect=self.dialect,
+                                 **self.kwargs)
         return self
 
     def close_writer(self):

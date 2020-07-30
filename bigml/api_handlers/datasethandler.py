@@ -106,8 +106,8 @@ class DatasetHandler(ResourceHandler):
                                          raise_on_error=True, api=self)
                 if 'centroid' not in create_args:
                     try:
-                        centroid = cluster['object'][
-                            'cluster_datasets_ids'].keys()[0]
+                        centroid = list(cluster['object'][
+                            'cluster_datasets_ids'].keys())[0]
                         create_args.update({'centroid': centroid})
                     except KeyError:
                         raise KeyError("Failed to generate the dataset. A "

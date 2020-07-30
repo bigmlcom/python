@@ -19,16 +19,16 @@
 """ Comparing remote and local predictions
 
 """
-from world import world, setup_module, teardown_module, show_doc
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_association_steps as association_create
-import create_cluster_steps as cluster_create
-import create_anomaly_steps as anomaly_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as prediction_compare
-import create_lda_steps as topic_create
+from .world import world, setup_module, teardown_module, show_doc
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_association_steps as association_create
+from . import create_cluster_steps as cluster_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as prediction_compare
+from . import create_lda_steps as topic_create
 
 
 class TestComparePrediction(object):
@@ -37,13 +37,13 @@ class TestComparePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -68,10 +68,10 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa'],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica'],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5}', '000004', 'Iris-versicolor']]
+            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\\u0000": 1.5}', '000004', 'Iris-versicolor']]
         show_doc(self.test_scenario1, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -117,7 +117,7 @@ class TestComparePrediction(object):
             ['data/text_missing.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}, "000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{}', "000003", 'swap']]
         show_doc(self.test_scenario2, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -160,7 +160,7 @@ class TestComparePrediction(object):
             ['data/grades.csv', '50', '30', '30', '{"Midterm": 20, "Tutorial": 90, "TakeHome": 100}', '000005', '28.06', '25.65806']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -203,7 +203,7 @@ class TestComparePrediction(object):
 ]
         show_doc(self.test_scenario4, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -242,11 +242,11 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '50', '{"petal width": 2, "petal length": 6, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
             ['data/iris.csv', '10', '10', '50', '{"petal width": 1.5, "petal length": 4, "sepal width": 0.5, "sepal length": 0.5}', 'Iris-versicolor'],
             ['data/iris.csv', '10', '10', '50', '{"petal length": 1}', 'Iris-setosa'],
-            ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-versicolor'],
+            ['data/iris_sp_chars.csv', '10', '10', '50', '{"pétal.length": 4, "pétal&width\\u0000": 1.5, "sépal&width": 0.5, "sépal.length": 0.5}', 'Iris-versicolor'],
             ['data/price.csv', '10', '10', '50', '{"Price": 1200}', 'Product1']]
         show_doc(self.test_scenario5, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -291,7 +291,7 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', '{"Message": "Ok"}', 'ham']]
         show_doc(self.test_scenario6, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -330,7 +330,7 @@ class TestComparePrediction(object):
             ['data/text_missing.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}, "000000": {"optype": "text", "term_analysis": {"token_mode": "all", "language": "en"}}}}', '{"category1": "a"}', "000003",'paperwork']]
         show_doc(self.test_scenario8, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -372,7 +372,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario9, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -416,7 +416,7 @@ class TestComparePrediction(object):
             ['data/iris_unbalanced.csv', '10', '10', '10', '{"petal length":1, "sepal length":1, "petal width": 1, "sepal width": 1}', '000004', 'Iris-setosa', '0.7575', '[1.0, 0.0, 0.0]']]
         show_doc(self.test_scenario10, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -494,7 +494,7 @@ class TestComparePrediction(object):
                                                   '"source_parser": {"separator": ";"}}', '{"timestamp": "999999999"}', '4', 0.2547, "000009", '{"balance_fields": true, "normalize": true}']]
         show_doc(self.test_scenario11, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -537,7 +537,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario12, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -575,10 +575,10 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa', "tmp/my_model.json", "my_test"],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica', "tmp/my_model.json", "my_test"],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model.json", "my_test"],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model_2.json", "my_test"]]
+            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\\u0000": 1.5}', '000004', 'Iris-versicolor', "tmp/my_model_2.json", "my_test"]]
         show_doc(self.test_scenario13, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -620,10 +620,10 @@ class TestComparePrediction(object):
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa'],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 6, "petal width": 2}', '000004', 'Iris-virginica'],
             ['data/iris.csv', '10', '10', '10', '{"petal length": 4, "petal width": 1.5}', '000004', 'Iris-versicolor'],
-            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\u0000": 1.5}', '000004', 'Iris-versicolor']]
+            ['data/iris_sp_chars.csv', '10', '10', '10', '{"pétal.length": 4, "pétal&width\\u0000": 1.5}', '000004', 'Iris-versicolor']]
         show_doc(self.test_scenario14, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -662,7 +662,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '20', '20', '180', '{"weight_field": "000000", "missing_numerics": false}', '{"petal width": 1.5, "petal length": 2, "sepal width":1}', 'Iris-versicolor', '0.9547', '000004']]
         show_doc(self.test_scenario15, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -725,7 +725,7 @@ class TestComparePrediction(object):
              '000002', -0.06256]]
         show_doc(self.test_scenario16, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -792,7 +792,7 @@ class TestComparePrediction(object):
              'cat0', 0.73663]]
         show_doc(self.test_scenario17, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -835,7 +835,7 @@ class TestComparePrediction(object):
 ]
         show_doc(self.test_scenario18, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

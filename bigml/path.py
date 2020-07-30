@@ -54,13 +54,13 @@ def merge_rules(list_of_predicates, fields, label='name'):
         last_predicate = list_of_predicates[-1]
         # if the last predicate is "is missing" forget about the rest
         if last_predicate.operator == "=" and last_predicate.value is None:
-            return u"%s is missing" % name
+            return "%s is missing" % name
         # if the last predicate is "is not missing"
         if last_predicate.operator[0] in ["!", "/"] and \
             last_predicate.value is None:
             if len(list_of_predicates) == 1:
                 # if there's only one predicate, then write "is not missing"
-                return u"%s is not missing" % name
+                return "%s is not missing" % name
             list_of_predicates = list_of_predicates[0: -1]
             missing_flag = False
         if last_predicate.missing:
@@ -106,18 +106,18 @@ def merge_numeric_rules(list_of_predicates, fields, label='name',
             break
     if equal is not None:
         return equal.to_rule(fields, label=label, missing=missing_flag)
-    rule = u''
+    rule = ''
     field_id = list_of_predicates[0].field
     name = fields[field_id][label]
 
     if minor[0] is not None and major[0] is not None:
         predicate, value = minor
-        rule = u"%s %s " % (value, reverse(predicate.operator))
+        rule = "%s %s " % (value, reverse(predicate.operator))
         rule += name
         predicate, value = major
-        rule += u" %s %s " % (predicate.operator, value)
+        rule += " %s %s " % (predicate.operator, value)
         if missing_flag:
-            rule += u" or missing"
+            rule += " or missing"
     else:
         predicate = minor[0] if minor[0] is not None else major[0]
         rule = predicate.to_rule(fields, label=label, missing=missing_flag)
@@ -143,7 +143,7 @@ def merge_text_rules(list_of_predicates, fields, label='name'):
         for predicate in contains[1:]:
             if predicate.term not in rules:
                 rules.append(predicate.term)
-    rule = u" and ".join(rules)
+    rule = " and ".join(rules)
     if not_contains:
         if not rules:
             rules_not.append(
@@ -155,7 +155,7 @@ def merge_text_rules(list_of_predicates, fields, label='name'):
         for predicate in not_contains[1:]:
             if predicate.term not in rules_not:
                 rules_not.append(predicate.term)
-    rule += u" or ".join(rules_not)
+    rule += " or ".join(rules_not)
     return rule
 
 
@@ -180,7 +180,7 @@ def  merge_categorical_rules(list_of_predicates,
         for predicate in equal[1:]:
             if not predicate.value in rules:
                 rules.append(predicate.value)
-    rule = u" and ".join(rules)
+    rule = " and ".join(rules)
     if not_equal and not rules:
         rules_not.append(not_equal[0].to_rule( \
             fields, label=label, missing=False).strip())
@@ -188,10 +188,10 @@ def  merge_categorical_rules(list_of_predicates,
             if predicate.value not in rules_not:
                 rules_not.append(predicate.value)
     if rules_not:
-        connector = u" and " if rule else u""
-        rule += connector + u" or ".join(rules_not)
+        connector = " and " if rule else ""
+        rule += connector + " or ".join(rules_not)
     if missing_flag:
-        rule += u" or missing"
+        rule += " or missing"
     return rule
 
 

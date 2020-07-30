@@ -68,6 +68,7 @@ from bigml.multivote import ws_confidence
 from bigml.io import UnicodeWriter
 from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
+from functools import reduce
 
 
 LOGGER = logging.getLogger('BigML')
@@ -94,9 +95,9 @@ PYTHON_CONV = {
 }
 
 PYTHON_FUNC = dict([(numtype, eval(function))
-                    for numtype, function in PYTHON_CONV.iteritems()])
+                    for numtype, function in PYTHON_CONV.items()])
 
-INDENT = u'    '
+INDENT = '    '
 
 DEFAULT_IMPURITY = 0.2
 
@@ -197,11 +198,11 @@ def print_distribution(distribution, out=sys.stdout):
                    [group[1] for group in distribution])
     for group in distribution:
         out.write(utf8(
-            u"    %s: %.2f%% (%d instance%s)\n" % (
+            "    %s: %.2f%% (%d instance%s)\n" % (
                 group[0],
                 round(group[1] * 1.0 / total, 4) * 100,
                 group[1],
-                u"" if group[1] == 1 else u"s")))
+                "" if group[1] == 1 else "s")))
 
 
 def parse_operating_point(operating_point, operating_kinds, class_names):
@@ -637,7 +638,7 @@ class Model(BaseModel):
             unused_fields=unused_fields)
         if full:
             return dict((key, value) for key, value in \
-                full_prediction.iteritems() if value is not None)
+                full_prediction.items() if value is not None)
 
         return full_prediction['prediction']
 
@@ -724,15 +725,15 @@ class Model(BaseModel):
         objective_name = self.fields[self.tree.objective_id]['name'] if \
             not self.boosting else \
             self.fields[self.boosting["objective_field"]]['name']
-        docstring = (u"Predictor for %s from %s\n" % (
+        docstring = ("Predictor for %s from %s\n" % (
             objective_name,
             self.resource_id))
         self.description = (
-            unicode(
+            str(
                 markdown_cleanup(self.description).strip()) or
-            u'Predictive model by BigML - Machine Learning Made Easy')
-        docstring += u"\n" + INDENT * 2 + (
-            u"%s" % prefix_as_comment(INDENT * 2, self.description))
+            'Predictive model by BigML - Machine Learning Made Easy')
+        docstring += "\n" + INDENT * 2 + (
+            "%s" % prefix_as_comment(INDENT * 2, self.description))
         return docstring
 
     def get_ids_path(self, filter_id):
@@ -800,10 +801,10 @@ class Model(BaseModel):
             response = self.tree.tableau(out, ids_path=ids_path,
                                          subtree=subtree)
             if response:
-                out.write(u"END\n")
+                out.write("END\n")
             else:
-                out.write(u"\nThis function cannot be represented "
-                          u"in Tableau syntax.\n")
+                out.write("\nThis function cannot be represented "
+                          "in Tableau syntax.\n")
             out.flush()
             return None
 
@@ -952,52 +953,52 @@ class Model(BaseModel):
                 impurity_literal = "; impurity: %.2f%%" % (round(impurity, 4))
             objective_type = self.fields[tree.objective_id]['optype']
             if objective_type == 'numeric':
-                return u" [Error: %s]" % value
+                return " [Error: %s]" % value
             else:
-                return u" [Confidence: %.2f%%%s]" % ((round(value, 4) * 100),
+                return " [Confidence: %.2f%%%s]" % ((round(value, 4) * 100),
                                                      impurity_literal)
 
         distribution = self.get_data_distribution()
 
-        out.write(utf8(u"Data distribution:\n"))
+        out.write(utf8("Data distribution:\n"))
         print_distribution(distribution, out=out)
-        out.write(utf8(u"\n\n"))
+        out.write(utf8("\n\n"))
 
         groups = self.group_prediction()
         predictions = self.get_prediction_distribution(groups)
 
-        out.write(utf8(u"Predicted distribution:\n"))
+        out.write(utf8("Predicted distribution:\n"))
         print_distribution(predictions, out=out)
-        out.write(utf8(u"\n\n"))
+        out.write(utf8("\n\n"))
 
         if self.field_importance:
-            out.write(utf8(u"Field importance:\n"))
+            out.write(utf8("Field importance:\n"))
             print_importance(self, out=out)
 
         extract_common_path(groups)
 
-        out.write(utf8(u"\n\nRules summary:"))
+        out.write(utf8("\n\nRules summary:"))
 
         for group in [x[0] for x in predictions]:
             details = groups[group]['details']
             path = Path(groups[group]['total'][0])
             data_per_group = groups[group]['total'][1] * 1.0 / tree.count
             pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write(utf8(u"\n\n%s : (data %.2f%% / prediction %.2f%%) %s" %
+            out.write(utf8("\n\n%s : (data %.2f%% / prediction %.2f%%) %s" %
                            (group,
                             round(data_per_group, 4) * 100,
                             round(pred_per_group, 4) * 100,
                             path.to_rules(self.fields, format=format))))
 
             if len(details) == 0:
-                out.write(utf8(u"\n    The model will never predict this"
-                               u" class\n"))
+                out.write(utf8("\n    The model will never predict this"
+                               " class\n"))
             elif len(details) == 1:
                 subgroup = details[0]
-                out.write(utf8(u"%s\n" % confidence_error(
+                out.write(utf8("%s\n" % confidence_error(
                     subgroup[2], impurity=subgroup[3])))
             else:
-                out.write(utf8(u"\n"))
+                out.write(utf8("\n"))
                 for j in range(0, len(details)):
                     subgroup = details[j]
                     pred_per_sgroup = subgroup[1] * 1.0 / \
@@ -1005,7 +1006,7 @@ class Model(BaseModel):
                     path = Path(subgroup[0])
                     path_chain = path.to_rules(self.fields, format=format) if \
                         path.predicates else "(root node)"
-                    out.write(utf8(u"    · %.2f%%: %s%s\n" %
+                    out.write(utf8("    · %.2f%%: %s%s\n" %
                                    (round(pred_per_sgroup, 4) * 100,
                                     path_chain,
                                     confidence_error(subgroup[2],
@@ -1022,7 +1023,7 @@ class Model(BaseModel):
             raise AttributeError("This method is not available for boosting"
                                  " models.")
         input_fields = [(value, key) for (key, value) in
-                        sorted(self.inverted_fields.items(),
+                        sorted(list(self.inverted_fields.items()),
                                key=lambda x: x[1])]
         parameters = [value for (key, value) in
                       input_fields if key != self.tree.objective_id]
@@ -1033,7 +1034,7 @@ class Model(BaseModel):
             if field[0] != self.tree.objective_id:
                 args.append("\"" + self.fields[field[0]]['slug'] + "\"")
         output = \
-u"""#!/usr/bin/env python
+"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
@@ -1062,7 +1063,7 @@ class CSVInput(object):
 """ % ",".join(parameters)
 
         output += (
-            u"\n%sself.INPUT_FIELDS = [%s]\n" %
+            "\n%sself.INPUT_FIELDS = [%s]\n" %
             ((INDENT * 3), (",\n " + INDENT * 8).join(args)))
 
         input_types = []
@@ -1085,21 +1086,21 @@ class CSVInput(object):
             count += 1
         static_content = "%sself.INPUT_TYPES = [" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(input_types),
                                  "]\n")
         static_content = "%sself.PREFIXES = {" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(prefixes),
                                  "}\n")
         static_content = "%sself.SUFFIXES = {" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(suffixes),
                                  "}\n")
         output += \
-u"""            self.MISSING_TOKENS = ['?']
+"""            self.MISSING_TOKENS = ['?']
         except Exception, exc:
             sys.stderr.write(\"Cannot read csv\"
                              \" input. %s\\n\" % str(exc))
@@ -1171,7 +1172,7 @@ u"""            self.MISSING_TOKENS = ['?']
                          ids_path=ids_path,
                          subtree=subtree)
         output = \
-u"""
+"""
 csv = CSVInput()
 for values in csv:
     if not isinstance(values, bool):
@@ -1187,7 +1188,7 @@ for values in csv:
         """
 
         output = \
-u"""#!/usr/bin/env python
+"""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
@@ -1221,8 +1222,8 @@ if count > 0:
         """Given a prediction string, returns its value in the required type
 
         """
-        if not isinstance(value_as_string, unicode):
-            value_as_string = unicode(value_as_string, "utf-8")
+        if not isinstance(value_as_string, str):
+            value_as_string = str(value_as_string, "utf-8")
 
         objective_id = self.tree.objective_id
         if self.fields[objective_id]['optype'] == 'numeric':
@@ -1246,7 +1247,7 @@ if count > 0:
         total = 0.0
         cumulative_confidence = 0
         groups = self.group_prediction()
-        for _, predictions in groups.items():
+        for _, predictions in list(groups.items()):
             for _, count, confidence in predictions['details']:
                 cumulative_confidence += count * confidence
                 total += count
@@ -1291,7 +1292,7 @@ if count > 0:
                 writer.writerow([header.encode("utf-8")
                                  for header in headers_names])
                 for row in nodes_generator:
-                    writer.writerow([item if not isinstance(item, basestring)
+                    writer.writerow([item if not isinstance(item, str)
                                      else item.encode("utf-8")
                                      for item in row])
         else:

@@ -20,7 +20,7 @@
 """
 
 SUBMODELS_CODE = {"naive": \
-u"""
+"""
 
 def _naive_forecast(components, horizon):
     \"\"\"Computing the forecast for the naive model
@@ -30,7 +30,7 @@ def _naive_forecast(components, horizon):
 
 """,
                   "mean": \
-u"""
+"""
 def _mean_forecast(components, horizon):
     \"\"\"Computing the forecast for the mean model
 
@@ -38,7 +38,7 @@ def _mean_forecast(components, horizon):
     return _trivial_forecast(submodel, horizon)
 """,
                   "drift": \
-u"""
+"""
 
 def _drift_forecast(components, horizon):
     \"\"\"Computing the forecast for the drift model
@@ -50,7 +50,7 @@ def _drift_forecast(components, horizon):
     return points
 """,
                   "N": \
-u"""
+"""
 
 def _N_forecast(components, horizon, seasonality):
     \"\"\"Computing the forecast for the trend=N models
@@ -68,7 +68,7 @@ def _N_forecast(components, horizon, seasonality):
     return points
 """,
                   "A": \
-u"""
+"""
 
 def _A_forecast(components, horizon, seasonality):
     \"\"\"Computing the forecast for the trend=A models
@@ -87,7 +87,7 @@ def _A_forecast(components, horizon, seasonality):
     return points
 """,
                   "Ad": \
-u"""
+"""
 
 def _Ad_forecast(components, horizon, seasonality):
     \"\"\"Computing the forecast for the trend=Ad model
@@ -112,7 +112,7 @@ def _Ad_forecast(components, horizon, seasonality):
     return points
 """,
                   "M": \
-u"""
+"""
 
 def _M_forecast(components, horizon, seasonality):
     \"\"\"Computing the forecast for the trend=M model
@@ -131,7 +131,7 @@ def _M_forecast(components, horizon, seasonality):
     return points
 """,
                   "Md": \
-u"""
+"""
 
 def _Md_forecast(components, horizon, seasonality):
     \"\"\"Computing the forecast for the trend=Md model
@@ -158,7 +158,7 @@ def _Md_forecast(components, horizon, seasonality):
 """}
 
 TRIVIAL_MODEL = \
-u"""
+"""
 def _trivial_forecast(components, horizon):
     \"\"\"Computing the forecast for the trivial models
 
@@ -203,7 +203,7 @@ def season_contribution(s_list, step):
 """
 
 FORECAST_FUNCTION = \
-u"""
+"""
 
 def forecast(field, model_name, horizon=50):
     \"\"\"Forecast using the user-given model type and horizon
@@ -221,7 +221,7 @@ def forecast(field, model_name, horizon=50):
 """
 
 USAGE_DOC = \
-u"""\"\"\"Local forecast for BigML's Time Series %s.
+"""\"\"\"Local forecast for BigML's Time Series %s.
 
 Time Series Forecast by BigML - Machine Learning Made Easy
 

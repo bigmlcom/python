@@ -68,13 +68,13 @@ class Centroid(object):
 
         """
         distance2 = 0.0
-        for field_id, value in self.center.items():
+        for field_id, value in list(self.center.items()):
             if isinstance(value, list):
                 # text field
                 terms = ([] if field_id not in term_sets else
                          term_sets[field_id])
                 distance2 += cosine_distance2(terms, value, scales[field_id])
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 if field_id not in input_data or input_data[field_id] != value:
                     distance2 += 1 * scales[field_id] ** 2
             else:
@@ -89,8 +89,8 @@ class Centroid(object):
            centroid
 
         """
-        out.write(u"%s%s:\n" % (INDENT, self.name))
-        literal = u"%s%s: %s\n"
+        out.write("%s%s:\n" % (INDENT, self.name))
+        literal = "%s%s: %s\n"
         for measure_title in STATISTIC_MEASURES:
             measure = measure_title.lower().replace(" ", "_")
             out.write(literal % (INDENT * 2, measure_title,

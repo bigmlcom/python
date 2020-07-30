@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -32,7 +32,7 @@ from bigml.ensemblepredictor import EnsemblePredictor
 from bigml.model import Model
 from bigml.supervised import SupervisedModel
 
-from read_ensemble_steps import i_get_the_ensemble
+from .read_ensemble_steps import i_get_the_ensemble
 
 NO_MISSING_SPLITS = {'missing_splits': False}
 ENSEMBLE_SAMPLE = {'seed': 'BigML',

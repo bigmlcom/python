@@ -19,14 +19,14 @@
 """ Creating optimls and fusions
 
 """
-from world import world, setup_module, teardown_module
-import create_model_steps as model_create
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import compare_predictions_steps as compare_pred
-import create_prediction_steps as prediction_create
-import create_evaluation_steps as evaluation_create
-import create_batch_prediction_steps as batch_pred_create
+from .world import world, setup_module, teardown_module
+from . import create_model_steps as model_create
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import compare_predictions_steps as compare_pred
+from . import create_prediction_steps as prediction_create
+from . import create_evaluation_steps as evaluation_create
+from . import create_batch_prediction_steps as batch_pred_create
 
 
 class TestOptimlFusion(object):
@@ -35,13 +35,13 @@ class TestOptimlFusion(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -60,11 +60,11 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | optiml_name |
                 | ../data/iris.csv | 10      | 10     | 2000     | 20 | my new optiml name |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '100', '20', 'my new optiml name']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -107,14 +107,14 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | fusion_name | data_input | objective | prediction
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | my new fusion name | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20', 'my new fusion name',
              '{"tags":["my_fusion_2_tag"]}', 'my_fusion_2_tag',
              '{"petal width": 1.75, "petal length": 2.45}', "000004",
              "Iris-setosa", 'average_phi', '1.0']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -163,13 +163,13 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | tag | local_file | predictions_file       |
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | mytag | ./tmp/batch_predictions.csv | ./data/batch_predictions_fs.csv |
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20',
              '{"tags":["my_fusion_3_tag"]}', 'my_fusion_3_tag',
               'tmp/batch_predictions.csv', 'data/batch_predictions_fs.csv']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -217,7 +217,7 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20',
              '{"tags":["my_fusion_4_tag"], "missing_numerics": true}',
@@ -225,7 +225,7 @@ class TestOptimlFusion(object):
              '{"petal width": 1.75, "petal length": 2.45}', "000004",
              "Iris-setosa", '0.4727']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -273,7 +273,7 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
         """
-        print self.test_scenario5.__doc__
+        print(self.test_scenario5.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20',
              '{"tags":["my_fusion_5_tag"], "missing_numerics": true}',
@@ -284,7 +284,7 @@ class TestOptimlFusion(object):
              '0.4727',
              '{"tags":["my_fusion_5_tag"], "missing_numerics": false, "balance_fields": false }']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -332,7 +332,7 @@ class TestOptimlFusion(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input | objective | prediction
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | {"petal length": 1, "petal width": 1} | "000004" | "Iris-setosa"
         """
-        print self.test_scenario6.__doc__
+        print(self.test_scenario6.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20',
              '{"tags":["my_fusion_6_tag"], "missing_numerics": true}',
@@ -343,7 +343,7 @@ class TestOptimlFusion(object):
              '0.4727',
              '{"tags":["my_fusion_6_tag"], "missing_numerics": false, "balance_fields": false }', '[1, 2]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

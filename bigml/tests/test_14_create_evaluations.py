@@ -19,12 +19,12 @@
 """ Creating evaluation
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
-import create_evaluation_steps as evaluation_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_evaluation_steps as evaluation_create
 
 class TestEvaluation(object):
 
@@ -32,13 +32,13 @@ class TestEvaluation(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -57,11 +57,11 @@ class TestEvaluation(object):
                 | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
                 | ../data/iris.csv | 30      | 30     | 30     | 30     | average_phi   | 1      |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '50', '50', '50', '50', 'average_phi', '1']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -91,7 +91,7 @@ class TestEvaluation(object):
                 | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | average_phi   | 0.98029   | {"combiner": 0}
 
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 0}],
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"combiner": 1}],
@@ -100,7 +100,7 @@ class TestEvaluation(object):
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"operating_kind": "probability"}],
             ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"operating_kind": "confidence"}]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -129,11 +129,11 @@ class TestEvaluation(object):
                 | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
                 | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.94107   |
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.89054']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -162,11 +162,11 @@ class TestEvaluation(object):
                 | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
                 | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.95007   |
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.95007']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

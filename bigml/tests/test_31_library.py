@@ -19,8 +19,8 @@
 """ Creating and updating scripts
 
 """
-from world import world, setup_module, teardown_module
-import create_library_steps as library_create
+from .world import world, setup_module, teardown_module
+from . import create_library_steps as library_create
 
 class TestLibrary(object):
 
@@ -28,13 +28,13 @@ class TestLibrary(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -49,11 +49,11 @@ class TestLibrary(object):
                 | source_code                      | time_1  | time_2  | param | param_value
                 | (define (mu x) (+ x 1))          | 10      | 10      | name  | my library
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['(define (mu x) (+ x 1))', '10', '10', 'name', 'my library']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             library_create.i_create_a_library(self, example[0])
             library_create.the_library_is_finished(self, example[1])
             library_create.i_update_a_library(self, example[3], example[4])

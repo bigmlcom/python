@@ -18,7 +18,7 @@
 import time
 import json
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_OK
@@ -28,7 +28,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 
 
-import read_dataset_steps as read
+from . import read_dataset_steps as read
 
 #@step(r'I create a dataset$')
 def i_create_a_dataset(step):

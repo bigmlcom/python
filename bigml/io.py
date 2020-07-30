@@ -70,7 +70,7 @@ class UnicodeReader(object):
         """
         self.close_reader()
 
-    def next(self):
+    def __next__(self):
         """Reading records
 
         """
@@ -145,7 +145,7 @@ class UnicodeWriter(object):
 
         """
         if not PY3:
-            row = [(s if not isinstance(s, basestring) else
+            row = [(s if not isinstance(s, str) else
                     s.encode(self.encoding)) for s in row]
         self.writer.writerow(row)
 

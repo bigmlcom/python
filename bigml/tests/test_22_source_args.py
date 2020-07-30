@@ -19,8 +19,8 @@
 """ Uploading source with structured args
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
 
 class TestUploadSource(object):
 
@@ -28,13 +28,13 @@ class TestUploadSource(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -50,12 +50,12 @@ class TestUploadSource(object):
                 | ../data/iris.csv | 30      | {"name": "Testing unicode names: áé"}]}
 
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '30', '{"tags": ["my tag", "my second tag"]}'],
             ['data/iris.csv', '30', '{"name": "Testing unicode names: áé"}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], example[2])
             source_create.the_source_is_finished(self, example[1])
             source_create.source_has_args(self, example[2])

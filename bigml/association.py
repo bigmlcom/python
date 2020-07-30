@@ -229,8 +229,8 @@ class Association(ModelFields):
                     predictions[rhs]["rules"] = []
                 predictions[rhs]["rules"].append(rule.rule_id)
         # choose the best k predictions
-        k = len(predictions.keys()) if k is None else k
-        predictions = sorted(predictions.items(),
+        k = len(list(predictions.keys())) if k is None else k
+        predictions = sorted(list(predictions.items()),
                              key=lambda x: x[1]["score"], reverse=True)[:k]
         final_predictions = []
         for rhs, prediction in predictions:
@@ -364,7 +364,7 @@ class Association(ModelFields):
                 return True
             if isinstance(item_list[0], Item):
                 items = [item.index for item in item_list]
-            elif isinstance(item_list[0], basestring):
+            elif isinstance(item_list[0], str):
                 items = [item.index for item
                          in self.get_items(names=item_list)]
 
@@ -398,7 +398,7 @@ class Association(ModelFields):
         with UnicodeWriter(file_name, quoting=csv.QUOTE_NONNUMERIC) as writer:
             writer.writerow(RULE_HEADERS)
             for rule in rules:
-                writer.writerow([item if not isinstance(item, basestring)
+                writer.writerow([item if not isinstance(item, str)
                                  else item.encode("utf-8")
                                  for item in rule])
 
@@ -415,7 +415,7 @@ class Association(ModelFields):
                 item = self.items[item_index]
                 # if there's just one field, we don't use the item description
                 # to avoid repeating the field name constantly.
-                item_description = item.name if len(self.fields.keys()) == 1 \
+                item_description = item.name if len(list(self.fields.keys())) == 1 \
                     and not item.complement else item.describe()
                 description.append(item_description)
             description_str = " & ".join(description)

@@ -19,8 +19,8 @@
 """ Testing MultiVote predictions
 
 """
-from world import world, setup_module, teardown_module
-import compute_multivote_prediction_steps as multivote_prediction
+from .world import world, setup_module, teardown_module
+from . import compute_multivote_prediction_steps as multivote_prediction
 
 
 class TestMultiVotePrediction(object):
@@ -29,13 +29,13 @@ class TestMultiVotePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -56,7 +56,7 @@ class TestMultiVotePrediction(object):
                 | ../data/predictions_r.json| 1            | 1.59376845074 | 0.24837        |
                 | ../data/predictions_r.json| 2            | 1.55555556667 | 0.40008        |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/predictions_c.json', '0', 'a', '0.45047'],
             ['data/predictions_c.json', '1', 'a', '0.55202'],
@@ -65,7 +65,7 @@ class TestMultiVotePrediction(object):
             ['data/predictions_r.json', '1', '1.59376845074', '0.24837'],
             ['data/predictions_r.json', '2', '1.55555556667', '0.40008']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             multivote_prediction.i_create_a_multivote(self, example[0])
             multivote_prediction.compute_prediction(self, example[1])
             multivote_prediction.compute_prediction_no_confidence(self, example[1])

@@ -22,7 +22,7 @@ import sys
 import os
 import time
 import locale
-import StringIO
+import io
 import logging
 
 try:
@@ -106,7 +106,7 @@ def assign_dir(path):
 
        Returns either the path or None.
     """
-    if not isinstance(path, basestring):
+    if not isinstance(path, str):
         return None
     try:
         return check_dir(path)
@@ -269,7 +269,7 @@ class BigMLConnection(object):
                            " flag will be removed soon.")
         if domain is None:
             domain = Domain()
-        elif isinstance(domain, basestring):
+        elif isinstance(domain, str):
             domain = Domain(domain=domain)
         elif not isinstance(domain, Domain):
             raise ValueError("The domain must be set using a Domain object.")
@@ -314,7 +314,7 @@ class BigMLConnection(object):
         to_string = False
         if self.project and include:
             # Adding project ID to args if it's not set
-            if isinstance(payload, basestring):
+            if isinstance(payload, str):
                 payload = json.loads(payload)
                 to_string = True
             if payload.get("project") is None:
@@ -365,7 +365,7 @@ class BigMLConnection(object):
                         'validate_certificate': verify
                     }
                     response = urlfetch.fetch(**req_options)
-                except urlfetch.Error, exception:
+                except urlfetch.Error as exception:
                     LOGGER.error("HTTP request error: %s",
                                  str(exception))
                     error["status"]["type"] = c.TRANSIENT
@@ -378,7 +378,7 @@ class BigMLConnection(object):
                                              data=body, verify=verify)
                 except (requests.ConnectionError,
                         requests.Timeout,
-                        requests.RequestException), exc:
+                        requests.RequestException) as exc:
                     LOGGER.error("HTTP request error: %s", str(exc))
                     code = HTTP_INTERNAL_SERVER_ERROR
                     error["status"]["type"] = c.TRANSIENT
@@ -403,7 +403,7 @@ class BigMLConnection(object):
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
-            except ValueError, exc:
+            except ValueError as exc:
                 LOGGER.error("Malformed response: %s", str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
 
@@ -450,7 +450,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 error["status"]["type"] = c.TRANSIENT
@@ -462,7 +462,7 @@ class BigMLConnection(object):
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
@@ -483,7 +483,7 @@ class BigMLConnection(object):
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
-        except ValueError, exc:
+        except ValueError as exc:
             if "output_format" in query_string:
                 # output can be an xml file that is returned without storing
                 return response.content
@@ -535,7 +535,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 error["status"]["type"] = c.TRANSIENT
@@ -550,7 +550,7 @@ class BigMLConnection(object):
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 error["status"]["type"] = c.TRANSIENT
                 return {
@@ -574,7 +574,7 @@ class BigMLConnection(object):
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
-        except ValueError, exc:
+        except ValueError as exc:
             LOGGER.error("Malformed response: %s", str(exc))
 
         return {
@@ -619,7 +619,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 error["status"]["type"] = c.TRANSIENT
@@ -632,7 +632,7 @@ class BigMLConnection(object):
                                         data=body, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 error["status"]["type"] = c.TRANSIENT
                 return maybe_save(resource_id, self.storage, code,
@@ -683,7 +683,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 error["status"]["type"] = c.TRANSIENT
@@ -695,7 +695,7 @@ class BigMLConnection(object):
                 response = requests.delete(url, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 error["status"]["type"] = c.TRANSIENT
                 return {
@@ -746,7 +746,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 return file_object
@@ -756,7 +756,7 @@ class BigMLConnection(object):
                                         verify=self.verify, stream=True)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 return file_object
         try:
@@ -802,7 +802,7 @@ class BigMLConnection(object):
                         filename = None
                     if filename is None:
                         if GAE_ENABLED:
-                            file_object = StringIO.StringIO(response.content)
+                            file_object = io.StringIO(response.content)
                         else:
                             file_object = response.raw
                     else:
@@ -866,7 +866,7 @@ class BigMLConnection(object):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 return {
@@ -879,7 +879,7 @@ class BigMLConnection(object):
                                         verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 return {
                     'code': code,
@@ -900,7 +900,7 @@ class BigMLConnection(object):
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
-        except ValueError, exc:
+        except ValueError as exc:
             LOGGER.error("Malformed response: %s", str(exc))
 
         return {
@@ -932,35 +932,35 @@ class BigMLConnection(object):
                 alternate_message = ''
                 if self.general_domain != DEFAULT_DOMAIN:
                     alternate_message = (
-                        u'- The %s was not created in %s.\n' % (
+                        '- The %s was not created in %s.\n' % (
                             resource_type, self.general_domain))
                 error += (
-                    u'\nCouldn\'t find a %s matching the given'
-                    u' id in %s. The most probable causes are:\n\n%s'
-                    u'- A typo in the %s\'s id.\n'
-                    u'- The %s id cannot be accessed with your credentials'
-                    u' or was not created in %s.\n'
-                    u'\nDouble-check your %s and'
-                    u' credentials info and retry.' % (
+                    '\nCouldn\'t find a %s matching the given'
+                    ' id in %s. The most probable causes are:\n\n%s'
+                    '- A typo in the %s\'s id.\n'
+                    '- The %s id cannot be accessed with your credentials'
+                    ' or was not created in %s.\n'
+                    '\nDouble-check your %s and'
+                    ' credentials info and retry.' % (
                         resource_type, self.general_domain,
                         alternate_message, resource_type,
                         resource_type, self.general_domain, resource_type))
                 return error
             if code == HTTP_UNAUTHORIZED:
-                error += (u'\nDouble-check your credentials and the general'
-                          u' domain your account is registered with (currently'
-                          u' using %s), please.' % self.general_domain)
+                error += ('\nDouble-check your credentials and the general'
+                          ' domain your account is registered with (currently'
+                          ' using %s), please.' % self.general_domain)
                 return error
             if code == HTTP_BAD_REQUEST:
-                error += u'\nDouble-check the arguments for the call, please.'
+                error += '\nDouble-check the arguments for the call, please.'
                 return error
             if code == HTTP_TOO_MANY_REQUESTS:
-                error += (u'\nToo many requests. Please stop '
-                          u' requests for a while before resuming.')
+                error += ('\nToo many requests. Please stop '
+                          ' requests for a while before resuming.')
                 return error
             elif code == HTTP_PAYMENT_REQUIRED:
-                error += (u'\nYou\'ll need to buy some more credits to perform'
-                          u' the chosen action')
+                error += ('\nYou\'ll need to buy some more credits to perform'
+                          ' the chosen action')
                 return error
 
         return "Invalid %s structure:\n\n%s" % (resource_type, resource)

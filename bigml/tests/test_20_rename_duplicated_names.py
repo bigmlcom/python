@@ -19,11 +19,11 @@
 """ Renaming duplicated names in fields
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import compare_predictions_steps as compare_preds
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import compare_predictions_steps as compare_preds
 
 class TestDuplicatedFields(object):
 
@@ -31,13 +31,13 @@ class TestDuplicatedFields(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -56,12 +56,12 @@ class TestDuplicatedFields(object):
                 | ../data/iris.csv | 20      | 20     | 30     | {"fields": {"000001": {"name": "species"}}} | 000001 | species1
                 | ../data/iris.csv | 20      | 20     | 30     | {"fields": {"000001": {"name": "petal width"}}} | 000001 | petal width1
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '20', '20', '30', '{"fields": {"000001": {"name": "species"}}}', '000001', 'species1'],
             ['data/iris.csv', '20', '20', '30', '{"fields": {"000001": {"name": "petal width"}}}', '000003', 'petal width3']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset_with(self, example[4])

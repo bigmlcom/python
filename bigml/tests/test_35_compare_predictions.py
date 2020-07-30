@@ -19,16 +19,16 @@
 """ Comparing remote and local predictions
 
 """
-from world import world, setup_module, teardown_module, show_doc
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_time_series_steps as time_series_create
-import create_forecast_steps as forecast_create
-import compare_forecasts_steps as forecast_compare
-import create_pca_steps as pca_create
-import create_projection_steps as projection_create
-import compare_predictions_steps as compare_predictions
+from .world import world, setup_module, teardown_module, show_doc
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_time_series_steps as time_series_create
+from . import create_forecast_steps as forecast_create
+from . import compare_forecasts_steps as forecast_compare
+from . import create_pca_steps as pca_create
+from . import create_projection_steps as projection_create
+from . import compare_predictions_steps as compare_predictions
 
 
 class TestComparePrediction(object):
@@ -37,13 +37,13 @@ class TestComparePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
 
     def test_scenario1(self):
@@ -75,7 +75,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -116,7 +116,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario2, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -159,7 +159,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -202,7 +202,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario4, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -248,7 +248,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -288,7 +288,7 @@ class TestComparePrediction(object):
     ['data/spam_tiny.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "all"}}}}', '{"Message": "mobile call"}', '{}', '{"PC40": 0.31818, "PC38": 0.06912, "PC39": -0.14342, "PC18": 0.22382, "PC19": 0.18518, "PC14": 0.89231, "PC15": 0.05046, "PC16": -0.00241, "PC17": 0.54501, "PC10": -0.26463, "PC11": 0.30251, "PC12": 1.16327, "PC13": 0.16973, "PC43": 0.11952, "PC42": 1.05499, "PC41": 0.51263, "PC25": 0.02467, "PC24": -0.65128, "PC27": 0.48916, "PC26": -0.45228, "PC21": -0.44167, "PC20": 0.76896, "PC23": 0.29398, "PC22": 0.06425, "PC47": 0.70416, "PC49": -0.30313, "PC48": 0.12976, "PC29": -0.34, "PC28": 0.17406, "PC32": -0.06411, "PC46": 0.69257, "PC31": 0.07523, "PC45": -0.03461, "PC36": 0.29732, "PC44": 0.14516, "PC37": -0.19109, "PC34": 0.58399, "PC35": 0.37608, "PC33": -0.00378, "PC8": -0.88156, "PC9": 0.38233, "PC2": -0.56685, "PC3": 0.56321, "PC1": 0.49171, "PC6": -0.09854, "PC7": -1.24639, "PC4": 1.50134, "PC5": -0.03161, "PC50": 0.17349, "PC30": -1.29612}']]
         show_doc(self.test_scenario6, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -366,7 +366,7 @@ class TestComparePrediction(object):
                "PC5": 2.16179, "PC7": 1.35718, "PC6": 5.02426}']]
         show_doc(self.test_scenario7, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

@@ -20,7 +20,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -35,7 +35,7 @@ from bigml.linear import LinearRegression
 from bigml.deepnet import Deepnet
 from bigml.fusion import Fusion
 
-import read_model_steps as read
+from . import read_model_steps as read
 
 NO_MISSING_SPLITS = {'missing_splits': False}
 
@@ -131,7 +131,7 @@ def make_the_model_public(step):
                                       {'private': False, 'white_box': True})
     world.status = resource['code']
     if world.status != HTTP_ACCEPTED:
-        print "unexpected status: %s" % world.status
+        print("unexpected status: %s" % world.status)
     eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
     world.model = resource['object']
@@ -376,7 +376,7 @@ def i_create_a_fusion(step):
 #@step(r'I create a fusion with weights$')
 def i_create_a_fusion_with_weights(step, weights=None):
     if weights is None:
-        weights = range(1, len(world.list_of_models))
+        weights = list(range(1, len(world.list_of_models)))
     else:
         weights = json.loads(weights)
     models = []

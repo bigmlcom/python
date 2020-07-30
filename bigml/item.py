@@ -75,7 +75,7 @@ class Item(object):
         """
         flatline = ""
         if self.name is None:
-            return u"(missing? (f %s))" % self.field_id
+            return "(missing? (f %s))" % self.field_id
         field_type = self.field_info['optype']
         if field_type == "numeric":
             start = self.bin_end if self.complement else \
@@ -84,32 +84,32 @@ class Item(object):
                 self.bin_end
             if start is not None and end is not None:
                 if start < end:
-                    flatline = u"(and (< %s (f %s)) (<= (f %s) %s))" % \
+                    flatline = "(and (< %s (f %s)) (<= (f %s) %s))" % \
                         (start, self.field_id, self.field_id, end)
                 else:
-                    flatline = u"(or (> (f %s) %s) (<= (f %s) %s))" % \
+                    flatline = "(or (> (f %s) %s) (<= (f %s) %s))" % \
                         (self.field_id, start, self.field_id, end)
             elif start is not None:
-                flatline = u"(> (f %s) %s)" % (self.field_id, start)
+                flatline = "(> (f %s) %s)" % (self.field_id, start)
             else:
-                flatline = u"(<= (f %s) %s)" % (self.field_id, end)
+                flatline = "(<= (f %s) %s)" % (self.field_id, end)
         elif field_type == "categorical":
-            operator = u"!=" if self.complement else u"="
-            flatline = u"(%s (f %s) %s)" % (
+            operator = "!=" if self.complement else "="
+            flatline = "(%s (f %s) %s)" % (
                 operator, self.field_id, self.name)
         elif field_type == "text":
-            operator = u"=" if self.complement else u">"
+            operator = "=" if self.complement else ">"
             options = self.field_info['term_analysis']
             case_insensitive = not options.get('case_sensitive', False)
-            case_insensitive = u'true' if case_insensitive else u'false'
+            case_insensitive = 'true' if case_insensitive else 'false'
             language = options.get('language')
-            language = u"" if language is None else u" %s" % language
-            flatline = u"(%s (occurrences (f %s) %s %s%s) 0)" % (
+            language = "" if language is None else " %s" % language
+            flatline = "(%s (occurrences (f %s) %s %s%s) 0)" % (
                 operator, self.field_id, self.name,
                 case_insensitive, language)
         elif field_type == 'items':
-            operator = u"!" if self.complement else u""
-            flatline = u"(%s (contains-items? %s %s))" % (
+            operator = "!" if self.complement else ""
+            flatline = "(%s (contains-items? %s %s))" % (
                 operator, self.field_id, self.name)
         return flatline
 

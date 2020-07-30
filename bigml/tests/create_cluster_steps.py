@@ -19,10 +19,10 @@ import time
 import json
 import os
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
-from read_cluster_steps import i_get_the_cluster
+from .read_cluster_steps import i_get_the_cluster
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED

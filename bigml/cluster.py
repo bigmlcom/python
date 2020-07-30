@@ -65,7 +65,7 @@ CSV_STATISTICS = ['minimum', 'mean', 'median', 'maximum', 'standard_deviation',
                   'sum', 'sum_squares', 'variance']
 INDENT = " " * 4
 INTERCENTROID_MEASURES = [('Minimum', min),
-                          ('Mean', lambda(x): sum(x)/float(len(x))),
+                          ('Mean', lambda x: sum(x)/float(len(x))),
                           ('Maximum', max)]
 GLOBAL_CLUSTER_LABEL = 'Global'
 NUMERIC_DEFAULTS = ["mean", "median", "minimum", "maximum", "zero"]
@@ -77,7 +77,7 @@ def parse_terms(text, case_sensitive=True):
     """
     if text is None:
         return []
-    expression = ur'(\b|_)([^\b_\s]+?)(\b|_)'
+    expression = r'(\b|_)([^\b_\s]+?)(\b|_)'
     pattern = re.compile(expression)
     return [match[1] if case_sensitive else match[1].lower()
             for match in re.findall(pattern, text)]
@@ -99,8 +99,8 @@ def get_unique_terms(terms, term_forms, tag_cloud):
 
     """
     extend_forms = {}
-    tag_cloud = tag_cloud.keys()
-    for term, forms in term_forms.items():
+    tag_cloud = list(tag_cloud.keys())
+    for term, forms in list(term_forms.items()):
         for form in forms:
             extend_forms[form] = term
         extend_forms[term] = term
@@ -192,7 +192,7 @@ class Cluster(ModelFields):
                         # clusters retrieved from API will only contain
                         # model fields
                         pass
-                for field_id, field in fields.items():
+                for field_id, field in list(fields.items()):
                     if field['optype'] == 'text':
                         self.term_forms[field_id] = {}
                         self.term_forms[field_id].update(field[
@@ -259,7 +259,7 @@ class Cluster(ModelFields):
         ``average`` parameter
         """
 
-        for field_id, field in self.fields.items():
+        for field_id, field in list(self.fields.items()):
             if (field_id not in self.summary_fields and \
                     field['optype'] == NUMERIC and
                     field_id not in input_data):
@@ -280,7 +280,7 @@ class Cluster(ModelFields):
         for field_id in self.term_forms:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
+                if isinstance(input_data_field, str):
                     case_sensitive = self.term_analysis[field_id].get(
                         'case_sensitive', True)
                     token_mode = self.term_analysis[field_id].get(
@@ -304,14 +304,14 @@ class Cluster(ModelFields):
         for field_id in self.item_analysis:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
+                if isinstance(input_data_field, str):
                     # parsing the items in input_data
                     separator = self.item_analysis[field_id].get(
                         'separator', ' ')
                     regexp = self.item_analysis[field_id].get(
                         'separator_regexp')
                     if regexp is None:
-                        regexp = ur'%s' % re.escape(separator)
+                        regexp = r'%s' % re.escape(separator)
                     terms = parse_items(input_data_field, regexp)
                     unique_terms[field_id] = get_unique_terms(
                         terms, {},
@@ -492,7 +492,7 @@ class Cluster(ModelFields):
         features = []
         for field_id in field_ids:
             value = centroid.center[field_id]
-            if isinstance(value, basestring) and encode:
+            if isinstance(value, str) and encode:
                 value = value.encode('utf-8')
             features.append(value)
         return features
@@ -510,9 +510,9 @@ class Cluster(ModelFields):
         """Prints the line Global: 100% (<total> instances)
 
          """
-        output = u""
+        output = ""
         if self.cluster_global:
-            output += (u"    %s: 100%% (%d instances)\n" % (
+            output += ("    %s: 100%% (%d instances)\n" % (
                 self.cluster_global.name,
                 self.cluster_global.count))
         out.write(output)
@@ -527,11 +527,11 @@ class Cluster(ModelFields):
                        "of squares)", self.within_ss),
                       ("between_ss (Between sum of squares)", self.between_ss),
                       ("ratio_ss (Ratio of sum of squares)", self.ratio_ss)]
-        output = u""
+        output = ""
 
         for metric in ss_metrics:
             if metric[1]:
-                output += (u"%s%s: %5f\n" % (INDENT, metric[0], metric[1]))
+                output += ("%s%s: %5f\n" % (INDENT, metric[0], metric[1]))
 
         out.write(output)
         out.flush()
@@ -542,11 +542,11 @@ class Cluster(ModelFields):
         """
         rows = []
         writer = None
-        field_ids = self.centroids[0].center.keys()
-        headers = [u"Centroid_name"]
-        headers.extend([u"%s" % self.fields[field_id]["name"]
+        field_ids = list(self.centroids[0].center.keys())
+        headers = ["Centroid_name"]
+        headers.extend(["%s" % self.fields[field_id]["name"]
                         for field_id in field_ids])
-        headers.extend([u"Instances"])
+        headers.extend(["Instances"])
         intercentroids = False
         header_complete = False
 
@@ -560,14 +560,14 @@ class Cluster(ModelFields):
             if len(self.centroids) > 1:
                 for measure, result in self.centroids_distance(centroid):
                     if not intercentroids:
-                        headers.append(u"%s intercentroid distance" % \
+                        headers.append("%s intercentroid distance" % \
                             measure.title())
                     row.append(result)
                 intercentroids = True
-            for measure, result in centroid.distance.items():
+            for measure, result in list(centroid.distance.items()):
                 if measure in CSV_STATISTICS:
                     if not header_complete:
-                        headers.append(u"Distance %s" %
+                        headers.append("Distance %s" %
                                        measure.lower().replace("_", " "))
                     row.append(result)
             if not header_complete:
@@ -576,14 +576,14 @@ class Cluster(ModelFields):
             rows.append(row)
 
         if self.cluster_global:
-            row = [u"%s" % self.cluster_global.name]
+            row = ["%s" % self.cluster_global.name]
             row.extend(self.centroid_features(self.cluster_global, field_ids,
                                               encode=False))
             row.append(self.cluster_global.count)
             if len(self.centroids) > 1:
                 for measure, result in self.cluster_global_distance():
                     row.append(result)
-            for measure, result in self.cluster_global.distance.items():
+            for measure, result in list(self.cluster_global.distance.items()):
                 if measure in CSV_STATISTICS:
                     row.append(result)
             # header is already in rows then insert cluster_global after it
@@ -601,51 +601,51 @@ class Cluster(ModelFields):
         report_header = ''
         if self.is_g_means:
             report_header = \
-                u'G-means Cluster (critical_value=%d)' % self.critical_value
+                'G-means Cluster (critical_value=%d)' % self.critical_value
         else:
-            report_header = u'K-means Cluster (k=%d)' % self.k
+            report_header = 'K-means Cluster (k=%d)' % self.k
 
         out.write(report_header + ' with %d centroids\n\n' %
                   len(self.centroids))
 
-        out.write(u"Data distribution:\n")
+        out.write("Data distribution:\n")
         # "Global" is set as first entry
         self.print_global_distribution(out=out)
         print_distribution(self.get_data_distribution(), out=out)
-        out.write(u"\n")
+        out.write("\n")
         centroids_list = [self.cluster_global] if self.cluster_global else []
         centroids_list.extend(sorted(self.centroids, key=lambda x: x.name))
 
-        out.write(u"Cluster metrics:\n")
+        out.write("Cluster metrics:\n")
         self.print_ss_metrics(out=out)
-        out.write(u"\n")
+        out.write("\n")
 
 
-        out.write(u"Centroids:\n")
+        out.write("Centroids:\n")
         for centroid in centroids_list:
-            out.write(utf8(u"\n%s%s: " % (INDENT, centroid.name)))
+            out.write(utf8("\n%s%s: " % (INDENT, centroid.name)))
             connector = ""
-            for field_id, value in centroid.center.items():
-                if isinstance(value, basestring):
-                    value = u"\"%s\"" % value
-                out.write(utf8(u"%s%s: %s" % (connector,
+            for field_id, value in list(centroid.center.items()):
+                if isinstance(value, str):
+                    value = "\"%s\"" % value
+                out.write(utf8("%s%s: %s" % (connector,
                                               self.fields[field_id]['name'],
                                               value)))
                 connector = ", "
-        out.write(u"\n\n")
+        out.write("\n\n")
 
-        out.write(u"Distance distribution:\n\n")
+        out.write("Distance distribution:\n\n")
         for centroid in centroids_list:
             centroid.print_statistics(out=out)
-        out.write(u"\n")
+        out.write("\n")
 
         if len(self.centroids) > 1:
-            out.write(u"Intercentroid distance:\n\n")
+            out.write("Intercentroid distance:\n\n")
             centroids_list = (centroids_list[1:] if self.cluster_global else
                               centroids_list)
             for centroid in centroids_list:
-                out.write(utf8(u"%sTo centroid: %s\n" % (INDENT,
+                out.write(utf8("%sTo centroid: %s\n" % (INDENT,
                                                          centroid.name)))
                 for measure, result in self.centroids_distance(centroid):
-                    out.write(u"%s%s: %s\n" % (INDENT * 2, measure, result))
-                out.write(u"\n")
+                    out.write("%s%s: %s\n" % (INDENT * 2, measure, result))
+                out.write("\n")

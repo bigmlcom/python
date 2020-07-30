@@ -21,7 +21,7 @@ def index(alist, value):
 
 def one_hot(vector, possible_values):
     idxs = list(enumerate(index(possible_values, v) for v in vector))
-    valid_pairs = filter(lambda x: x[1] is not None, idxs)
+    valid_pairs = [x for x in idxs if x[1] is not None]
     outvec = np.zeros((len(idxs), len(possible_values)), dtype=np.float32)
     for v in valid_pairs:
         outvec[v[0], v[1]] = 1

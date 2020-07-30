@@ -19,13 +19,13 @@
 """ Creating multimodel predictions
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as compare_pred
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as compare_pred
 
 class TestMultimodelPrediction(object):
 
@@ -33,13 +33,13 @@ class TestMultimodelPrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -63,11 +63,11 @@ class TestMultimodelPrediction(object):
                 | data             | time_1  | time_2 | time_3 | params                         |  tag  |  data_input    | prediction  |
                 | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  {"petal width": 0.5}     | Iris-setosa |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}', 'mytag', '{"petal width": 0.5}', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -106,11 +106,11 @@ class TestMultimodelPrediction(object):
                 | data             | time_1  | time_2 | time_3 | params             |  tag  |  data_inputs                                | predictions  |
                 | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  [{"petal width": 0.5}, {"petal length": 6, "petal width": 2}] | ["Iris-setosa", "Iris-virginica"] |
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}', 'mytag', '[{"petal width": 0.5}, {"petal length": 6, "petal width": 2}]', '["Iris-setosa", "Iris-virginica"]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

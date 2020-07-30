@@ -81,30 +81,30 @@ class Predicate(object):
         if label is not None:
             name = fields[self.field][label]
         else:
-            name = u""
+            name = ""
         full_term = self.is_full_term(fields)
-        relation_missing = u" or missing" if missing else u""
+        relation_missing = " or missing" if missing else ""
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
                     (self.operator == '<=' and self.value == 0)):
-                relation_literal = (u'is not equal to' if full_term
-                                    else u'does not contain')
+                relation_literal = ('is not equal to' if full_term
+                                    else 'does not contain')
             else:
-                relation_literal = u'is equal to' if full_term else u'contains'
+                relation_literal = 'is equal to' if full_term else 'contains'
                 if not full_term:
                     if self.operator != '>' or self.value != 0:
                         relation_suffix = (RELATIONS[self.operator] %
                                            (self.value,
                                             plural('time', self.value)))
-            return u"%s %s %s %s%s" % (name, relation_literal,
+            return "%s %s %s %s%s" % (name, relation_literal,
                                        self.term, relation_suffix,
                                        relation_missing)
         if self.value is None:
-            return u"%s %s" % (name,
-                               u"is missing" if self.operator == '='
-                               else u"is not missing")
-        return u"%s %s %s%s" % (name,
+            return "%s %s" % (name,
+                               "is missing" if self.operator == '='
+                               else "is not missing")
+        return "%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,
                                 relation_missing)
@@ -123,24 +123,24 @@ class Predicate(object):
             if fields[self.field]['optype'] == 'text':
                 options = fields[self.field]['term_analysis']
                 case_insensitive = not options.get('case_sensitive', False)
-                case_insensitive = u'true' if case_insensitive else u'false'
+                case_insensitive = 'true' if case_insensitive else 'false'
                 language = options.get('language')
-                language = u"" if language is None else u" %s" % language
-                return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
+                language = "" if language is None else " %s" % language
+                return "(%s (occurrences (f %s) %s %s%s) %s)" % (
                     self.operator, self.field, self.term,
                     case_insensitive, language, self.value)
             elif fields[self.field]['optype'] == 'items':
-                return u"(%s (if (contains-items? %s %s) 1 0) %s)" % (
+                return "(%s (if (contains-items? %s %s) 1 0) %s)" % (
                     self.operator, self.field, self.term,
                     self.value)
         if self.value is None:
-            negation = u"" if self.operator == "=" else u"not "
-            return u"(%s missing? %s)" % (negation, self.field)
-        rule = u"(%s (f %s) %s)" % (self.operator,
+            negation = "" if self.operator == "=" else "not "
+            return "(%s missing? %s)" % (negation, self.field)
+        rule = "(%s (f %s) %s)" % (self.operator,
                                     self.field,
                                     self.value)
         if self.missing:
-            rule = u"(or (missing? %s) %s)" % (self.field, rule)
+            rule = "(or (missing? %s) %s)" % (self.field, rule)
         return rule
 
     def apply(self, input_data, fields):

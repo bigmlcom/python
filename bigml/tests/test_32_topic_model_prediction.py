@@ -19,11 +19,11 @@
 """ Creating a local Topic distribution from Topic Model
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_lda_steps as topic_create
-import compute_lda_prediction_steps as lda_predict
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_lda_steps as topic_create
+from . import compute_lda_prediction_steps as lda_predict
 
 
 # This model is from the bigmlcom/streaming-lda; the associated test is
@@ -42,7 +42,7 @@ DUMMY_MODEL = {
                                    [0, 1, 2, 0],
                                    [1, 2, 0, 0],
                                    [0, 0, 2, 0]],
-        "termset": [u"cycling", u"playing", u"shouldn't", u"uńąnimous court"],
+        "termset": ["cycling", "playing", "shouldn't", "uńąnimous court"],
         "options": {},
         "topics": [{"name": "Topic 1",
                     "id": "000000",
@@ -82,13 +82,13 @@ class TestTopicModel(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -101,14 +101,14 @@ class TestTopicModel(object):
                 | model | text            | expected_distribution  |
                 | {...} | "hello, world!" | [0.5, 0.3, 0.2]        |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             # This example is a replication of a test in bigmlcom/streaming-lda
             [
                 DUMMY_MODEL,
-                {"TEST TEXT": u"uńąnimous court 'UŃĄNIMOUS COURT' "
-                 u"`play``the plays PLAYing SHOULDN'T CYCLE "
-                 u"cycling shouldn't uńąnimous or court's"},
+                {"TEST TEXT": "uńąnimous court 'UŃĄNIMOUS COURT' "
+                 "`play``the plays PLAYing SHOULDN'T CYCLE "
+                 "cycling shouldn't uńąnimous or court's"},
                     [
                       {"name": 'Topic 1', "probability": 0.1647366},
                       {"name": 'Topic 2', "probability": 0.1885310},
@@ -119,7 +119,7 @@ class TestTopicModel(object):
         ]
 
         for ex in examples:
-            print "\nTesting with:\n", ex[1]
+            print("\nTesting with:\n", ex[1])
             lda_predict.i_make_a_prediction(self, ex[0], ex[1], ex[2])
 
     def test_scenario2(self):
@@ -139,11 +139,11 @@ class TestTopicModel(object):
                 | data             | time_1  | time_2 | time_3 | time_4 | topic_model_name | params
                 | ../data/spam.csv | 100      | 100     | 100     | 100 | my new topic model name | '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}'
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/spam.csv', '100', '100', '100', '100', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[6])

@@ -20,7 +20,7 @@ import json
 import os
 
 from nose.tools import eq_, assert_almost_equal
-from world import world, res_filename
+from .world import world, res_filename
 
 
 #@step(r'I create a local forecast for "(.*)"')

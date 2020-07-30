@@ -37,9 +37,9 @@ from bigml_chronos import chronos
 LOGGER = logging.getLogger('BigML')
 
 DATE_FNS = {
-    "day-of-month": lambda (x): x.day,
-    "day-of-week": lambda (x): x.weekday() + 1,
-    "millisecond": lambda(x): x.microsecond / 1000}
+    "day-of-month": lambda x: x.day,
+    "day-of-week": lambda x: x.weekday() + 1,
+    "millisecond": lambda x: x.microsecond / 1000}
 
 
 def parse_terms(text, case_sensitive=True):
@@ -48,7 +48,7 @@ def parse_terms(text, case_sensitive=True):
     """
     if text is None:
         return []
-    expression = ur'(\b|_)([^\b_\s]+?)(\b|_)'
+    expression = r'(\b|_)([^\b_\s]+?)(\b|_)'
     pattern = re.compile(expression)
     return [match[1] if case_sensitive else match[1].lower()
             for match in re.findall(pattern, text)]
@@ -76,8 +76,8 @@ def check_model_fields(model):
         input_fields = model.get("input_fields")
         # models only need model_fields to work. The rest of resources will
         # need all fields to work
-        model_fields = model.get(inner_key, {}).get( \
-            'model_fields', {}).keys()
+        model_fields = list(model.get(inner_key, {}).get( \
+            'model_fields', {}).keys())
         # fusions don't have input fields
         if input_fields is None and inner_key != "fusion":
             return False
@@ -93,7 +93,7 @@ def check_model_fields(model):
         else:
             if fields is None:
                 return False
-            return all([field_id in fields.keys() \
+            return all([field_id in list(fields.keys()) \
                 for field_id in model_fields])
     return False
 
@@ -128,7 +128,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     """
 
     extend_forms = {}
-    for term, forms in term_forms.items():
+    for term, forms in list(term_forms.items()):
         for form in forms:
             extend_forms[form] = term
         extend_forms[term] = term
@@ -143,7 +143,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
             if term not in terms_set:
                 terms_set[term] = 0
             terms_set[term] += 1
-    return terms_set.items()
+    return list(terms_set.items())
 
 
 def get_datetime_subfields(fields):
@@ -152,12 +152,12 @@ def get_datetime_subfields(fields):
 
     """
     subfields = {}
-    for fid, finfo in fields.items():
+    for fid, finfo in list(fields.items()):
         if finfo.get('parent_optype', False) == 'datetime':
             parent_id = finfo["parent_ids"][0]
             parent_name = fields[parent_id]["name"]
             subfield = {fid: finfo["datatype"]}
-            if parent_id in subfields.keys():
+            if parent_id in list(subfields.keys()):
                 subfields[parent_id].update(subfield)
             else:
                 subfields[parent_id] = subfield
@@ -174,7 +174,7 @@ def expand_date(date, subfields, timeformats):
         parsed_date = chronos.parse(date, format_names=timeformats)
     except ValueError:
         return {}
-    for fid, ftype in subfields.items():
+    for fid, ftype in list(subfields.items()):
         date_fn = DATE_FNS.get(ftype)
         if date_fn is not None:
             expanded.update({fid: date_fn(parsed_date)})
@@ -189,7 +189,7 @@ def get_datetime_formats(fields):
 
     """
     timeformats = {}
-    for f_id, finfo in fields.items():
+    for f_id, finfo in list(fields.items()):
         if finfo.get('optype', False) == 'datetime':
             timeformats[f_id] = finfo.get('time_formats', {})
     return timeformats
@@ -200,7 +200,7 @@ def add_expanded_dates(input_data, datetime_fields):
     provided by the user (only if the user didn't specify it)
 
     """
-    for index, value in datetime_fields.items():
+    for index, value in list(datetime_fields.items()):
         if index not in input_data:
             input_data[index] = value
     return input_data
@@ -226,15 +226,15 @@ class ModelFields(object):
                     self.input_fields = [field_id for field_id, field in \
                         sorted( \
                         [(field_id, field) for field_id,
-                         field in self.fields.items()],
-                        key=lambda(x): x[1].get("column_number")) \
+                         field in list(self.fields.items())],
+                        key=lambda x: x[1].get("column_number")) \
                         if not self.objective_id or \
                         field_id != self.objective_id]
                 self.model_fields = {}
                 self.datetime_parents = []
                 self.model_fields.update(
                     dict([(field_id, field) for field_id, field in \
-                    self.fields.items() if field_id in self.input_fields and \
+                    list(self.fields.items()) if field_id in self.input_fields and \
                     self.fields[field_id].get("preferred", True)]))
                 # if any of the model fields is a generated datetime field
                 # we need to add the parent datetime field
@@ -265,7 +265,7 @@ class ModelFields(object):
         """Adds the terms information of text and items fields
 
         """
-        for field_id, field in self.fields.items():
+        for field_id, field in list(self.fields.items()):
             if field['optype'] == 'text':
                 self.term_forms[field_id] = {}
                 self.term_forms[field_id].update(
@@ -333,8 +333,8 @@ class ModelFields(object):
         """Transforms to unicode and cleans missing tokens
 
         """
-        if isinstance(value, basestring) and not isinstance(value, unicode):
-            value = unicode(value, "utf-8")
+        if isinstance(value, str) and not isinstance(value, str):
+            value = str(value, "utf-8")
         return None if value in self.missing_tokens else value
 
     def expand_datetime_fields(self, input_data):
@@ -345,7 +345,7 @@ class ModelFields(object):
         expanded = {}
         timeformats = get_datetime_formats(self.fields)
         subfields = get_datetime_subfields(self.fields)
-        for f_id, value in input_data.items():
+        for f_id, value in list(input_data.items()):
             if f_id in subfields:
                 formats = timeformats.get(f_id, [])
                 expanded.update(expand_date(value, subfields[f_id], formats))
@@ -356,7 +356,7 @@ class ModelFields(object):
         datetime fields used in the model
         """
         subfields = get_datetime_subfields(self.fields)
-        for f_id in subfields.keys():
+        for f_id in list(subfields.keys()):
             self.model_fields[f_id] = self.fields[f_id]
             self.datetime_parents.append(f_id)
         return self.model_fields
@@ -383,11 +383,11 @@ class ModelFields(object):
         tmp_input.update(input_data)
         if isinstance(tmp_input, dict):
             # remove all missing values
-            for key, value in tmp_input.items():
+            for key, value in list(tmp_input.items()):
                 value = self.normalize(value)
                 if value is None:
                     del tmp_input[key]
-            for key, value in tmp_input.items():
+            for key, value in list(tmp_input.items()):
                 if key not in self.fields:
                     key = self.inverted_fields.get(key, key)
                 # only the fields that are listed in input_fields and appear
@@ -418,7 +418,7 @@ class ModelFields(object):
         for field_id in self.term_forms:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
+                if isinstance(input_data_field, str):
                     case_sensitive = self.term_analysis[field_id].get(
                         'case_sensitive', True)
                     token_mode = self.term_analysis[field_id].get(
@@ -448,14 +448,14 @@ class ModelFields(object):
         for field_id in self.item_analysis:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
-                if isinstance(input_data_field, basestring):
+                if isinstance(input_data_field, str):
                     # parsing the items in input_data
                     separator = self.item_analysis[field_id].get(
                         'separator', ' ')
                     regexp = self.item_analysis[field_id].get(
                         'separator_regexp')
                     if regexp is None:
-                        regexp = ur'%s' % re.escape(separator)
+                        regexp = r'%s' % re.escape(separator)
                     terms = parse_items(input_data_field, regexp)
                     unique_terms[field_id] = get_unique_terms(
                         terms, {},

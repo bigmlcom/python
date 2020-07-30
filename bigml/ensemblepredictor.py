@@ -178,7 +178,7 @@ class EnsemblePredictor(object):
            - an ensemble id
         """
         # the string can be a path to a JSON file
-        if isinstance(ensemble, basestring):
+        if isinstance(ensemble, str):
             try:
                 with open(ensemble) as ensemble_file:
                     ensemble = json.load(ensemble_file)
@@ -260,9 +260,9 @@ class EnsemblePredictor(object):
         if self.importance:
             field_importance = self.importance
             field_names = {field_id: {'name': self.fields[field_id]["name"]} \
-                           for field_id in field_importance.keys()}
+                           for field_id in list(field_importance.keys())}
             return [list(importance) for importance in \
-                sorted(field_importance.items(), key=lambda x: x[1],
+                sorted(list(field_importance.items()), key=lambda x: x[1],
                        reverse=True)], field_names
 
         if (self.distributions is not None and
@@ -296,7 +296,7 @@ class EnsemblePredictor(object):
         for field_id in field_importance:
             field_importance[field_id] /= number_of_models
         return [list(importance) for importance in \
-            sorted(field_importance.items(), key=lambda x: x[1],
+            sorted(list(field_importance.items()), key=lambda x: x[1],
                    reverse=True)], field_names
 
     def print_importance(self, out=sys.stdout):
@@ -344,19 +344,19 @@ class EnsemblePredictor(object):
         distribution = self.get_data_distribution("training")
 
         if distribution:
-            out.write(u"Data distribution:\n")
+            out.write("Data distribution:\n")
             print_distribution(distribution, out=out)
-            out.write(u"\n\n")
+            out.write("\n\n")
 
         if not self.boosting:
             predictions = self.get_data_distribution("predictions")
 
             if predictions:
-                out.write(u"Predicted distribution:\n")
+                out.write("Predicted distribution:\n")
                 print_distribution(predictions, out=out)
-                out.write(u"\n\n")
+                out.write("\n\n")
 
-        out.write(u"Field importance:\n")
+        out.write("Field importance:\n")
         self.print_importance(out=out)
         out.flush()
 

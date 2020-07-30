@@ -19,9 +19,9 @@
 """ Testing projects REST api calls
 
 """
-from world import world, setup_module, teardown_module
-import create_project_steps as create
-import delete_project_steps as delete
+from .world import world, setup_module, teardown_module
+from . import create_project_steps as create
+from . import delete_project_steps as delete
 
 
 class Test_projects(object):
@@ -30,13 +30,13 @@ class Test_projects(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         name = "my project"

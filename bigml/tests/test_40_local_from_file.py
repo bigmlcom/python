@@ -19,18 +19,18 @@
 """ Creating tests for building local models from files
 
 """
-from world import world, setup_module, teardown_module
-import create_model_steps as model_create
-import create_linear_steps as linear_create
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_ensemble_steps as ensemble_create
-import create_anomaly_steps as anomaly_create
-import create_time_series_steps as timeseries_create
-import create_association_steps as association_create
-import create_cluster_steps as cluster_create
-import create_lda_steps as topic_create
-import compare_predictions_steps as prediction_compare
+from .world import world, setup_module, teardown_module
+from . import create_model_steps as model_create
+from . import create_linear_steps as linear_create
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_time_series_steps as timeseries_create
+from . import create_association_steps as association_create
+from . import create_cluster_steps as cluster_create
+from . import create_lda_steps as topic_create
+from . import compare_predictions_steps as prediction_compare
 from bigml.util import PY3
 
 class TestLocalFromFile(object):
@@ -39,13 +39,13 @@ class TestLocalFromFile(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -63,11 +63,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | pmml | exported_file
                 | ../data/iris.csv | 10      | 10     | 10 | False | ./tmp/model.json
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', False, './tmp/model.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -95,11 +95,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/ensemble.json
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '50', './tmp/ensemble.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -127,11 +127,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/logistic.json
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '50', './tmp/logistic.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -159,11 +159,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/deepnet.json
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '500', './tmp/deepnet.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -191,11 +191,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/cluster.json
         """
-        print self.test_scenario5.__doc__
+        print(self.test_scenario5.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '500', './tmp/cluster.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -223,11 +223,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/anomaly.json
         """
-        print self.test_scenario6.__doc__
+        print(self.test_scenario6.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '500', './tmp/anomaly.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -254,11 +254,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/association.json
         """
-        print self.test_scenario7.__doc__
+        print(self.test_scenario7.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '500', './tmp/association.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -285,11 +285,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/topic_model.json
         """
-        print self.test_scenario8.__doc__
+        print(self.test_scenario8.__doc__)
         examples = [
             ['data/spam.csv', '10', '10', '500', './tmp/topic_model.json', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[5])
@@ -318,11 +318,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/time_series.json
         """
-        print self.test_scenario9.__doc__
+        print(self.test_scenario9.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '500', './tmp/time_series.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -357,11 +357,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file | params | tag
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/fusion.json
         """
-        print self.test_scenario10.__doc__
+        print(self.test_scenario10.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '50', './tmp/fusion.json', 'my_fusion_tag']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             tag = "%s_%s" % (example[5], PY3)
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
@@ -398,11 +398,11 @@ class TestLocalFromFile(object):
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/grades.csv | 10      | 10     | 50 | ./tmp/linear.json
         """
-        print self.test_scenario11.__doc__
+        print(self.test_scenario11.__doc__)
         examples = [
             ['data/grades.csv', '20', '20', '50', './tmp/linear.json']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

@@ -19,10 +19,10 @@
 """ Downloading dataset
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
 
 
 class TestDownload(object):
@@ -31,13 +31,13 @@ class TestDownload(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -54,11 +54,11 @@ class TestDownload(object):
                 | data             | time_1  | time_2 | local_file |
                 | ../data/iris.csv | 30      | 30     | ./tmp/exported_iris.csv |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', 'tmp/exported_iris.csv']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -84,12 +84,12 @@ class TestDownload(object):
                 | data/iris_sp_chars.csv | 10      | 10     | 10     | tmp/model/iris_sp_chars.pmml   | true
 
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', 'tmp/model/iris.json', False],
             ['data/iris_sp_chars.csv', '30', '30', '30', 'tmp/model/iris_sp_chars.pmml', True]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

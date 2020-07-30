@@ -70,7 +70,7 @@ def extract_id(model, api):
 
     """
     # the string can be a path to a JSON file
-    if isinstance(model, basestring):
+    if isinstance(model, str):
         try:
             with open(model) as model_file:
                 model = json.load(model_file)
@@ -118,7 +118,7 @@ class SupervisedModel(BaseModel):
         kwargs = {"api": self.api}
         local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)
         self.__class__.__bases__ = local_model.__class__.__bases__
-        for attr, value in local_model.__dict__.items():
+        for attr, value in list(local_model.__dict__.items()):
             setattr(self, attr, value)
         self.local_model = local_model
 

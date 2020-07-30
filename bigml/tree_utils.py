@@ -25,10 +25,11 @@ import re
 import locale
 import sys
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from unidecode import unidecode
 
 from bigml.util import split
+from functools import reduce
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 TM_TOKENS = 'tokens_only'
@@ -41,7 +42,7 @@ NUMERIC_VALUE_FIELDS = ["text", "items", "numeric"]
 
 MAX_ARGS_LENGTH = 10
 
-INDENT = u'    '
+INDENT = '    '
 
 # Map operator str to its corresponding python operator
 PYTHON_OPERATOR = {
@@ -163,7 +164,7 @@ def ruby_string(text):
 
     """
     out = python_string(text)
-    if isinstance(text, unicode):
+    if isinstance(text, str):
         return out[1:]
     return out
 
@@ -173,11 +174,11 @@ def sort_fields(fields):
 
     """
     fathers = [(key, val) for key, val in
-               sorted(fields.items(),
+               sorted(list(fields.items()),
                       key=lambda k: k[1]['column_number'])
                if not 'auto_generated' in val]
     children = [(key, val) for key, val in
-                sorted(fields.items(),
+                sorted(list(fields.items()),
                        key=lambda k: k[1]['column_number'])
                 if 'auto_generated' in val]
     children.reverse()
@@ -300,12 +301,12 @@ def docstring_comment(model):
     """Returns the docstring describing the model.
 
     """
-    docstring = (u"Predictor for %s from %s" % (
+    docstring = ("Predictor for %s from %s" % (
         model.tree.fields[model.tree.objective_id]['name'],
         model.resource_id))
-    model.description = (unicode( \
+    model.description = (str( \
         model.description).strip() \
-        or u'Predictive model by BigML - Machine Learning Made Easy')
+        or 'Predictive model by BigML - Machine Learning Made Easy')
     return docstring
 
 
@@ -318,7 +319,7 @@ def java_class_definition(model):
     if not 'CamelCase' in field_obj:
         field_obj['CamelCase'] = to_camel_java(field_obj['name'], False)
     output = \
-u"""
+"""
 /**
 *  %s
 *  %s
@@ -340,7 +341,7 @@ def signature_name_vb(text, model):
     obj_field_for_name = obj_field_for_name.title()
     header = ""
     if model:
-        header = u"""
+        header = """
 '
 ' Predictor for %s from %s
 ' %s
@@ -362,7 +363,7 @@ def is_url(value):
     """Returns True if value is a valid URL.
 
     """
-    url = isinstance(value, basestring) and urlparse(value)
+    url = isinstance(value, str) and urlparse(value)
     return url and url.scheme and url.netloc and url.path
 
 
@@ -372,9 +373,9 @@ def print_distribution(distribution, out=sys.stdout):
     """
     total = reduce(lambda x, y: x + y,
                    [group[1] for group in distribution])
-    output = u""
+    output = ""
     for group in distribution:
-        output += u"    %s: %.2f%% (%d instance%s)\n" % ( \
+        output += "    %s: %.2f%% (%d instance%s)\n" % ( \
             group[0],
             round(group[1] * 1.0 / total, 4) * 100,
             group[1],
@@ -430,6 +431,6 @@ def tableau_string(text):
 
     """
     value = repr(text)
-    if isinstance(text, unicode):
+    if isinstance(text, str):
         return value[1:]
     return value

@@ -29,7 +29,7 @@ try:
 except ImportError:
     import json
 
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from bigml.api_handlers.resourcehandler import ResourceHandler
 from bigml.api_handlers.resourcehandler import check_resource_type, \
@@ -109,7 +109,7 @@ class ScriptHandler(ResourceHandler):
                                raise_on_error=True, api=self)
                 create_args.update({
                     "origin": script_id})
-        elif isinstance(source_code, basestring):
+        elif isinstance(source_code, str):
             if is_url(source_code):
                 script_args = retrieve_script_args(source_code)
                 source_code = script_args.get("source_code")

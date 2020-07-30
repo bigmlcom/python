@@ -16,7 +16,7 @@
 # under the License.
 
 from nose.tools import eq_
-from world import world
+from .world import world
 from bigml.api import HTTP_OK
 
 #@step(r'I get the test "(.*)"')

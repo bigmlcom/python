@@ -70,7 +70,7 @@ UPDATABLE_HEADERS = {"field name": "name",
                      "field type": "optype",
                      "preferred": "preferred"}
 
-ITEM_SINGULAR = {u"categories": u"category"}
+ITEM_SINGULAR = {"categories": "category"}
 
 
 def get_fields_structure(resource, errors=False):
@@ -123,14 +123,14 @@ def attribute_summary(attribute_value, item_type, limit=None):
     """
     if attribute_value is None:
         return None
-    items = [u"%s (%s)" % (item, instances) for
+    items = ["%s (%s)" % (item, instances) for
              item, instances in attribute_value]
     items_length = len(items)
     if limit is None or limit > items_length:
         limit = items_length
-    return u"%s %s: %s" % (items_length, type_singular(item_type,
+    return "%s %s: %s" % (items_length, type_singular(item_type,
                                                        items_length == 1),
-                           u", ".join(items[0: limit]))
+                           ", ".join(items[0: limit]))
 
 def type_singular(item_type, singular=False):
     """Singularizes item types if needed
@@ -186,7 +186,7 @@ class Fields(object):
         self.missing_tokens = missing_tokens
         self.fields_columns = sorted(self.fields_by_column_number.keys())
         # Ids of the fields to be included
-        self.filtered_fields = (self.fields.keys() if include is None
+        self.filtered_fields = (list(self.fields.keys()) if include is None
                                 else include)
         # To be updated in update_objective_field
         self.row_ids = None
@@ -212,7 +212,7 @@ class Fields(object):
         # If no objective field, select the last column, else store its column
         if objective_field is None:
             self.objective_field = self.fields_columns[-1]
-        elif isinstance(objective_field, basestring):
+        elif isinstance(objective_field, str):
             try:
                 self.objective_field = self.field_column_number( \
                     objective_field)
@@ -232,7 +232,7 @@ class Fields(object):
         if headers is None:
             # The row is supposed to contain the fields sorted by column number
             self.row_ids = [item[0] for item in
-                            sorted(self.fields.items(),
+                            sorted(list(self.fields.items()),
                                    key=lambda x: x[1]['column_number'])
                             if objective_field_present or
                             item[1]['column_number'] != self.objective_field]
@@ -256,7 +256,7 @@ class Fields(object):
 
         """
 
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             try:
                 id = self.fields_by_name[key]
             except KeyError:
@@ -274,7 +274,7 @@ class Fields(object):
         """Returns a field name.
 
         """
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             try:
                 name = self.fields[key]['name']
             except KeyError:
@@ -320,7 +320,7 @@ class Fields(object):
             else:
                 objective_field = self.objective_field
         # If objective fields is a name or an id, retrive column number
-        if isinstance(objective_field, basestring):
+        if isinstance(objective_field, str):
             objective_field = self.field_column_number(objective_field)
 
         # Try to guess if objective field is in the data by using headers or
@@ -347,7 +347,7 @@ class Fields(object):
 
         """
         for field in [(val['name'], val['optype'], val['column_number'])
-                      for _, val in sorted(self.fields.items(),
+                      for _, val in sorted(list(self.fields.items()),
                                            key=lambda k:
                                            k[1]['column_number'])]:
             out.write('[%-32s: %-16s: %-8s]\n' % (field[0],
@@ -359,7 +359,7 @@ class Fields(object):
            it isn't set at all.
 
         """
-        return {key: field for key, field in self.fields.iteritems()
+        return {key: field for key, field in self.fields.items()
                 if ('preferred' not in field) or field['preferred']}
 
     def validate_input_data(self, input_data, out=sys.stdout):
@@ -388,8 +388,8 @@ class Fields(object):
         """Transforms to unicode and cleans missing tokens
 
         """
-        if not isinstance(value, unicode):
-            value = unicode(value, "utf-8")
+        if not isinstance(value, str):
+            value = str(value, "utf-8")
         return None if value in self.missing_tokens else value
 
     def to_input_data(self, row):
@@ -406,7 +406,7 @@ class Fields(object):
 
         """
         summaries = [(field_id, field.get('summary', {}))
-                     for field_id, field in self.fields.items()]
+                     for field_id, field in list(self.fields.items())]
         if len(summaries) == 0:
             raise ValueError("The structure has not enough information "
                              "to extract the fields containing missing values."
@@ -461,7 +461,7 @@ class Fields(object):
             else:
                 field_summary.append(json.dumps(field.get('preferred')))
                 field_summary.append(field_summary_value.get("missing_count"))
-                if self.field_errors and field_id in self.field_errors.keys():
+                if self.field_errors and field_id in list(self.field_errors.keys()):
                     errors = self.field_errors.get(field_id)
                     field_summary.append(errors.get("total"))
                 else:
@@ -474,22 +474,22 @@ class Fields(object):
                 elif field['optype'] == 'categorical':
                     categories = field_summary_value.get("categories")
                     field_summary.append( \
-                        attribute_summary(categories, u"categorìes",
+                        attribute_summary(categories, "categorìes",
                                           limit=LIST_LIMIT))
                 elif field['optype'] == "text":
                     terms = field_summary_value.get("tag_cloud")
                     field_summary.append( \
-                        attribute_summary(terms, u"terms",
+                        attribute_summary(terms, "terms",
                                           limit=LIST_LIMIT))
                 elif field['optype'] == "items":
                     items = field_summary_value.get("items")
                     field_summary.append( \
-                        attribute_summary(items, u"items", limit=LIST_LIMIT))
+                        attribute_summary(items, "items", limit=LIST_LIMIT))
                 else:
                     field_summary.append("")
-                if self.field_errors and field_id in self.field_errors.keys():
+                if self.field_errors and field_id in list(self.field_errors.keys()):
                     field_summary.append( \
-                        attribute_summary(errors.get("sample"), u"errors",
+                        attribute_summary(errors.get("sample"), "errors",
                                           limit=None))
                 else:
                     field_summary.append("")
@@ -523,10 +523,10 @@ class Fields(object):
         if "field ID" in attributes[0] or "field column" in attributes[0]:
             # headers are used
             for index in range(1, len(attributes)):
-                new_attributes = dict(zip(attributes[0], attributes[index]))
+                new_attributes = dict(list(zip(attributes[0], attributes[index])))
                 if new_attributes.get("field ID"):
                     field_id = new_attributes.get("field ID")
-                    if not field_id in self.fields.keys():
+                    if not field_id in list(self.fields.keys()):
                         raise ValueError("Field ID %s not found"
                                          " in this resource" % field_id)
                     del new_attributes["field ID"]
@@ -541,9 +541,9 @@ class Fields(object):
                                          " in this resource" % field_column)
                     field_id = self.field_id(field_column)
                     del new_attributes["field column"]
-                new_attributes_headers = new_attributes.keys()
+                new_attributes_headers = list(new_attributes.keys())
                 for attribute in new_attributes_headers:
-                    if not attribute in UPDATABLE_HEADERS.keys():
+                    if not attribute in list(UPDATABLE_HEADERS.keys()):
                         del new_attributes[attribute]
                     else:
                         new_attributes[UPDATABLE_HEADERS[attribute]] = \
@@ -576,7 +576,7 @@ class Fields(object):
                     field_id = field_attributes[0] if first_column_is_id else \
                         self.field_id(int(field_attributes[0]))
                     new_fields_structure[field_id] = \
-                        dict(zip(headers, field_attributes[1: 6]))
+                        dict(list(zip(headers, field_attributes[1: 6])))
             except ValueError:
                 raise ValueError("The first column should contain either the"
                                  " column or ID of the fields. Failed to find"
@@ -601,7 +601,7 @@ class Fields(object):
 
         """
         training_data = {}
-        for field_id, field in self.fields.items():
+        for field_id, field in list(self.fields.items()):
             if field.get("summary") is not None:
                 value = None
                 optype = field.get("optype")
@@ -647,11 +647,11 @@ class Fields(object):
         fields_info = update_body.get("fields")
         if self.resource_type and fields_info is not None:
             if self.resource_type == "dataset":
-                for field_id, field in fields_info.items():
+                for field_id, field in list(fields_info.items()):
                     if field.get("optype") is not None:
                         del field["optype"]
             elif self.resource_type == "source":
-                for field_id, field in fields_info.items():
+                for field_id, field in list(fields_info.items()):
                     if field.get("preferred") is not None:
                         del field["preferred"]
             update_body["fields"] = fields_info

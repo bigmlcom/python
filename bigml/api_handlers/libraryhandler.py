@@ -74,7 +74,7 @@ class LibraryHandler(ResourceHandler):
                                raise_on_error=True, api=self)
                 create_args.update({
                     "origin": library_id})
-        elif isinstance(source_code, basestring):
+        elif isinstance(source_code, str):
             try:
                 if os.path.exists(source_code):
                     with open(source_code) as code_file:

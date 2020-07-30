@@ -19,13 +19,13 @@
 """ Creating local ensemble predictions
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as compare_pred
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as compare_pred
 
 class TestEnsemblePrediction(object):
 
@@ -33,13 +33,13 @@ class TestEnsemblePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -60,11 +60,11 @@ class TestEnsemblePrediction(object):
                 | data             | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  | confidence
                 | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687 | [0.3403, 0.4150, 0.2447]
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415', '["0.3403", "0.4150", "0.2447"]' ]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -98,11 +98,11 @@ class TestEnsemblePrediction(object):
                 | data             | time_1  | time_2 |parms1 | time_3 |parms2 | time_4 |parms3| time_5 |number_of_models |field_importance
                 | ../data/iris.csv | 10      | 10     |{"input_fields": ["000000", "000001","000003", "000004"]} |20      |{"input_fields": ["000000", "000001","000002", "000004"]} | 20     |{"input_fields": ["000000", "000001","000002", "000003", "000004"]} | 20   | 3 |[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '{"input_fields": ["000000", "000001","000003", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000003", "000004"]}', '20', '3', '[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -135,11 +135,11 @@ class TestEnsemblePrediction(object):
                 | data             | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  | confidence
                 | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -171,11 +171,11 @@ class TestEnsemblePrediction(object):
                 | data             | time_1  | time_2 |parms1 | time_3 |parms2 | time_4 |parms3| time_5 |number_of_models |field_importance
                 | ../data/iris.csv | 10      | 10     |{"input_fields": ["000000", "000001","000003", "000004"]} |20      |{"input_fields": ["000000", "000001","000002", "000004"]} | 20     |{"input_fields": ["000000", "000001","000002", "000003", "000004"]} | 20   | 3 |[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '{"input_fields": ["000000", "000001","000003", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000003", "000004"]}', '20', '3', '[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -206,11 +206,11 @@ class TestEnsemblePrediction(object):
                 | data                | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  |
                 | ../data/grades.csv | 10      | 10     | 50     | 2                | 1     | {}             | 67.5 |
         """
-        print self.test_scenario5.__doc__
+        print(self.test_scenario5.__doc__)
         examples = [
             ['data/grades.csv', '30', '30', '50', '2', '1', '{}', 69.0934]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -263,9 +263,9 @@ class TestEnsemblePrediction(object):
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
              '000002', -0.05469]]
-        print self.test_scenario6.__doc__
+        print(self.test_scenario6.__doc__)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

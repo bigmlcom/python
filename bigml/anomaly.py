@@ -126,7 +126,7 @@ class Anomaly(ModelFields):
             else:
                 raise Exception("Cannot create the Anomaly instance. Could not"
                                 " find the 'top_anomalies' key in the"
-                                " resource:\n\n%s" % anomaly['model'].keys())
+                                " resource:\n\n%s" % list(anomaly['model'].keys()))
 
     def anomaly_score(self, input_data):
         """Returns the anomaly score given by the iforest

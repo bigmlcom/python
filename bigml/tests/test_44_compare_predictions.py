@@ -19,15 +19,15 @@
 """ Comparing remote and local predictions
 
 """
-from world import world, setup_module, teardown_module, show_doc
+from .world import world, setup_module, teardown_module, show_doc
 from bigml.util import PY3
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_association_steps as association_create
-import create_cluster_steps as cluster_create
-import create_anomaly_steps as anomaly_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as prediction_compare
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_association_steps as association_create
+from . import create_cluster_steps as cluster_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as prediction_compare
 
 
 class TestComparePrediction(object):
@@ -36,13 +36,13 @@ class TestComparePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
 
     def test_scenario1(self):
@@ -75,7 +75,7 @@ class TestComparePrediction(object):
              0.50654]]
         show_doc(self.test_scenario1, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -122,7 +122,7 @@ class TestComparePrediction(object):
              0.93639]]
         show_doc(self.test_scenario1b, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -173,7 +173,7 @@ class TestComparePrediction(object):
              0.93717]]
         show_doc(self.test_scenario1c, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -222,7 +222,7 @@ class TestComparePrediction(object):
              "Cluster 6", 0.83506]]
         show_doc(self.test_scenario2, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -265,7 +265,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

@@ -17,7 +17,7 @@
 
 import time
 from datetime import datetime, timedelta
-from world import world
+from .world import world
 from nose.tools import eq_, assert_less
 from bigml.api import HTTP_NO_CONTENT, HTTP_OK, HTTP_NOT_FOUND
 

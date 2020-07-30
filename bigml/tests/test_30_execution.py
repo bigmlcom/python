@@ -19,9 +19,9 @@
 """ Creating and updating scripts
 
 """
-from world import world, setup_module, teardown_module
-import create_script_steps as script_create
-import create_execution_steps as execution_create
+from .world import world, setup_module, teardown_module
+from . import create_script_steps as script_create
+from . import create_execution_steps as execution_create
 
 class TestExecution(object):
 
@@ -29,13 +29,13 @@ class TestExecution(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -55,12 +55,12 @@ class TestExecution(object):
                 | source_code      | time_1  | time_2  | time_3  | param | param_value | result
                 | (+ 1 1)          | 10      | 10      | 10      | name  | my execution | 2
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', 2]]
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             script_create.i_create_a_script(self, example[0])
             script_create.the_script_is_finished(self, example[1])
             execution_create.i_create_an_execution(self)
@@ -89,11 +89,11 @@ class TestExecution(object):
                 | source_code      | time_1  | time_2  | time_3  | param | param_value | result
                 | (+ 1 1)          | 10      | 10      | 10      | name  | my execution | [2, 2]
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', [2, 2]]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             script_create.i_create_a_script(self, example[0])
             script_create.the_script_is_finished(self, example[1])
             script_create.i_create_a_script(self, example[0])
@@ -121,14 +121,14 @@ class TestExecution(object):
 
                 | source_code      | time_1  | time_2  | time_3  | param | param_value | result
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/one_plus_one.whizzml', '10', '10', '10', 'name', 'my execution', 2],
             ['https://gist.github.com/mmerce/49e0a69cab117b6a11fb490140326020', '10', '10', '10', 'name', 'my execution', 2]
 
 ]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             script_create.i_create_a_script_from_file_or_url(self, example[0])
             script_create.the_script_is_finished(self, example[1])
             execution_create.i_create_an_execution(self)

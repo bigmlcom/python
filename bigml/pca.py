@@ -133,7 +133,7 @@ class PCA(ModelFields):
                 if not self.input_fields:
                     self.input_fields = [ \
                         field_id for field_id, _ in
-                        sorted(self.fields.items(),
+                        sorted(list(self.fields.items()),
                                key=lambda x: x[1].get("column_number"))]
                 missing_tokens = pca_info.get("missing_tokens")
                 ModelFields.__init__(
@@ -212,8 +212,8 @@ class PCA(ModelFields):
                 result[index] = value / missing_sums[index] \
                     if missing_sums[index] > 0 else value
         if full:
-            result = dict(zip(["PC%s" % index \
-                for index in range(1, len(components) + 1)], result))
+            result = dict(list(zip(["PC%s" % index \
+                for index in range(1, len(components) + 1)], result)))
         return result
 
 

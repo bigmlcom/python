@@ -42,7 +42,7 @@ time_series.forecast({"price": {"horizon": 10}})
 import logging
 import re
 import sys
-import StringIO
+import io
 import pprint
 
 from bigml.api import FINISHED
@@ -178,7 +178,7 @@ class TimeSeries(ModelFields):
                 if not self.input_fields:
                     self.input_fields = [ \
                         field_id for field_id, _ in
-                        sorted(self.fields.items(),
+                        sorted(list(self.fields.items()),
                                key=lambda x: x[1].get("column_number"))]
                 self.all_numeric_objectives = time_series_info.get( \
                     'all_numeric_objectives')
@@ -212,7 +212,7 @@ class TimeSeries(ModelFields):
         """
         if not input_data:
             forecasts = {}
-            for field_id, value in self._forecast.items():
+            for field_id, value in list(self._forecast.items()):
                 forecasts[field_id] = []
                 for forecast in value:
                     local_forecast = {}
@@ -232,7 +232,7 @@ class TimeSeries(ModelFields):
         # filter submodels: filtering the submodels in the time-series
         # model to be used in the prediction
         filtered_submodels = {}
-        for field_id, field_input in input_data.items():
+        for field_id, field_input in list(input_data.items()):
             filter_info = field_input.get("ets_models", {})
             if not filter_info:
                 filter_info = DEFAULT_SUBMODEL
@@ -240,7 +240,7 @@ class TimeSeries(ModelFields):
                 self.ets_models[field_id], filter_info)
 
         forecasts = {}
-        for field_id, submodels in filtered_submodels.items():
+        for field_id, submodels in list(filtered_submodels.items()):
             forecasts[field_id] = compute_forecasts(submodels, \
                 input_data[field_id]["horizon"])
 
@@ -259,7 +259,7 @@ class TimeSeries(ModelFields):
         new_input = {}
         if isinstance(input_data, dict):
 
-            for key, value in input_data.items():
+            for key, value in list(input_data.items()):
                 if key not in self.fields:
                     key = self.inverted_fields.get(key, key)
                 if key in self.input_fields:
@@ -268,7 +268,7 @@ class TimeSeries(ModelFields):
                     unused_fields.append(key)
 
             # raise error if no horizon is provided
-            for key, value in input_data.items():
+            for key, value in list(input_data.items()):
                 value = self.normalize(value)
                 if not isinstance(value, dict):
                     raise ValueError( \
@@ -280,7 +280,7 @@ class TimeSeries(ModelFields):
                         "Each field in input data must contain at"
                         "least a \"horizon\" attribute.")
                 if any(key not in SUBMODEL_KEYS for key in \
-                        value.get("ets_models", {}).keys()):
+                        list(value.get("ets_models", {}).keys())):
                     raise ValueError( \
                         "Only %s allowed as keys in each fields submodel"
                         " filter." % ", ".join(SUBMODEL_KEYS))
@@ -297,14 +297,14 @@ class TimeSeries(ModelFields):
         """Generates the code in python that creates the forecasts
 
         """
-        attributes = [u"l", u"b", u"s", u"phi", u"value", u"slope"]
+        attributes = ["l", "b", "s", "phi", "value", "slope"]
         components = {}
         model_components = {}
         model_names = []
         out.write(utf8(USAGE_DOC % (self.resource_id,
                                     self.fields[self.objective_id]["name"])))
-        output = [u"COMPONENTS = \\"]
-        for field_id, models in self.ets_models.items():
+        output = ["COMPONENTS = \\"]
+        for field_id, models in list(self.ets_models.items()):
             for model in models:
                 final_state = model.get("final_state", {})
                 attrs = {}
@@ -319,12 +319,12 @@ class TimeSeries(ModelFields):
             field_name = self.fields[field_id]["name"]
             if field_name not in components:
                 components[field_name] = model_components
-        partial_output = StringIO.StringIO()
+        partial_output = io.StringIO()
         pprint.pprint(components, stream=partial_output)
         for line in partial_output.getvalue().split("\n"):
-            output.append(u"%s%s" % (INDENT, line))
+            output.append("%s%s" % (INDENT, line))
 
-        out.write(utf8(u"\n".join(output)))
+        out.write(utf8("\n".join(output)))
 
         model_names = list(set(model_names))
         if any(name in model_names for name in ["naive", "mean"]):
@@ -339,8 +339,8 @@ class TimeSeries(ModelFields):
         for trend in trends:
             models_function.append("\"%s\": _%s_forecast" % (trend, trend))
             out.write(utf8(SUBMODELS_CODE[trend]))
-        out.write(utf8(u"\n\nMODELS = \\\n"))
+        out.write(utf8("\n\nMODELS = \\\n"))
         out.write(utf8("%s%s%s" % \
-            (u"    {", u",\n     ".join(models_function), u"}")))
+            ("    {", ",\n     ".join(models_function), "}")))
 
         out.write(utf8(FORECAST_FUNCTION))

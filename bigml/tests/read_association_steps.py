@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from world import world
+from .world import world
 from nose.tools import eq_
 from bigml.api import HTTP_OK
 

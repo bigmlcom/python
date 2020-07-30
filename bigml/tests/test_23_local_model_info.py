@@ -19,12 +19,12 @@
 """ Testing local model information output methods
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import compare_predictions_steps as prediction_compare
-import inspect_model_steps as inspect_model
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import compare_predictions_steps as prediction_compare
+from . import inspect_model_steps as inspect_model
 
 class TestLocalModelOutputs(object):
 
@@ -32,13 +32,13 @@ class TestLocalModelOutputs(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -64,7 +64,7 @@ class TestLocalModelOutputs(object):
                 | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/if_then_rules_tiny_kdd.txt          |
 
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', 'data/model/if_then_rules_iris.txt'],
             ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/if_then_rules_iris_sp_chars.txt'],
@@ -74,7 +74,7 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '30', '30', '30', 'data/model/if_then_rules_iris_missing2.txt'],
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/if_then_rules_tiny_kdd.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -103,11 +103,11 @@ class TestLocalModelOutputs(object):
                 | data/iris_missing2.csv | 10      | 10     | 10     | data/model/if_then_rules_iris_missing2_MISSINGS.txt     |
 
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris_missing2.csv', '10', '10', '30', 'data/model/if_then_rules_iris_missing2_MISSINGS.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -142,7 +142,7 @@ class TestLocalModelOutputs(object):
                 | data/spam.csv          | 20      | 20     | 30     | {"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}} | data/model/if_then_rules_spam_textanalysis_6.txt              |
 
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}','data/model/if_then_rules_spam_textanalysis_1.txt'],
             ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false}}}}', 'data/model/if_then_rules_spam_textanalysis_2.txt'],
@@ -151,7 +151,7 @@ class TestLocalModelOutputs(object):
             ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"token_mode": "full_terms_only", "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_5.txt'],
             ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', 'data/model/if_then_rules_spam_textanalysis_6.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -188,7 +188,7 @@ class TestLocalModelOutputs(object):
                 | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/data_distribution_tiny_kdd.txt          |
 
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', 'data/model/data_distribution_iris.txt'],
             ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/data_distribution_iris_sp_chars.txt'],
@@ -198,7 +198,7 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '30', '30', '30', 'data/model/data_distribution_iris_missing2.txt'],
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/data_distribution_tiny_kdd.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -233,7 +233,7 @@ class TestLocalModelOutputs(object):
                 | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/predictions_distribution_tiny_kdd.txt          |
 
         """
-        print self.test_scenario5.__doc__
+        print(self.test_scenario5.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', 'data/model/predictions_distribution_iris.txt'],
             ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/predictions_distribution_iris_sp_chars.txt'],
@@ -243,7 +243,7 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '30', '30', '30', 'data/model/predictions_distribution_iris_missing2.txt'],
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/predictions_distribution_tiny_kdd.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -278,7 +278,7 @@ class TestLocalModelOutputs(object):
                 | data/tiny_kdd.csv      | 20      | 20     | 30     | data/model/summarize_tiny_kdd.txt          |
 
         """
-        print self.test_scenario6.__doc__
+        print(self.test_scenario6.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', 'data/model/summarize_iris.txt'],
             ['data/iris_sp_chars.csv', '30', '30', '30', 'data/model/summarize_iris_sp_chars.txt'],
@@ -288,7 +288,7 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '30', '30', '30', 'data/model/summarize_iris_missing2.txt'],
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/summarize_tiny_kdd.txt']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

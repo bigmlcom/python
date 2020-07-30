@@ -22,7 +22,7 @@ import sys
 
 
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -32,7 +32,7 @@ from bigml.api import UPLOADING
 from bigml.api import get_status
 
 
-import read_source_steps as read
+from . import read_source_steps as read
 
 #@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file):
@@ -175,7 +175,7 @@ def i_update_source_with(step, data="{}"):
 #@step(r'the source exists and has args "(.*)"')
 def source_has_args(step, args="{}"):
     args = json.loads(args)
-    for key, value in args.items():
+    for key, value in list(args.items()):
         if key in world.source:
             eq_(world.source[key], value,
                 "Expected key %s: %s. Found %s" % (key, value, world.source[key]))

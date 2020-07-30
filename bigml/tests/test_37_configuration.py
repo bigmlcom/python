@@ -19,8 +19,8 @@
 """ Creating configuration
 
 """
-from world import world, setup_module, teardown_module
-import create_configuration_steps as config_create
+from .world import world, setup_module, teardown_module
+from . import create_configuration_steps as config_create
 
 class TestConfiguration(object):
 
@@ -28,13 +28,13 @@ class TestConfiguration(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -45,7 +45,7 @@ class TestConfiguration(object):
                 Then the configuration name is "<configuration_name>"
                 And the configuration contents are "<configurations>"
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             [{
                 "dataset": {
@@ -53,7 +53,7 @@ class TestConfiguration(object):
                 }
             }, '10', {"name": 'my new configuration name'}]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             config_create.i_create_configuration(self, example[0])
             config_create.i_update_configuration(self, example[2])
             config_create.the_configuration_is_finished_in_less_than(self, example[1])

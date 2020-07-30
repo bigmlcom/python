@@ -19,12 +19,12 @@ import json
 import time
 from nose.tools import assert_almost_equals, eq_, assert_is_not_none
 from datetime import datetime
-from world import world, logged_wait
+from .world import world, logged_wait
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from read_projection_steps import i_get_the_projection
+from .read_projection_steps import i_get_the_projection
 
 def i_create_a_projection(step, data=None):
     if data is None:
@@ -43,9 +43,9 @@ def the_projection_is(step, projection):
     if projection is None:
         projection = "{}"
     projection = json.loads(projection)
-    eq_(len(projection.keys()),
-        len(world.projection['projection']['result'].keys()))
-    for name, value in projection.items():
+    eq_(len(list(projection.keys())),
+        len(list(world.projection['projection']['result'].keys())))
+    for name, value in list(projection.items()):
         eq_(world.projection['projection']['result'][name], projection[name],
             "remote: %s, %s - expected: %s" % ( \
                 name, world.projection['projection']['result'][name],

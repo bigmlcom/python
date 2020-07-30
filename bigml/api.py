@@ -213,7 +213,7 @@ def get_fields(resource):
     if resource_type in RESOURCES_WITH_FIELDS:
         resource = resource.get('object', resource)
         # fields structure
-        if resource_type in FIELDS_PARENT.keys():
+        if resource_type in list(FIELDS_PARENT.keys()):
             fields = resource[FIELDS_PARENT[resource_type]].get('fields', {})
         else:
             fields = resource.get('fields', {})
@@ -368,30 +368,30 @@ class BigML(ExternalConnectorHandler,
            credentials used.
 
         """
-        info = u"Connecting to:\n"
-        info += u"    %s\n" % self.general_domain
+        info = "Connecting to:\n"
+        info += "    %s\n" % self.general_domain
         if self.general_protocol != BIGML_PROTOCOL:
-            info += u"    using %s protocol\n" % self.general_protocol
-        info += u"    SSL verification %s\n" % (
+            info += "    using %s protocol\n" % self.general_protocol
+        info += "    SSL verification %s\n" % (
             "on" if self.verify else "off")
         short = "(shortened)" if self.short_debug else ""
         if self.debug:
-            info += u"    Debug on %s\n" % short
+            info += "    Debug on %s\n" % short
         if self.general_domain != self.prediction_domain:
-            info += u"    %s (predictions only)\n" % self.prediction_domain
+            info += "    %s (predictions only)\n" % self.prediction_domain
             if self.prediction_protocol != BIGML_PROTOCOL:
-                info += u"    using %s protocol\n" % self.prediction_protocol
-            info += u"    SSL verification %s\n" % (
+                info += "    using %s protocol\n" % self.prediction_protocol
+            info += "    SSL verification %s\n" % (
                 "on" if self.verify_prediction else "off")
 
         if self.project or self.organization:
-            info += u"    Scope info: %s\n" % \
-                u"%s\n                %s" % (self.organization or "",
+            info += "    Scope info: %s\n" % \
+                "%s\n                %s" % (self.organization or "",
                                              self.project or "")
 
 
-        info += u"\nAuthentication string:\n"
-        info += u"    %s\n" % self.auth[1:]
+        info += "\nAuthentication string:\n"
+        info += "    %s\n" % self.auth[1:]
         return info
 
     def get_account_status(self):
@@ -433,7 +433,7 @@ class BigML(ExternalConnectorHandler,
 
         if isinstance(resource, dict) and 'resource' in resource:
             resource_id = resource['resource']
-        elif isinstance(resource, basestring) and get_resource_type(resource) \
+        elif isinstance(resource, str) and get_resource_type(resource) \
                 in RESOURCES_WITH_FIELDS:
             resource_id = resource
             resource = self.retrieve_resource(resource,
@@ -483,7 +483,7 @@ class BigML(ExternalConnectorHandler,
                     resource['object']['fields'][
                         resource['object']['objective_fields'][0]]['name'])
                 input_data = {}
-                for key, value in resource['object']['input_data'].items():
+                for key, value in list(resource['object']['input_data'].items()):
                     try:
                         name = resource['object']['fields'][key]['name']
                     except KeyError:

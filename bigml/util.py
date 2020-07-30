@@ -29,7 +29,7 @@ import math
 import random
 import ast
 import datetime
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import unidecode
 
@@ -87,10 +87,10 @@ TYPE_MAP = {
 }
 
 PYTHON_TYPE_MAP = {
-    "categorical": [unicode, str],
+    "categorical": [str, str],
     "numeric": [int, float],
-    "text": [unicode, str],
-    "items": [unicode, str]
+    "text": [str, str],
+    "items": [str, str]
 }
 
 PREDICTIONS_FILE_SUFFIX = '_predictions.csv'
@@ -116,7 +116,7 @@ def python_map_type(value):
     if value in PYTHON_TYPE_MAP:
         return PYTHON_TYPE_MAP[value]
     else:
-        return [unicode, str]
+        return [str, str]
 
 
 def invert_dictionary(dictionary, field='name'):
@@ -127,7 +127,7 @@ def invert_dictionary(dictionary, field='name'):
 
     """
     return dict([[value[field], key]
-                 for key, value in dictionary.items()])
+                 for key, value in list(dictionary.items())])
 
 
 def slugify(name, reserved_keywords=None, prefix=''):
@@ -158,7 +158,7 @@ def is_url(value):
     """Returns True if value is a valid URL.
 
     """
-    url = isinstance(value, basestring) and urlparse(value)
+    url = isinstance(value, str) and urlparse(value)
     return url and url.scheme and url.netloc and url.path
 
 
@@ -213,10 +213,10 @@ def sort_fields(fields):
 
     """
     fathers = [(key, val) for key, val in
-               sorted(fields.items(), key=lambda k: k[1]['column_number'])
+               sorted(list(fields.items()), key=lambda k: k[1]['column_number'])
                if 'auto_generated' not in val]
     children = [(key, val) for key, val in
-                sorted(fields.items(), key=lambda k: k[1]['column_number'])
+                sorted(list(fields.items()), key=lambda k: k[1]['column_number'])
                 if 'auto_generated' in val]
     children.reverse()
     fathers_keys = [father[0] for father in fathers]
@@ -258,7 +258,7 @@ def locale_synonyms(main_locale, locale_alias):
     if language_code not in LOCALE_SYNONYMS:
         return False
     alternatives = LOCALE_SYNONYMS[language_code]
-    if isinstance(alternatives[0], basestring):
+    if isinstance(alternatives[0], str):
         return main_locale in alternatives and locale_alias in alternatives
     else:
         result = False
@@ -279,7 +279,7 @@ def bigml_locale(locale_alias):
     if language_code not in LOCALE_SYNONYMS:
         return None
     alternatives = LOCALE_SYNONYMS[language_code]
-    if isinstance(alternatives[0], basestring):
+    if isinstance(alternatives[0], str):
         return (alternatives[0] if locale_alias in alternatives
                 else None)
     else:
@@ -336,9 +336,9 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
         new_locale = locale.setlocale(locale.LC_NUMERIC, '')
 
     if verbose and not locale_synonyms(data_locale, new_locale):
-        print ("WARNING: Unable to find %s locale, using %s instead. This "
+        print(("WARNING: Unable to find %s locale, using %s instead. This "
                "might alter numeric fields values.\n") % (data_locale,
-                                                          new_locale)
+                                                          new_locale))
 
 
 def get_predictions_file_name(model, path):
@@ -402,8 +402,8 @@ def strip_affixes(value, field):
     """Strips prefixes and suffixes if present
 
     """
-    if not isinstance(value, unicode):
-        value = unicode(value, "utf-8")
+    if not isinstance(value, str):
+        value = str(value, "utf-8")
     if 'prefix' in field and value.startswith(field['prefix']):
         value = value[len(field['prefix']):]
     if 'suffix' in field and value.endswith(field['suffix']):
@@ -415,7 +415,7 @@ def cast(input_data, fields):
     """Checks expected type in input data values, strips affixes and casts
 
     """
-    for (key, value) in input_data.items():
+    for (key, value) in list(input_data.items()):
         # strings given as booleans
         if isinstance(value, bool) and \
                 fields[key]['optype'] == 'categorical' and \
@@ -432,15 +432,15 @@ def cast(input_data, fields):
                 # converting boolean to the corresponding string
                 input_data.update({key: booleans[str(value)]})
             except ValueError:
-                raise ValueError(u"Mismatch input data type in field "
-                                 u"\"%s\" for value %s. String expected" %
+                raise ValueError("Mismatch input data type in field "
+                                 "\"%s\" for value %s. String expected" %
                                  (fields[key]['name'], value))
         # numerics given as strings
         elif (
                 (fields[key]['optype'] == NUMERIC and
-                 isinstance(value, basestring)) or
+                 isinstance(value, str)) or
                 (fields[key]['optype'] != NUMERIC and
-                 not isinstance(value, basestring))):
+                 not isinstance(value, str))):
             try:
                 if fields[key]['optype'] == NUMERIC:
                     value = strip_affixes(value, fields[key])
@@ -448,14 +448,14 @@ def cast(input_data, fields):
                                    map_type(fields[key]
                                             ['optype'])(value)})
             except ValueError:
-                raise ValueError(u"Mismatch input data type in field "
-                                 u"\"%s\" for value %s." %
+                raise ValueError("Mismatch input data type in field "
+                                 "\"%s\" for value %s." %
                                  (fields[key]['name'],
                                   value))
         elif (fields[key]['optype'] == NUMERIC and
               isinstance(value, bool)):
-            raise ValueError(u"Mismatch input data type in field "
-                             u"\"%s\" for value %s. Numeric expected." %
+            raise ValueError("Mismatch input data type in field "
+                             "\"%s\" for value %s. Numeric expected." %
                              (fields[key]['name'], value))
         if fields[key]['optype'] == NUMERIC and isinstance(value, float):
             input_data.update({key: round(value, DECIMAL_DIGITS)})
@@ -467,7 +467,7 @@ def check_dir(path):
     """
     if os.path.exists(path):
         if not os.path.isdir(path):
-            raise ValueError(u"The given path is not a directory")
+            raise ValueError("The given path is not a directory")
     elif len(path) > 0:
         os.makedirs(path)
     return path
@@ -555,9 +555,9 @@ def save_json(resource, path):
         resource_json = json.dumps(resource)
         return save(resource_json, path)
     except ValueError:
-        print "The resource has an invalid JSON format"
+        print("The resource has an invalid JSON format")
     except IOError:
-        print "Failed writing resource to %s" % path
+        print("Failed writing resource to %s" % path)
 
 
 def save(content, path):
@@ -597,7 +597,7 @@ def check_no_missing_numerics(input_data, fields, weight_field=None):
     """Checks whether some numeric fields are missing in the input data
 
     """
-    for field_id, field in fields.items():
+    for field_id, field in list(fields.items()):
         if (field['optype'] == NUMERIC and (weight_field is None or \
                 field_id != weight_field) and \
                 not field_id in input_data):
@@ -611,7 +611,7 @@ def check_no_training_missings(input_data, fields, weight_field=None,
     while not training data has no missings in that field
 
     """
-    for field_id, field in fields.items():
+    for field_id, field in list(fields.items()):
         if (field["optype"] != "datetime" and \
                 field_id not in input_data and \
                 field['summary']['missing_count'] == 0 and \

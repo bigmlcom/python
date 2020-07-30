@@ -41,7 +41,7 @@ def get_resource_dict(resource, resource_type, api=None):
     get_id = ID_GETTERS[resource_type]
     resource_id = None
     # the string can be a path to a JSON file
-    if isinstance(resource, basestring):
+    if isinstance(resource, str):
         try:
             with open(resource) as resource_file:
                 resource = json.load(resource_file)
@@ -97,7 +97,7 @@ class Execution(object):
         try:
             self.resource_id, execution = get_resource_dict( \
                 execution, "execution", self.api)
-        except ValueError, resource:
+        except ValueError as resource:
             try:
                 execution = json.loads(str(resource))
             except ValueError:

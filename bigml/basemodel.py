@@ -79,7 +79,7 @@ def print_importance(instance, out=sys.stdout):
     count = 1
     field_importance, fields = instance.field_importance_data()
     for [field, importance] in field_importance:
-        out.write(utf8(u"    %s. %s: %.2f%%\n" % (
+        out.write(utf8("    %s. %s: %.2f%%\n" % (
             count,
             fields[field]['name'],
             round(importance, 4) * 100)))
@@ -99,7 +99,7 @@ def get_resource_dict(resource, resource_type, api=None):
     get_id = ID_GETTERS[resource_type]
     resource_id = None
     # the string can be a path to a JSON file
-    if isinstance(resource, basestring):
+    if isinstance(resource, str):
         try:
             with open(resource) as resource_file:
                 resource = json.load(resource_file)
@@ -148,7 +148,7 @@ def datetime_fields(fields):
     """Returns datetime fields from a dict of fields
 
     """
-    return {k: v for k, v in fields.items() \
+    return {k: v for k, v in list(fields.items()) \
             if v.get("optype", False) == "datetime"}
 
 
@@ -202,7 +202,7 @@ class BaseModel(ModelFields):
                     # pagination or exclusion might cause a field not to
                     # be in available fields dict
                     if not all(key in model['model']['fields']
-                               for key in fields.keys()):
+                               for key in list(fields.keys())):
                         raise Exception("Some fields are missing"
                                         " to generate a local model."
                                         " Please, provide a model with"

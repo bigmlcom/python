@@ -24,12 +24,12 @@ import os
 
 from bigml.api import BigML
 
-from world import world
-from world import setup_module as general_setup_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_prediction_steps as prediction_create
+from .world import world
+from .world import setup_module as general_setup_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_prediction_steps as prediction_create
 
 
 
@@ -43,7 +43,7 @@ def setup_module():
     world.bck_api = world.api
     world.api = BigML(world.USERNAME, world.API_KEY, debug=world.debug,
                       project=world.project_id)
-    print world.api.connection_info()
+    print(world.api.connection_info())
     world.clear()
 
 
@@ -58,18 +58,18 @@ def teardown_module():
     if not world.debug:
         try:
             world.delete_resources()
-        except Exception, exc:
-            print exc
+        except Exception as exc:
+            print(exc)
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
-        for resource_type, value in project_stats.items():
+        for resource_type, value in list(project_stats.items()):
             if value['count'] != 0:
                 # assert False, ("Increment in %s: %s" % (resource_type, value))
-                print "WARNING: Increment in %s: %s" % (resource_type, value)
+                print("WARNING: Increment in %s: %s" % (resource_type, value))
         world.api.delete_project(world.project_id)
         world.project_id = None
     world.api = world.bck_api
-    print world.api.connection_info()
+    print(world.api.connection_info())
 
 
 class TestProjPrediction(object):
@@ -78,13 +78,13 @@ class TestProjPrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -104,11 +104,11 @@ class TestProjPrediction(object):
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
 
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_project_conn(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             assert world.source['project'] == world.project_id

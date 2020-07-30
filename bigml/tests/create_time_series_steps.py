@@ -20,7 +20,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -30,7 +30,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.timeseries import TimeSeries
 
-import read_time_series_steps as read
+from . import read_time_series_steps as read
 
 
 #@step(r'I create a time series$')

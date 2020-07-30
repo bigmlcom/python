@@ -60,21 +60,21 @@ MAX_UPDATES = 512
 SAMPLES_PER_TOPIC = 128
 
 CODE_TO_NAME = {
-    "da": u'danish',
-    "nl": u'dutch',
-    "en": u'english',
-    "fi": u'finnish',
-    "fr": u'french',
-    "de": u'german',
-    "hu": u'hungarian',
-    "it": u'italian',
-    "nn": u'norwegian',
-    "pt": u'portuguese',
-    "ro": u'romanian',
-    "ru": u'russian',
-    "es": u'spanish',
-    "sv": u'swedish',
-    "tr": u'turkish'
+    "da": 'danish',
+    "nl": 'dutch',
+    "en": 'english',
+    "fi": 'finnish',
+    "fr": 'french',
+    "de": 'german',
+    "hu": 'hungarian',
+    "it": 'italian',
+    "nn": 'norwegian',
+    "pt": 'portuguese',
+    "ro": 'romanian',
+    "ru": 'russian',
+    "es": 'spanish',
+    "sv": 'swedish',
+    "tr": 'turkish'
 }
 
 class TopicModel(ModelFields):
@@ -164,14 +164,14 @@ class TopicModel(ModelFields):
         # Checks and cleans input_data leaving the fields used in the model
         input_data = self.filter_input_data(input_data)
 
-        return self.distribution_for_text("\n\n".join(input_data.values()))
+        return self.distribution_for_text("\n\n".join(list(input_data.values())))
 
     def distribution_for_text(self, text):
         """Returns the topic distribution of the given `text`, which can
            either be a string or a list of strings
 
         """
-        if isinstance(text, (str, unicode)):
+        if isinstance(text, str):
             astr = text
         else:
             # List of strings
@@ -216,7 +216,7 @@ class TopicModel(ModelFields):
         space_was_sep = False
         saw_char = False
 
-        text = unicode(astr)
+        text = str(astr)
         index = 0
         length = len(text)
 

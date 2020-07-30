@@ -20,9 +20,9 @@ import json
 import os
 from datetime import datetime
 from nose.tools import eq_, ok_, assert_less
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 
-from read_anomaly_steps import i_get_the_anomaly
+from .read_anomaly_steps import i_get_the_anomaly
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -97,7 +97,7 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "anomaly")
         i_get_the_anomaly(step, world.anomaly['resource'])
         status = get_status(world.anomaly)
-    print "Anomaly created."
+    print("Anomaly created.")
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')

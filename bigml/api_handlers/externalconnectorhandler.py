@@ -41,7 +41,7 @@ def get_env_connection_info():
     """
     # try to use environment variables values
     connection_info = {}
-    for external_key in EXTERNAL_CONNECTION_ATTRS.keys():
+    for external_key in list(EXTERNAL_CONNECTION_ATTRS.keys()):
         if os.environ.get(external_key):
             connection_info.update( \
                 {EXTERNAL_CONNECTION_ATTRS[external_key]:

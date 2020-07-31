@@ -312,7 +312,7 @@ class TestComparePrediction(object):
                                                      example[6])
 
 
-    def test_scenario2a(self):
+    def test_scenario2_a(self):
         """
             Scenario: Successfully comparing remote and local predictions
                       with raw date input for cluster

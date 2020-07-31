@@ -61,7 +61,8 @@ setuptools.setup(
     setup_requires = ['nose'],
     install_requires = INSTALL_REQUIRES,
     packages = ['bigml', 'bigml.tests', 'bigml.laminar', 'bigml.out_model',
-                'bigml.out_tree', 'bigml.tests.my_ensemble'],
+                'bigml.out_tree', 'bigml.tests.my_ensemble',
+                'bigml.api_handlers'],
     package_data={'bigml':['out_model/static/*']},
     classifiers=[
         'Development Status :: 4 - Beta',

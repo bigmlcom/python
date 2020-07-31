@@ -28,7 +28,8 @@ import re
 
 from bigml.util import invert_dictionary, DEFAULT_LOCALE
 from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
-from bigml.resourcehandler import get_resource_type, resource_is_ready
+from bigml.api_handlers.resourcehandler import get_resource_type,  \
+    resource_is_ready
 from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml_chronos import chronos
 

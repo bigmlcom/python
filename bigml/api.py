@@ -40,45 +40,49 @@ import json
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.resourcehandler import ResourceHandler, check_resource
-from bigml.sourcehandler import SourceHandler
-from bigml.datasethandler import DatasetHandler
-from bigml.modelhandler import ModelHandler
-from bigml.ensemblehandler import EnsembleHandler
-from bigml.predictionhandler import PredictionHandler
-from bigml.clusterhandler import ClusterHandler
-from bigml.centroidhandler import CentroidHandler
-from bigml.anomalyhandler import AnomalyHandler
-from bigml.anomalyscorehandler import AnomalyScoreHandler
-from bigml.evaluationhandler import EvaluationHandler
-from bigml.batchpredictionhandler import BatchPredictionHandler
-from bigml.batchcentroidhandler import BatchCentroidHandler
-from bigml.batchanomalyscorehandler import BatchAnomalyScoreHandler
-from bigml.projecthandler import ProjectHandler
-from bigml.samplehandler import SampleHandler
-from bigml.correlationhandler import CorrelationHandler
-from bigml.statisticaltesthandler import StatisticalTestHandler
-from bigml.logistichandler import LogisticRegressionHandler
-from bigml.associationhandler import AssociationHandler
-from bigml.associationsethandler import AssociationSetHandler
-from bigml.configurationhandler import ConfigurationHandler
-from bigml.topicmodelhandler import TopicModelHandler
-from bigml.topicdistributionhandler import TopicDistributionHandler
-from bigml.batchtopicdistributionhandler import BatchTopicDistributionHandler
-from bigml.timeserieshandler import TimeSeriesHandler
-from bigml.forecasthandler import ForecastHandler
-from bigml.deepnethandler import DeepnetHandler
-from bigml.optimlhandler import OptimlHandler
-from bigml.fusionhandler import FusionHandler
-from bigml.pcahandler import PCAHandler
-from bigml.projectionhandler import ProjectionHandler
-from bigml.linearhandler import LinearRegressionHandler
-from bigml.batchprojectionhandler import BatchProjectionHandler
-from bigml.scripthandler import ScriptHandler
-from bigml.executionhandler import ExecutionHandler
-from bigml.libraryhandler import LibraryHandler
+from bigml.api_handlers.resourcehandler import ResourceHandler, check_resource
+from bigml.api_handlers.sourcehandler import SourceHandler
+from bigml.api_handlers.datasethandler import DatasetHandler
+from bigml.api_handlers.modelhandler import ModelHandler
+from bigml.api_handlers.ensemblehandler import EnsembleHandler
+from bigml.api_handlers.predictionhandler import PredictionHandler
+from bigml.api_handlers.clusterhandler import ClusterHandler
+from bigml.api_handlers.centroidhandler import CentroidHandler
+from bigml.api_handlers.anomalyhandler import AnomalyHandler
+from bigml.api_handlers.anomalyscorehandler import AnomalyScoreHandler
+from bigml.api_handlers.evaluationhandler import EvaluationHandler
+from bigml.api_handlers.batchpredictionhandler import BatchPredictionHandler
+from bigml.api_handlers.batchcentroidhandler import BatchCentroidHandler
+from bigml.api_handlers.batchanomalyscorehandler \
+    import BatchAnomalyScoreHandler
+from bigml.api_handlers.projecthandler import ProjectHandler
+from bigml.api_handlers.samplehandler import SampleHandler
+from bigml.api_handlers.correlationhandler import CorrelationHandler
+from bigml.api_handlers.statisticaltesthandler import StatisticalTestHandler
+from bigml.api_handlers.logistichandler import LogisticRegressionHandler
+from bigml.api_handlers.associationhandler import AssociationHandler
+from bigml.api_handlers.associationsethandler import AssociationSetHandler
+from bigml.api_handlers.configurationhandler import ConfigurationHandler
+from bigml.api_handlers.topicmodelhandler import TopicModelHandler
+from bigml.api_handlers.topicdistributionhandler \
+    import TopicDistributionHandler
+from bigml.api_handlers.batchtopicdistributionhandler  \
+    import BatchTopicDistributionHandler
+from bigml.api_handlers.timeserieshandler import TimeSeriesHandler
+from bigml.api_handlers.forecasthandler import ForecastHandler
+from bigml.api_handlers.deepnethandler import DeepnetHandler
+from bigml.api_handlers.optimlhandler import OptimlHandler
+from bigml.api_handlers.fusionhandler import FusionHandler
+from bigml.api_handlers.pcahandler import PCAHandler
+from bigml.api_handlers.projectionhandler import ProjectionHandler
+from bigml.api_handlers.linearhandler import LinearRegressionHandler
+from bigml.api_handlers.batchprojectionhandler import BatchProjectionHandler
+from bigml.api_handlers.scripthandler import ScriptHandler
+from bigml.api_handlers.executionhandler import ExecutionHandler
+from bigml.api_handlers.libraryhandler import LibraryHandler
 from bigml.constants import STORAGE, ALL_FIELDS
-from bigml.externalconnectorhandler import ExternalConnectorHandler
+from bigml.api_handlers.externalconnectorhandler import \
+    ExternalConnectorHandler
 
 
 # Repeating constants and functions for backwards compatibility
@@ -116,7 +120,7 @@ from bigml.constants import (
     IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT,
     EXTERNAL_CONNECTOR_PATH, EXTERNAL_CONNECTOR_RE)
 
-from bigml.resourcehandler import (
+from bigml.api_handlers.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
     get_dataset_id, get_model_id, get_ensemble_id, get_evaluation_id,
     get_cluster_id, get_centroid_id, get_anomaly_id, get_anomaly_score_id,

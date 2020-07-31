@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from world import world, res_filename
+from .world import world, res_filename
 from nose.tools import eq_
 
 from bigml.api import HTTP_CREATED
@@ -63,7 +63,7 @@ def check_combined_prediction(step, prediction):
         try:
             eq_(round(world.combined_prediction, DIGITS),
                 round(float(prediction), DIGITS))
-        except ValueError, exc:
+        except ValueError as exc:
             assert False, str(exc)
     else:
         eq_(world.combined_prediction, prediction)
@@ -75,7 +75,7 @@ def check_combined_prediction_no_confidence(step, prediction):
         try:
             eq_(round(world.combined_prediction_nc, DIGITS),
                 round(float(prediction), DIGITS))
-        except ValueError, exc:
+        except ValueError as exc:
             assert False, str(exc)
     else:
         eq_(world.combined_prediction, prediction)
@@ -85,5 +85,5 @@ def check_combined_confidence(step, confidence):
     try:
         eq_(round(world.combined_confidence, DIGITS),
             round(float(confidence), DIGITS))
-    except ValueError, exc:
+    except ValueError as exc:
         assert False, str(exc)

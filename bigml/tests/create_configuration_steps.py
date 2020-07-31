@@ -19,10 +19,10 @@ import time
 import json
 import os
 from datetime import datetime
-from world import world, logged_wait
+from .world import world, logged_wait
 from nose.tools import eq_
 
-from read_configuration_steps import i_get_the_configuration
+from .read_configuration_steps import i_get_the_configuration
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -45,7 +45,7 @@ def i_create_configuration(step, configurations):
 def i_update_configuration(step, changes):
     resource = world.api.update_configuration(
         world.configuration["resource"], changes)
-    print resource
+    print(resource)
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']

@@ -277,7 +277,7 @@ class MultiModel(object):
                 out.open_writer()
             for index, input_data in enumerate(input_data_list):
                 if add_headers:
-                    input_data = dict(zip(headers, input_data))
+                    input_data = dict(list(zip(headers, input_data)))
                 prediction = model.predict(input_data,
                                            missing_strategy=missing_strategy,
                                            full=True)

@@ -64,9 +64,9 @@ def get_resource_type(resource):
     """
     if isinstance(resource, dict) and 'resource' in resource:
         resource = resource['resource']
-    if not isinstance(resource, basestring):
+    if not isinstance(resource, str):
         raise ValueError("Failed to parse a resource string or structure.")
-    for resource_type, resource_re in c.RESOURCE_RE.items():
+    for resource_type, resource_re in list(c.RESOURCE_RE.items()):
         if resource_re.match(resource):
             return resource_type
     return None
@@ -78,7 +78,7 @@ def get_resource(resource_type, resource):
     """
     if isinstance(resource, dict) and 'resource' in resource:
         resource = resource['resource']
-    if isinstance(resource, basestring):
+    if isinstance(resource, str):
         if c.RESOURCE_RE[resource_type].match(resource):
             return resource
         found_type = get_resource_type(resource)
@@ -107,7 +107,7 @@ def check_resource_type(resource, expected_resource, message=None):
     """Checks the resource type.
 
     """
-    if isinstance(expected_resource, basestring):
+    if isinstance(expected_resource, str):
         expected_resources = [expected_resource]
     else:
         expected_resources = expected_resource
@@ -384,9 +384,9 @@ def get_resource_id(resource):
     """
     if isinstance(resource, dict) and 'resource' in resource:
         return resource['resource']
-    elif isinstance(resource, basestring) and any(
+    elif isinstance(resource, str) and any(
             resource_re.match(resource) for _, resource_re
-            in c.RESOURCE_RE.items()):
+            in list(c.RESOURCE_RE.items())):
         return resource
     else:
         return
@@ -429,7 +429,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         raise ValueError("The time to wait needs to be positive.")
     debug = debug or (api is not None and (api.debug or api.short_debug))
     if debug:
-        print "Checking resource: %s" % resource_id
+        print("Checking resource: %s" % resource_id)
     kwargs = {'query_string': query_string}
 
     if get_method is None and hasattr(api, 'get_resource'):
@@ -437,9 +437,9 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     elif get_method is None:
         raise ValueError("You must supply either the get_method or the api"
                          " connection info to retrieve the resource")
-    if isinstance(resource, basestring):
+    if isinstance(resource, str):
         if debug:
-            print "Getting resource %s" % resource_id
+            print("Getting resource %s" % resource_id)
         resource = get_method(resource_id, **kwargs)
     counter = 0
     elapsed = 0
@@ -448,12 +448,12 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         status = get_status(resource)
         code = status['code']
         if debug:
-            print "The resource has status code: %s" % code
+            print("The resource has status code: %s" % code)
         if code == c.FINISHED:
             if counter > 1:
                 if debug:
-                    print "Getting resource %s with args %s" % (resource_id,
-                                                                kwargs)
+                    print("Getting resource %s with args %s" % (resource_id,
+                                                                kwargs))
                 # final get call to retrieve complete resource
                 resource = get_method(resource, **kwargs)
             if raise_on_error:
@@ -474,7 +474,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             counter = 0
             elapsed = 0
         if debug:
-            print "Sleeping %s" % _wait_time
+            print("Sleeping %s" % _wait_time)
         time.sleep(_wait_time)
         elapsed += _wait_time
         # retries for the finished status use a query string that gets the
@@ -484,7 +484,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
         else:
             tiny_kwargs = {}
         if debug:
-            print "Getting only status for resource %s" % resource_id
+            print("Getting only status for resource %s" % resource_id)
         resource = get_method(resource, **tiny_kwargs)
     if raise_on_error:
         exception_on_error(resource)
@@ -608,7 +608,7 @@ class ResourceHandler(BigMLConnection):
         if args is not None:
             create_args.update(args)
 
-        if isinstance(datasets, basestring) and datasets.startswith('shared/'):
+        if isinstance(datasets, str) and datasets.startswith('shared/'):
             origin = datasets.replace('shared/', "")
             if get_resource_type(origin) != "dataset":
                 create_args.update({"shared_hash": origin.split("/")[1]})

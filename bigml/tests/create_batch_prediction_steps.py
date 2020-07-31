@@ -21,7 +21,7 @@ import requests
 import csv
 import traceback
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -30,7 +30,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.io import UnicodeReader
 
-from read_batch_prediction_steps import (i_get_the_batch_prediction,
+from .read_batch_prediction_steps import (i_get_the_batch_prediction,
     i_get_the_batch_centroid, i_get_the_batch_anomaly_score)
 
 

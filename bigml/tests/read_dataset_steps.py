@@ -17,7 +17,7 @@
 
 import json
 
-from world import world
+from .world import world
 from bigml.api import HTTP_OK
 from bigml.fields import Fields
 from nose.tools import eq_, assert_not_equal

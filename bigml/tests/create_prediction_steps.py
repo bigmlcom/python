@@ -20,12 +20,12 @@ import time
 from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
     assert_less
 from datetime import datetime
-from world import world, logged_wait
+from .world import world, logged_wait
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from read_prediction_steps import i_get_the_prediction
+from .read_prediction_steps import i_get_the_prediction
 
 def i_create_a_prediction(step, data=None):
     if data is None:
@@ -113,7 +113,7 @@ def i_create_a_proportional_prediction(step, data=None):
 
 
 def check_prediction(got, expected):
-    if not isinstance(got, basestring):
+    if not isinstance(got, str):
         assert_almost_equals(got, float(expected), 5)
     else:
         eq_(got, expected)

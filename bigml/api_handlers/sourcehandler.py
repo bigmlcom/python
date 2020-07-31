@@ -23,7 +23,7 @@
 
 import sys
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import numbers
 try:
     #added to allow GAE to work
@@ -42,7 +42,7 @@ except ImportError:
 from threading import Thread
 
 
-PYTHON_2_7_9 = len(urllib2.urlopen.__defaults__) > 2
+PYTHON_2_7_9 = len(urllib.request.urlopen.__defaults__) > 2
 PYTHON_2 = sys.version_info < (3, 0)
 
 if PYTHON_2:
@@ -187,15 +187,15 @@ class SourceHandler(ResourceHandler):
         error = None
 
         try:
-            if isinstance(file_name, basestring):
+            if isinstance(file_name, str):
                 create_args.update({os.path.basename(file_name):
                                     open(file_name, "rb")})
             else:
-                create_args = create_args.items()
+                create_args = list(create_args.items())
                 name = 'Stdin input'
                 create_args.append(MultipartParam(name, filename=name,
                                                   fileobj=file_name))
-        except IOError, exception:
+        except IOError as exception:
             raise IOError("Error: cannot read training set. %s" %
                           str(exception))
 
@@ -267,12 +267,12 @@ class SourceHandler(ResourceHandler):
                 elif code != HTTP_ACCEPTED:
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("Error establishing connection: %s",
                              str(exception))
         else:
             try:
-                request = urllib2.Request(url,
+                request = urllib.request.Request(url,
                                           body, headers)
                 # try using the new SSL checking in python 2.7.9
                 try:
@@ -281,13 +281,13 @@ class SourceHandler(ResourceHandler):
                             ssl.Purpose.CLIENT_AUTH)
                         context.verify_mode = ssl.CERT_NONE
                         https_handler = StreamingHTTPSHandler(context=context)
-                        opener = urllib2.build_opener(https_handler)
-                        urllib2.install_opener(opener)
-                        response = urllib2.urlopen(request)
+                        opener = urllib.request.build_opener(https_handler)
+                        urllib.request.install_opener(opener)
+                        response = urllib.request.urlopen(request)
                     else:
-                        response = urllib2.urlopen(request)
+                        response = urllib.request.urlopen(request)
                 except AttributeError:
-                    response = urllib2.urlopen(request)
+                    response = urllib.request.urlopen(request)
                 clear_console_line(out=out)
                 reset_console_line(out=out)
                 code = response.getcode()
@@ -302,7 +302,7 @@ class SourceHandler(ResourceHandler):
                         LOGGER.debug("Response: %s", content)
             except ValueError:
                 LOGGER.error("Malformed response.")
-            except urllib2.HTTPError, exception:
+            except urllib.error.HTTPError as exception:
                 code = exception.code
                 if code in [HTTP_BAD_REQUEST,
                             HTTP_UNAUTHORIZED,
@@ -319,7 +319,7 @@ class SourceHandler(ResourceHandler):
                     LOGGER.error("Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
 
-            except urllib2.URLError, exception:
+            except urllib.error.URLError as exception:
                 LOGGER.error("Error establishing connection: %s",
                              str(exception))
                 error = exception.args
@@ -340,7 +340,7 @@ class SourceHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        for key, value in create_args.items():
+        for key, value in list(create_args.items()):
             if value is not None and (isinstance(value, list) or
                                       isinstance(value, dict)):
                 create_args[key] = json.dumps(value)
@@ -360,7 +360,7 @@ class SourceHandler(ResourceHandler):
 
         try:
 
-            if isinstance(file_name, basestring):
+            if isinstance(file_name, str):
                 name = os.path.basename(file_name)
                 file_handler = open(file_name, "rb")
             else:
@@ -382,7 +382,7 @@ class SourceHandler(ResourceHandler):
                     'validate_certificate': self.verify
                 }
                 response = urlfetch.fetch(**req_options)
-            except urlfetch.Error, exception:
+            except urlfetch.Error as exception:
                 LOGGER.error("HTTP request error: %s",
                              str(exception))
                 return maybe_save(resource_id, self.storage, code,
@@ -400,7 +400,7 @@ class SourceHandler(ResourceHandler):
                     data=multipart, verify=self.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
-                    requests.RequestException), exc:
+                    requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
                 code = HTTP_INTERNAL_SERVER_ERROR
                 return maybe_save(resource_id, self.storage, code,

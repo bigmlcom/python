@@ -55,7 +55,7 @@ class AnomalyTree(object):
 
         for field in [(val['name'], val['optype']) for _, val in
                       sort_fields(self.fields)]:
-            out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
+            out.write(utf8('[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
 

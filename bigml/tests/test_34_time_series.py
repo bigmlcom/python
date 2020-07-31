@@ -19,11 +19,11 @@
 """ Creating time series forecasts
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_time_series_steps as time_series_create
-import create_forecast_steps as forecast_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_time_series_steps as time_series_create
+from . import create_forecast_steps as forecast_create
 
 
 class TestTimeSeries(object):
@@ -32,13 +32,13 @@ class TestTimeSeries(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -60,12 +60,12 @@ class TestTimeSeries(object):
                 | ../data/grades.csv | 10      | 10     | 20     | 50 | my new time_series name |
                 {"000005": {"horizon": 5}], {}}
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/grades.csv', '30', '30', '50', '50', 'my new time series name',
              '{"000005": {"horizon": 5}}', '{"000005": [{"point_forecast": [73.96192, 74.04106, 74.12029, 74.1996, 74.27899], "model": "M,M,N"}]}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

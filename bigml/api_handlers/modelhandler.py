@@ -85,8 +85,8 @@ class ModelHandler(ResourceHandler):
                                          raise_on_error=True, api=self)
                 if 'centroid' not in create_args:
                     try:
-                        centroid = cluster['object'][
-                            'cluster_models'].keys()[0]
+                        centroid = list(cluster['object'][
+                            'cluster_models'].keys())[0]
                         create_args.update({'centroid': centroid})
                     except KeyError:
                         raise KeyError("Failed to generate the model. A "

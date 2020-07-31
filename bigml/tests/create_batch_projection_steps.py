@@ -21,7 +21,7 @@ import requests
 import csv
 import traceback
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -30,7 +30,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.io import UnicodeReader
 
-from read_batch_projection_steps import i_get_the_batch_projection
+from .read_batch_projection_steps import i_get_the_batch_projection
 
 
 #@step(r'I create a batch projection for the dataset with the PCA$')
@@ -81,4 +81,4 @@ def i_check_projections(step, check_file):
 
 def check_csv_rows(projections, expected):
     for projection in projections:
-        eq_(projection, expected.next())
+        eq_(projection, next(expected))

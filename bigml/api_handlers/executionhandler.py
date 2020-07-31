@@ -59,7 +59,7 @@ class ExecutionHandler(ResourceHandler):
         if args is not None:
             create_args.update(args)
 
-        if (isinstance(origin_resource, basestring) or
+        if (isinstance(origin_resource, str) or
                 isinstance(origin_resource, dict)):
             # single script
             scripts = [origin_resource]

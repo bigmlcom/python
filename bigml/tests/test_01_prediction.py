@@ -19,14 +19,14 @@
 """ Testing prediction creation
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_cluster_steps as cluster_create
-import create_anomaly_steps as anomaly_create
-import create_lda_steps as topic_create
-import create_prediction_steps as prediction_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_cluster_steps as cluster_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_lda_steps as topic_create
+from . import create_prediction_steps as prediction_create
 
 
 class TestPrediction(object):
@@ -35,13 +35,13 @@ class TestPrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -58,15 +58,15 @@ class TestPrediction(object):
                 Examples:
                 | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
-                | ../data/iris_sp_chars.csv | 10      | 10     | 10     | {"pétal&width\u0000": 0.5} | 000004    | Iris-setosa |
+                | ../data/iris_sp_chars.csv | 10      | 10     | 10     | {"pétal&width\\u0000": 0.5} | 000004    | Iris-setosa |
 
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '30', '30', '30', '{"petal width": 0.5}', '000004', 'Iris-setosa'],
-            ['data/iris_sp_chars.csv', '30', '30', '30', '{"pétal&width\u0000": 0.5}', '000004', 'Iris-setosa']]
+            ['data/iris_sp_chars.csv', '30', '30', '30', '{"pétal&width\\u0000": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -93,11 +93,11 @@ class TestPrediction(object):
                 | url                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
                 | s3://bigml-public/csv/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['s3://bigml-public/csv/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_create_using_url(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -124,11 +124,11 @@ class TestPrediction(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | data_input    | objective | prediction  |
                 | ../data/iris.csv | 10      | 10     | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_async(self, example[0])
             source_create.the_source_has_been_created_async(self, example[1])
             source_create.the_source_is_finished(self, example[2])
@@ -156,11 +156,11 @@ class TestPrediction(object):
                 | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_create_using_dict_data(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -190,11 +190,11 @@ class TestPrediction(object):
                 | data                | time_1  | time_2 | time_3 | data_input    | centroid  |
                 | ../data/diabetes.csv | 10      | 20     | 20     | {"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"} | Cluster 3 |
         """
-        print self.test_scenario5.__doc__
+        print(self.test_scenario5.__doc__)
         examples = [
             ['data/diabetes.csv', '10', '20', '20', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 3']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -219,14 +219,14 @@ class TestPrediction(object):
                 Examples:
                 | data                 | time_1  | time_2 | time_3 | data_input         | score  |
                 | ../data/tiny_kdd.csv | 10      | 10     | 100     | {"src_bytes": 350} | 0.92618 |
-                | ../data/iris_sp_chars.csv | 10      | 10     | 100     | {"pétal&width\u0000": 300} | 0.90198 |
+                | ../data/iris_sp_chars.csv | 10      | 10     | 100     | {"pétal&width\\u0000": 300} | 0.90198 |
         """
-        print self.test_scenario6.__doc__
+        print(self.test_scenario6.__doc__)
         examples = [
             ['data/tiny_kdd.csv', '10', '10', '100', '{"src_bytes": 350}', '0.92846'],
-            ['data/iris_sp_chars.csv', '10', '10', '100', '{"pétal&width\u0000": 300}', '0.89313']]
+            ['data/iris_sp_chars.csv', '10', '10', '100', '{"pétal&width\\u0000": 300}', '0.89313']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -252,11 +252,11 @@ class TestPrediction(object):
                 | data                 | time_1  | time_2 | time_3 | params
                 | ../data/movies.csv | 10      | 10     | 100     | {"fields": {"genre": {"optype": "items", "item_analysis": {"separator": "$"}}, "title": {"optype": "text"}}}
         """
-        print self.test_scenario7.__doc__
+        print(self.test_scenario7.__doc__)
         examples = [
             ['data/movies.csv', '10', '10', '100', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}, "000006": {"optype": "text"}}}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, data=example[4])

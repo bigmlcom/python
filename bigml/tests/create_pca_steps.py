@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime
-from world import world, logged_wait
+from .world import world, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -28,7 +28,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from read_pca_steps import i_get_the_pca
+from .read_pca_steps import i_get_the_pca
 
 
 #@step(r'the pca name is "(.*)"')

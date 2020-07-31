@@ -19,9 +19,9 @@ import os
 import time
 import json
 from datetime import datetime
-from urllib import urlencode
+from urllib.parse import urlencode
 from nose.tools import eq_, assert_less
-from world import world, logged_wait
+from .world import world, logged_wait
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -29,7 +29,7 @@ from bigml.api import FAULTY
 from bigml.api import UPLOADING
 from bigml.api import get_status
 
-from read_project_steps import i_get_the_project
+from .read_project_steps import i_get_the_project
 
 
 def i_create_project(step, name):

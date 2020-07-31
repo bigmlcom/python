@@ -21,9 +21,9 @@
 """
 import json
 
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_external_steps as connector_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_external_steps as connector_create
 
 class TestExternalConnector(object):
 
@@ -31,13 +31,13 @@ class TestExternalConnector(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -53,11 +53,11 @@ class TestExternalConnector(object):
                 | time_1  | args |
                 | 20 | {"name": "my connector name" |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['20', '{"name": "my connector name"}', 20, 20]]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             connector_create.i_create_external_connector(self)
             connector_create.the_external_connector_is_finished(self, example[0])
             connector_create.i_update_external_connector_with(self, example[1])

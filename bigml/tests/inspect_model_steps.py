@@ -18,7 +18,7 @@
 import io
 import os
 from bigml.tests.world import res_filename
-from world import world
+from .world import world
 from nose.tools import eq_
 
 

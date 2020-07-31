@@ -18,7 +18,7 @@
 import time
 import json
 from datetime import datetime
-from world import world, logged_wait
+from .world import world, logged_wait
 from nose.tools import eq_, assert_less, assert_greater
 
 from bigml.api import HTTP_CREATED
@@ -26,7 +26,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from read_evaluation_steps import i_get_the_evaluation
+from .read_evaluation_steps import i_get_the_evaluation
 
 #@step(r'I create an evaluation for the model with the dataset$')
 def i_create_an_evaluation(step):

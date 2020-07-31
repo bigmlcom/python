@@ -20,7 +20,7 @@ import json
 import os
 
 from nose.tools import eq_, assert_almost_equal, assert_is_not_none
-from world import world, res_filename
+from .world import world, res_filename
 from bigml.model import Model, cast_prediction
 from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
@@ -36,7 +36,7 @@ from bigml.fusion import Fusion
 from bigml.pca import PCA
 
 
-from create_prediction_steps import check_prediction
+from .create_prediction_steps import check_prediction
 
 #@step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
@@ -201,7 +201,7 @@ def i_create_a_local_centroid(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    for key, value in data.items():
+    for key, value in list(data.items()):
         if value == "":
             del data[key]
     world.local_centroid = world.local_cluster.centroid(data)
@@ -500,11 +500,11 @@ def i_create_a_local_projection(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    for key, value in data.items():
+    for key, value in list(data.items()):
         if value == "":
             del data[key]
     world.local_projection = world.local_pca.projection(data, full=True)
-    for name, value in world.local_projection.items():
+    for name, value in list(world.local_projection.items()):
         world.local_projection[name] = round(value, 5)
 
 #@step(r'I create a local linear regression prediction for "(.*)"')
@@ -512,11 +512,11 @@ def i_create_a_local_linear_prediction(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    for key, value in data.items():
+    for key, value in list(data.items()):
         if value == "":
             del data[key]
     world.local_prediction = world.local_model.predict(data, full=True)
-    for name, value in world.local_prediction.items():
+    for name, value in list(world.local_prediction.items()):
         if isinstance(value, float):
             world.local_prediction[name] = round(value, 5)
 
@@ -525,8 +525,8 @@ def the_local_projection_is(step, projection):
     if projection is None:
         projection = "{}"
     projection = json.loads(projection)
-    eq_(len(projection.keys()), len(world.local_projection.keys()))
-    for name, value in projection.items():
+    eq_(len(list(projection.keys())), len(list(world.local_projection.keys())))
+    for name, value in list(projection.items()):
         eq_(world.local_projection[name], projection[name],
             "local: %s, %s - expected: %s" % ( \
                 name, world.local_projection[name], projection[name]))

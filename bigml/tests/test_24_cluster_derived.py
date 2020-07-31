@@ -19,12 +19,12 @@
 """ Creating datasets and models associated to a cluster
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_cluster_steps as cluster_create
-import compare_predictions_steps as prediction_compare
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_cluster_steps as cluster_create
+from . import compare_predictions_steps as prediction_compare
 
 class TestClusterDerived(object):
 
@@ -32,13 +32,13 @@ class TestClusterDerived(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -58,11 +58,11 @@ class TestClusterDerived(object):
                 | ../data/iris.csv | 10      | 10     | 40     | 000001                                  | 10     |
 
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '40', '000001', '10']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -91,11 +91,11 @@ class TestClusterDerived(object):
                 | ../data/iris.csv | 10      | 10     | 40     | 000001                                  | 10     |
 
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '40', '000001', '10', '{"model_clusters": true}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -122,7 +122,7 @@ class TestClusterDerived(object):
                 | data | time_1  | time_2 | time_3 | reference | closest |
 
         """
-        print self.test_scenario3.__doc__
+        print(self.test_scenario3.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '40',
              '{"petal length": 1.4, "petal width": 0.2,'
@@ -137,7 +137,7 @@ class TestClusterDerived(object):
              '{"distance": 0.0, "data":'
              ' {"Message": "mobile", "Type": "spam"}}']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -164,13 +164,13 @@ class TestClusterDerived(object):
                 | data | time_1  | time_2 | time_3 | reference | closest |
 
         """
-        print self.test_scenario4.__doc__
+        print(self.test_scenario4.__doc__)
         examples = [
             ['data/spam_4w.csv', '10', '10', '40',
              '{"Message": "free"}',
              '000005']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

@@ -89,12 +89,12 @@ def show_doc(self, examples=None):
     """ Shows the name and documentation of the method passed as argument
 
     """
-    print "%s:\n%s" % (self.__name__, self.__doc__)
+    print("%s:\n%s" % (self.__name__, self.__doc__))
     if examples:
-        print "                |%s" % \
+        print("                |%s" % \
             "\n                |".join(["|".join([str(item)
                                                   for item in example]) for
-                                        example in examples])
+                                        example in examples]))
 
 
 class World(object):
@@ -138,15 +138,15 @@ class World(object):
                          short_debug=self.short_debug, storage=(None if
                          not (self.debug or self.short_debug) else
                          "./debug_storage"))
-        print self.api.connection_info()
-        print self.external_connection_info()
+        print(self.api.connection_info())
+        print(self.external_connection_info())
 
     def external_connection_info(self):
         """Printable string: The information used to connect to a external
         data source
 
         """
-        info = u"External data connection config:\n%s" % \
+        info = "External data connection config:\n%s" % \
             pprint.pformat(self.EXTERNAL_CONN, indent=4)
         return info
 
@@ -167,15 +167,15 @@ class World(object):
         for resource_type in RESOURCE_TYPES:
             object_list = set(getattr(self, plural(resource_type)))
             if object_list:
-                print "Deleting %s %s" % (len(object_list),
-                                          plural(resource_type))
+                print("Deleting %s %s" % (len(object_list),
+                                          plural(resource_type)))
                 delete_method = self.api.deleters[resource_type]
                 for obj_id in object_list:
                     counter = 0
                     result = delete_method(obj_id)
                     while (result['code'] != HTTP_NO_CONTENT and
                            counter < MAX_RETRIES):
-                        print "Delete failed for %s. Retrying" % obj_id
+                        print("Delete failed for %s. Retrying" % obj_id)
                         time.sleep(3 * self.delta)
                         counter += 1
                         result = delete_method(obj_id)
@@ -192,8 +192,8 @@ class World(object):
         for resource_type in RESOURCE_TYPES:
             object_list = set(getattr(self, plural(resource_type)))
             if object_list:
-                print "Deleting %s %s" % (len(object_list),
-                                          plural(resource_type))
+                print("Deleting %s %s" % (len(object_list),
+                                          plural(resource_type)))
                 store_method = self.api.getters[resource_type]
                 for obj_id in object_list:
                     counter = 0
@@ -227,10 +227,10 @@ def teardown_module():
         world.delete_resources()
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
-        for resource_type, value in project_stats.items():
+        for resource_type, value in list(project_stats.items()):
             if value['count'] != 0:
                 # assert False, ("Increment in %s: %s" % (resource_type, value))
-                print "WARNING: Increment in %s: %s" % (resource_type, value)
+                print("WARNING: Increment in %s: %s" % (resource_type, value))
         world.api.delete_project(world.project_id)
         world.project_id = None
     else:
@@ -252,10 +252,10 @@ def logged_wait(start, delta, count, res_description):
 
     """
     wait_time = min(get_exponential_wait(delta / 100.0, count), delta)
-    print "Sleeping %s" % wait_time
+    print("Sleeping %s" % wait_time)
     time.sleep(wait_time)
     elapsed = (datetime.datetime.utcnow() - start).seconds
     if elapsed > delta / 2.0:
-        print "%s seconds waiting for %s" % \
-            (elapsed, res_description)
+        print("%s seconds waiting for %s" % \
+            (elapsed, res_description))
     assert_less(elapsed, delta)

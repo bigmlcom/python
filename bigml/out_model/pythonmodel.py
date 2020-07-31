@@ -177,7 +177,7 @@ class PythonModel(Model):
 
         """
         input_fields = [(value, key) for (key, value) in
-                        sorted(self.inverted_fields.items(),
+                        sorted(list(self.inverted_fields.items()),
                                key=lambda x: x[1])]
         parameters = [value for (key, value) in
                       input_fields if key != self.tree.objective_id]
@@ -189,9 +189,9 @@ class PythonModel(Model):
                 args.append("\"" + self.tree.fields[field[0]]['slug'] + "\"")
 
         with open(HADOOP_CSV_TEMPLATE) as template_hander:
-            output = template_handler.read() % u",".join(parameters)
+            output = template_handler.read() % ",".join(parameters)
 
-        output += u"\n%sself.INPUT_FIELDS = [%s]\n" % \
+        output += "\n%sself.INPUT_FIELDS = [%s]\n" % \
             ((INDENT * 3), (",\n " + INDENT * 8).join(args))
 
         input_types = []
@@ -214,17 +214,17 @@ class PythonModel(Model):
             count += 1
         static_content = "%sself.INPUT_TYPES = [" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(input_types),
                                  "]\n")
         static_content = "%sself.PREFIXES = {" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(prefixes),
                                  "}\n")
         static_content = "%sself.SUFFIXES = {" % (INDENT * 3)
         formatter = ",\n%s" % (" " * len(static_content))
-        output += u"\n%s%s%s" % (static_content,
+        output += "\n%s%s%s" % (static_content,
                                  formatter.join(suffixes),
                                  "}\n")
 
@@ -240,7 +240,7 @@ class PythonModel(Model):
                          subtree=subtree)
 
         output = \
-u"""
+"""
 csv = CSVInput()
 for values in csv:
     if not isinstance(values, bool):
@@ -266,9 +266,9 @@ for values in csv:
         analysis fields
 
         """
-        body = u""
+        body = ""
         # static content
-        body += u"""
+        body += """
     import re
 """
         if term_analysis_predicates:
@@ -282,8 +282,7 @@ for values in csv:
             with open(TERM_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            term_analysis_options = set(map(lambda x: x[0],
-                                            term_analysis_predicates))
+            term_analysis_options = set([x[0] for x in term_analysis_predicates])
             term_analysis_predicates = set(term_analysis_predicates)
             body += """
     term_analysis = {"""
@@ -333,8 +332,7 @@ for values in csv:
             with open(ITEMS_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            item_analysis_options = set(map(lambda x: x[0],
-                                        item_analysis_predicates))
+            item_analysis_options = set([x[0] for x in item_analysis_predicates])
             item_analysis_predicates = set(item_analysis_predicates)
             body += """
     item_analysis = {"""
@@ -387,14 +385,14 @@ for values in csv:
             function_name = function_name[1:]
         if function_name == "":
             function_name = "field_" + self.objective_id
-        python_header = u"#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n"
-        predictor_definition = (u"def predict_%s" %
+        python_header = "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n"
+        predictor_definition = ("def predict_%s" %
                                 function_name)
         depth = len(predictor_definition) + 1
-        predictor = u"%s(%s):\n" % (predictor_definition,
+        predictor = "%s(%s):\n" % (predictor_definition,
                                    (",\n" + " " * depth).join(args))
-        predictor_doc = (INDENT + u"\"\"\" " + docstring +
-                         u"\n" + INDENT + u"\"\"\"\n")
+        predictor_doc = (INDENT + "\"\"\" " + docstring +
+                         "\n" + INDENT + "\"\"\"\n")
         body, term_analysis_predicates, item_analysis_predicates = \
             self.tree.plug_in_body(input_map=input_map,
                                    ids_path=ids_path,
@@ -406,20 +404,20 @@ for values in csv:
         predictor = python_header + predictor + \
             predictor_doc + terms_body + body
 
-        predictor_model = u"def predict"
+        predictor_model = "def predict"
         depth = len(predictor_model) + 1
-        predictor += u"\n\n%s(%s):\n" % (predictor_model,
+        predictor += "\n\n%s(%s):\n" % (predictor_model,
                                          (",\n" + " " * depth).join(args))
-        predictor += u"%sprediction = predict_%s(%s)\n" % ( \
+        predictor += "%sprediction = predict_%s(%s)\n" % ( \
             INDENT, function_name, ", ".join(args_tree))
 
         if self.boosting is not None:
-            predictor += u"%sprediction.update({\"weight\": %s})\n" % \
+            predictor += "%sprediction.update({\"weight\": %s})\n" % \
                 (INDENT, self.boosting.get("weight"))
             if self.boosting.get("objective_class") is not None:
-                predictor += u"%sprediction.update({\"class\": \"%s\"})\n" % \
+                predictor += "%sprediction.update({\"class\": \"%s\"})\n" % \
                     (INDENT, self.boosting.get("objective_class"))
-        predictor += u"%sreturn prediction" % INDENT
+        predictor += "%sreturn prediction" % INDENT
 
         if not PY3:
             predictor = predictor.encode("utf8")

@@ -80,7 +80,7 @@ def value_to_print(value, optype):
     # the value is numeric for these fields
     if (optype in NUMERIC_VALUE_FIELDS or value is None):
         return value
-    return u"\"%s\"" % value.replace('"', '\\"')
+    return "\"%s\"" % value.replace('"', '\\"')
 
 
 def map_data(field, missing=False):
@@ -99,10 +99,10 @@ def missing_prefix_code(self, field):
 
     """
 
-    negation = u"" if self.predicate.missing else u" not"
-    connection = u"or" if self.predicate.missing else u"and"
+    negation = "" if self.predicate.missing else " not"
+    connection = "or" if self.predicate.missing else "and"
 
-    return u"%s is%s None %s " % (map_data(field, True),
+    return "%s is%s None %s " % (map_data(field, True),
                                   negation,
                                   connection)
 
@@ -127,12 +127,12 @@ def split_condition_code(self, field, node, depth,
                                          node.predicate.term))
             matching_function = "item_matches"
 
-        return u"%sif (%s%s(%s, \"%s\", %s%s) %s " \
-               u"%s):\n" % \
+        return "%sif (%s%s(%s, \"%s\", %s%s) %s " \
+               "%s):\n" % \
               (INDENT * depth, pre_condition, matching_function,
                map_data(field, False),
                node.predicate.field,
-               'u' if isinstance(node.predicate.term, unicode) else '',
+               'u' if isinstance(node.predicate.term, str) else '',
                value_to_print(node.predicate.term, 'categorical'),
                PYTHON_OPERATOR[node.predicate.operator],
                value)
@@ -141,7 +141,7 @@ def split_condition_code(self, field, node, depth,
                 node.predicate.value is None else
                 PYTHON_OPERATOR[node.predicate.operator])
 
-    return u"%sif (%s%s %s %s):\n" % \
+    return "%sif (%s%s %s %s):\n" % \
            (INDENT * depth, pre_condition,
             map_data(field, False),
             operator,
@@ -165,13 +165,13 @@ class FlatTree(object):
         """Builds the code to predict when the field is missing
 
         """
-        code = u"%sif (%s is None):\n" % \
+        code = "%sif (%s is None):\n" % \
                (INDENT * depth,
                 map_data(field, True))
         value = value_to_print(node.output,
                                self.fields[self.objective_id]['optype'])
-        code += u"%sreturn {\"prediction\": %s," \
-            u" \"%s\": %s}\n" % \
+        code += "%sreturn {\"prediction\": %s," \
+            " \"%s\": %s}\n" % \
             (INDENT * (depth + 1), value, metric, getattr(node, metric))
         return code
 
@@ -201,9 +201,9 @@ class FlatTree(object):
         analysis fields
 
         """
-        body = u""
+        body = ""
         # static content
-        body += u"""
+        body += """
     import re
 """
         if term_analysis_predicates:
@@ -217,8 +217,7 @@ class FlatTree(object):
             with open(TERM_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            term_analysis_options = set(map(lambda x: x[0],
-                                            term_analysis_predicates))
+            term_analysis_options = set([x[0] for x in term_analysis_predicates])
             term_analysis_predicates = set(term_analysis_predicates)
             body += """
     term_analysis = {"""
@@ -268,8 +267,7 @@ class FlatTree(object):
             with open(ITEMS_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            item_analysis_options = set(map(lambda x: x[0],
-                                        item_analysis_predicates))
+            item_analysis_options = set([x[0] for x in item_analysis_predicates])
             item_analysis_predicates = set(item_analysis_predicates)
             body += """
     item_analysis = {"""
@@ -295,11 +293,11 @@ class FlatTree(object):
 
         """
 
-        python_header = u"#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n"
+        python_header = "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n"
 
-        predictor = u"def predict_%s(data=None):\n" % self.objective_id
-        predictor_doc = (INDENT + u"\"\"\" " + docstring +
-                         u"\n" + INDENT + u"\"\"\"\n")
+        predictor = "def predict_%s(data=None):\n" % self.objective_id
+        predictor_doc = (INDENT + "\"\"\" " + docstring +
+                         "\n" + INDENT + "\"\"\"\n")
         body, term_analysis_predicates, item_analysis_predicates = \
             self.plug_in_body(ids_path=ids_path, subtree=subtree)
         terms_body = ""
@@ -310,20 +308,20 @@ class FlatTree(object):
             predictor_doc + terms_body + \
             "\n\n".join(body) + "\n%sreturn n_0(data)\n" % INDENT
 
-        predictor_model = u"def predict"
+        predictor_model = "def predict"
         depth = len(predictor_model) + 1
-        predictor += u"\n\n%s(data=None):\n%sif data is None:\n%sdata = {}\n" \
+        predictor += "\n\n%s(data=None):\n%sif data is None:\n%sdata = {}\n" \
             % (predictor_model, INDENT, INDENT * 2)
-        predictor += u"%sprediction = predict_%s(data)\n" % ( \
+        predictor += "%sprediction = predict_%s(data)\n" % ( \
             INDENT, self.objective_id)
 
         if self.boosting is not None:
-            predictor += u"%sprediction.update({\"weight\": %s})\n" % \
+            predictor += "%sprediction.update({\"weight\": %s})\n" % \
                 (INDENT, self.boosting.get("weight"))
             if self.boosting.get("objective_class") is not None:
-                predictor += u"%sprediction.update({\"class\": \"%s\"})\n" % \
+                predictor += "%sprediction.update({\"class\": \"%s\"})\n" % \
                     (INDENT, self.boosting.get("objective_class"))
-        predictor += u"%sreturn prediction" % INDENT
+        predictor += "%sreturn prediction" % INDENT
 
         if not PY3:
             predictor = predictor.encode("utf8")
@@ -349,13 +347,13 @@ class FlatTree(object):
         item_analysis_fields = []
         functions = []
 
-        nodes = filter_nodes(self.nodes.values(), ids=ids_path,
+        nodes = filter_nodes(list(self.nodes.values()), ids=ids_path,
                              subtree=subtree)
         if nodes:
 
             for node in nodes:
                 depth = 1
-                body = u"%sdef %sn_%s(data):\n" % (INDENT * depth, prefix,
+                body = "%sdef %sn_%s(data):\n" % (INDENT * depth, prefix,
                                                    node.id)
                 depth += 1
 
@@ -381,7 +379,7 @@ class FlatTree(object):
 
                         if condition: # only first child has if condition
                             field = child.predicate.field
-                            pre_condition = u""
+                            pre_condition = ""
                             # code when missing_splits has been used
                             if has_missing_branch and child.predicate.value \
                                     is not None:
@@ -403,7 +401,7 @@ class FlatTree(object):
                     value = value_to_print( \
                         node.output,
                         self.fields[self.objective_id]['optype'])
-                    body += u"%sreturn {\"prediction\":%s, \"%s\":%s}\n" % ( \
+                    body += "%sreturn {\"prediction\":%s, \"%s\":%s}\n" % ( \
                         INDENT * depth, value, metric, getattr(node, metric))
                     depth -= 1
 

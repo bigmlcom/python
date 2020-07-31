@@ -96,7 +96,7 @@ def term_matches_tokens(text, forms_list, case_sensitive):
 
     """
     flags = get_tokens_flags(case_sensitive)
-    expression = ur'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
+    expression = r'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
     pattern = re.compile(expression, flags=flags)
     matches = re.findall(pattern, text)
     return len(matches)
@@ -111,7 +111,7 @@ def item_matches(text, item, options):
     separator = options.get('separator', ' ')
     regexp = options.get('separator_regexp')
     if regexp is None:
-        regexp = ur"%s" % re.escape(separator)
+        regexp = r"%s" % re.escape(separator)
     return count_items_matches(text, item, regexp)
 
 
@@ -119,7 +119,7 @@ def count_items_matches(text, item, regexp):
     """ Counts the number of occurences of the item in the text
 
     """
-    expression = ur'(^|%s)%s($|%s)' % (regexp, item, regexp)
+    expression = r'(^|%s)%s($|%s)' % (regexp, item, regexp)
     pattern = re.compile(expression, flags=re.U)
     matches = re.findall(pattern, text)
     return len(matches)
@@ -170,30 +170,30 @@ class Predicate(object):
         if label is not None:
             name = fields[self.field][label]
         else:
-            name = u""
+            name = ""
         full_term = self.is_full_term(fields)
-        relation_missing = u" or missing" if missing else u""
+        relation_missing = " or missing" if missing else ""
         if self.term is not None:
             relation_suffix = ''
             if ((self.operator == '<' and self.value <= 1) or
                     (self.operator == '<=' and self.value == 0)):
-                relation_literal = (u'is not equal to' if full_term
-                                    else u'does not contain')
+                relation_literal = ('is not equal to' if full_term
+                                    else 'does not contain')
             else:
-                relation_literal = u'is equal to' if full_term else u'contains'
+                relation_literal = 'is equal to' if full_term else 'contains'
                 if not full_term:
                     if self.operator != '>' or self.value != 0:
                         relation_suffix = (RELATIONS[self.operator] %
                                            (self.value,
                                             plural('time', self.value)))
-            return u"%s %s %s %s%s" % (name, relation_literal,
+            return "%s %s %s %s%s" % (name, relation_literal,
                                        self.term, relation_suffix,
                                        relation_missing)
         if self.value is None:
-            return u"%s %s" % (name,
-                               u"is missing" if self.operator == '='
-                               else u"is not missing")
-        return u"%s %s %s%s" % (name,
+            return "%s %s" % (name,
+                               "is missing" if self.operator == '='
+                               else "is not missing")
+        return "%s %s %s%s" % (name,
                                 self.operator,
                                 self.value,
                                 relation_missing)
@@ -212,24 +212,24 @@ class Predicate(object):
             if fields[self.field]['optype'] == 'text':
                 options = fields[self.field]['term_analysis']
                 case_insensitive = not options.get('case_sensitive', False)
-                case_insensitive = u'true' if case_insensitive else u'false'
+                case_insensitive = 'true' if case_insensitive else 'false'
                 language = options.get('language')
-                language = u"" if language is None else u" %s" % language
-                return u"(%s (occurrences (f %s) %s %s%s) %s)" % (
+                language = "" if language is None else " %s" % language
+                return "(%s (occurrences (f %s) %s %s%s) %s)" % (
                     self.operator, self.field, self.term,
                     case_insensitive, language, self.value)
             elif fields[self.field]['optype'] == 'items':
-                return u"(%s (if (contains-items? %s %s) 1 0) %s)" % (
+                return "(%s (if (contains-items? %s %s) 1 0) %s)" % (
                     self.operator, self.field, self.term,
                     self.value)
         if self.value is None:
-            negation = u"" if self.operator == "=" else u"not "
-            return u"(%s missing? %s)" % (negation, self.field)
-        rule = u"(%s (f %s) %s)" % (self.operator,
+            negation = "" if self.operator == "=" else "not "
+            return "(%s missing? %s)" % (negation, self.field)
+        rule = "(%s (f %s) %s)" % (self.operator,
                                     self.field,
                                     self.value)
         if self.missing:
-            rule = u"(or (missing? %s) %s)" % (self.field, rule)
+            rule = "(or (missing? %s) %s)" % (self.field, rule)
         return rule
 
     def apply(self, input_data, fields):
@@ -255,21 +255,17 @@ class Predicate(object):
                 terms = [self.term]
                 terms.extend(term_forms)
                 options = fields[self.field]['term_analysis']
-                return apply(OPERATOR[self.operator],
-                             [term_matches(input_data.get(self.field, ""),
+                return OPERATOR[self.operator](*[term_matches(input_data.get(self.field, ""),
                                            terms, options),
                               self.value])
             else:
                 # new items optype
                 options = fields[self.field]['item_analysis']
-                return apply(OPERATOR[self.operator],
-                             [item_matches(input_data.get(self.field, ""),
+                return OPERATOR[self.operator](*[item_matches(input_data.get(self.field, ""),
                                            self.term, options),
                               self.value])
         if self.operator == "in":
-            return apply(OPERATOR[self.operator],
-                         [self.value,
+            return OPERATOR[self.operator](*[self.value,
                           input_data[self.field]])
-        return apply(OPERATOR[self.operator],
-                     [input_data[self.field],
+        return OPERATOR[self.operator](*[input_data[self.field],
                       self.value])

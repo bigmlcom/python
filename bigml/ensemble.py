@@ -136,7 +136,7 @@ class Ensemble(ModelFields):
                 try:
                     models = [get_model_id(model) for model in ensemble]
                     self.model_ids = models
-                except ValueError, exc:
+                except ValueError as exc:
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
@@ -178,7 +178,7 @@ class Ensemble(ModelFields):
                         models = [cache_get(model_id) for model_id
                                   in self.models_splits[0]]
                         self.cache_get = cache_get
-                    except Exception, exc:
+                    except Exception as exc:
                         raise Exception('Error while calling the user-given'
                                         ' function %s: %s' %
                                         (cache_get.__name__, str(exc)))
@@ -200,7 +200,7 @@ class Ensemble(ModelFields):
                     try:
                         model = cache_get(self.models_splits[0][0])
                         self.cache_get = cache_get
-                    except Exception, exc:
+                    except Exception as exc:
                         raise Exception('Error while calling the user-given'
                                         ' function %s: %s' %
                                         (cache_get.__name__, str(exc)))
@@ -300,7 +300,7 @@ class Ensemble(ModelFields):
            - an ensemble id
         """
         # the string can be a path to a JSON file
-        if isinstance(ensemble, basestring):
+        if isinstance(ensemble, str):
             try:
                 path = os.path.dirname(os.path.abspath(ensemble))
                 with open(ensemble) as ensemble_file:
@@ -384,7 +384,7 @@ class Ensemble(ModelFields):
                 missing_strategy)
 
             if not compact:
-                names_probabilities = zip(self.class_names, output)
+                names_probabilities = list(zip(self.class_names, output))
                 output = [{'category': class_name,
                            'probability': probability}
                           for class_name, probability in names_probabilities]
@@ -432,7 +432,7 @@ class Ensemble(ModelFields):
                 missing_strategy,
                 method=CONFIDENCE_CODE)
             if not compact:
-                names_confidences = zip(self.class_names, output)
+                names_confidences = list(zip(self.class_names, output))
                 output = [{'category': class_name,
                            'confidence': confidence}
                           for class_name, confidence in names_confidences]
@@ -478,7 +478,7 @@ class Ensemble(ModelFields):
                 missing_strategy,
                 method=PLURALITY_CODE)
             if not compact:
-                names_votes = zip(self.class_names, output)
+                names_votes = list(zip(self.class_names, output))
                 output = [{'category': class_name,
                            'votes': k}
                           for class_name, k in names_votes]
@@ -527,7 +527,7 @@ class Ensemble(ModelFields):
                 try:
                     models = [self.cache_get(model_id) for model_id
                               in models_split]
-                except Exception, exc:
+                except Exception as exc:
                     raise Exception('Error while calling the '
                                     'user-given'
                                     ' function %s: %s' %
@@ -798,9 +798,9 @@ class Ensemble(ModelFields):
         if self.importance:
             field_importance = self.importance
             field_names = {field_id: {'name': self.fields[field_id]["name"]} \
-                           for field_id in field_importance.keys()}
+                           for field_id in list(field_importance.keys())}
             return [list(importance) for importance in \
-                sorted(field_importance.items(), key=lambda x: x[1],
+                sorted(list(field_importance.items()), key=lambda x: x[1],
                        reverse=True)], field_names
 
         if (self.distributions is not None and
@@ -834,7 +834,7 @@ class Ensemble(ModelFields):
         for field_id in field_importance:
             field_importance[field_id] /= number_of_models
         return [list(importance) for importance in \
-            sorted(field_importance.items(), key=lambda x: x[1],
+            sorted(list(field_importance.items()), key=lambda x: x[1],
                    reverse=True)], field_names
 
     def print_importance(self, out=sys.stdout):
@@ -882,19 +882,19 @@ class Ensemble(ModelFields):
         distribution = self.get_data_distribution("training")
 
         if distribution:
-            out.write(u"Data distribution:\n")
+            out.write("Data distribution:\n")
             print_distribution(distribution, out=out)
-            out.write(u"\n\n")
+            out.write("\n\n")
 
         if not self.boosting:
             predictions = self.get_data_distribution("predictions")
 
             if predictions:
-                out.write(u"Predicted distribution:\n")
+                out.write("Predicted distribution:\n")
                 print_distribution(predictions, out=out)
-                out.write(u"\n\n")
+                out.write("\n\n")
 
-        out.write(u"Field importance:\n")
+        out.write("Field importance:\n")
         self.print_importance(out=out)
         out.flush()
 

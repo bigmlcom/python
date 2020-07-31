@@ -19,9 +19,9 @@
 """ Creating a sampled multidataset
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
 
 class TestMultiDataset(object):
 
@@ -29,13 +29,13 @@ class TestMultiDataset(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -55,11 +55,11 @@ class TestMultiDataset(object):
                 | data                | time_1  | time_2 | time_3 | rate |rates
                 | ../data/iris.csv | 10      | 10     | 10     | 0.5 |[0.2, 0.3]
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '0.5', '[0.2, 0.3]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -91,11 +91,11 @@ class TestMultiDataset(object):
                 | data                | time_1  | time_2 | time_3 | rate |rates
                 | ../data/iris.csv | 10      | 10     | 10     | 0.2 |[0.2]
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '0.2', '[0.2]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -123,11 +123,11 @@ class TestMultiDataset(object):
                 | data                | time_1  | time_2 | time_3 | rate |rates
                 | ../data/iris.csv | 10      | 10     | 10     | 1.3 |[1, 0.3]
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '10', '1.3', '[1, 0.3]']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

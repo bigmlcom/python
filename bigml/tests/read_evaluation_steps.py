@@ -16,7 +16,7 @@
 # under the License.
 
 import os
-from world import world
+from .world import world
 from nose.tools import eq_
 
 from bigml.api import HTTP_OK

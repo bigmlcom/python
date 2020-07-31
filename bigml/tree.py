@@ -237,7 +237,7 @@ class Tree(object):
         """Lists a description of the model's fields.
 
         """
-        out.write(utf8(u'<%-32s : %s>\n' % (
+        out.write(utf8('<%-32s : %s>\n' % (
             self.fields[self.objective_id]['name'],
             self.fields[self.objective_id]['optype'])))
         out.flush()
@@ -245,7 +245,7 @@ class Tree(object):
         for field in [(val['name'], val['optype']) for key, val in
                       sort_fields(self.fields)
                       if key != self.objective_id]:
-            out.write(utf8(u'[%-32s : %s]\n' % (field[0], field[1])))
+            out.write(utf8('[%-32s : %s]\n' % (field[0], field[1])))
             out.flush()
         return self.fields
 
@@ -257,7 +257,7 @@ class Tree(object):
             """Checks if the node's value is a category
 
             """
-            return isinstance(node.output, basestring)
+            return isinstance(node.output, str)
 
         classification = is_classification(self)
         if classification:
@@ -326,8 +326,8 @@ class Tree(object):
             if self.regression:
                 # singular case:
                 # when the prediction is the one given in a 1-instance node
-                if len(final_distribution.items()) == 1:
-                    prediction, instances = final_distribution.items()[0]
+                if len(list(final_distribution.items())) == 1:
+                    prediction, instances = list(final_distribution.items())[0]
                     if instances == 1:
                         return Prediction(
                             last_node.output,
@@ -344,7 +344,7 @@ class Tree(object):
                             d_max=last_node.max)
                 # when there's more instances, sort elements by their mean
                 distribution = [list(element) for element in
-                                sorted(final_distribution.items(),
+                                sorted(list(final_distribution.items()),
                                        key=lambda x: x[0])]
                 distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
                                      else 'counts')
@@ -384,7 +384,7 @@ class Tree(object):
                     d_max=d_max)
             else:
                 distribution = [list(element) for element in
-                                sorted(final_distribution.items(),
+                                sorted(list(final_distribution.items()),
                                        key=lambda x: (-x[1], x[0]))]
                 return Prediction(
                     distribution[0][0],
@@ -484,19 +484,19 @@ class Tree(object):
         """Translates a tree model into a set of IF-THEN rules.
 
         """
-        rules = u""
+        rules = ""
         children = filter_nodes(self.children, ids=ids_path,
                                 subtree=subtree)
         if children:
             for child in children:
-                rules += (u"%s IF %s %s\n" %
+                rules += ("%s IF %s %s\n" %
                           (INDENT * depth,
                            child.predicate.to_rule(self.fields, 'slug'),
                            "AND" if child.children else "THEN"))
                 rules += child.generate_rules(depth + 1, ids_path=ids_path,
                                               subtree=subtree)
         else:
-            rules += (u"%s %s = %s\n" %
+            rules += ("%s %s = %s\n" %
                       (INDENT * depth,
                        (self.fields[self.objective_id]['slug']
                         if self.objective_id else "Prediction"),
@@ -536,7 +536,7 @@ class Tree(object):
             return field
         if cmv is None:
             cmv = []
-        body = u""
+        body = ""
         term_analysis_fields = []
         item_analysis_fields = []
         children = filter_nodes(self.children, ids=ids_path,
@@ -550,26 +550,26 @@ class Tree(object):
             if not has_missing_branch and \
                     self.fields[field]["optype"] not in ["text", "items"] and \
                     self.fields[field]['slug'] not in cmv:
-                body += (u"%sif (%s is None):\n" %
+                body += ("%sif (%s is None):\n" %
                          (INDENT * depth,
                           map_data(self.fields[field]['slug'], True)))
                 if self.fields[self.objective_id]['optype'] == 'numeric':
                     value = self.output
                 else:
                     value = repr(self.output)
-                body += (u"%sreturn %s\n" %
+                body += ("%sreturn %s\n" %
                          (INDENT * (depth + 1),
                           value))
                 cmv.append(self.fields[field]['slug'])
 
             for child in children:
                 field = child.predicate.field
-                pre_condition = u""
+                pre_condition = ""
                 if has_missing_branch and child.predicate.value is not None:
-                    negation = u"" if child.predicate.missing else u" not"
-                    connection = u"or" if child.predicate.missing else u"and"
+                    negation = "" if child.predicate.missing else " not"
+                    connection = "or" if child.predicate.missing else "and"
                     pre_condition = (
-                        u"%s is%s None %s " % (
+                        "%s is%s None %s " % (
                             map_data(self.fields[field]['slug'], True),
                             negation,
                             connection))
@@ -593,13 +593,13 @@ class Tree(object):
                         matching_function = "item_matches"
 
                     body += (
-                        u"%sif (%s%s(%s, \"%s\", %s\"%s\") %s %s):"
-                        u"\n" %
+                        "%sif (%s%s(%s, \"%s\", %s\"%s\") %s %s):"
+                        "\n" %
                         (INDENT * depth, pre_condition, matching_function,
                          map_data(self.fields[field]['slug'],
                                   False),
                          self.fields[field]['slug'],
-                         ('u' if isinstance(child.predicate.term, unicode)
+                         ('u' if isinstance(child.predicate.term, str)
                           else ''),
                          child.predicate.term.replace("\"", "\\\""),
                          PYTHON_OPERATOR[child.predicate.operator],
@@ -611,7 +611,7 @@ class Tree(object):
                     if child.predicate.value is None:
                         cmv.append(self.fields[field]['slug'])
                     body += (
-                        u"%sif (%s%s %s %s):\n" %
+                        "%sif (%s%s %s %s):\n" %
                         (INDENT * depth, pre_condition,
                          map_data(self.fields[field]['slug'],
                                   False),
@@ -629,7 +629,7 @@ class Tree(object):
                 value = self.output
             else:
                 value = repr(self.output)
-            body = u"%sreturn %s\n" % (INDENT * depth, value)
+            body = "%sreturn %s\n" % (INDENT * depth, value)
 
         return body, term_analysis_fields, item_analysis_fields
 
@@ -653,19 +653,19 @@ class Tree(object):
                     args.append("%s=None" % (slug))
         if input_map:
             args.append("data={}")
-        predictor_definition = (u"def predict_%s" %
+        predictor_definition = ("def predict_%s" %
                                 self.fields[self.objective_id]['slug'])
         depth = len(predictor_definition) + 1
-        predictor = u"%s(%s):\n" % (
+        predictor = "%s(%s):\n" % (
             predictor_definition,
             (",\n" + " " * depth).join(args))
-        predictor_doc = (INDENT + u"\"\"\" " + docstring +
-                         u"\n" + INDENT + u"\"\"\"\n")
+        predictor_doc = (INDENT + "\"\"\" " + docstring +
+                         "\n" + INDENT + "\"\"\"\n")
         body, term_analysis_predicates, item_analysis_predicates = \
             self.python_body(input_map=input_map,
                              ids_path=ids_path,
                              subtree=subtree)
-        terms_body = u""
+        terms_body = ""
         if term_analysis_predicates or item_analysis_predicates:
             terms_body = self.term_analysis_body(term_analysis_predicates,
                                                  item_analysis_predicates)
@@ -679,7 +679,7 @@ class Tree(object):
         analysis fields
 
         """
-        body = u""
+        body = ""
         # static content
         body += """
     import re
@@ -840,7 +840,7 @@ class Tree(object):
 
         return body
 
-    def tableau_body(self, body=u"", conditions=None, cmv=None,
+    def tableau_body(self, body="", conditions=None, cmv=None,
                      ids_path=None, subtree=True):
         """Translate the model into a set of "if" statements in Tableau syntax
 
@@ -852,11 +852,11 @@ class Tree(object):
         if cmv is None:
             cmv = []
         if body:
-            alternate = u"ELSEIF"
+            alternate = "ELSEIF"
         else:
             if conditions is None:
                 conditions = []
-            alternate = u"IF"
+            alternate = "IF"
 
         children = filter_nodes(self.children, ids=ids_path,
                                 subtree=subtree)
@@ -869,45 +869,45 @@ class Tree(object):
             if (not has_missing_branch and
                     self.fields[field]['name'] not in cmv):
                 conditions.append("ISNULL([%s])" % self.fields[field]['name'])
-                body += (u"%s %s THEN " %
+                body += ("%s %s THEN " %
                          (alternate, " AND ".join(conditions)))
                 if self.fields[self.objective_id]['optype'] == 'numeric':
                     value = self.output
                 else:
                     value = tableau_string(self.output)
-                body += (u"%s\n" % value)
+                body += ("%s\n" % value)
                 cmv.append(self.fields[field]['name'])
-                alternate = u"ELSEIF"
+                alternate = "ELSEIF"
                 del conditions[-1]
 
             for child in children:
-                pre_condition = u""
-                post_condition = u""
+                pre_condition = ""
+                post_condition = ""
                 if has_missing_branch and child.predicate.value is not None:
-                    negation = u"" if child.predicate.missing else u"NOT "
-                    connection = u"OR" if child.predicate.missing else u"AND"
+                    negation = "" if child.predicate.missing else "NOT "
+                    connection = "OR" if child.predicate.missing else "AND"
                     pre_condition = (
-                        u"(%sISNULL([%s]) %s " % (
+                        "(%sISNULL([%s]) %s " % (
                             negation, self.fields[field]['name'], connection))
                     if not child.predicate.missing:
                         cmv.append(self.fields[field]['name'])
-                    post_condition = u")"
+                    post_condition = ")"
                 optype = self.fields[child.predicate.field]['optype']
                 if child.predicate.value is None:
                     value = ""
                 elif optype == 'text' or optype == 'items':
-                    return u""
+                    return ""
                 elif optype == 'numeric':
                     value = child.predicate.value
                 else:
                     value = repr(child.predicate.value)
 
-                operator = (u"" if child.predicate.value is None else
+                operator = ("" if child.predicate.value is None else
                             PYTHON_OPERATOR[child.predicate.operator])
                 if child.predicate.value is None:
                     pre_condition = (
                         T_MISSING_OPERATOR[child.predicate.operator])
-                    post_condition = u")"
+                    post_condition = ")"
 
                 conditions.append("%s[%s]%s%s%s" % (
                     pre_condition,
@@ -924,8 +924,8 @@ class Tree(object):
             else:
                 value = tableau_string(self.output)
             body += (
-                u"%s %s THEN" % (alternate, " AND ".join(conditions)))
-            body += u" %s\n" % value
+                "%s %s THEN" % (alternate, " AND ".join(conditions)))
+            body += " %s\n" % value
 
         return body
 

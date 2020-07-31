@@ -19,10 +19,10 @@
 """ Creating test
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_statistical_tst_steps as statistical_tst_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_statistical_tst_steps as statistical_tst_create
 
 class TestStatisticalTest(object):
 
@@ -30,13 +30,13 @@ class TestStatisticalTest(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -55,11 +55,11 @@ class TestStatisticalTest(object):
                 | data                | time_1  | time_2 | time_3 | time_4 | test_name |
                 | ../data/iris.csv | 10      | 10     | 20     | 20 | my new statistical test name |
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/iris.csv', '10', '10', '20', '20', 'my new statistical test name']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

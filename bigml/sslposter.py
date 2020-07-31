@@ -20,8 +20,8 @@
    Waiting for the poster update to match python 2.7.9 specifications
 """
 
-import urllib2
-import httplib
+import urllib.request, urllib.error, urllib.parse
+import http.client
 
 from poster.streaminghttp import (StreamingHTTPSHandler,
                                   StreamingHTTPHandler,
@@ -30,11 +30,11 @@ from poster.streaminghttp import (StreamingHTTPSHandler,
 
 
 if hasattr(httplib, 'HTTPS'):
-    class StreamingHTTPSHandler(urllib2.HTTPSHandler):
+    class StreamingHTTPSHandler(urllib.request.HTTPSHandler):
         """Subclass of `urllib2.HTTPSHandler` that uses
         StreamingHTTPSConnection as its http connection class."""
 
-        handler_order = urllib2.HTTPSHandler.handler_order - 1
+        handler_order = urllib.request.HTTPSHandler.handler_order - 1
 
         def https_open(self, req):
             return self.do_open(StreamingHTTPSConnection, req,
@@ -49,7 +49,7 @@ if hasattr(httplib, 'HTTPS'):
                     if not req.has_header('Content-length'):
                         raise ValueError(
                             "No Content-Length specified for iterable body")
-            return urllib2.HTTPSHandler.do_request_(self, req)
+            return urllib.request.HTTPSHandler.do_request_(self, req)
 
 
 def get_handlers():
@@ -63,8 +63,8 @@ def register_openers():
     opener object.
 
     Returns the created OpenerDirector object."""
-    opener = urllib2.build_opener(*get_handlers())
+    opener = urllib.request.build_opener(*get_handlers())
 
-    urllib2.install_opener(opener)
+    urllib.request.install_opener(opener)
 
     return opener

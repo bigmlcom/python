@@ -151,7 +151,7 @@ class LinearRegression(ModelFields):
                 if not self.input_fields:
                     self.input_fields = [ \
                         field_id for field_id, _ in
-                        sorted(fields.items(),
+                        sorted(list(fields.items()),
                                key=lambda x: x[1].get("column_number"))]
                 self.coeff_ids = self.input_fields[:]
                 self.coefficients = linear_regression_info.get( \

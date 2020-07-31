@@ -19,19 +19,19 @@
 """ Comparing remote and local predictions
 
 """
-from world import world, setup_module, teardown_module, show_doc
+from .world import world, setup_module, teardown_module, show_doc
 from bigml.util import PY3
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
-import create_linear_steps as linear_create
-import create_association_steps as association_create
-import create_cluster_steps as cluster_create
-import create_anomaly_steps as anomaly_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as prediction_compare
-import create_lda_steps as topic_create
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_linear_steps as linear_create
+from . import create_association_steps as association_create
+from . import create_cluster_steps as cluster_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as prediction_compare
+from . import create_lda_steps as topic_create
 
 
 
@@ -41,13 +41,13 @@ class TestComparePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -81,11 +81,11 @@ class TestComparePrediction(object):
             ['data/spam.csv', '20', '20', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "", "Message": ""}', 'Cluster 6', '0.5'],
             ['data/diabetes.csv', '20', '20', '30', '{"fields": {}}', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": "true"}', 'Cluster 3', '0.5033378686559257'],
             ['data/diabetes.csv', '20', '20', '30', '{"fields": {}}', '{"pregnancies": 0, "plasma glucose": 118, "blood pressure": 84, "triceps skin thickness": 47, "insulin": 230, "bmi": 45.8, "diabetes pedigree": 0.551, "age": 31, "diabetes": true}', 'Cluster 3', '0.5033378686559257'],
-            ['data/iris_sp_chars.csv', '20', '20', '30', '{"fields": {}}', '{"pétal.length":1, "pétal&width\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}', 'Cluster 7', '0.8752380218327035'],
+            ['data/iris_sp_chars.csv', '20', '20', '30', '{"fields": {}}', '{"pétal.length":1, "pétal&width\\u0000": 2, "sépal.length":1, "sépal&width": 2, "spécies": "Iris-setosa"}', 'Cluster 7', '0.8752380218327035'],
             ['data/movies.csv', '20', '20', '30', '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}', '{"gender": "Female", "age_range": "18-24", "genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student", "zipcode": 59583, "rating": 3}', 'Cluster 3', '0.62852']]
         show_doc(self.test_scenario1, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -122,7 +122,7 @@ class TestComparePrediction(object):
             ['data/iris.csv', '20', '20', '30', '{"default_numeric_value": "zero"}', '{"petal length": 1}', 'Cluster 4', '1.41215', '{"petal length": 1, "petal width": 0, "sepal length": 0, "sepal width": 0, "species": ""}']]
         show_doc(self.test_scenario2, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -159,7 +159,7 @@ class TestComparePrediction(object):
             ['data/tiny_kdd.csv', '30', '30', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -198,7 +198,7 @@ class TestComparePrediction(object):
             ['data/spam.csv', '30', '30', '30', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}', '{"Type": "ham", "Message": "Go until jurong point, crazy.. Available only in bugis n great world la e buffet... Cine there got amore wat..."}', '[0.39188, 0.00643, 0.00264, 0.00643, 0.08112, 0.00264, 0.37352, 0.0115, 0.00707, 0.00327, 0.00264, 0.11086]']]
         show_doc(self.test_scenario4, examples)
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -235,7 +235,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
@@ -284,7 +284,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -331,7 +331,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -362,7 +362,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             ensemble_create.create_local_ensemble_predictor(self, example[0])
             prediction_compare.i_create_a_local_ensemble_prediction(self, example[1])
             prediction_compare.the_local_ensemble_prediction_is(self, example[2])
@@ -396,7 +396,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -444,7 +444,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario10, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             tag = "%s_%s" % (example[5], PY3)
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
@@ -501,7 +501,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario11, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             tag = "%s_%s" % (example[5], PY3)
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
@@ -557,7 +557,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario12, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -609,7 +609,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario13, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             tag = "%s_%s" % (example[5], PY3)
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])

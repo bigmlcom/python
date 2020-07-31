@@ -22,7 +22,7 @@ import sys
 
 
 from datetime import datetime
-from world import world, res_filename, logged_wait
+from .world import world, res_filename, logged_wait
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -32,7 +32,7 @@ from bigml.api import UPLOADING
 from bigml.api import get_status
 
 
-import read_external_steps as read
+from . import read_external_steps as read
 
 #@step(r'I create an external connector$')
 def i_create_external_connector(step):
@@ -76,7 +76,7 @@ def i_update_external_connector_with(step, data="{}"):
 #@step(r'the external connector exists and has args "(.*)"')
 def external_connector_has_args(step, args="{}"):
     args = json.loads(args)
-    for key, value in args.items():
+    for key, value in list(args.items()):
         if key in world.external_connector:
             eq_(world.external_connector[key], value,
                 "Expected key %s: %s. Found %s" % (key, value, world.external_connector[key]))

@@ -214,7 +214,7 @@ class Fusion(ModelFields):
            - an fusion id
         """
         # the string can be a path to a JSON file
-        if isinstance(fusion, basestring):
+        if isinstance(fusion, str):
             try:
                 path = os.path.dirname(os.path.abspath(fusion))
                 with open(fusion) as fusion_file:
@@ -405,7 +405,7 @@ class Fusion(ModelFields):
             unused_fields=unused_fields)
         if full:
             return dict((key, value) for key, value in \
-                full_prediction.iteritems() if value is not None)
+                full_prediction.items() if value is not None)
 
         return full_prediction['prediction']
 

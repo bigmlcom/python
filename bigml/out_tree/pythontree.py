@@ -43,7 +43,7 @@ def value_to_print(value, optype):
     # the value is numeric for these fields
     if (optype in NUMERIC_VALUE_FIELDS or value is None):
         return value
-    return u"\"%s\"" % value.replace('"', '\\"')
+    return "\"%s\"" % value.replace('"', '\\"')
 
 
 def map_data(field, input_map=False, missing=False):
@@ -64,11 +64,11 @@ def missing_prefix_code(self, field, input_map, cmv):
 
     """
 
-    negation = u"" if self.predicate.missing else u" not"
-    connection = u"or" if self.predicate.missing else u"and"
+    negation = "" if self.predicate.missing else " not"
+    connection = "or" if self.predicate.missing else "and"
     if not self.predicate.missing:
         cmv.append(self.fields[field]['slug'])
-    return u"%s is%s None %s " % (map_data(self.fields[field]['slug'],
+    return "%s is%s None %s " % (map_data(self.fields[field]['slug'],
                                            input_map,
                                            True),
                                   negation,
@@ -95,14 +95,14 @@ def split_condition_code(self, field, depth, input_map,
                                          self.predicate.term))
             matching_function = "item_matches"
 
-        return u"%sif (%s%s(%s, \"%s\", %s%s) %s " \
-               u"%s):\n" % \
+        return "%sif (%s%s(%s, \"%s\", %s%s) %s " \
+               "%s):\n" % \
               (INDENT * depth, pre_condition, matching_function,
                map_data(self.fields[field]['slug'],
                         input_map,
                         False),
                self.fields[self.predicate.field]['slug'],
-               'u' if isinstance(self.predicate.term, unicode) else '',
+               'u' if isinstance(self.predicate.term, str) else '',
                value_to_print(self.predicate.term, 'categorical'),
                PYTHON_OPERATOR[self.predicate.operator],
                value)
@@ -112,7 +112,7 @@ def split_condition_code(self, field, depth, input_map,
                 PYTHON_OPERATOR[self.predicate.operator])
     if self.predicate.value is None:
         cmv.append(self.fields[field]['slug'])
-    return u"%sif (%s%s %s %s):\n" % \
+    return "%sif (%s%s %s %s):\n" % \
            (INDENT * depth, pre_condition,
             map_data(self.fields[field]['slug'], input_map,
                      False),
@@ -127,13 +127,13 @@ class PythonTree(Tree):
         """Builds the code to predict when the field is missing
 
         """
-        code = u"%sif (%s is None):\n" % \
+        code = "%sif (%s is None):\n" % \
                (INDENT * depth,
                 map_data(self.fields[field]['slug'], input_map, True))
         value = value_to_print(self.output,
                                self.fields[self.objective_id]['optype'])
-        code += u"%sreturn {\"prediction\": %s," \
-            u" \"%s\": %s}\n" % \
+        code += "%sreturn {\"prediction\": %s," \
+            " \"%s\": %s}\n" % \
             (INDENT * (depth + 1), value, metric, self.confidence)
         cmv.append(self.fields[field]['slug'])
         return code
@@ -169,7 +169,7 @@ class PythonTree(Tree):
         metric = "error" if self.regression else "confidence"
         if cmv is None:
             cmv = []
-        body = u""
+        body = ""
         term_analysis_fields = []
         item_analysis_fields = []
 
@@ -193,7 +193,7 @@ class PythonTree(Tree):
 
             for child in children:
                 field = child.predicate.field
-                pre_condition = u""
+                pre_condition = ""
                 # code when missing_splits has been used
                 if has_missing_branch and child.predicate.value is not None:
                     pre_condition = self.missing_prefix_code(child, field,
@@ -217,7 +217,7 @@ class PythonTree(Tree):
         else:
             value = value_to_print(self.output,
                                    self.fields[self.objective_id]['optype'])
-            body = u"%sreturn {\"prediction\":%s, \"%s\":%s}\n" % ( \
+            body = "%sreturn {\"prediction\":%s, \"%s\":%s}\n" % ( \
                 INDENT * depth, value, metric, self.confidence)
 
         return body, term_analysis_fields, item_analysis_fields
@@ -229,15 +229,15 @@ class PythonBoostedTree(BoostedTree):
         """Builds the code to predict when the field is missing
 
         """
-        code = u"%sif (%s is None):\n" % \
+        code = "%sif (%s is None):\n" % \
                (INDENT * depth,
                 map_data(self.fields[field]['slug'], input_map, True))
         value = value_to_print(self.output, "numeric")
-        code += u"%sreturn {\"prediction\":%s" % (INDENT * (depth + 1),
+        code += "%sreturn {\"prediction\":%s" % (INDENT * (depth + 1),
                                                   value)
         if hasattr(self, "probability"):
-            code += u", \"probability\": %s" % self.probability
-        code += u"}\n"
+            code += ", \"probability\": %s" % self.probability
+        code += "}\n"
         cmv.append(self.fields[field]['slug'])
         return code
 
@@ -268,7 +268,7 @@ class PythonBoostedTree(BoostedTree):
         """
         if cmv is None:
             cmv = []
-        body = u""
+        body = ""
         term_analysis_fields = []
         item_analysis_fields = []
 
@@ -291,7 +291,7 @@ class PythonBoostedTree(BoostedTree):
 
             for child in children:
                 field = child.predicate.field
-                pre_condition = u""
+                pre_condition = ""
                 # code when missing_splits has been used
                 if has_missing_branch and child.predicate.value is not None:
                     pre_condition = self.missing_prefix_code(child, field,
@@ -314,9 +314,9 @@ class PythonBoostedTree(BoostedTree):
                 item_analysis_fields.extend(next_level[2])
         else:
             value = value_to_print(self.output, "numeric")
-            body = u"%sreturn {\"prediction\":%s" % (INDENT * depth, value)
+            body = "%sreturn {\"prediction\":%s" % (INDENT * depth, value)
             if hasattr(self, "probability"):
-                body += u", \"probability\": %s" % self.probability
-            body += u"}\n"
+                body += ", \"probability\": %s" % self.probability
+            body += "}\n"
 
         return body, term_analysis_fields, item_analysis_fields

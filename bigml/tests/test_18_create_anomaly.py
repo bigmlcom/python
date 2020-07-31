@@ -19,11 +19,11 @@
 """ Creating anomaly detector
 
 """
-from world import world, setup_module, teardown_module
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_anomaly_steps as anomaly_create
-import create_multimodel_steps as mm_create
+from .world import world, setup_module, teardown_module
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_anomaly_steps as anomaly_create
+from . import create_multimodel_steps as mm_create
 
 class TestAnomaly(object):
 
@@ -31,14 +31,14 @@ class TestAnomaly(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
         world.dataset_ids = []
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
         world.dataset_ids = []
 
     def test_scenario1(self):
@@ -64,11 +64,11 @@ class TestAnomaly(object):
                 | data                 | time_1  | time_2 | time_3 |  time_4 |
                 | ../data/tiny_kdd.csv | 40      | 40     | 80     |  100
         """
-        print self.test_scenario1.__doc__
+        print(self.test_scenario1.__doc__)
         examples = [
             ['data/tiny_kdd.csv', '40', '40', '40', '100']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -106,11 +106,11 @@ class TestAnomaly(object):
                 | data                       | time_1  | time_2 | time_3 |time_4|  rows|
                 | ../data/iris_anomalous.csv | 40      | 40     | 80     | 40   |  1
         """
-        print self.test_scenario2.__doc__
+        print(self.test_scenario2.__doc__)
         examples = [
             ['data/iris_anomalous.csv', '40', '40', '80', '40', '1']]
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

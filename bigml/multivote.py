@@ -84,7 +84,7 @@ def softmax(predictions):
     """
     total = 0.0
     normalized = {}
-    for category, cat_info in predictions.items():
+    for category, cat_info in list(predictions.items()):
         normalized[category] = { \
             "probability": math.exp(cat_info["probability"]),
             "order": cat_info["order"]}
@@ -92,7 +92,7 @@ def softmax(predictions):
     return float('nan') if total == 0 else \
         {category: {"probability": cat_info["probability"] / total,
                     "order": cat_info["order"]}
-         for category, cat_info in normalized.items()}
+         for category, cat_info in list(normalized.items())}
 
 
 def ws_confidence(prediction, distribution, ws_z=1.96, ws_n=None):
@@ -137,7 +137,7 @@ def merge_distributions(distribution, new_distribution):
     """Adds up a new distribution structure to a map formatted distribution
 
     """
-    for value, instances in new_distribution.items():
+    for value, instances in list(new_distribution.items()):
         if value not in distribution:
             distribution[value] = 0
         distribution[value] += instances
@@ -189,7 +189,7 @@ class MultiVote(object):
                 dict((x[0], x[1]) for x in prediction['distribution']))
             # when there's more instances, sort elements by their mean
             distribution = [list(element) for element in
-                            sorted(joined_distribution.items(),
+                            sorted(list(joined_distribution.items()),
                                    key=lambda x: x[0])]
             if distribution_unit == 'counts':
                 distribution_unit = ('bins' if len(distribution) > BINS_LIMIT
@@ -499,7 +499,7 @@ class MultiVote(object):
             total += prediction['count']
         if total > 0:
             distribution = [[key, value] for key, value in
-                            distribution.items()]
+                            list(distribution.items())]
         else:
             distribution = []
         return distribution, total
@@ -522,7 +522,7 @@ class MultiVote(object):
             weight = 1
         for prediction in self.predictions:
             if weight_label is not None:
-                if weight_label not in COMBINATION_WEIGHTS.values():
+                if weight_label not in list(COMBINATION_WEIGHTS.values()):
                     raise Exception("Wrong weight_label value.")
                 if weight_label not in prediction:
                     raise Exception("Not enough data to use the selected "
@@ -539,7 +539,7 @@ class MultiVote(object):
             else:
                 mode[category] = {"count": weight,
                                   "order": prediction['order']}
-        prediction = sorted(mode.items(), key=lambda x: (x[1]['count'],
+        prediction = sorted(list(mode.items()), key=lambda x: (x[1]['count'],
                                                          -x[1]['order'],
                                                          x[0]),
                             reverse=True)[0][0]
@@ -575,7 +575,7 @@ class MultiVote(object):
         predictions = [prediction for prediction in self.predictions \
             if prediction['prediction'] == combined_prediction]
         if (weight_label is not None and
-                (not isinstance(weight_label, basestring) or
+                (not isinstance(weight_label, str) or
                  any([not CONFIDENCE_W or weight_label not in prediction
                       for prediction in predictions]))):
             raise ValueError("Not enough data to use the selected "
@@ -611,10 +611,10 @@ class MultiVote(object):
             "probability": weighted_sum(value, weight="weight") + \
                 self.boosting_offsets.get(key, 0),
             "order": categories.index(key)} for
-                       key, value in grouped_predictions.items()}
+                       key, value in list(grouped_predictions.items())}
         predictions = softmax(predictions)
         predictions = sorted( \
-            predictions.items(), key=lambda(x): \
+            list(predictions.items()), key=lambda x: \
             (- x[1]["probability"], x[1]["order"]))
         prediction, prediction_info = predictions[0]
         confidence = round(prediction_info["probability"], PRECISION)

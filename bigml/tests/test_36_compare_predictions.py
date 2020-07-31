@@ -19,14 +19,14 @@
 """ Comparing remote and local predictions
 
 """
-from world import world, setup_module, teardown_module, show_doc
-import create_source_steps as source_create
-import create_dataset_steps as dataset_create
-import create_model_steps as model_create
-import create_ensemble_steps as ensemble_create
-import create_linear_steps as linear_create
-import create_prediction_steps as prediction_create
-import compare_predictions_steps as prediction_compare
+from .world import world, setup_module, teardown_module, show_doc
+from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
+from . import create_model_steps as model_create
+from . import create_ensemble_steps as ensemble_create
+from . import create_linear_steps as linear_create
+from . import create_prediction_steps as prediction_create
+from . import compare_predictions_steps as prediction_compare
 
 
 class TestComparePrediction(object):
@@ -35,13 +35,13 @@ class TestComparePrediction(object):
         """
             Debug information
         """
-        print "\n-------------------\nTests in: %s\n" % __name__
+        print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown(self):
         """
             Debug information
         """
-        print "\nEnd of tests in: %s\n-------------------\n" % __name__
+        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
         """
@@ -72,7 +72,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -114,7 +114,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario2, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -153,7 +153,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -195,7 +195,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario4, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -237,7 +237,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -277,7 +277,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -321,7 +321,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -360,7 +360,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario8, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -400,7 +400,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario9, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -440,7 +440,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario10, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -498,7 +498,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario11, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
@@ -594,7 +594,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario12, examples)
 
         for example in examples:
-            print "\nTesting with:\n", example
+            print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)

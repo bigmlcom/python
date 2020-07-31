@@ -11,7 +11,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# WARRANTIES OR CONDITIONS OF ANY KIn545D, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
 
@@ -542,7 +542,7 @@ class ResourceHandler(BigMLConnection):
         """Waits until the resource is finished or faulty, updates it and
            returns True on success
 
-             resource: (string|map) Resource ID or structure
+             resource: (map) Resource structure
              query_string: (string) Filters used on the resource attributes
              wait_time: (number) Time to sleep between get requests
              max_requests: (integer) Maximum number of get requests

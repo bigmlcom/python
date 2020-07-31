@@ -20,7 +20,6 @@
 
 """
 from .world import world, setup_module, teardown_module, show_doc
-from bigml.util import PY3
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -445,7 +444,7 @@ class TestComparePrediction(object):
 
         for example in examples:
             print("\nTesting with:\n", example)
-            tag = "%s_%s" % (example[5], PY3)
+            tag = example[5]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
@@ -502,7 +501,7 @@ class TestComparePrediction(object):
 
         for example in examples:
             print("\nTesting with:\n", example)
-            tag = "%s_%s" % (example[5], PY3)
+            tag = example[5]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
@@ -549,8 +548,8 @@ class TestComparePrediction(object):
                 | data             | time_1  | time_2 | time_3 | params| tag | data_input                             | objective | prediction  | params
 
         """
-        tag = "my_fusion_tag_12_%s" % PY3
-        tag_reg = "my_fusion_tag_12_reg_%s" % PY3
+        tag = "my_fusion_tag_12"
+        tag_reg = "my_fusion_tag_12_reg"
         examples = [
             ['data/iris_unbalanced.csv', '30', '30', '120', '120', '{"tags":["%s"], "sample_rate": 0.8, "seed": "bigml"}' % tag, tag, '{"petal width": 4}', '000004', 'Iris-virginica'],
             ['data/grades.csv', '30', '30', '120', '120', '{"tags":["%s"], "sample_rate": 0.8, "seed": "bigml"}' % tag_reg, tag_reg, '{"Midterm": 20}', '000005', 44.37625]]
@@ -610,7 +609,7 @@ class TestComparePrediction(object):
 
         for example in examples:
             print("\nTesting with:\n", example)
-            tag = "%s_%s" % (example[5], PY3)
+            tag = example[5]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])

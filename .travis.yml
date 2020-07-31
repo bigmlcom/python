@@ -1,6 +1,5 @@
 language: python
 python:
-  - "2.7"
   - "3.7"
 env:
   - BML_TESTS="05"
@@ -11,8 +10,6 @@ env:
   - BML_TESTS="23 37 38 40 41 45 33"
   - BML_TESTS="42 44"
 install:
-  - pip install numpy
-  - pip install scipy
   - pip install cython
   - pip install pystemmer==2.0.0
   - pip install .

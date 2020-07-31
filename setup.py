@@ -37,16 +37,8 @@ for file_name in ('README.rst', 'HISTORY.rst'):
     file_contents.append(open(path).read())
 long_description = '\n\n'.join(file_contents)
 
-PYTHON_VERSION = sys.version_info[0:3]
-PYTHON_REQUESTS_CHANGE = (2, 7, 9)
-REQUESTS_VERSION = "requests==2.5.3" if \
-    PYTHON_VERSION < PYTHON_REQUESTS_CHANGE else "requests"
-INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.4.3"]
-if PYTHON_VERSION[0] < 3:
-    INSTALL_REQUIRES.append('poster')
-else:
-    INSTALL_REQUIRES.append('requests-toolbelt')
-INSTALL_REQUIRES.append(REQUESTS_VERSION)
+INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.4.3", "requests",
+                    "requests-toolbelt", "numpy", "scipy"]
 
 setuptools.setup(
     name="bigml",
@@ -71,11 +63,8 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    test_suite='nose.collector',
-    use_2to3=True
+    test_suite='nose.collector'
 )

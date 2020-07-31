@@ -30,7 +30,7 @@ from copy import copy
 from bigml.predicate import Predicate
 from bigml.prediction import Prediction
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
-from bigml.util import sort_fields, slugify, split, utf8, PRECISION, PY3
+from bigml.util import sort_fields, slugify, split, utf8, PRECISION
 from bigml.multivote import ws_confidence, merge_distributions, merge_bins
 from bigml.multivote import BINS_LIMIT
 from bigml.tree_utils import tableau_string, filter_nodes, missing_branch, \
@@ -322,9 +322,6 @@ class FlatTree(object):
                 predictor += "%sprediction.update({\"class\": \"%s\"})\n" % \
                     (INDENT, self.boosting.get("objective_class"))
         predictor += "%sreturn prediction" % INDENT
-
-        if not PY3:
-            predictor = predictor.encode("utf8")
         out.write(predictor)
         out.flush()
 

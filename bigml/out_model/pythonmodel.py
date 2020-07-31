@@ -27,7 +27,6 @@ from bigml.tree_utils import slugify, INDENT, sort_fields, docstring_comment, \
     TERM_OPTIONS, TM_TOKENS, TM_FULL_TERM, TM_ALL, \
     ITEM_OPTIONS
 from bigml.model import Model
-from bigml.util import PY3
 
 from bigml.out_tree.pythontree import PythonTree, PythonBoostedTree
 
@@ -419,7 +418,5 @@ for values in csv:
                     (INDENT, self.boosting.get("objective_class"))
         predictor += "%sreturn prediction" % INDENT
 
-        if not PY3:
-            predictor = predictor.encode("utf8")
         out.write(predictor)
         out.flush()

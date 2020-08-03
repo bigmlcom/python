@@ -806,11 +806,6 @@ With that in place, you can run the test suite simply by issuing
 
     $ python setup.py nosetests
 
-Some tests need the `numpy <http://www.numpy.org/>`_ and
-`scipy <http://www.scipy.org/>`_ libraries to be installed too. They are not
-automatically installed as a dependency, as they are quite heavy and very
-seldom used.
-
 Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
 automatically run the test suite in virtual environments for all
 supported Python versions.  To install Tox:

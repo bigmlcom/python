@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.7"
+  - "3.8"
 env:
   - BML_TESTS="05"
   - BML_TESTS="35"

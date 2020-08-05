@@ -3,6 +3,12 @@
 History
 -------
 
+5.0.1 (2020-08-05)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixing bug in get_tasks_status to get information about transient net
+  errors.
+
 5.0.0 (2020-07-31)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -879,6 +879,7 @@ class BigMLConnection(object):
                     requests.Timeout,
                     requests.RequestException) as exc:
                 LOGGER.error("HTTP request error: %s", str(exc))
+                error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
                     'object': resources,

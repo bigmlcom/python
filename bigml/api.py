@@ -413,15 +413,26 @@ class BigML(ExternalConnectorHandler,
         """
         if self.organization is not None:
             status = self._status(self.status_url,
-                                  organization=self.organization)["object"]
+                                  organization=self.organization)
         else:
-            status = self._status(self.status_url)["object"]
-        return {
-            "tasks": status["tasks"],
-            "max_tasks": status["subscription"]["max_tasks"],
-            "available_tasks": (status["subscription"]["max_tasks"]
-                                - status["tasks"]),
-            "tasks_in_progress": status["tasks_in_progress"]}
+            status = self._status(self.status_url)
+        if status["error"] is None:
+            status = status.get("object", {})
+            return {
+                "tasks": status.get("tasks"),
+                "max_tasks": status.get("subscription", {}).get("max_tasks"),
+                "available_tasks": (status.get("subscription",
+                                               {}).get("max_tasks")
+                                    - status.get("tasks")),
+                "tasks_in_progress": status.get("tasks_in_progress"),
+                "error": None}
+        else:
+            return {
+                "tasks": 0,
+                "max_tasks": 0,
+                "available_tasks": 0,
+                "tasks_in_progress": 0,
+                "error": status["error"]}
 
     def get_fields(self, resource):
         """Retrieve fields used by a resource.

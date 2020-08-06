@@ -24,7 +24,8 @@ import re
 
 from bigml.predicate_utils.utils import TM_TOKENS, TM_FULL_TERM, TM_ALL, \
     FULL_TERM_PATTERN, OPERATOR_CODE
-from bigml.predicate_utils.utils import apply_predicate
+from bigml.predicate_utils.utils import apply_predicate, term_matches, \
+    item_matches
 from bigml.util import plural
 
 RELATIONS = {

@@ -46,6 +46,7 @@ anomaly.anomaly_score({"src_bytes": 350})
 
 import math
 import msgpack
+import json
 
 from bigml.predicate_utils.utils import OPERATOR_CODE
 from bigml.predicate_utils.utils import apply_predicates

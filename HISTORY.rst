@@ -3,6 +3,12 @@
 History
 -------
 
+5.1.0 (2020-08-07)
+~~~~~~~~~~~~~~~~~~~
+
+- Refactoring local anomaly to reduce memory requirements.
+
+
 5.0.1 (2020-08-05)
 ~~~~~~~~~~~~~~~~~~~
 

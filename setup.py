@@ -38,7 +38,7 @@ for file_name in ('README.rst', 'HISTORY.rst'):
 long_description = '\n\n'.join(file_contents)
 
 INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-                    "requests-toolbelt", "numpy", "scipy"]
+                    "requests-toolbelt", "numpy", "scipy", "msgpack"]
 
 setuptools.setup(
     name="bigml",

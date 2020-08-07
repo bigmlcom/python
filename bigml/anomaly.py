@@ -47,7 +47,7 @@ import math
 import msgpack
 import json
 
-from bigml.predicate_utils.utils import OPERATOR_CODE
+from bigml.predicate_utils.utils import OPERATOR_CODE, PREDICATE_INFO_LENGTH
 from bigml.predicate_utils.utils import apply_predicates
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_anomaly_id
@@ -57,7 +57,7 @@ from bigml.util import cast
 
 
 DEPTH_FACTOR = 0.5772156649
-
+PREDICATES_OFFSET = 3
 
 def build_tree(children, node=None):
     """Builds a compressed version of the tree structure as an list of
@@ -105,6 +105,7 @@ def build_tree(children, node=None):
 
 def calculate_depth(node, input_data, fields, depth=0):
     """Computes the depth in the tree for the input data
+
     """
 
     weight = node[0] if node[0] else 1
@@ -116,8 +117,9 @@ def calculate_depth(node, input_data, fields, depth=0):
 
     depth += weight
     if num_children > 0:
-        start = 3 + (5 * num_predicates)
-        end = 3 + num_children + (5 * num_predicates)
+        start = PREDICATES_OFFSET + (PREDICATE_INFO_LENGTH * num_predicates)
+        end = PREDICATES_OFFSET + num_children + ( \
+            PREDICATE_INFO_LENGTH * num_predicates)
         children = node[slice(start, end)]
         for child in children:
             if apply_predicates(child, input_data, fields):
@@ -129,6 +131,7 @@ def calculate_depth(node, input_data, fields, depth=0):
 def use_cache(cache_get):
     """Checks whether the user has provided a cache get function to retrieve
        local models.
+
     """
     return cache_get is not None and hasattr(cache_get, '__call__')
 
@@ -137,6 +140,7 @@ class Anomaly(ModelFields):
     """ A minimal anomaly detector designed to build quickly from a
     specialized external representation. See file documentation, above,
     for usage.
+
     """
 
     def __init__(self, anomaly, api=None, cache_get=None):
@@ -210,6 +214,7 @@ class Anomaly(ModelFields):
             parameters which come as part of the forest message.
             We combine those values as seen below, which should result in a
             value between 0 and 1.
+
         """
         # corner case with only one record
         if self.sample_size == 1 and self.normalization_factor is None:

@@ -53,6 +53,13 @@ TM_FULL_TERM = 'full_terms_only'
 TM_ALL = 'all'
 FULL_TERM_PATTERN = re.compile(r'^.+\b.+$', re.U)
 
+OPERATION_OFFSET = 2
+OPERATION_FIELD = 3
+OPERATION_VALUE = 4
+OPERATION_TERM = 5
+OPERATION_MISSING = 6
+
+PREDICATE_INFO_LENGTH = 5
 
 def term_matches(text, forms_list, options):
     """ Counts the number of occurences of the words in forms_list in the text
@@ -131,11 +138,11 @@ def apply_predicates(node, input_data, fields):
     num_predicates = node[1]
 
     for i in range(num_predicates):
-        operation = node[2 + (5 * i)]
-        field = node[3 + (5 * i)]
-        value = node[4 + (5 * i)]
-        term = node[5 + (5 * i)]
-        missing = node[6 + (5 * i)]
+        operation = node[OPERATION_OFFSET + (PREDICATE_INFO_LENGTH * i)]
+        field = node[FIELD_OFFSET + (PREDICATE_INFO_LENGTH * i)]
+        value = node[VALUE_OFFSET + (PREDICATE_INFO_LENGTH * i)]
+        term = node[TERM_OFFSET + (PREDICATE_INFO_LENGTH * i)]
+        missing = node[MISSING_OFFSET + (PREDICATE_INFO_LENGTH * i)]
 
         if not apply_predicate(operation, field, value, term, missing,
                                input_data, fields[field]):
@@ -166,18 +173,15 @@ def apply_predicate(operator, field, value, term, missing, input_data,
             terms = [term]
             terms.extend(term_forms)
             options = field_info['term_analysis']
-            return OPERATOR[operator](*[term_matches(
-                input_data.get(field, ""),
-                terms, options),
-                                             value])
+            input_terms = term_matches(input_data.get(field, ""), terms,
+                                       options)
+            return OPERATOR[operator](input_terms, value)
         else:
             # new items optype
             options = field_info['item_analysis']
-            return OPERATOR[operator](*[item_matches(
-                input_data.get(field, ""),
-                term, options),
-                                             value])
+            input_items = item_matches(input_data.get(field, ""), terms,
+                                       options)
+            return OPERATOR[operator](input_items, value)
     if operator == IN:
-        return OPERATOR[operator](*[value,
-                                    input_data[field]])
-    return OPERATOR[operator](*[input_data[field], value])
+        return OPERATOR[operator](value, input_data[field])
+    return OPERATOR[operator](input_data[field], value)

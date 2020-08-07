@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+
 #
 # Copyright 2015-2020 BigML
 #

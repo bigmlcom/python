@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 def predict_final(prefix=None,
                   assignment=None,

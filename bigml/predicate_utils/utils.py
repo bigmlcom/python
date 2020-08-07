@@ -179,7 +179,7 @@ def apply_predicate(operator, field, value, term, missing, input_data,
         else:
             # new items optype
             options = field_info['item_analysis']
-            input_items = item_matches(input_data.get(field, ""), terms,
+            input_items = item_matches(input_data.get(field, ""), term,
                                        options)
             return OPERATOR[operator](input_items, value)
     if operator == IN:

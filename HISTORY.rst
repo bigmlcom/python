@@ -3,20 +3,25 @@
 History
 -------
 
+5.1.1 (2020-08-11)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing module directory inclusion and improving docs on local anomalies.
+
 5.1.0 (2020-08-07)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Refactoring local anomaly to reduce memory requirements.
 
 
 5.0.1 (2020-08-05)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Fixing bug in get_tasks_status to get information about transient net
   errors.
 
 5.0.0 (2020-07-31)
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Deprecating support for Python 2.7.X versions. Only Python 3 supported
   from this version on.

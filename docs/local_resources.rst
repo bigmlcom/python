@@ -596,7 +596,8 @@ parameter:
 
     local_anomaly = Anomaly('anomaly/502fcbff15526876610002435',
                             api=BigML(my_username,
-                                      my_api_key))
+                                      my_api_key,
+                                      storage="my_storage_dir"))
 
 or even use the remote anomaly information retrieved previously to build the
 local anomaly detector object:
@@ -638,6 +639,31 @@ associated to an input data set:
 As in the local model predictions, producing local anomaly scores can be done
 independently of BigML servers, so no cost or connection latencies are
 involved.
+
+Local Anomaly caching
+---------------------
+
+Anomalies can become quite large objects. That's why their use of memory
+resources can be heavy. If your usual scenario is using many of them
+constantly in a disordered way, the best strategy is setting up a cache
+system to store them. The local anomaly class provides helpers to
+interact with that cache. Here's an example using ``Redis``.
+
+.. code-block:: python
+
+    from anomaly import Anomaly
+    import redis
+    r = redis.Redis()
+    # First build as you would any core Anomaly object:
+    anomaly = Anomaly('anomaly/5126965515526876630001b2')
+    # Store a serialized version in Redis
+    anomaly.dump(cache_set=r.set)
+    # (retrieve the external rep from its convenient place)
+    # Speedy Build from external rep
+    anomaly = Anomaly('anomaly/5126965515526876630001b2', cache_get=r.get)
+    # Get scores same as always:
+    anomaly.anomaly_score({"src_bytes": 350})
+
 
 Local Logistic Regression
 -------------------------

@@ -40,7 +40,8 @@ def the_library_code_and_attributes(step, source_code, param, param_value):
 
 #@step(r'I create a whizzml library from a excerpt of code "(.*)"$')
 def i_create_a_library(step, source_code):
-    resource = world.api.create_library(source_code)
+    resource = world.api.create_library(source_code,
+                                        {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

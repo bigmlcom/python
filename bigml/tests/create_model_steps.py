@@ -365,7 +365,8 @@ def i_check_optiml_name(step, name):
 
 #@step(r'I create a fusion$')
 def i_create_a_fusion(step):
-    resource = world.api.create_fusion(world.list_of_models)
+    resource = world.api.create_fusion(world.list_of_models,
+                                       {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
@@ -385,7 +386,8 @@ def i_create_a_fusion_with_weights(step, weights=None):
             models.append({"id": model["resource"], "weight": weights[index]})
     except IndexError:
         pass
-    resource = world.api.create_fusion(models)
+    resource = world.api.create_fusion(models,
+                                       {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
@@ -399,7 +401,7 @@ def i_create_a_fusion_with_objective_and_params(step, objective, parms=None):
         parms = {}
     else:
         parms = json.loads(parms)
-    parms.update({"objective_field": objective})
+    parms.update({"objective_field": objective, "project": world.project_id})
     resource = world.api.create_fusion(models, parms)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)

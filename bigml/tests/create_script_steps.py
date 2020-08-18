@@ -42,7 +42,8 @@ def the_script_code_and_attributes(step, source_code, param, param_value):
 
 #@step(r'I create a whizzml script from a excerpt of code "(.*)"$')
 def i_create_a_script(step, source_code):
-    resource = world.api.create_script(source_code)
+    resource = world.api.create_script(source_code,
+                                       {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
@@ -54,7 +55,8 @@ def i_create_a_script(step, source_code):
 def i_create_a_script_from_file_or_url(step, source_code):
     if not is_url(source_code):
         source_code = res_filename(source_code)
-    resource = world.api.create_script(source_code)
+    resource = world.api.create_script(source_code,
+                                       {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

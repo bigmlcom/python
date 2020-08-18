@@ -54,7 +54,8 @@ def the_execution_ids_and_attributes(step, number_of_scripts,
 
 #@step(r'I create a whizzml execution from an existing script"$')
 def i_create_an_execution(step):
-    resource = world.api.create_execution(world.script['resource'])
+    resource = world.api.create_execution(world.script['resource'],
+                                          "project": world.project_id)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
@@ -65,7 +66,8 @@ def i_create_an_execution(step):
 #@step(r'I create a whizzml execution from the last two scripts$')
 def i_create_an_execution_from_list(step, number_of_scripts=2):
     scripts = world.scripts[-number_of_scripts:]
-    resource = world.api.create_execution(scripts)
+    resource = world.api.create_execution(scripts,
+                                          {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

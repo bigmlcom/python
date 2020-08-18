@@ -198,6 +198,19 @@ def count(listing):
         return listing['meta']['query_total']
 
 
+def filter_kwargs(kwargs, list_of_keys, out=False):
+    """Creates a new dict with the selected list of keys if present
+    If `out` is set to True, the keys in the list are removed
+    If `out` is set to False, only the keys in the list are kept
+
+    """
+    new_kwargs = {}
+    for key in kwargs:
+        if out:
+            if (key not in list_of_keys and out) or \
+                   (key in list_of_keys and not out):
+               new_kwargs[key] = kwargs[key]
+    return new_kwargs
 
 def get_fields(resource):
     """Returns the field information in a resource dictionary structure
@@ -361,6 +374,74 @@ class BigML(ExternalConnectorHandler,
                 resource_type, resource_type))
             self.listers[resource_type] = getattr(self,
                                                   "list_%s" % method_name)
+
+    def create(self, resource_type, *args, **kwargs):
+        """Create resources
+
+        """
+        finished = kwargs.get('finished', True)
+        create_kwargs = filter_kwargs(kwargs,
+                                      ['query_string', 'finished'],
+                                      out=True)
+        try:
+            resource_info = self.creaters[resource_type](*args,
+                                                         **create_kwargs)
+        except KeyError:
+            raise ValueError("Failed to create %s. This kind of resource"
+                             " does not exist." % resource_type)
+        if finished:
+            ok_kwargs = filter_kwargs(kwargs, ['query_string'])
+            ok_kwargs.update({"error_retries": 5})
+            self.ok(resource_info, **ok_kwargs)
+        return resource_info
+
+    def get(self, resource, **kwargs):
+        """Method to get resources
+
+        """
+        finished = kwargs.get('finished', True)
+        get_kwargs = filter_kwargs(kwargs,
+                                   ['finished'])
+        try:
+            resource_type = get_resource_type(resource)
+            resource_info = self.getters[resource_type](resource, **get_kwargs)
+        except KeyError:
+            raise ValueError("%s is not a resource or ID." % resource)
+        if finished:
+            ok_kwargs = filter_kwargs(kwargs, ['query_string'])
+            ok_kwargs.update({"error_retries": 5})
+            self.ok(resource_info, **ok_kwargs)
+        return resource_info
+
+    def update(self, resource, changes, **kwargs):
+        """Method to update resources
+
+        """
+        finished = kwargs.get('finished', True)
+        try:
+            resource_type = get_resource_type(resource)
+            update_kwargs = filter_kwargs(kwargs,
+                                          ['query_string', 'finished'],
+                                          out=True)
+            resource_info = self.updaters[resource_type](resource, changes,
+                                                         **update_kwargs)
+        except KeyError:
+            raise ValueError("%s is not a resource or ID." % resource)
+        if finished:
+            ok_kwargs = filter_kwargs(kwargs, ['query_string'])
+            ok_kwargs.update({"error_retries": 5})
+            self.ok(resource_info, **ok_kwargs)
+        return resource_info
+
+    def delete(self, resource, **kwargs):
+        """Method to delete resources
+
+        """
+        try:
+            resource_type = get_resource_type(resource)
+            return self.deleters[resource_type](resource, **kwargs)
+        except KeyError:
+            raise ValueError("%s is not a resource." % resource)
 
     def connection_info(self):
         """Printable string: domain where the connection is bound and the

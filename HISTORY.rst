@@ -3,6 +3,11 @@
 History
 -------
 
+5.2.0 (2020-08-19)
+~~~~~~~~~~~~~~~~~~
+
+- Adding syntactic sugar methods to the BigML class to help managing resources.
+
 5.1.1 (2020-08-11)
 ~~~~~~~~~~~~~~~~~~
 

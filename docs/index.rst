@@ -414,6 +414,35 @@ You can also generate an evaluation for the model by using:
     evaluation = api.create_evaluation(model, test_dataset)
     api.ok(evaluation)
 
+
+The API object also offers some ``create``, ``get``, ``update`` and ``delete``
+generic methods to manage all type of resources. The type of resource to be
+created is passed as first argument to the ``create`` method;
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create('source', './data/iris.csv')
+    source = api.update(source, {"name": "my new source name"})
+
+Note that these methods don't need the ``api.ok`` to be called to wait for
+the resource to be finished. The method waits internally for it and by default.
+This can be avoided by using  ``finished=False`` as one of the arguments.
+
+
+.. code-block:: python
+
+    from bigml.api import BigML
+
+    api = BigML()
+
+    source = api.create('source', './data/iris.csv')
+    dataset = api.create('dataset', source, finished=False) # unfinished
+    api.ok(dataset) # waiting explicitly for the dataset to finish
+
 If you set the ``storage`` argument in the ``api`` instantiation:
 
 .. code-block:: python

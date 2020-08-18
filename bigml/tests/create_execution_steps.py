@@ -55,7 +55,7 @@ def the_execution_ids_and_attributes(step, number_of_scripts,
 #@step(r'I create a whizzml execution from an existing script"$')
 def i_create_an_execution(step):
     resource = world.api.create_execution(world.script['resource'],
-                                          "project": world.project_id)
+                                          {"project": world.project_id})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

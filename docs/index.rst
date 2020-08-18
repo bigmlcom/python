@@ -415,7 +415,7 @@ You can also generate an evaluation for the model by using:
     api.ok(evaluation)
 
 
-The API object also offers some ``create``, ``get``, ``update`` and ``delete``
+The API object also offers the ``create``, ``get``, ``update`` and ``delete``
 generic methods to manage all type of resources. The type of resource to be
 created is passed as first argument to the ``create`` method;
 
@@ -428,8 +428,9 @@ created is passed as first argument to the ``create`` method;
     source = api.create('source', './data/iris.csv')
     source = api.update(source, {"name": "my new source name"})
 
-Note that these methods don't need the ``api.ok`` to be called to wait for
-the resource to be finished. The method waits internally for it and by default.
+Note that these methods don't need the ``api.ok`` method to be called
+to wait for the resource to be finished.
+The method waits internally for it by default.
 This can be avoided by using  ``finished=False`` as one of the arguments.
 
 
@@ -442,6 +443,27 @@ This can be avoided by using  ``finished=False`` as one of the arguments.
     source = api.create('source', './data/iris.csv')
     dataset = api.create('dataset', source, finished=False) # unfinished
     api.ok(dataset) # waiting explicitly for the dataset to finish
+    dataset = api.update(dataset, {"name": "my_new_dataset_name"},
+                         finised=False)
+    api.ok(dataset)
+
+As an example for the ``delete`` and ``get`` methods, we could
+create a batch prediction, put the predictions in a
+dataset object and delete the ``batch_prediction``.
+
+.. code-block:: python
+
+from bigml.api import BigML
+
+api = BigML()
+
+batch_prediction = api.create('batchprediction',
+                              'model/5f3c3d2b5299637102000882',
+                              'dataset/5f29a563529963736c0116e9',
+                              args={"output_dataset": True})
+batch_prediction_dataset = api.get(batch_prediction["object"][ \
+    "output_dataset_resource"])
+api.delete(batch_prediction)
 
 If you set the ``storage`` argument in the ``api`` instantiation:
 

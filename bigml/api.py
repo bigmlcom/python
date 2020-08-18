@@ -206,10 +206,9 @@ def filter_kwargs(kwargs, list_of_keys, out=False):
     """
     new_kwargs = {}
     for key in kwargs:
-        if out:
-            if (key not in list_of_keys and out) or \
-                   (key in list_of_keys and not out):
-               new_kwargs[key] = kwargs[key]
+        if (key not in list_of_keys and out) or \
+               (key in list_of_keys and not out):
+           new_kwargs[key] = kwargs[key]
     return new_kwargs
 
 def get_fields(resource):
@@ -352,11 +351,12 @@ class BigML(ExternalConnectorHandler,
         for resource_type in RESOURCE_RE:
             method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
             self.getters[resource_type] = getattr(self, "get_%s" % method_name)
-        self.creaters = {}
+        self.creators = {}
         for resource_type in RESOURCE_RE:
             method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
-            self.creaters[resource_type] = getattr(self,
+            self.creators[resource_type] = getattr(self,
                                                    "create_%s" % method_name)
+        self.creaters = self.creators # to be deprecated
         self.updaters = {}
         for resource_type in RESOURCE_RE:
             method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
@@ -384,7 +384,7 @@ class BigML(ExternalConnectorHandler,
                                       ['query_string', 'finished'],
                                       out=True)
         try:
-            resource_info = self.creaters[resource_type](*args,
+            resource_info = self.creators[resource_type](*args,
                                                          **create_kwargs)
         except KeyError:
             raise ValueError("Failed to create %s. This kind of resource"

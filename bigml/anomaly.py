@@ -44,7 +44,6 @@ anomaly.anomaly_score({"src_bytes": 350})
 
 
 import math
-import msgpack
 import json
 
 from bigml.predicate_utils.utils import OPERATOR_CODE, PREDICATE_INFO_LENGTH
@@ -53,11 +52,12 @@ from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
-from bigml.util import cast
+from bigml.util import cast, use_cache, load
 
 
 DEPTH_FACTOR = 0.5772156649
 PREDICATES_OFFSET = 3
+EMPTY_STR = ""
 
 def build_tree(children, node=None):
     """Builds a compressed version of the tree structure as an list of
@@ -128,14 +128,6 @@ def calculate_depth(node, input_data, fields, depth=0):
     return depth
 
 
-def use_cache(cache_get):
-    """Checks whether the user has provided a cache get function to retrieve
-       local models.
-
-    """
-    return cache_get is not None and hasattr(cache_get, '__call__')
-
-
 class Anomaly(ModelFields):
     """ A minimal anomaly detector designed to build quickly from a
     specialized external representation. See file documentation, above,
@@ -147,54 +139,53 @@ class Anomaly(ModelFields):
 
         if use_cache(cache_get):
             # using a cache to store the Minomaly attributes
-            anomaly_id = get_anomaly_id(anomaly)
-            self.__dict__ = msgpack.loads(cache_get(anomaly_id))
-        else:
-            self.resource_id = None
-            self.sample_size = None
-            self.input_fields = None
-            self.mean_depth = None
-            self.expected_mean_depth = None
-            self.iforest = None
-            self.id_fields = []
-            api = get_api_connection(api)
-            self.resource_id, anomaly = get_resource_dict(
-                anomaly, "anomaly", api=api)
+            self.__dict__ = load(get_anomaly_id(anomaly), cache_get)
+            return
 
-            if 'object' in anomaly and isinstance(anomaly['object'], dict):
-                anomaly = anomaly['object']
-                self.sample_size = anomaly.get('sample_size')
-                self.input_fields = anomaly.get('input_fields')
-                self.id_fields = anomaly.get('id_fields', [])
+        self.resource_id = None
+        self.sample_size = None
+        self.input_fields = None
+        self.mean_depth = None
+        self.expected_mean_depth = None
+        self.iforest = None
+        self.id_fields = []
+        api = get_api_connection(api)
+        self.resource_id, anomaly = get_resource_dict(
+            anomaly, "anomaly", api=api)
 
-            if 'model' in anomaly and isinstance(anomaly['model'], dict):
-                ModelFields.__init__(
-                    self, anomaly['model'].get('fields'),
-                    missing_tokens=anomaly['model'].get('missing_tokens'))
+        if 'object' in anomaly and isinstance(anomaly['object'], dict):
+            anomaly = anomaly['object']
+            self.sample_size = anomaly.get('sample_size')
+            self.input_fields = anomaly.get('input_fields')
+            self.id_fields = anomaly.get('id_fields', [])
 
-                self.mean_depth = anomaly['model'].get('mean_depth')
-                self.normalization_factor = anomaly['model'].get(
-                    'normalization_factor')
-                self.nodes_mean_depth = anomaly['model'].get(
-                    'nodes_mean_depth')
-                status = get_status(anomaly)
-                if 'code' in status and status['code'] == FINISHED:
-                    self.expected_mean_depth = None
-                    if self.mean_depth is None or self.sample_size is None:
-                        raise Exception("The anomaly data is not complete. "
-                                        "Score will not be available")
-                    else:
-                        self.norm = self.normalization_factor if \
-                            self.normalization_factor is not None else \
-                            self.norm_factor()
-                    iforest = anomaly['model'].get('trees', [])
-                    if iforest:
-                        self.iforest = [
-                            build_tree([anomaly_tree['root']])
-                            for anomaly_tree in iforest]
-                    self.top_anomalies = anomaly['model']['top_anomalies']
-                else:
-                    raise Exception("The anomaly isn't finished yet")
+        if 'model' in anomaly and isinstance(anomaly['model'], dict):
+            ModelFields.__init__(
+                self, anomaly['model'].get('fields'),
+                missing_tokens=anomaly['model'].get('missing_tokens'))
+
+            self.mean_depth = anomaly['model'].get('mean_depth')
+            self.normalization_factor = anomaly['model'].get(
+                'normalization_factor')
+            self.nodes_mean_depth = anomaly['model'].get(
+                'nodes_mean_depth')
+            status = get_status(anomaly)
+            if 'code' in status and status['code'] == FINISHED:
+                self.expected_mean_depth = None
+                if self.mean_depth is None or self.sample_size is None:
+                    raise Exception("The anomaly data is not complete. "
+                                    "Score will not be available")
+                self.norm = self.normalization_factor if \
+                    self.normalization_factor is not None else \
+                    self.norm_factor()
+                iforest = anomaly['model'].get('trees', [])
+                if iforest:
+                    self.iforest = [
+                        build_tree([anomaly_tree['root']])
+                        for anomaly_tree in iforest]
+                self.top_anomalies = anomaly['model']['top_anomalies']
+            else:
+                raise Exception("The anomaly isn't finished yet")
 
     def norm_factor(self):
         """Computing the normalization factor for simple anomaly detectors"""
@@ -203,6 +194,7 @@ class Anomaly(ModelFields):
                 (2 * (DEPTH_FACTOR + math.log(self.sample_size - 1) -
                       (float(self.sample_size - 1) / self.sample_size)))
             return min(self.mean_depth, default_depth)
+        return None
 
     def anomaly_score(self, input_data):
         """Returns the anomaly score given by the iforest
@@ -253,7 +245,7 @@ class Anomaly(ModelFields):
                 field_id = self.input_fields[index]
                 if field_id in self.id_fields:
                     continue
-                if value is None or value is "":
+                if value is None or value is EMPTY_STR:
                     filter_rules.append('(missing? "%s")' % field_id)
                 else:
                     if (self.fields[field_id]["optype"]
@@ -268,22 +260,4 @@ class Anomaly(ModelFields):
             if len(anomaly_filters) == 1:
                 return anomalies_filter
             return "(or %s)" % anomalies_filter
-        else:
-            return "(not (or %s))" % anomalies_filter
-
-    def dump(self, output=None, cache_set=None):
-        """Uses msgpack to serialize the anomaly object
-        If cache_set is filled with a cache set method, the method is called
-
-        """
-        if use_cache(cache_set):
-            dump_string= msgpack.dumps(self.__dict__)
-            cache_set(self.resource_id, dump_string)
-        else:
-            msgpack.pack(self.__dict__, output)
-
-    def dumps(self, cache_set=None):
-        """Uses msgpack to serialize the anomaly object to a string
-
-        """
-        return msgpack.dumps(self.__dict__)
+        return "(not (or %s))" % anomalies_filter

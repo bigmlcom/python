@@ -48,29 +48,38 @@ model.python()
 
 """
 import logging
-import sys
 import locale
 
+from functools import cmp_to_key
 
-from functools import partial, cmp_to_key
+import bigml.predict_utils.classification as c
+import bigml.predict_utils.regression as r
+import bigml.predict_utils.boosting as b
+
+from bigml.predict_utils.common import FIELD_OFFSET, extract_distribution
 
 from bigml.api import FINISHED, STATUSES
-from bigml.api import get_status, get_api_connection
-from bigml.util import slugify, markdown_cleanup, prefix_as_comment, utf8, \
-    find_locale, cast
+from bigml.api import get_status, get_api_connection, get_model_id
+from bigml.util import find_locale, cast, use_cache, load
 from bigml.util import DEFAULT_LOCALE, PRECISION
-from bigml.tree import Tree, LAST_PREDICTION, PROPORTIONAL
-from bigml.boostedtree import BoostedTree
-from bigml.predicate import Predicate
-from bigml.basemodel import BaseModel, get_resource_dict, print_importance
+from bigml.constants import LAST_PREDICTION, PROPORTIONAL
+from bigml.basemodel import BaseModel, get_resource_dict
 from bigml.multivote import ws_confidence
-from bigml.io import UnicodeWriter
-from bigml.path import Path, BRIEF
 from bigml.prediction import Prediction
-from functools import reduce
 
 
 LOGGER = logging.getLogger('BigML')
+
+OPERATING_POINT_KINDS = ["probability", "confidence"]
+
+DICTIONARY = "dict"
+
+OUT_FORMATS = [DICTIONARY, "list"]
+
+
+BOOSTING = "boosting"
+REGRESSION = "regression"
+CLASSIFICATION = "classification"
 
 # we use the atof conversion for integers to include integers written as
 # 10.0
@@ -90,21 +99,10 @@ PYTHON_CONV = {
     "second": "lambda x: int(locale.atof(x))",
     "millisecond": "lambda x: int(locale.atof(x))",
     "day-of-week": "lambda x: int(locale.atof(x))",
-    "day-of-month": "lambda x: int(locale.atof(x))"
-}
+    "day-of-month": "lambda x: int(locale.atof(x))"}
 
 PYTHON_FUNC = dict([(numtype, eval(function))
                     for numtype, function in PYTHON_CONV.items()])
-
-INDENT = '    '
-
-DEFAULT_IMPURITY = 0.2
-
-OPERATING_POINT_KINDS = ["probability", "confidence"]
-
-DICTIONARY = "dict"
-
-OUT_FORMATS = [DICTIONARY, "list"]
 
 
 def init_structure(to):
@@ -189,21 +187,6 @@ def sort_categories(a, b, categories_list):
     return 0
 
 
-def print_distribution(distribution, out=sys.stdout):
-    """Prints distribution data
-
-    """
-    total = reduce(lambda x, y: x + y,
-                   [group[1] for group in distribution])
-    for group in distribution:
-        out.write(utf8(
-            "    %s: %.2f%% (%d instance%s)\n" % (
-                group[0],
-                round(group[1] * 1.0 / total, 4) * 100,
-                group[1],
-                "" if group[1] == 1 else "s")))
-
-
 def parse_operating_point(operating_point, operating_kinds, class_names):
     """Checks the operating point contents and extracts the three defined
     variables
@@ -211,7 +194,7 @@ def parse_operating_point(operating_point, operating_kinds, class_names):
     """
     if "kind" not in operating_point:
         raise ValueError("Failed to find the kind of operating point.")
-    elif operating_point["kind"] not in operating_kinds:
+    if operating_point["kind"] not in operating_kinds:
         raise ValueError("Unexpected operating point kind. Allowed values"
                          " are: %s." % ", ".join(operating_kinds))
     if "threshold" not in operating_point:
@@ -224,16 +207,103 @@ def parse_operating_point(operating_point, operating_kinds, class_names):
     if "positive_class" not in operating_point:
         raise ValueError("The operating point needs to have a"
                          " positive_class attribute.")
-    else:
-        positive_class = operating_point["positive_class"]
-        if positive_class not in class_names:
-            raise ValueError("The positive class must be one of the"
-                             "objective field classes: %s." %
-                             ", ".join(class_names))
+    positive_class = operating_point["positive_class"]
+    if positive_class not in class_names:
+        raise ValueError("The positive class must be one of the"
+                         "objective field classes: %s." %
+                         ", ".join(class_names))
     kind = operating_point["kind"]
     threshold = operating_point["threshold"]
 
     return kind, threshold, positive_class
+
+
+def to_prediction(model, value_as_string, data_locale=DEFAULT_LOCALE):
+    """Given a prediction string, returns its value in the required type
+
+    """
+    if not isinstance(value_as_string, str):
+        value_as_string = str(value_as_string, "utf-8")
+
+    objective_id = model.objective_id
+    if model.fields[objective_id]['optype'] == 'numeric':
+        if data_locale is None:
+            data_locale = model.locale
+        find_locale(data_locale)
+        datatype = model.fields[objective_id]['datatype']
+        cast_function = PYTHON_FUNC.get(datatype, None)
+        if cast_function is not None:
+            return cast_function(value_as_string)
+    return value_as_string
+
+
+def average_confidence(model):
+    """Average for the confidence of the predictions resulting from
+       running the training data through the model
+
+    """
+    if model.boosting:
+        raise AttributeError("This method is not available for boosting"
+                             " models.")
+    total = 0.0
+    cumulative_confidence = 0
+    groups = model.group_prediction()
+    for _, predictions in list(groups.items()):
+        for _, count, confidence in predictions['details']:
+            cumulative_confidence += count * confidence
+            total += count
+    return float('nan') if total == 0.0 else cumulative_confidence
+
+
+def tree_predict(tree, tree_type, weighted, fields,
+                 input_data, missing_strategy=LAST_PREDICTION):
+    """Makes a prediction based on a number of field values.
+
+    The input fields must be keyed by Id. There are two possible
+    strategies to predict when the value for the splitting field
+    is missing:
+        0 - LAST_PREDICTION: the last issued prediction is returned.
+        1 - PROPORTIONAL: as we cannot choose between the two branches
+            in the tree that stem from this split, we consider both. The
+            algorithm goes on until the final leaves are reached and
+            all their predictions are used to decide the final prediction.
+    """
+
+    if missing_strategy == PROPORTIONAL:
+        if tree_type == REGRESSION:
+            return r.regression_proportional_predict(tree, weighted, fields,
+                                                     input_data)
+
+        if tree_type == CLASSIFICATION:
+            # classification
+            return c.classification_proportional_predict(tree, weighted,
+                                                         fields,
+                                                         input_data)
+    # boosting
+        return b.boosting_proportional_predict(tree, fields, input_data)
+
+    if tree_type == REGRESSION:
+        # last prediction missing strategy
+        return r.regression_last_predict(tree, weighted, fields, input_data)
+    if tree_type == CLASSIFICATION:
+        return c.classification_last_predict(tree, weighted, fields,
+                                             input_data)
+    # boosting
+    return b.boosting_last_predict(tree, fields, input_data)
+
+
+def laplacian_term(root_dist, weighted):
+    """Correction term based on the training dataset distribution
+
+    """
+
+    if weighted:
+        category_map = {category[0]: 0.0 for category in root_dist}
+    else:
+        total = float(sum([category[1] for category in root_dist]))
+        category_map = {category[0]: category[1] / total
+                        for category in root_dist}
+    return category_map
 
 
 class Model(BaseModel):
@@ -244,22 +314,29 @@ class Model(BaseModel):
 
     """
 
-    def __init__(self, model, api=None, fields=None):
+    def __init__(self, model, api=None, fields=None, cache_get=None):
         """The Model constructor can be given as first argument:
             - a model structure
             - a model id
             - a path to a JSON file containing a model structure
 
         """
+
+        if use_cache(cache_get):
+            # using a cache to store the model attributes
+            self.__dict__ = load(get_model_id(model), cache_get)
+            return
+
         self.resource_id = None
         self.ids_map = {}
         self.terms = {}
         self.regression = False
         self.boosting = None
         self.class_names = None
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
+        # retrieving model information from
         self.resource_id, model = get_resource_dict( \
-            model, "model", api=self.api)
+            model, "model", api=api, no_check_fields=fields is not None)
 
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
@@ -267,117 +344,78 @@ class Model(BaseModel):
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
-
-                self.input_fields = model["input_fields"]
-                BaseModel.__init__(self, model, api=api, fields=fields)
-
-                # boosting models are to be handled using the BoostedTree
-                # class
+                # fill boosting info before creating modelfields
                 if model.get("boosted_ensemble"):
                     self.boosting = model.get('boosting', False)
                 if self.boosting == {}:
                     self.boosting = False
 
-                self.regression = \
-                    not self.boosting and \
-                    self.fields[self.objective_id]['optype'] == 'numeric' \
-                    or (self.boosting and \
-                    self.boosting.get("objective_class") is None)
-                if not hasattr(self, 'tree_class'):
-                    self.tree_class = Tree if not self.boosting else \
-                        BoostedTree
+                self.input_fields = model["input_fields"]
+                BaseModel.__init__(self, model, api=api, fields=fields)
+
+                root = model['model']['root']
+                self.weighted = "weighted_objective_summary" in root
 
                 if self.boosting:
-                    self.tree = self.tree_class(
-                        model['model']['root'],
-                        self.fields,
-                        objective_field=self.objective_id)
+                    # build boosted tree
+                    self.tree = b.build_boosting_tree( \
+                        model['model']['root'])
+                elif self.regression:
+                    self.root_distribution = model['model'][ \
+                        'distribution']['training']
+                    # build regression tree
+                    self.tree = r.build_regression_tree(root, \
+                        distribution=self.root_distribution, \
+                        weighted=self.weighted)
                 else:
-                    distribution = model['model']['distribution']['training']
-                    # will store global information in the tree: regression and
-                    # max_bins number
-                    tree_info = {'max_bins': 0}
-                    self.tree = self.tree_class(
-                        model['model']['root'],
-                        self.fields,
-                        objective_field=self.objective_id,
-                        root_distribution=distribution,
-                        parent_id=None,
-                        ids_map=self.ids_map,
-                        tree_info=tree_info)
+                    # build classification tree
+                    self.root_distribution = model['model'][\
+                        'distribution']['training']
+                    self.laplacian_term = laplacian_term( \
+                        extract_distribution(self.root_distribution)[1],
+                        self.weighted)
+                    self.tree = c.build_classification_tree( \
+                        model['model']['root'], \
+                        distribution=self.root_distribution, \
+                        weighted=self.weighted)
+                    self.class_names = sorted( \
+                        [category[0] for category in \
+                        self.root_distribution["categories"]])
+                    self.objective_categories = [category for \
+                        category, _ in self.fields[self.objective_id][ \
+                       "summary"]["categories"]]
 
-                    self.tree.regression = tree_info['regression']
+                if self.boosting:
+                    self.tree_type = BOOSTING
+                    self.offsets = b.OFFSETS
+                elif self.regression:
+                    self.tree_type = REGRESSION
+                    self.offsets = r.OFFSETS[str(self.weighted)]
+                else:
+                    self.tree_type = CLASSIFICATION
+                    self.offsets = c.OFFSETS[str(self.weighted)]
 
-                    if self.tree.regression:
-                        try:
-                            import numpy
-                            import scipy
-                            self._max_bins = tree_info['max_bins']
-                            self.regression_ready = True
-                        except ImportError:
-                            self.regression_ready = False
-                    else:
-                        root_dist = self.tree.distribution
-                        self.class_names = sorted([category[0]
-                                                   for category in root_dist])
-                        self.objective_categories = [category for \
-                            category, _ in self.fields[self.objective_id][ \
-                           "summary"]["categories"]]
-                if not self.regression and not self.boosting:
-                    self.laplacian_term = self._laplacian_term()
             else:
                 raise Exception("Cannot create the Model instance."
-                                " Only correctly finished models can be used."
-                                " The model status is currently: %s\n" %
-                                STATUSES[status['code']])
+                                " Only correctly finished models can be"
+                                " used. The model status is currently:"
+                                " %s\n" % STATUSES[status['code']])
         else:
             raise Exception("Cannot create the Model instance. Could not"
-                            " find the 'model' key in the resource:\n\n%s" %
-                            model)
-
-    def list_fields(self, out=sys.stdout):
-        """Prints descriptions of the fields for this model.
-
-        """
-        self.tree.list_fields(out)
-
-    def get_leaves(self, filter_function=None):
-        """Returns a list that includes all the leaves of the model.
-
-           filter_function should be a function that returns a boolean
-           when applied to each leaf node.
-        """
-        return self.tree.get_leaves(filter_function=filter_function)
-
-    def impure_leaves(self, impurity_threshold=DEFAULT_IMPURITY):
-        """Returns a list of leaves that are impure
-
-        """
-        if self.regression or self.boosting:
-            raise AttributeError("This method is available for non-boosting"
-                                 " categorization models only.")
-        def is_impure(node, impurity_threshold=impurity_threshold):
-            """Returns True if the gini impurity of the node distribution
-               goes above the impurity threshold.
-
-            """
-            return node.get('impurity') > impurity_threshold
-
-        is_impure = partial(is_impure, impurity_threshold=impurity_threshold)
-        return self.get_leaves(filter_function=is_impure)
+                            " find the 'model' key in the resource:"
+                            "\n\n%s" % model)
 
     def _to_output(self, output_map, compact, value_key):
         if compact:
             return [round(output_map.get(name, 0.0), PRECISION)
                     for name in self.class_names]
-        else:
-            output = []
-            for name in self.class_names:
-                output.append({
-                    'category': name,
-                    value_key: round(output_map.get(name, 0.0), PRECISION)
-                })
-            return output
+        output = []
+        for name in self.class_names:
+            output.append({
+                'category': name,
+                value_key: round(output_map.get(name, 0.0), PRECISION)
+            })
+        return output
 
     def predict_confidence(self, input_data, missing_strategy=LAST_PREDICTION,
                            compact=False):
@@ -412,11 +450,11 @@ class Model(BaseModel):
                                          confidence=True)
             return output
 
-        elif self.boosting:
+        if self.boosting:
             raise AttributeError("This method is available for non-boosting"
                                  " models only.")
 
-        root_dist = self.tree.distribution
+        root_dist = self.root_distribution
         category_map = {category[0]: 0.0 for category in root_dist}
         prediction = self.predict(input_data,
                                   missing_strategy=missing_strategy,
@@ -432,26 +470,12 @@ class Model(BaseModel):
 
         return self._to_output(category_map, compact, "confidence")
 
-    def _laplacian_term(self):
-        """Correction term based on the training dataset distribution
-
-        """
-        root_dist = self.tree.distribution
-
-        if self.tree.weighted:
-            category_map = {category[0]: 0.0 for category in root_dist}
-        else:
-            total = float(sum([category[1] for category in root_dist]))
-            category_map = {category[0]: category[1] / total
-                            for category in root_dist}
-        return category_map
-
     def _probabilities(self, distribution):
         """Computes the probability of a distribution using a Laplacian
         correction.
 
         """
-        total = 0 if self.tree.weighted else 1
+        total = 0 if self.weighted else 1
 
         category_map = {}
         category_map.update(self.laplacian_term)
@@ -462,7 +486,6 @@ class Model(BaseModel):
         for k in category_map:
             category_map[k] /= total
         return category_map
-
 
     def predict_probability(self, input_data,
                             missing_strategy=LAST_PREDICTION,
@@ -672,23 +695,14 @@ class Model(BaseModel):
                 operating_kind=operating_kind)
             return prediction
 
-        # Checks if this is a regression model, using PROPORTIONAL
-        # missing_strategy
-        if (not self.boosting and
-                self.regression and missing_strategy == PROPORTIONAL and
-                not self.regression_ready):
-            raise ImportError("Failed to find the numpy and scipy libraries,"
-                              " needed to use proportional missing strategy"
-                              " for regressions. Please install them before"
-                              " using local predictions for the model.")
-
-        prediction = self.tree.predict(input_data,
-                                       missing_strategy=missing_strategy)
+        prediction = tree_predict( \
+            self.tree, self.tree_type, self.weighted, self.fields,
+            input_data, missing_strategy=missing_strategy)
 
         if self.boosting and missing_strategy == PROPORTIONAL:
             # output has to be recomputed and comes in a different format
             g_sum, h_sum, population, path = prediction
-            prediction = Prediction(
+            prediction = Prediction( \
                 - g_sum / (h_sum +  self.boosting.get("lambda", 1)),
                 path,
                 None,
@@ -703,7 +717,7 @@ class Model(BaseModel):
         del result['output']
         # next
         field = (None if len(prediction.children) == 0 else
-                 prediction.children[0].predicate.field)
+                 prediction.children[0][FIELD_OFFSET])
         if field is not None and field in self.model_fields:
             field = self.model_fields[field]['name']
         result.update({'next': field})
@@ -716,587 +730,3 @@ class Model(BaseModel):
             result.update({'unused_fields': unused_fields})
 
         return result
-
-    def docstring(self):
-        """Returns the docstring describing the model.
-
-        """
-        objective_name = self.fields[self.tree.objective_id]['name'] if \
-            not self.boosting else \
-            self.fields[self.boosting["objective_field"]]['name']
-        docstring = ("Predictor for %s from %s\n" % (
-            objective_name,
-            self.resource_id))
-        self.description = (
-            str(
-                markdown_cleanup(self.description).strip()) or
-            'Predictive model by BigML - Machine Learning Made Easy')
-        docstring += "\n" + INDENT * 2 + (
-            "%s" % prefix_as_comment(INDENT * 2, self.description))
-        return docstring
-
-    def get_ids_path(self, filter_id):
-        """Builds the list of ids that go from a given id to the tree root
-
-        """
-        ids_path = None
-        if filter_id is not None and self.tree.id is not None:
-            if filter_id not in self.ids_map:
-                raise ValueError("The given id does not exist.")
-            else:
-                ids_path = [filter_id]
-                last_id = filter_id
-                while self.ids_map[last_id].parent_id is not None:
-                    ids_path.append(self.ids_map[last_id].parent_id)
-                    last_id = self.ids_map[last_id].parent_id
-        return ids_path
-
-    def rules(self, out=sys.stdout, filter_id=None, subtree=True):
-        """Returns a IF-THEN rule set that implements the model.
-
-        `out` is file descriptor to write the rules.
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        ids_path = self.get_ids_path(filter_id)
-        return self.tree.rules(out, ids_path=ids_path, subtree=subtree)
-
-    def python(self, out=sys.stdout, hadoop=False,
-               filter_id=None, subtree=True):
-        """Returns a basic python function that implements the model.
-
-        `out` is file descriptor to write the python code.
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        ids_path = self.get_ids_path(filter_id)
-        if hadoop:
-            return (self.hadoop_python_mapper(out=out,
-                                              ids_path=ids_path,
-                                              subtree=subtree) or
-                    self.hadoop_python_reducer(out=out))
-        else:
-            return self.tree.python(out, self.docstring(), ids_path=ids_path,
-                                    subtree=subtree)
-
-    def tableau(self, out=sys.stdout, hadoop=False,
-                filter_id=None, subtree=True):
-        """Returns a basic tableau function that implements the model.
-
-        `out` is file descriptor to write the tableau code.
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        ids_path = self.get_ids_path(filter_id)
-        if hadoop:
-            return "Hadoop output not available."
-        else:
-            response = self.tree.tableau(out, ids_path=ids_path,
-                                         subtree=subtree)
-            if response:
-                out.write("END\n")
-            else:
-                out.write("\nThis function cannot be represented "
-                          "in Tableau syntax.\n")
-            out.flush()
-            return None
-
-    def group_prediction(self):
-        """Groups in categories or bins the predicted data
-
-        dict - contains a dict grouping counts in 'total' and 'details' lists.
-                'total' key contains a 3-element list.
-                       - common segment of the tree for all instances
-                       - data count
-                       - predictions count
-                'details' key contains a list of elements. Each element is a
-                          3-element list:
-                       - complete path of the tree from the root to the leaf
-                       - leaf predictions count
-                       - confidence
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        groups = {}
-        tree = self.tree
-        distribution = tree.distribution
-
-        for group in distribution:
-            groups[group[0]] = {'total': [[], group[1], 0],
-                                'details': []}
-        path = []
-
-        def add_to_groups(groups, output, path, count, confidence,
-                          impurity=None):
-            """Adds instances to groups array
-
-            """
-            group = output
-            if output not in groups:
-                groups[group] = {'total': [[], 0, 0],
-                                 'details': []}
-            groups[group]['details'].append([path, count, confidence,
-                                             impurity])
-            groups[group]['total'][2] += count
-
-        def depth_first_search(tree, path):
-            """Search for leafs' values and instances
-
-            """
-            if isinstance(tree.predicate, Predicate):
-                path.append(tree.predicate)
-                if tree.predicate.term:
-                    term = tree.predicate.term
-                    if tree.predicate.field not in self.terms:
-                        self.terms[tree.predicate.field] = []
-                    if term not in self.terms[tree.predicate.field]:
-                        self.terms[tree.predicate.field].append(term)
-
-            if len(tree.children) == 0:
-                add_to_groups(groups, tree.output,
-                              path, tree.count, tree.confidence, tree.impurity)
-                return tree.count
-            else:
-                children = tree.children[:]
-                children.reverse()
-
-                children_sum = 0
-                for child in children:
-                    children_sum += depth_first_search(child, path[:])
-                if children_sum < tree.count:
-                    add_to_groups(groups, tree.output, path,
-                                  tree.count - children_sum, tree.confidence,
-                                  tree.impurity)
-                return tree.count
-
-        depth_first_search(tree, path)
-
-        return groups
-
-    def get_data_distribution(self):
-        """Returns training data distribution
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        tree = self.tree
-        distribution = tree.distribution
-
-        return sorted(distribution, key=lambda x: x[0])
-
-    def get_prediction_distribution(self, groups=None):
-        """Returns model predicted distribution
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        if groups is None:
-            groups = self.group_prediction()
-
-        predictions = [[group, groups[group]['total'][2]] for group in groups]
-        # remove groups that are not predicted
-        predictions = [prediction for prediction in predictions \
-            if prediction[1] > 0]
-
-        return sorted(predictions, key=lambda x: x[0])
-
-    def summarize(self, out=sys.stdout, format=BRIEF):
-        """Prints summary grouping distribution as class header and details
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        tree = self.tree
-
-        def extract_common_path(groups):
-            """Extracts the common segment of the prediction path for a group
-
-            """
-            for group in groups:
-                details = groups[group]['details']
-                common_path = []
-                if len(details) > 0:
-                    mcd_len = min([len(x[0]) for x in details])
-                    for i in range(0, mcd_len):
-                        test_common_path = details[0][0][i]
-                        for subgroup in details:
-                            if subgroup[0][i] != test_common_path:
-                                i = mcd_len
-                                break
-                        if i < mcd_len:
-                            common_path.append(test_common_path)
-                groups[group]['total'][0] = common_path
-                if len(details) > 0:
-                    groups[group]['details'] = sorted(details,
-                                                      key=lambda x: x[1],
-                                                      reverse=True)
-
-        def confidence_error(value, impurity=None):
-            """Returns confidence for categoric objective fields
-               and error for numeric objective fields
-            """
-            if value is None:
-                return ""
-            impurity_literal = ""
-            if impurity is not None and impurity > 0:
-                impurity_literal = "; impurity: %.2f%%" % (round(impurity, 4))
-            objective_type = self.fields[tree.objective_id]['optype']
-            if objective_type == 'numeric':
-                return " [Error: %s]" % value
-            else:
-                return " [Confidence: %.2f%%%s]" % ((round(value, 4) * 100),
-                                                     impurity_literal)
-
-        distribution = self.get_data_distribution()
-
-        out.write(utf8("Data distribution:\n"))
-        print_distribution(distribution, out=out)
-        out.write(utf8("\n\n"))
-
-        groups = self.group_prediction()
-        predictions = self.get_prediction_distribution(groups)
-
-        out.write(utf8("Predicted distribution:\n"))
-        print_distribution(predictions, out=out)
-        out.write(utf8("\n\n"))
-
-        if self.field_importance:
-            out.write(utf8("Field importance:\n"))
-            print_importance(self, out=out)
-
-        extract_common_path(groups)
-
-        out.write(utf8("\n\nRules summary:"))
-
-        for group in [x[0] for x in predictions]:
-            details = groups[group]['details']
-            path = Path(groups[group]['total'][0])
-            data_per_group = groups[group]['total'][1] * 1.0 / tree.count
-            pred_per_group = groups[group]['total'][2] * 1.0 / tree.count
-            out.write(utf8("\n\n%s : (data %.2f%% / prediction %.2f%%) %s" %
-                           (group,
-                            round(data_per_group, 4) * 100,
-                            round(pred_per_group, 4) * 100,
-                            path.to_rules(self.fields, format=format))))
-
-            if len(details) == 0:
-                out.write(utf8("\n    The model will never predict this"
-                               " class\n"))
-            elif len(details) == 1:
-                subgroup = details[0]
-                out.write(utf8("%s\n" % confidence_error(
-                    subgroup[2], impurity=subgroup[3])))
-            else:
-                out.write(utf8("\n"))
-                for j in range(0, len(details)):
-                    subgroup = details[j]
-                    pred_per_sgroup = subgroup[1] * 1.0 / \
-                        groups[group]['total'][2]
-                    path = Path(subgroup[0])
-                    path_chain = path.to_rules(self.fields, format=format) if \
-                        path.predicates else "(root node)"
-                    out.write(utf8("    · %.2f%%: %s%s\n" %
-                                   (round(pred_per_sgroup, 4) * 100,
-                                    path_chain,
-                                    confidence_error(subgroup[2],
-                                                     impurity=subgroup[3]))))
-
-        out.flush()
-
-    def hadoop_python_mapper(self, out=sys.stdout, ids_path=None,
-                             subtree=True):
-        """Returns a hadoop mapper header to make predictions in python
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        input_fields = [(value, key) for (key, value) in
-                        sorted(list(self.inverted_fields.items()),
-                               key=lambda x: x[1])]
-        parameters = [value for (key, value) in
-                      input_fields if key != self.tree.objective_id]
-        args = []
-        for field in input_fields:
-            slug = slugify(self.fields[field[0]]['name'])
-            self.fields[field[0]].update(slug=slug)
-            if field[0] != self.tree.objective_id:
-                args.append("\"" + self.fields[field[0]]['slug'] + "\"")
-        output = \
-"""#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import sys
-import csv
-import locale
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-
-
-class CSVInput(object):
-    \"\"\"Reads and parses csv input from stdin
-
-       Expects a data section (without headers) with the following fields:
-       %s
-
-       Data is processed to fall into the corresponding input type by applying
-       INPUT_TYPES, and per field PREFIXES and SUFFIXES are removed. You can
-       also provide strings to be considered as no content markers in
-       MISSING_TOKENS.
-    \"\"\"
-    def __init__(self, input=sys.stdin):
-        \"\"\" Opens stdin and defines parsing constants
-
-        \"\"\"
-        try:
-            self.reader = csv.reader(input, delimiter=',', quotechar='\"')
-""" % ",".join(parameters)
-
-        output += (
-            "\n%sself.INPUT_FIELDS = [%s]\n" %
-            ((INDENT * 3), (",\n " + INDENT * 8).join(args)))
-
-        input_types = []
-        prefixes = []
-        suffixes = []
-        count = 0
-        fields = self.fields
-        for key in [key[0] for key in input_fields
-                    if key != self.tree.objective_id]:
-            input_type = ('None' if fields[key]['datatype'] not in
-                          PYTHON_CONV
-                          else PYTHON_CONV[fields[key]['datatype']])
-            input_types.append(input_type)
-            if 'prefix' in fields[key]:
-                prefixes.append("%s: %s" % (count,
-                                            repr(fields[key]['prefix'])))
-            if 'suffix' in fields[key]:
-                suffixes.append("%s: %s" % (count,
-                                            repr(fields[key]['suffix'])))
-            count += 1
-        static_content = "%sself.INPUT_TYPES = [" % (INDENT * 3)
-        formatter = ",\n%s" % (" " * len(static_content))
-        output += "\n%s%s%s" % (static_content,
-                                 formatter.join(input_types),
-                                 "]\n")
-        static_content = "%sself.PREFIXES = {" % (INDENT * 3)
-        formatter = ",\n%s" % (" " * len(static_content))
-        output += "\n%s%s%s" % (static_content,
-                                 formatter.join(prefixes),
-                                 "}\n")
-        static_content = "%sself.SUFFIXES = {" % (INDENT * 3)
-        formatter = ",\n%s" % (" " * len(static_content))
-        output += "\n%s%s%s" % (static_content,
-                                 formatter.join(suffixes),
-                                 "}\n")
-        output += \
-"""            self.MISSING_TOKENS = ['?']
-        except Exception, exc:
-            sys.stderr.write(\"Cannot read csv\"
-                             \" input. %s\\n\" % str(exc))
-
-    def __iter__(self):
-        \"\"\" Iterator method
-
-        \"\"\"
-        return self
-
-    def next(self):
-        \"\"\" Returns processed data in a list structure
-
-        \"\"\"
-        def normalize(value):
-            \"\"\"Transforms to unicode and cleans missing tokens
-            \"\"\"
-            value = unicode(value.decode('utf-8'))
-            return \"\" if value in self.MISSING_TOKENS else value
-
-        def cast(function_value):
-            \"\"\"Type related transformations
-            \"\"\"
-            function, value = function_value
-            if not len(value):
-                return None
-            if function is None:
-                return value
-            else:
-                return function(value)
-
-        try:
-            values = self.reader.next()
-        except StopIteration:
-            raise StopIteration()
-        if len(values) < len(self.INPUT_FIELDS):
-            sys.stderr.write(\"Found %s fields when %s were expected.\\n\" %
-                             (len(values), len(self.INPUT_FIELDS)))
-            raise StopIteration()
-        else:
-            values = values[0:len(self.INPUT_FIELDS)]
-        try:
-            values = map(normalize, values)
-            for key in self.PREFIXES:
-                prefix_len = len(self.PREFIXES[key])
-                if values[key][0:prefix_len] == self.PREFIXES[key]:
-                    values[key] = values[key][prefix_len:]
-            for key in self.SUFFIXES:
-                suffix_len = len(self.SUFFIXES[key])
-                if values[key][-suffix_len:] == self.SUFFIXES[key]:
-                    values[key] = values[key][0:-suffix_len]
-            function_tuples = zip(self.INPUT_TYPES, values)
-            values = map(cast, function_tuples)
-            data = {}
-            for i in range(len(values)):
-                data.update({self.INPUT_FIELDS[i]: values[i]})
-            return data
-        except Exception, exc:
-            sys.stderr.write(\"Error in data transformations. %s\\n\" %
-                             str(exc))
-            return False
-\n\n
-"""
-        out.write(utf8(output))
-        out.flush()
-
-        self.tree.python(out, self.docstring(),
-                         input_map=True,
-                         ids_path=ids_path,
-                         subtree=subtree)
-        output = \
-"""
-csv = CSVInput()
-for values in csv:
-    if not isinstance(values, bool):
-        print u'%%s\\t%%s' %% (repr(values), repr(predict_%s(values)))
-\n\n
-""" % fields[self.tree.objective_id]['slug']
-        out.write(utf8(output))
-        out.flush()
-
-    def hadoop_python_reducer(self, out=sys.stdout):
-        """Returns a hadoop reducer to make predictions in python
-
-        """
-
-        output = \
-"""#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import sys
-
-count = 0
-previous = None
-
-def print_result(values, prediction, count):
-    \"\"\"Prints input data and predicted value as an ordered list.
-
-    \"\"\"
-    result = \"[%s, %s]\" % (values, prediction)
-    print u\"%s\\t%s\" % (result, count)
-
-for line in sys.stdin:
-    values, prediction = line.strip().split('\\t')
-    if previous is None:
-        previous = (values, prediction)
-    if values != previous[0]:
-        print_result(previous[0], previous[1], count)
-        previous = (values, prediction)
-        count = 0
-    count += 1
-if count > 0:
-    print_result(previous[0], previous[1], count)
-"""
-        out.write(utf8(output))
-        out.flush()
-
-    def to_prediction(self, value_as_string, data_locale=DEFAULT_LOCALE):
-        """Given a prediction string, returns its value in the required type
-
-        """
-        if not isinstance(value_as_string, str):
-            value_as_string = str(value_as_string, "utf-8")
-
-        objective_id = self.tree.objective_id
-        if self.fields[objective_id]['optype'] == 'numeric':
-            if data_locale is None:
-                data_locale = self.locale
-            find_locale(data_locale)
-            datatype = self.fields[objective_id]['datatype']
-            cast_function = PYTHON_FUNC.get(datatype, None)
-            if cast_function is not None:
-                return cast_function(value_as_string)
-        return value_as_string
-
-    def average_confidence(self):
-        """Average for the confidence of the predictions resulting from
-           running the training data through the model
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        total = 0.0
-        cumulative_confidence = 0
-        groups = self.group_prediction()
-        for _, predictions in list(groups.items()):
-            for _, count, confidence in predictions['details']:
-                cumulative_confidence += count * confidence
-                total += count
-        return float('nan') if total == 0.0 else cumulative_confidence
-
-    def get_nodes_info(self, headers, leaves_only=False):
-        """Generator that yields the nodes information in a row format
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        return self.tree.get_nodes_info(headers, leaves_only=leaves_only)
-
-    def tree_csv(self, file_name=None, leaves_only=False):
-        """Outputs the node structure to a CSV file or array
-
-        """
-        if self.boosting:
-            raise AttributeError("This method is not available for boosting"
-                                 " models.")
-        headers_names = []
-        if self.regression:
-            headers_names.append(
-                self.fields[self.tree.objective_id]['name'])
-            headers_names.append("error")
-            for index in range(0, self._max_bins):
-                headers_names.append("bin%s_value" % index)
-                headers_names.append("bin%s_instances" % index)
-        else:
-            headers_names.append(
-                self.fields[self.tree.objective_id]['name'])
-            headers_names.append("confidence")
-            headers_names.append("impurity")
-            for category, _ in self.tree.distribution:
-                headers_names.append(category)
-
-        nodes_generator = self.get_nodes_info(headers_names,
-                                              leaves_only=leaves_only)
-        if file_name is not None:
-            with UnicodeWriter(file_name) as writer:
-                writer.writerow([header.encode("utf-8")
-                                 for header in headers_names])
-                for row in nodes_generator:
-                    writer.writerow([item if not isinstance(item, str)
-                                     else item.encode("utf-8")
-                                     for item in row])
-        else:
-            rows = []
-            rows.append(headers_names)
-            for row in nodes_generator:
-                rows.append(row)
-            return rows

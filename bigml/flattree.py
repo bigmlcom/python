@@ -21,24 +21,19 @@ to make predictions locally or embedded into your application without needing
 to send requests to BigML.io.
 
 """
-import sys
+
 import os
 
 from copy import copy
 
-from bigml.predicate import Predicate
-from bigml.prediction import Prediction
-from bigml.predicate import TM_TOKENS, TM_FULL_TERM, TM_ALL
-from bigml.util import sort_fields, slugify, split, utf8, PRECISION
-from bigml.multivote import ws_confidence, merge_distributions, merge_bins
-from bigml.multivote import BINS_LIMIT
-from bigml.tree_utils import tableau_string, filter_nodes, missing_branch, \
-    none_value, one_branch
-from bigml.tree_utils import (
-    slugify, sort_fields, filter_nodes, missing_branch, none_value,
-    one_branch, split, MAX_ARGS_LENGTH, INDENT, PYTHON_OPERATOR, TM_TOKENS,
-    TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, COMPOSED_FIELDS,
-    NUMERIC_VALUE_FIELDS)
+
+
+
+from bigml.tree_utils import filter_nodes, missing_branch, \
+    none_value
+from bigml.tree_utils import INDENT, PYTHON_OPERATOR, \
+    TM_TOKENS, TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, \
+    COMPOSED_FIELDS, NUMERIC_VALUE_FIELDS
 
 MISSING_OPERATOR = {
     "=": "is",
@@ -56,9 +51,13 @@ TERM_TEMPLATE = "%s/out_model/static/term_analysis.txt" % BIGML_SCRIPT
 ITEMS_TEMPLATE = "%s/out_model/static/items_analysis.txt" % BIGML_SCRIPT
 
 
-nodes = {}
+def map_nodes(tree, nodes=None):
+    """Map nodes by ID
 
-def list_nodes(tree):
+    """
+    if nodes is None:
+        nodes = {}
+
     node = copy(tree)
     delattr(node, "fields")
     delattr(node, "objective_id")
@@ -66,7 +65,7 @@ def list_nodes(tree):
     children = []
     for child in tree.children:
         children.append("n_%s" % child.id)
-        list_nodes(child)
+        nodes = map_nodes(child, nodes)
     node.children = children
     nodes["n_%s" % tree.id] = node
     return nodes
@@ -88,8 +87,7 @@ def map_data(field, missing=False):
     """
     if missing:
         return "data.get('%s')" % field
-    else:
-        return "data['%s']" % field
+    return "data['%s']" % field
 
 
 def missing_prefix_code(self, field):
@@ -102,11 +100,11 @@ def missing_prefix_code(self, field):
     connection = "or" if self.predicate.missing else "and"
 
     return "%s is%s None %s " % (map_data(field, True),
-                                  negation,
-                                  connection)
+                                 negation,
+                                 connection)
 
 
-def split_condition_code(self, field, node, depth,
+def split_condition_code(self, field, depth,
                          pre_condition, term_analysis_fields,
                          item_analysis_fields):
     """Condition code for the split
@@ -114,31 +112,31 @@ def split_condition_code(self, field, node, depth,
     """
 
     optype = self.fields[field]['optype']
-    value = value_to_print(node.predicate.value, optype)
+    value = value_to_print(self.predicate.value, optype)
 
     if optype in ['text', 'items']:
         if optype == 'text':
             term_analysis_fields.append((field,
-                                         node.predicate.term))
+                                         self.predicate.term))
             matching_function = "term_matches"
         else:
             item_analysis_fields.append((field,
-                                         node.predicate.term))
+                                         self.predicate.term))
             matching_function = "item_matches"
 
         return "%sif (%s%s(%s, \"%s\", %s%s) %s " \
                "%s):\n" % \
               (INDENT * depth, pre_condition, matching_function,
                map_data(field, False),
-               node.predicate.field,
-               'u' if isinstance(node.predicate.term, str) else '',
-               value_to_print(node.predicate.term, 'categorical'),
-               PYTHON_OPERATOR[node.predicate.operator],
+               self.predicate.field,
+               'u' if isinstance(self.predicate.term, str) else '',
+               value_to_print(self.predicate.term, 'categorical'),
+               PYTHON_OPERATOR[self.predicate.operator],
                value)
 
-    operator = (MISSING_OPERATOR[node.predicate.operator] if
-                node.predicate.value is None else
-                PYTHON_OPERATOR[node.predicate.operator])
+    operator = (MISSING_OPERATOR[self.predicate.operator] if
+                self.predicate.value is None else
+                PYTHON_OPERATOR[self.predicate.operator])
 
     return "%sif (%s%s %s %s):\n" % \
            (INDENT * depth, pre_condition,
@@ -148,7 +146,7 @@ def split_condition_code(self, field, node, depth,
 
 
 
-class FlatTree(object):
+class FlatTree():
     """A tree-like predictive model.
 
     """
@@ -157,7 +155,7 @@ class FlatTree(object):
         self.fields = tree.fields
         self.objective_id = tree.objective_id
         self.regression = tree.regression
-        self.nodes = list_nodes(tree)
+        self.nodes = map_nodes(tree)
         self.boosting = boosting
 
     def missing_check_code(self, field, node, depth, metric):
@@ -180,19 +178,18 @@ class FlatTree(object):
         has been used
 
         """
-        return missing_prefix_code(self, field, node)
+        return missing_prefix_code(self, field)
 
-    def split_condition_code(self, field, node, depth,
+    def split_condition_code(self, field, depth,
                              pre_condition, term_analysis_fields,
                              item_analysis_fields):
         """Condition code for the split
 
         """
 
-        return split_condition_code(self, field, node, depth,
+        return split_condition_code(self, field, depth,
                                     pre_condition, term_analysis_fields,
                                     item_analysis_fields)
-
 
     def term_analysis_body(self, term_analysis_predicates,
                            item_analysis_predicates):
@@ -298,7 +295,8 @@ class FlatTree(object):
         predictor_doc = (INDENT + "\"\"\" " + docstring +
                          "\n" + INDENT + "\"\"\"\n")
         body, term_analysis_predicates, item_analysis_predicates = \
-            self.plug_in_body(ids_path=ids_path, subtree=subtree)
+            self.plug_in_body(ids_path=ids_path, subtree=subtree, \
+            metric=metric)
         terms_body = ""
         if term_analysis_predicates or item_analysis_predicates:
             terms_body = self.term_analysis_body(term_analysis_predicates,
@@ -308,7 +306,6 @@ class FlatTree(object):
             "\n\n".join(body) + "\n%sreturn n_0(data)\n" % INDENT
 
         predictor_model = "def predict"
-        depth = len(predictor_model) + 1
         predictor += "\n\n%s(data=None):\n%sif data is None:\n%sdata = {}\n" \
             % (predictor_model, INDENT, INDENT * 2)
         predictor += "%sprediction = predict_%s(data)\n" % ( \
@@ -350,7 +347,7 @@ class FlatTree(object):
             for node in nodes:
                 depth = 1
                 body = "%sdef %sn_%s(data):\n" % (INDENT * depth, prefix,
-                                                   node.id)
+                                                  node.id)
                 depth += 1
 
                 children = [self.nodes[key] for key in node.children]
@@ -363,9 +360,9 @@ class FlatTree(object):
                                           none_value(children))
                     # the missing is singled out as a special case only when
                     # there's no missing branch in the children list
-                    one_branch = not has_missing_branch or \
+                    has_one_branch = not has_missing_branch or \
                         self.fields[field]['optype'] in COMPOSED_FIELDS
-                    if one_branch:
+                    if has_one_branch:
                         body += self.missing_check_code( \
                             field, node, depth, metric)
 
@@ -379,12 +376,12 @@ class FlatTree(object):
                             # code when missing_splits has been used
                             if has_missing_branch and child.predicate.value \
                                     is not None:
-                                pre_condition = self.missing_prefix_code( \
-                                    child, field)
+                                pre_condition = child.missing_prefix_code( \
+                                    field)
 
                             # complete split condition code
-                            body += self.split_condition_code( \
-                                field, child, depth, pre_condition,
+                            body += child.split_condition_code( \
+                                field, depth, pre_condition,
                                 term_analysis_fields, item_analysis_fields)
 
                         # body += next_level[0]

@@ -27,11 +27,10 @@ except ImportError:
 
 
 from bigml.api_handlers.resourcehandler import ResourceHandler
-from bigml.api_handlers.resourcehandler import (check_resource_type, get_resource_type,
-                                   check_resource,
-                                   get_anomaly_score_id, get_anomaly_id)
-from bigml.constants import (ANOMALY_SCORE_PATH, ANOMALY_PATH,
-                             TINY_RESOURCE)
+from bigml.api_handlers.resourcehandler import check_resource_type, \
+    get_resource_type, check_resource, get_anomaly_score_id, get_anomaly_id
+from bigml.constants import ANOMALY_SCORE_PATH, ANOMALY_PATH, \
+    TINY_RESOURCE
 
 
 class AnomalyScoreHandler(ResourceHandler):

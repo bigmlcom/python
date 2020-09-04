@@ -44,22 +44,15 @@ import logging
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import get_status, get_api_connection
-from bigml.util import cast, PRECISION
+from bigml.api import get_status, get_api_connection, get_deepnet_id
+from bigml.util import cast, use_cache, load, PRECISION
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 
-try:
-    import numpy
-    import scipy
-    import bigml.laminar.numpy_ops as net
-    import bigml.laminar.preprocess_np as pp
-except ImportError:
-    import bigml.laminar.math_ops as net
-    import bigml.laminar.preprocess as pp
-
+import bigml.laminar.numpy_ops as net
+import bigml.laminar.preprocess_np as pp
 
 LOGGER = logging.getLogger('BigML')
 
@@ -67,6 +60,9 @@ MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
 def moments(amap):
+    """Extracts mean and stdev
+
+    """
     return amap[MEAN], amap[STANDARD_DEVIATION]
 
 
@@ -89,13 +85,19 @@ class Deepnet(ModelFields):
 
     """
 
-    def __init__(self, deepnet, api=None):
+    def __init__(self, deepnet, api=None, cache_get=None):
         """The Deepnet constructor can be given as first argument:
             - a deepnet structure
             - a deepnet id
             - a path to a JSON file containing a deepnet structure
 
         """
+
+        if use_cache(cache_get):
+            # using a cache to store the model attributes
+            self.__dict__ = load(get_deepnet_id(deepnet), cache_get)
+            return
+
         self.resource_id = None
         self.regression = False
         self.network = None
@@ -105,9 +107,9 @@ class Deepnet(ModelFields):
         self.preprocess = []
         self.optimizer = None
         self.missing_numerics = False
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
         self.resource_id, deepnet = get_resource_dict( \
-            deepnet, "deepnet", api=self.api)
+            deepnet, "deepnet", api=api)
 
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
@@ -278,6 +280,9 @@ class Deepnet(ModelFields):
                                                      self.network))
 
     def predict_list(self, input_array):
+        """Makes predictions with a list of networks
+
+        """
         if self.network['trees'] is not None:
             input_array_trees = pp.tree_transform(input_array,
                                                   self.network['trees'])
@@ -337,16 +342,13 @@ class Deepnet(ModelFields):
             prediction = self.predict(input_data, full=not compact)
             if compact:
                 return [prediction]
-            else:
-                return prediction
-        else:
-            distribution = self.predict(input_data, full=True)['distribution']
-            distribution.sort(key=lambda x: x['category'])
+            return prediction
+        distribution = self.predict(input_data, full=True)['distribution']
+        distribution.sort(key=lambda x: x['category'])
 
-            if compact:
-                return [category['probability'] for category in distribution]
-            else:
-                return distribution
+        if compact:
+            return [category['probability'] for category in distribution]
+        return distribution
 
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the

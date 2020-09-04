@@ -297,3 +297,8 @@ EXTERNAL_CONNECTION_ATTRS = { \
     "BIGML_EXTERNAL_CONN_PWD": "password",
     "BIGML_EXTERNAL_CONN_DB": "database",
     "BIGML_EXTERNAL_CONN_SOURCE": "source"}
+
+
+# missing strategies
+LAST_PREDICTION = 0
+PROPORTIONAL = 1

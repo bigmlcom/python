@@ -1,0 +1,3 @@
+    Iris-setosa: 33.33% (50 instances)
+    Iris-versicolor: 33.33% (50 instances)
+    Iris-virginica: 33.33% (50 instances)

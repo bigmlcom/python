@@ -29,34 +29,29 @@ try:
     GAE_ENABLED = True
 except ImportError:
     GAE_ENABLED = False
-    import ssl
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-
-from threading import Thread
+import mimetypes
+import requests
 
 from requests_toolbelt import MultipartEncoder
-import mimetypes
 
-from bigml.util import (localize, clear_console_line, reset_console_line,
-                        console_log, is_url)
+from bigml.util import is_url, maybe_save
 from bigml.bigmlconnection import (
-    HTTP_CREATED, HTTP_ACCEPTED, HTTP_BAD_REQUEST,
+    HTTP_CREATED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
-    HTTP_TOO_MANY_REQUESTS, HTTP_FORBIDDEN,
+    HTTP_TOO_MANY_REQUESTS,
     HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_source_id
-from bigml.constants import SOURCE_PATH, UPLOADING
+from bigml.constants import SOURCE_PATH
 from bigml.api_handlers.resourcehandler import ResourceHandler, LOGGER
 
-import requests
-from bigml.util import maybe_save
 
 class SourceHandler(ResourceHandler):
 
@@ -132,8 +127,7 @@ class SourceHandler(ResourceHandler):
             create_args.update(args)
 
         for key, value in list(create_args.items()):
-            if value is not None and (isinstance(value, list) or
-                                      isinstance(value, dict)):
+            if value is not None and isinstance(value, (list, dict)):
                 create_args[key] = json.dumps(value)
             elif value is not None and isinstance(value, numbers.Number):
                 # the multipart encoder only accepts strings and files
@@ -210,7 +204,7 @@ class SourceHandler(ResourceHandler):
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json_load(response.content)
             else:
-                LOGGER.error("Unexpected error (%s)" % code)
+                LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError:
@@ -219,8 +213,7 @@ class SourceHandler(ResourceHandler):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def create_source(self, path=None, args=None, async_load=False,
-                      progress_bar=False, out=sys.stdout):
+    def create_source(self, path=None, args=None):
         """Creates a new source.
 
            The source can be a local file path or a URL.
@@ -233,12 +226,11 @@ class SourceHandler(ResourceHandler):
 
         if is_url(path):
             return self._create_remote_source(path, args=args)
-        elif isinstance(path, list):
+        if isinstance(path, list):
             return self._create_inline_source(path, args=args)
-        elif isinstance(path, dict):
+        if isinstance(path, dict):
             return self._create_connector_source(path, args=args)
-        else:
-            return self._create_local_source(file_name=path, args=args)
+        return self._create_local_source(file_name=path, args=args)
 
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.

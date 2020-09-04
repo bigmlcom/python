@@ -23,8 +23,7 @@ import re
 
 from bigml.predicate_utils.utils import TM_TOKENS, TM_FULL_TERM, TM_ALL, \
     FULL_TERM_PATTERN, OPERATOR_CODE
-from bigml.predicate_utils.utils import apply_predicate, term_matches, \
-    item_matches
+from bigml.predicate_utils.utils import apply_predicate
 from bigml.util import plural
 
 RELATIONS = {
@@ -34,7 +33,7 @@ RELATIONS = {
     '<': 'less than %s %s'
 }
 
-class Predicate(object):
+class Predicate():
     """A predicate to be evaluated in a tree's node.
     """
     def __init__(self, operation, field, value, term=None):
@@ -92,21 +91,16 @@ class Predicate(object):
                                            (self.value,
                                             plural('time', self.value)))
             return "%s %s %s %s%s" % (name, relation_literal,
-                                       self.term, relation_suffix,
-                                       relation_missing)
+                                      self.term, relation_suffix,
+                                      relation_missing)
         if self.value is None:
             return "%s %s" % (name,
-                               "is missing" if self.operator == '='
-                               else "is not missing")
+                              "is missing" if self.operator == '='
+                              else "is not missing")
         return "%s %s %s%s" % (name,
-                                self.operator,
-                                self.value,
-                                relation_missing)
-
-    def to_LISP_rule(self, fields):
-        """To be deprecated. See to_lisp_rule
-        """
-        self.to_lisp_rule(fields)
+                               self.operator,
+                               self.value,
+                               relation_missing)
 
     def to_lisp_rule(self, fields):
         """Builds rule string in LISP from a predicate
@@ -121,7 +115,8 @@ class Predicate(object):
                 return "(%s (occurrences (f %s) %s %s%s) %s)" % (
                     self.operator, self.field, self.term,
                     case_insensitive, language, self.value)
-            elif fields[self.field]['optype'] == 'items':
+
+            if fields[self.field]['optype'] == 'items':
                 return "(%s (if (contains-items? %s %s) 1 0) %s)" % (
                     self.operator, self.field, self.term,
                     self.value)
@@ -129,8 +124,8 @@ class Predicate(object):
             negation = "" if self.operator == "=" else "not "
             return "(%s missing? %s)" % (negation, self.field)
         rule = "(%s (f %s) %s)" % (self.operator,
-                                    self.field,
-                                    self.value)
+                                   self.field,
+                                   self.value)
         if self.missing:
             rule = "(or (missing? %s) %s)" % (self.field, rule)
         return rule

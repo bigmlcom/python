@@ -25,10 +25,11 @@ import locale
 import sys
 
 from urllib.parse import urlparse
+from functools import reduce
 from unidecode import unidecode
 
-from bigml.util import split
-from functools import reduce
+
+from bigml.predicate_utils.utils import LT, LE, EQ, NE, GE, GT, IN
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 TM_TOKENS = 'tokens_only'
@@ -45,15 +46,14 @@ INDENT = '    '
 
 # Map operator str to its corresponding python operator
 PYTHON_OPERATOR = {
-    "<": "<",
-    "<=": "<=",
-    "=": "==",
-    "!=": "!=",
-    "/=": "!=",
-    ">=": ">=",
-    ">": ">"
+    LT: "<",
+    LE: "<=",
+    EQ: "==",
+    NE: "!=",
+    GE: ">=",
+    GT: ">",
+    IN: "in"
 }
-
 
 # reserved keywords
 
@@ -143,6 +143,16 @@ PYTHON_KEYWORDS = [
 ]
 
 
+def split(children):
+    """Returns the field that is used by the node to make a decision.
+
+    """
+    field = set([child.predicate.field for child in children])
+
+    if len(field) == 1:
+        return field.pop()
+
+
 def java_string(text):
     """Transforms string output for java, cs, and objective-c code
 
@@ -205,8 +215,11 @@ def slugify(name, reserved_keywords=None, prefix=''):
 
     name = unidecode(name).lower()
     name = re.sub(r'\W+', '_', name)
-    if name[0].isdigit():
-        name = "field_" + name
+    try:
+        if name[0].isdigit():
+            name = "field_" + name
+    except IndexError:
+        name = "unnamed_field"
     if reserved_keywords:
         if name in reserved_keywords:
             name = prefix + name

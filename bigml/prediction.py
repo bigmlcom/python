@@ -20,7 +20,7 @@ This module defines an auxiliary Prediction object that is used in the
 Tree module to store all the available prediction info.
 """
 
-class Prediction(object):
+class Prediction():
     """A Prediction object containing the predicted Node info or the
        subtree grouped prediction info for proportional missing strategy
 

@@ -137,6 +137,7 @@ class World(object):
                          short_debug=self.short_debug, storage=(None if
                          not (self.debug or self.short_debug) else
                          "./debug_storage"))
+        print("**** word print")
         print(self.api.connection_info())
         print(self.external_connection_info())
 

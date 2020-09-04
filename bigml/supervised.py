@@ -43,7 +43,7 @@ model.predict({"petal length": 3, "petal width": 1,
 import json
 
 
-from bigml.api import get_resource_id, get_resource_type, BigML, \
+from bigml.api import get_resource_id, get_resource_type, \
     get_api_connection
 from bigml.model import Model
 from bigml.ensemble import Ensemble
@@ -87,9 +87,8 @@ def extract_id(model, api):
                         api.error_message(model,
                                           resource_type='model',
                                           method='get'))
-                else:
-                    raise IOError("Failed to open the expected JSON file"
-                                  " at %s" % model)
+                raise IOError("Failed to open the expected JSON file"
+                              " at %s" % model)
         except ValueError:
             raise ValueError("Failed to interpret %s."
                              " JSON file expected.")
@@ -109,12 +108,12 @@ class SupervisedModel(BaseModel):
 
     """
 
-    def __init__(self, model, api=None):
+    def __init__(self, model, api=None, cache_get=None):
 
         self.api = get_api_connection(api)
         resource_id, model = extract_id(model, api)
         resource_type = get_resource_type(resource_id)
-        kwargs = {"api": self.api}
+        kwargs = {"api": self.api, "cache_get": cache_get}
         local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)
         self.__class__.__bases__ = local_model.__class__.__bases__
         for attr, value in list(local_model.__dict__.items()):

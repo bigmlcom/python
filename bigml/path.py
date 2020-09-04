@@ -82,6 +82,7 @@ def merge_rules(list_of_predicates, fields, label='name'):
         return " and ".join(
             [predicate.to_rule(fields, label=label).strip() for
              predicate in list_of_predicates])
+    return ""
 
 
 def merge_numeric_rules(list_of_predicates, fields, label='name',
@@ -194,7 +195,7 @@ def  merge_categorical_rules(list_of_predicates,
     return rule
 
 
-class Path(object):
+class Path():
     """A Path as a list of Predicates
 
     """
@@ -219,11 +220,10 @@ class Path(object):
         """
         if format == EXTENDED:
             return self.to_extended_rules(fields, label=label)
-        elif format == BRIEF:
+        if format == BRIEF:
             return self.to_brief_rules(fields, label=label)
-        else:
-            raise ValueError("Invalid format. The list of valid formats are 0 "
-                             "(extended) or 1 (brief).")
+        raise ValueError("Invalid format. The list of valid formats are 0 "
+                         "(extended) or 1 (brief).")
 
 
     def to_extended_rules(self, fields, label='name'):

@@ -148,7 +148,7 @@ def patch_requests(short_debug):
     requests.api.request = debug_request
 
 
-class BigMLConnection(object):
+class BigMLConnection():
     """Low level point to create, retrieve, list, update, and delete
     sources, datasets, models and predictions.
 
@@ -484,8 +484,7 @@ class BigMLConnection(object):
             if "output_format" in query_string:
                 # output can be an xml file that is returned without storing
                 return response.content
-            else:
-                LOGGER.error("Malformed response: %s" % str(exc))
+            LOGGER.error("Malformed response: %s", str(exc))
 
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
@@ -775,12 +774,11 @@ class BigMLConnection(object):
                                                           wait_time=wait_time,
                                                           retries=retries,
                                                           counter=counter)
-                                else:
-                                    return self._download(url,
-                                                          filename=filename,
-                                                          wait_time=wait_time,
-                                                          retries=retries,
-                                                          counter=retries + 1)
+                                return self._download(url,
+                                                      filename=filename,
+                                                      wait_time=wait_time,
+                                                      retries=retries,
+                                                      counter=retries + 1)
                         elif counter == retries:
                             LOGGER.error("The maximum number of retries "
                                          " for the download has been "
@@ -845,7 +843,6 @@ class BigMLConnection(object):
 
         """
         code = HTTP_INTERNAL_SERVER_ERROR
-        meta = None
         resources = None
         error = {
             "status": {
@@ -956,7 +953,7 @@ class BigMLConnection(object):
                 error += ('\nToo many requests. Please stop '
                           ' requests for a while before resuming.')
                 return error
-            elif code == HTTP_PAYMENT_REQUIRED:
+            if code == HTTP_PAYMENT_REQUIRED:
                 error += ('\nYou\'ll need to buy some more credits to perform'
                           ' the chosen action')
                 return error

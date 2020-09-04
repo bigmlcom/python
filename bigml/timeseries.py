@@ -45,8 +45,8 @@ import io
 import pprint
 
 from bigml.api import FINISHED
-from bigml.api import get_status, get_api_connection
-from bigml.util import utf8
+from bigml.api import get_status, get_api_connection, get_time_series_id
+from bigml.util import utf8, use_cache, load
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
 from bigml.tssubmodels import SUBMODELS
@@ -133,7 +133,12 @@ class TimeSeries(ModelFields):
 
     """
 
-    def __init__(self, time_series, api=None):
+    def __init__(self, time_series, api=None, cache_get=None):
+
+        if use_cache(cache_get):
+            # using a cache to store the model attributes
+            self.__dict__ = load(get_time_series_id(time_series), cache_get)
+            return
 
         self.resource_id = None
         self.input_fields = []
@@ -148,10 +153,10 @@ class TimeSeries(ModelFields):
         self.time_range = {}
         self.field_parameters = {}
         self._forecast = {}
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
 
         self.resource_id, time_series = get_resource_dict( \
-            time_series, "timeseries", api=self.api)
+            time_series, "timeseries", api=api)
 
         if 'object' in time_series and \
             isinstance(time_series['object'], dict):
@@ -257,7 +262,6 @@ class TimeSeries(ModelFields):
         unused_fields = []
         new_input = {}
         if isinstance(input_data, dict):
-
             for key, value in list(input_data.items()):
                 if key not in self.fields:
                     key = self.inverted_fields.get(key, key)
@@ -287,10 +291,9 @@ class TimeSeries(ModelFields):
             result = (new_input, unused_fields) if full else \
                 new_input
             return result
-        else:
-            LOGGER.error("Failed to read input data in the expected"
-                         " {field:value} format.")
-            return ({}, []) if full else {}
+        LOGGER.error("Failed to read input data in the expected"
+                     " {field:value} format.")
+        return ({}, []) if full else {}
 
     def python(self, out=sys.stdout):
         """Generates the code in python that creates the forecasts

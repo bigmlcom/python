@@ -31,8 +31,7 @@ from bigml.laminar.constants import LARGE_EXP, MATRIX_PARAMS, \
 def to_numpy_array(xs):
     if isinstance(xs, np.ndarray):
         return np.copy(xs)
-    else:
-        return np.array(xs, dtype=np.float32)
+    return np.array(xs, dtype=np.float32)
 
 
 def softplus(xs):
@@ -81,10 +80,10 @@ def plus(mat, vec):
 def dot(mat1, mat2):
     output = []
     for row1 in mat1:
-      new_row = []
-      for row2 in mat2:
-        new_row.append(np.dot(row1, row2).tolist())
-      output.append(new_row)
+        new_row = []
+        for row2 in mat2:
+            new_row.append(np.dot(row1, row2).tolist())
+        output.append(new_row)
     return output
 
 def batch_norm(X, mean, stdev, shift, scale):
@@ -134,8 +133,7 @@ def sum_and_normalize(youts, is_regression):
 
     if is_regression:
         return ysums / len(youts)
-    else:
-        return ysums / np.sum(ysums, axis=1).reshape(-1, 1)
+    return ysums / np.sum(ysums, axis=1).reshape(-1, 1)
 
 
 def propagate(x_in, layers):

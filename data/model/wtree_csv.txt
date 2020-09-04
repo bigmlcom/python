@@ -1,0 +1,1 @@
+[["species", "confidence", "impurity", "Iris-setosa", "Iris-versicolor", "Iris-virginica"], ["Iris-setosa", 0.26289, 0.6666666666666667, 50, 50, 50], ["Iris-versicolor", 0.40383, 0.5, null, 50, 50], ["Iris-virginica", 0.88664, 0.04253308128544431, null, 1, 45], ["Iris-versicolor", 0.8009, 0.16803840877914955, null, 49, 5], ["Iris-setosa", 0.92865, 0.0, 50, null, null]]

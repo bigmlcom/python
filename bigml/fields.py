@@ -50,10 +50,7 @@ from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
 from bigml.api import get_resource_type, get_fields
 from bigml.constants import (
-    SOURCE_PATH, DATASET_PATH, PREDICTION_PATH, MODEL_PATH, CLUSTER_PATH,
-    ANOMALY_PATH, SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
-    LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH, TOPIC_MODEL_PATH,
-    ENSEMBLE_PATH, PCA_PATH, LINEAR_REGRESSION_PATH, FIELDS_PARENT,
+    SOURCE_PATH, DATASET_PATH, SUPERVISED_PATHS, FUSION_PATH,
     RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS)
 from bigml.io import UnicodeReader, UnicodeWriter
 
@@ -102,7 +99,8 @@ def get_fields_structure(resource, errors=False):
                 'objective_field', {}).get('id')
             if errors:
                 field_errors = resource.get("status", {}).get("field_errors")
-        elif resource_type in [MODEL_PATH, LOGISTIC_REGRESSION_PATH]:
+        elif resource_type in SUPERVISED_PATHS and \
+                resource_type != FUSION_PATH:
             objective_id = resource.get( \
                 'objective_fields', [None])[0]
             objective_column = fields.get( \
@@ -111,9 +109,8 @@ def get_fields_structure(resource, errors=False):
         if errors:
             result = result + (field_errors,)
         return result
-    else:
-        return (None, None, None, None, None) if errors else \
-            (None, None, None, None)
+    return (None, None, None, None, None) if errors else \
+        (None, None, None, None)
 
 
 def attribute_summary(attribute_value, item_type, limit=None):
@@ -128,8 +125,8 @@ def attribute_summary(attribute_value, item_type, limit=None):
     if limit is None or limit > items_length:
         limit = items_length
     return "%s %s: %s" % (items_length, type_singular(item_type,
-                                                       items_length == 1),
-                           ", ".join(items[0: limit]))
+                                                      items_length == 1),
+                          ", ".join(items[0: limit]))
 
 def type_singular(item_type, singular=False):
     """Singularizes item types if needed
@@ -140,7 +137,7 @@ def type_singular(item_type, singular=False):
     return item_type
 
 
-class Fields(object):
+class Fields():
     """A class to deal with BigML auto-generated ids.
 
     """
@@ -257,17 +254,18 @@ class Fields(object):
 
         if isinstance(key, str):
             try:
-                id = self.fields_by_name[key]
+                f_id = self.fields_by_name[key]
             except KeyError:
                 raise ValueError("Error: field name '%s' does not exist" % key)
-            return id
-        elif isinstance(key, int):
+            return f_id
+        if isinstance(key, int):
             try:
-                id = self.fields_by_column_number[key]
+                f_id = self.fields_by_column_number[key]
             except KeyError:
                 raise ValueError("Error: field column number '%s' does not"
                                  " exist" % key)
-            return id
+            return f_id
+        return None
 
     def field_name(self, key):
         """Returns a field name.
@@ -279,13 +277,14 @@ class Fields(object):
             except KeyError:
                 raise ValueError("Error: field id '%s' does not exist" % key)
             return name
-        elif isinstance(key, int):
+        if isinstance(key, int):
             try:
                 name = self.fields[self.fields_by_column_number[key]]['name']
             except KeyError:
                 raise ValueError("Error: field column number '%s' does not"
                                  " exist" % key)
             return name
+        return None
 
     def field_column_number(self, key):
         """Returns a field column number.
@@ -498,8 +497,7 @@ class Fields(object):
                 summary.append(field_summary)
         if writer is None:
             return summary
-        else:
-            writer.close_writer()
+        writer.close_writer()
 
     def new_fields_structure(self, csv_attributes_file=None,
                              attributes=None, out_file=None):
@@ -522,7 +520,8 @@ class Fields(object):
         if "field ID" in attributes[0] or "field column" in attributes[0]:
             # headers are used
             for index in range(1, len(attributes)):
-                new_attributes = dict(list(zip(attributes[0], attributes[index])))
+                new_attributes = dict(list(zip(attributes[0],
+                                               attributes[index])))
                 if new_attributes.get("field ID"):
                     field_id = new_attributes.get("field ID")
                     if not field_id in list(self.fields.keys()):
@@ -583,14 +582,13 @@ class Fields(object):
         new_fields_structure = {"fields": new_fields_structure}
         if out_file is None:
             return new_fields_structure
-        else:
-            try:
-                with open(out_file, "w") as out:
-                    json.dump(new_fields_structure, out)
-            except IOError:
-                raise IOError("Failed writing the fields structure file in"
-                              " %s- Please, check your arguments." %
-                              out_file)
+        try:
+            with open(out_file, "w") as out:
+                json.dump(new_fields_structure, out)
+        except IOError:
+            raise IOError("Failed writing the fields structure file in"
+                          " %s- Please, check your arguments." %
+                          out_file)
 
     def training_data_example(self, missings=False):
         """Generates an example of training data based on the contents of the
@@ -600,7 +598,7 @@ class Fields(object):
 
         """
         training_data = {}
-        for field_id, field in list(self.fields.items()):
+        for _, field in list(self.fields.items()):
             if field.get("summary") is not None:
                 value = None
                 optype = field.get("optype")
@@ -646,11 +644,11 @@ class Fields(object):
         fields_info = update_body.get("fields")
         if self.resource_type and fields_info is not None:
             if self.resource_type == "dataset":
-                for field_id, field in list(fields_info.items()):
+                for _, field in list(fields_info.items()):
                     if field.get("optype") is not None:
                         del field["optype"]
             elif self.resource_type == "source":
-                for field_id, field in list(fields_info.items()):
+                for _, field in list(fields_info.items()):
                     if field.get("preferred") is not None:
                         del field["preferred"]
             update_body["fields"] = fields_info

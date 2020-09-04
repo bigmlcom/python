@@ -45,7 +45,7 @@ BIGML_PREDICTION_PROTOCOL = os.environ.get('BIGML_PREDICTION_PROTOCOL',
 BIGML_PREDICTION_SSL_VERIFY = os.environ.get('BIGML_PREDICTION_SSL_VERIFY')
 
 
-class Domain(object):
+class Domain():
     """A Domain object to store the remote domain information for the API
 
        The domain that serves the remote resources can be set globally for

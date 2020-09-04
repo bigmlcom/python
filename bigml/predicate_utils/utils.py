@@ -20,6 +20,8 @@ Common auxiliar functions to be used in the node predicate evaluation
 import operator
 import re
 
+from bigml.util import plural
+
 # Operator Codes
 LT = 0
 LE = 1
@@ -47,6 +49,15 @@ OPERATOR = [operator.lt,
             operator.ge,
             operator.gt,
             operator.contains]
+
+INVERSE_OP = dict(zip(OPERATOR_CODE.values(), OPERATOR_CODE.keys()))
+
+RELATIONS = {
+    '<=': 'no more than %s %s',
+    '>=': '%s %s at most',
+    '>': 'more than %s %s',
+    '<': 'less than %s %s'
+}
 
 TM_TOKENS = 'tokens_only'
 TM_FULL_TERM = 'full_terms_only'
@@ -79,6 +90,21 @@ def term_matches(text, forms_list, options):
             return full_term_match(text, first_term, case_sensitive)
 
     return term_matches_tokens(text, forms_list, case_sensitive)
+
+def is_full_term(term, field):
+    """Returns a boolean showing if a term is considered as a full_term
+    """
+    if term is not None:
+        # new optype has to be handled in tokens
+        if field['optype'] == 'items':
+            return False
+        options = field['term_analysis']
+        token_mode = options.get('token_mode', TM_TOKENS)
+        if token_mode == TM_FULL_TERM:
+            return True
+        if token_mode == TM_ALL:
+            return re.match(FULL_TERM_PATTERN, term)
+    return False
 
 
 def full_term_match(text, full_term, case_sensitive):
@@ -176,12 +202,106 @@ def apply_predicate(operator, field, value, term, missing, input_data,
             input_terms = term_matches(input_data.get(field, ""), terms,
                                        options)
             return OPERATOR[operator](input_terms, value)
-        else:
-            # new items optype
-            options = field_info['item_analysis']
-            input_items = item_matches(input_data.get(field, ""), term,
-                                       options)
-            return OPERATOR[operator](input_items, value)
+        # new items optype
+        options = field_info['item_analysis']
+        input_items = item_matches(input_data.get(field, ""), term,
+                                   options)
+        return OPERATOR[operator](input_items, value)
     if operator == IN:
         return OPERATOR[operator](value, input_data[field])
     return OPERATOR[operator](input_data[field], value)
+
+
+def pack_predicate(predicate):
+    """Compacts the predicate condition
+
+    """
+    node = list()
+    if predicate and predicate is not True:
+        operation = predicate.get('operator')
+        value = predicate.get('value')
+        missing = False
+        if operation.endswith("*"):
+            operation = operation[0: -1]
+            missing = True
+        elif operation == 'in' and None in value:
+            missing = True
+
+        node.append(OPERATOR_CODE.get(operation))
+        node.append(predicate.get('field'))
+        node.append(value)
+        node.append(predicate.get('term'))
+        node.append(missing)
+    else:
+        node.append(True)
+    return node
+
+
+def predicate_to_rule(operator, field_info, value, term,
+                      missing, label='name'):
+    """Predicate condition string
+
+    """
+    # externally forcing missing to True or False depending on the path
+    if missing is None:
+        missing = False
+    if label is not None:
+        name = field_info[label]
+    else:
+        name = ""
+    operator = INVERSE_OP[operator]
+    full_term = is_full_term(term, field_info)
+    relation_missing = " or missing" if missing else ""
+    if term is not None:
+        relation_suffix = ''
+        if ((operator == '<' and value <= 1) or
+                (operator == '<=' and value == 0)):
+            relation_literal = ('is not equal to' if full_term
+                                else 'does not contain')
+        else:
+            relation_literal = 'is equal to' if full_term else 'contains'
+            if not full_term:
+                if operator != '>' or value != 0:
+                    relation_suffix = (RELATIONS[operator] %
+                                       (value,
+                                        plural('time', value)))
+        return "%s %s %s %s%s" % (name, relation_literal,
+                                  term, relation_suffix,
+                                  relation_missing)
+    if value is None:
+        return "%s %s" % (name,
+                          "is missing" if operator == '='
+                          else "is not missing")
+    return "%s %s %s%s" % (name,
+                           operator,
+                           value,
+                           relation_missing)
+
+
+def to_lisp_rule(operator, field, value, term,
+                 missing, field_info):
+    """Builds rule string in LISP from a predicate
+
+    """
+    if term is not None:
+        if field_info['optype'] == 'text':
+            options = field_info['term_analysis']
+            case_insensitive = not options.get('case_sensitive', False)
+            case_insensitive = 'true' if case_insensitive else 'false'
+            language = options.get('language')
+            language = "" if language is None else " %s" % language
+            return "(%s (occurrences (f %s) %s %s%s) %s)" % (
+                operator, field, term,
+                case_insensitive, language, value)
+        if field_info['optype'] == 'items':
+            return "(%s (if (contains-items? %s %s) 1 0) %s)" % (
+                operator, field, term, value)
+    if value is None:
+        negation = "" if operator == "=" else "not "
+        return "(%s missing? %s)" % (negation, field)
+    rule = "(%s (f %s) %s)" % (operator,
+                               field,
+                               value)
+    if missing:
+        rule = "(or (missing? %s) %s)" % (field, rule)
+    return rule

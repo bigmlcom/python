@@ -38,8 +38,9 @@ model.predict({"petal length": 3, "petal width": 1})
 import logging
 import ast
 
+from functools import partial
 
-from bigml.model import Model, cast_prediction
+from bigml.model import Model, cast_prediction, to_prediction
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
 from bigml.multivote import MultiVote
@@ -69,8 +70,7 @@ def read_votes(votes_files, to_prediction, data_locale=None):
        used in numeric formatting.
     """
     votes = []
-    for order in range(0, len(votes_files)):
-        votes_file = votes_files[order]
+    for order, votes_file in enumerate(votes_files):
         index = 0
         with UnicodeReader(votes_file) as rdr:
             for row in rdr:
@@ -93,7 +93,7 @@ def read_votes(votes_files, to_prediction, data_locale=None):
     return votes
 
 
-class MultiModel(object):
+class MultiModel():
     """A multiple local model.
 
     Uses a number of BigML remote models to build a local version that can be
@@ -101,7 +101,9 @@ class MultiModel(object):
 
     """
 
-    def __init__(self, models, api=None, fields=None, class_names=None):
+    def __init__(self, models, api=None, fields=None, class_names=None,
+                 cache_get=None):
+
         self.models = []
         self.class_names = class_names
 
@@ -110,9 +112,11 @@ class MultiModel(object):
                 self.models = models
             else:
                 for model in models:
-                    self.models.append(Model(model, api=api, fields=fields))
+                    self.models.append(Model(model, api=api, fields=fields,
+                                       cache_get=cache_get))
         else:
-            self.models.append(Model(models, api=api, fields=fields))
+            self.models.append(Model(models, api=api, fields=fields,
+                                     cache_get=cache_get))
 
     def list_models(self):
         """Lists all the model/ids that compound the multi model.
@@ -280,7 +284,7 @@ class MultiModel(object):
                 prediction = model.predict(input_data,
                                            missing_strategy=missing_strategy,
                                            full=True)
-                if model.tree.regression:
+                if model.regression:
                     # if median is to be used, we just replace the prediction
                     if use_median:
                         prediction["prediction"] = prediction["median"]
@@ -313,4 +317,5 @@ class MultiModel(object):
                     model.resource_id,
                     predictions_file_path))
         return read_votes(
-            votes_files, self.models[0].to_prediction, data_locale=data_locale)
+            votes_files, partial(to_prediction, self.models[0]),
+            data_locale=data_locale)

@@ -169,7 +169,7 @@ def model_from_shared_key(step):
 
 #@step(r'"(.*)" field\'s name is changed to "(.*)"')
 def field_name_to_new_name(step, field_id, new_name):
-    eq_(world.local_model.tree.fields[field_id]['name'], new_name)
+    eq_(world.local_model.fields[field_id]['name'], new_name)
 
 #@step(r'I create a model associated to centroid "(.*)"')
 def i_create_a_model_from_cluster(step, centroid_id):
@@ -303,6 +303,12 @@ def i_check_model_stored(step, filename, pmml):
         model_id = world.model["resource"][ \
             (world.model["resource"].index("/") + 1):]
         assert(content.index(model_id) > -1)
+
+#@step(r'I read model from file "(.*)"$')
+def i_read_model_file(step, filename):
+    with open(res_filename(filename)) as file_handler:
+        content = file_handler.read()
+        world.model = json.loads(content)
 
 #@step(r'I create an optiml$')
 def i_create_an_optiml(step):

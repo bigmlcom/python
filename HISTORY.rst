@@ -3,6 +3,12 @@
 History
 -------
 
+6.0.0 (2020-09-02)
+~~~~~~~~~~~~~~~~~~
+
+- New compact format for local models.
+- Adding cache managing capacities for all local predictors.
+
 5.2.0 (2020-08-19)
 ~~~~~~~~~~~~~~~~~~
 

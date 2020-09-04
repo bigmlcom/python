@@ -43,8 +43,8 @@ import math
 
 
 from bigml.api import FINISHED
-from bigml.api import get_status, get_api_connection
-from bigml.util import cast, NUMERIC
+from bigml.api import get_status, get_api_connection, get_pca_id
+from bigml.util import cast, use_cache, load, NUMERIC
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 
@@ -88,7 +88,12 @@ class PCA(ModelFields):
 
     """
 
-    def __init__(self, pca, api=None):
+    def __init__(self, pca, api=None, cache_get=None):
+
+        if use_cache(cache_get):
+            # using a cache to store the model attributes
+            self.__dict__ = load(get_pca_id(pca), cache_get)
+            return
 
         self.resource_id = None
         self.input_fields = []
@@ -103,10 +108,10 @@ class PCA(ModelFields):
         self.item_analysis = {}
         self.standardize = None
         self.famd_j = 1
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
 
         self.resource_id, pca = get_resource_dict( \
-            pca, "pca", api=self.api)
+            pca, "pca", api=api)
 
         if 'object' in pca and \
             isinstance(pca['object'], dict):
@@ -237,12 +242,11 @@ class PCA(ModelFields):
             mean = self.categories_probabilities[field_id][index]
             stdev = self.famd_j * math.sqrt(mean * self.famd_j)
             return mean, stdev
-        elif field['optype'] == NUMERIC:
+        if field['optype'] == NUMERIC:
             return field["summary"]["mean"], \
                 field["summary"]["standard_deviation"]
-        else:
-            return self.text_stats[field_id]['means'][index], \
-                self.text_stats[field_id]['standard_deviations'][index]
+        return self.text_stats[field_id]['means'][index], \
+            self.text_stats[field_id]['standard_deviations'][index]
 
 
     def expand_input(self, input_data, unique_terms):
@@ -261,7 +265,7 @@ class PCA(ModelFields):
         input_array = []
         input_mask = []
         missings = False
-        for index, field_id in enumerate(self.input_fields):
+        for field_id in self.input_fields:
             field = self.fields[field_id]
             optype = field["optype"]
             if optype == NUMERIC:
@@ -296,12 +300,12 @@ class PCA(ModelFields):
                             input_mask.append(1)
 
                 if self.standardized:
-                    for index, frequency in enumerate(new_inputs):
+                    for index2, frequency in enumerate(new_inputs):
                         mean, stdev = self._get_mean_stdev( \
-                            field, field_id, index)
-                        new_inputs[index] = frequency - mean
+                            field, field_id, index2)
+                        new_inputs[index2] = frequency - mean
                         if stdev > 0:
-                            new_inputs[index] /= stdev
+                            new_inputs[index2] /= stdev
                     # indexes of non-missing values
                 input_array.extend(new_inputs)
 

@@ -21,14 +21,18 @@
 """
 
 import os
-import requests
 import re
+
+from urllib.parse import urljoin
+
+import requests
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from urllib.parse import urljoin
+
 
 from bigml.api_handlers.resourcehandler import ResourceHandler
 from bigml.api_handlers.resourcehandler import check_resource_type, \

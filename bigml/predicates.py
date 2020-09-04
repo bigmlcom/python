@@ -22,7 +22,7 @@ AnomalyTree to save the node's predicates info.
 """
 from bigml.predicate import Predicate
 
-class Predicates(object):
+class Predicates():
     """A list of predicates to be evaluated in an anomaly tree's node.
 
     """

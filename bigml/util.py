@@ -28,10 +28,10 @@ import math
 import random
 import ast
 import datetime
+
 from urllib.parse import urlparse
 
-import unidecode
-
+import msgpack
 
 import bigml.constants as c
 
@@ -104,7 +104,7 @@ NUMERIC = "numeric"
 DFT_STORAGE = "./storage"
 DFT_STORAGE_FILE = os.path.join(DFT_STORAGE, "BigML_%s.json")
 
-DECIMAL_DIGITS= 5
+DECIMAL_DIGITS = 5
 
 
 def python_map_type(value):
@@ -113,8 +113,7 @@ def python_map_type(value):
     """
     if value in PYTHON_TYPE_MAP:
         return PYTHON_TYPE_MAP[value]
-    else:
-        return [str, str]
+    return [str, str]
 
 
 def invert_dictionary(dictionary, field='name'):
@@ -126,23 +125,6 @@ def invert_dictionary(dictionary, field='name'):
     """
     return dict([[value[field], key]
                  for key, value in list(dictionary.items())])
-
-
-def slugify(name, reserved_keywords=None, prefix=''):
-    """Translates a field name into a variable name.
-
-    """
-    name = unidecode.unidecode(name).lower()
-    name = re.sub(r'\W+', '_', name)
-    try:
-        if name[0].isdigit():
-            name = "field_" + name
-    except IndexError:
-        name = "unnamed_field"
-    if reserved_keywords:
-        if name in reserved_keywords:
-            name = prefix + name
-    return name
 
 
 def localize(number):
@@ -158,16 +140,6 @@ def is_url(value):
     """
     url = isinstance(value, str) and urlparse(value)
     return url and url.scheme and url.netloc and url.path
-
-
-def split(children):
-    """Returns the field that is used by the node to make a decision.
-
-    """
-    field = set([child.predicate.field for child in children])
-
-    if len(field) == 1:
-        return field.pop()
 
 
 def markdown_cleanup(text):
@@ -206,36 +178,14 @@ def prefix_as_comment(comment_prefix, text):
     return text.replace('\n', '\n' + comment_prefix)
 
 
-def sort_fields(fields):
-    """Sort fields by their column_number but put children after parents.
+def utf8(bytes_str):
+    """Returns utf-8 string for bytes or string objects
 
     """
-    fathers = [(key, val) for key, val in
-               sorted(list(fields.items()), key=lambda k: k[1]['column_number'])
-               if 'auto_generated' not in val]
-    children = [(key, val) for key, val in
-                sorted(list(fields.items()), key=lambda k: k[1]['column_number'])
-                if 'auto_generated' in val]
-    children.reverse()
-    fathers_keys = [father[0] for father in fathers]
-    for child in children:
-        try:
-            index = fathers_keys.index(child[1]['parent_ids'][0])
-        except ValueError:
-            index = -1
-
-        if index >= 0:
-            fathers.insert(index + 1, child)
-        else:
-            fathers.append(child)
-    return fathers
-
-
-def utf8(text):
-    """Returns text in utf-8 encoding
-
-    """
-    return text.encode("utf-8")
+    try:
+        return str(bytes_str, 'utf-8')
+    except TypeError:
+        return bytes_str
 
 
 def map_type(value):
@@ -244,8 +194,7 @@ def map_type(value):
     """
     if value in TYPE_MAP:
         return TYPE_MAP[value]
-    else:
-        return str
+    return str
 
 
 def locale_synonyms(main_locale, locale_alias):
@@ -258,13 +207,12 @@ def locale_synonyms(main_locale, locale_alias):
     alternatives = LOCALE_SYNONYMS[language_code]
     if isinstance(alternatives[0], str):
         return main_locale in alternatives and locale_alias in alternatives
-    else:
-        result = False
-        for subgroup in alternatives:
-            if main_locale in subgroup:
-                result = locale_alias in subgroup
-                break
-        return result
+    result = False
+    for subgroup in alternatives:
+        if main_locale in subgroup:
+            result = locale_alias in subgroup
+            break
+    return result
 
 
 def bigml_locale(locale_alias):
@@ -280,13 +228,12 @@ def bigml_locale(locale_alias):
     if isinstance(alternatives[0], str):
         return (alternatives[0] if locale_alias in alternatives
                 else None)
-    else:
-        result = None
-        for subgroup in alternatives:
-            if locale_alias in subgroup:
-                result = subgroup[0]
-                break
-        return result
+    result = None
+    for subgroup in alternatives:
+        if locale_alias in subgroup:
+            result = subgroup[0]
+            break
+    return result
 
 
 def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
@@ -599,6 +546,7 @@ def check_no_missing_numerics(input_data, fields, weight_field=None):
                              " data must contain values for all numeric"
                              " fields to get a prediction.")
 
+
 def check_no_training_missings(input_data, fields, weight_field=None,
                                objective_id=None):
     """Checks whether some input fields are missing in the input data
@@ -629,3 +577,39 @@ def flatten(inner_array):
             new_array.append(element)
 
     return new_array
+
+
+def use_cache(cache_get):
+    """Checks whether the user has provided a cache get function to retrieve
+       local models.
+
+    """
+    return cache_get is not None and hasattr(cache_get, '__call__')
+
+
+def dump(local_attrs, output=None, cache_set=None):
+    """Uses msgpack to serialize the local resource object
+    If cache_set is filled with a cache set method, the method is called
+
+    """
+    if use_cache(cache_set):
+        dump_string = msgpack.dumps(local_attrs)
+        cache_set(local_attrs["resource_id"], dump_string)
+    else:
+        msgpack.pack(local_attrs, output)
+
+
+def dumps(local_attrs):
+    """Uses msgpack to serialize the anomaly object to a string
+
+    """
+
+    return msgpack.dumps(local_attrs)
+
+
+def load(resource_id, cache_get):
+    """Uses msgpack to load the resource stored by ID
+
+    """
+
+    return msgpack.loads(cache_get(resource_id))

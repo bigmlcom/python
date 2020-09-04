@@ -33,13 +33,13 @@ import logging
 import json
 
 from bigml.api import get_ensemble_id, get_api_connection
-from bigml.model import print_distribution
+from bigml.generators.model import print_distribution
 from bigml.constants import STORAGE
 from bigml.multivote import MultiVote
 from bigml.multivote import PLURALITY_CODE
-from bigml.basemodel import BaseModel, print_importance, retrieve_resource
-from bigml.modelfields import lacks_info
-from bigml.out_model.pythonmodel import PythonModel
+from bigml.basemodel import BaseModel, print_importance, retrieve_resource, \
+    check_local_info
+from bigml.model import Model
 from bigml.flattree import FlatTree
 
 
@@ -47,7 +47,7 @@ BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
 
 
-class EnsemblePredictor(object):
+class EnsemblePredictor():
     """A local predictive Ensemble.
 
        Uses a number of BigML models to build an ensemble local version
@@ -88,7 +88,7 @@ class EnsemblePredictor(object):
         self.resource_id = get_ensemble_id(ensemble)
         self.ensemble_id = self.resource_id
 
-        if lacks_info(ensemble, inner_key="ensemble"):
+        if not check_local_info(ensemble):
             # avoid checking fields because of old ensembles
             ensemble = retrieve_resource(self.api, self.resource_id,
                                          no_check_fields=True)
@@ -180,14 +180,14 @@ class EnsemblePredictor(object):
         if isinstance(ensemble, str):
             try:
                 with open(ensemble) as ensemble_file:
+                    path = os.path.dirname(ensemble)
                     ensemble = json.load(ensemble_file)
                     self.resource_id = get_ensemble_id(ensemble)
                     if self.resource_id is None:
                         raise ValueError("The JSON file does not seem"
                                          " to contain a valid BigML ensemble"
                                          " representation.")
-                    else:
-                        self.api.storage = path
+                    self.api.storage = path
             except IOError:
                 # if it is not a path, it can be an ensemble id
                 self.resource_id = get_ensemble_id(ensemble)
@@ -197,9 +197,8 @@ class EnsemblePredictor(object):
                             self.api.error_message(ensemble,
                                                    resource_type='ensemble',
                                                    method='get'))
-                    else:
-                        raise IOError("Failed to open the expected JSON file"
-                                      " at %s" % ensemble)
+                    raise IOError("Failed to open the expected JSON file"
+                                  " at %s" % ensemble)
             except ValueError:
                 raise ValueError("Failed to interpret %s."
                                  " JSON file expected.")
@@ -270,8 +269,7 @@ class EnsemblePredictor(object):
             # Extracts importance from ensemble information
             importances = [model_info['importance'] for model_info in
                            self.distributions]
-            for index in range(0, len(importances)):
-                model_info = importances[index]
+            for model_info in importances:
                 for field_info in model_info:
                     field_id = field_info[0]
                     if field_id not in field_importance:
@@ -359,7 +357,7 @@ class EnsemblePredictor(object):
         self.print_importance(out=out)
         out.flush()
 
-    def generate_models(self, directory='./storage'):
+    def generate_models(self, directory=STORAGE):
         """Generates the functions for the models in the ensemble
 
         """
@@ -367,11 +365,11 @@ class EnsemblePredictor(object):
             os.makedirs(directory)
             open(os.path.join(directory, "__init__.py"), "w").close()
         for model_id in self.model_ids:
-            local_model = PythonModel(model_id, api=self.api,
-                                      fields=self.fields)
+            local_model = Model(model_id, api=self.api,
+                                fields=self.fields)
             local_flat_tree = FlatTree(local_model.tree, local_model.boosting)
             with open(os.path.join(directory, "%s.py" %
                                    model_id.replace("/", "_")), "w") \
                     as handler:
                 local_flat_tree.python(out=handler,
-                                       docstring="Model %s" % model_id )
+                                       docstring="Model %s" % model_id)

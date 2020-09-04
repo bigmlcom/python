@@ -25,7 +25,7 @@
 import csv
 
 
-class UnicodeReader(object):
+class UnicodeReader():
     """Adapter to read files
 
     """
@@ -86,7 +86,7 @@ class UnicodeReader(object):
             self.file_handler.close()
 
 
-class UnicodeWriter(object):
+class UnicodeWriter():
     """Adapter to write files
 
     """

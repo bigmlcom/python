@@ -46,7 +46,6 @@ def setup_module():
     print(world.api.connection_info())
     world.clear()
 
-
 def teardown_module():
     """Operations to be performed after each module
 

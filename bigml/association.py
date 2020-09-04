@@ -41,13 +41,13 @@ import csv
 
 
 from bigml.api import FINISHED
-from bigml.api import get_status, get_api_connection
+from bigml.api import get_status, get_api_connection, get_association_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.associationrule import AssociationRule
 from bigml.item import Item
 from bigml.io import UnicodeWriter
-
+from bigml.util import use_cache, load, dump, dumps
 
 LOGGER = logging.getLogger('BigML')
 
@@ -106,7 +106,17 @@ class Association(ModelFields):
 
     """
 
-    def __init__(self, association, api=None):
+    def __init__(self, association, api=None, cache_get=None):
+
+
+        if use_cache(cache_get):
+            # using a cache to store the association attributes
+            self.__dict__ = load(get_association_id(association), cache_get)
+            for index, item in enumerate(self.items):
+                self.items[index] = Item(item["index"], item, self.fields)
+            for index, rule in enumerate(self.rules):
+                self.rules[index] = AssociationRule(rule)
+            return
 
         self.resource_id = None
         self.complement = None
@@ -122,10 +132,10 @@ class Association(ModelFields):
         self.search_strategy = DEFAULT_SEARCH_STRATEGY
         self.rules = []
         self.significance_level = None
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
 
         self.resource_id, association = get_resource_dict( \
-            association, "association", api=self.api)
+            association, "association", api=api)
 
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']
@@ -414,7 +424,8 @@ class Association(ModelFields):
                 item = self.items[item_index]
                 # if there's just one field, we don't use the item description
                 # to avoid repeating the field name constantly.
-                item_description = item.name if len(list(self.fields.keys())) == 1 \
+                item_description = item.name if \
+                    len(list(self.fields.keys())) == 1 \
                     and not item.complement else item.describe()
                 description.append(item_description)
             description_str = " & ".join(description)
@@ -465,3 +476,26 @@ class Association(ModelFields):
                         break
             out.write("\n".join(out_rules))
         out.write("\n")
+
+    def dump(self, output=None, cache_set=None):
+        """Uses msgpack to serialize the resource object
+        If cache_set is filled with a cache set method, the method is called
+
+        """
+        self_vars = vars(self)
+        for index, elem in enumerate(self_vars["items"]):
+            self_vars["items"][index] = vars(elem)
+        for index, elem in enumerate(self_vars["rules"]):
+            self_vars["rules"][index] = vars(elem)
+        dump(self_vars, output=output, cache_set=cache_set)
+
+    def dumps(self):
+        """Uses msgpack to serialize the resource object to a string
+
+        """
+        self_vars = vars(self)
+        for index, elem in enumerate(self_vars["items"]):
+            self_vars["items"][index] = vars(elem)
+        for index, elem in enumerate(self_vars["rules"]):
+            self_vars["rules"][index] = vars(elem)
+        dumps(self_vars)

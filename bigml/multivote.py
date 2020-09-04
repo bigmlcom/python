@@ -168,7 +168,7 @@ def merge_bins(distribution, limit):
     return merge_bins(new_distribution, limit)
 
 
-class MultiVote(object):
+class MultiVote():
     """A multiple vote prediction
 
     Uses a number of predictions to generate a combined prediction.
@@ -281,8 +281,7 @@ class MultiVote(object):
         if normalization_factor == 0:
             if full:
                 return {"prediction": float('nan')}
-            else:
-                return float('nan')
+            return float('nan')
         if full:
             combined_error = 0.0
         for prediction in instance.predictions:
@@ -430,46 +429,45 @@ class MultiVote(object):
                 # boosting offset
                 return weighted_sum(self.predictions, weight="weight") + \
                     self.boosting_offsets
-            else:
-                return self.classification_boosting_combiner( \
-                    options, full=full)
-        elif self.is_regression():
+            return self.classification_boosting_combiner( \
+                options, full=full)
+        if self.is_regression():
             for prediction in self.predictions:
                 if prediction[CONFIDENCE_W] is None:
                     prediction[CONFIDENCE_W] = 0
             function = NUMERICAL_COMBINATION_METHODS.get(method,
                                                          self.__class__.avg)
             return function(self, full=full)
+        if method == THRESHOLD:
+            if options is None:
+                options = {}
+            predictions = self.single_out_category(options)
+        elif method == PROBABILITY:
+            predictions = MultiVote([])
+            predictions.predictions = self.probability_weight()
         else:
-            if method == THRESHOLD:
-                if options is None:
-                    options = {}
-                predictions = self.single_out_category(options)
-            elif method == PROBABILITY:
-                predictions = MultiVote([])
-                predictions.predictions = self.probability_weight()
-            else:
-                predictions = self
-            return predictions.combine_categorical(
-                COMBINATION_WEIGHTS.get(method, None),
-                full=full)
+            predictions = self
+        return predictions.combine_categorical(
+            COMBINATION_WEIGHTS.get(method, None),
+            full=full)
 
     def probability_weight(self):
         """Reorganizes predictions depending on training data probability
 
         """
         predictions = []
-        for prediction in self.predictions:
-            if 'distribution' not in prediction or 'count' not in prediction:
+        for prediction_info in self.predictions:
+            if 'distribution' not in prediction_info or \
+                 'count' not in prediction_info:
                 raise Exception("Probability weighting is not available "
                                 "because distribution information is missing.")
-            total = prediction['count']
+            total = prediction_info['count']
             if total < 1 or not isinstance(total, int):
                 raise Exception("Probability weighting is not available "
                                 "because distribution seems to have %s "
                                 "as number of instances in a node" % total)
-            order = prediction['order']
-            for prediction, instances in prediction['distribution']:
+            order = prediction_info['order']
+            for prediction, instances in prediction_info['distribution']:
                 predictions.append({ \
                     'prediction': prediction,
                     'probability': round(float(instances) / total, PRECISION),
@@ -527,8 +525,7 @@ class MultiVote(object):
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
                                     " model anew.")
-                else:
-                    weight = prediction[weight_label]
+                weight = prediction[weight_label]
             category = prediction['prediction']
             if full:
                 instances += prediction['count']
@@ -539,8 +536,8 @@ class MultiVote(object):
                 mode[category] = {"count": weight,
                                   "order": prediction['order']}
         prediction = sorted(list(mode.items()), key=lambda x: (x[1]['count'],
-                                                         -x[1]['order'],
-                                                         x[0]),
+                                                               -x[1]['order'],
+                                                               x[0]),
                             reverse=True)[0][0]
         if full:
             output = {'prediction': prediction}
@@ -625,8 +622,7 @@ class MultiVote(object):
                      "probability": round(prediction_info["probability"],
                                           PRECISION)}
                     for prediction, prediction_info in predictions]}
-        else:
-            return prediction
+        return prediction
 
     def append(self, prediction_info):
         """Adds a new prediction into a list of predictions
@@ -654,11 +650,6 @@ class MultiVote(object):
                                "The minimal key for the prediction is "
                                "'prediction': "
                                "\n{'prediction': 'Iris-virginica'")
-        """
-        elif isinstance(prediction_info, list):
-            if self.probabilities:
-                self.predictions.append(prediction_info)
-        """
 
     def single_out_category(self, options):
         """Singles out the votes for a chosen category and returns a prediction
@@ -726,9 +717,9 @@ class MultiVote(object):
                 prediction_headers.append('order')
                 prediction_row.append(order)
             prediction_info = {}
-            for i in range(0, len(prediction_row)):
+            for i, prediction_row_item in enumerate(prediction_row):
                 prediction_info.update({prediction_headers[i]:
-                                        prediction_row[i]})
+                                        prediction_row_item})
             self.predictions.append(prediction_info)
         else:
             LOGGER.error("WARNING: failed to add the prediction.\n"
@@ -746,8 +737,7 @@ class MultiVote(object):
         """
         if isinstance(predictions_info, list):
             order = self.next_order()
-            for i in range(0, len(predictions_info)):
-                prediction = predictions_info[i]
+            for i, prediction in enumerate(predictions_info):
                 if isinstance(prediction, dict):
                     prediction['order'] = order + i
                     self.append(prediction)
@@ -780,8 +770,7 @@ class MultiVote(object):
             index = len(prediction_headers)
             prediction_headers.append('order')
         if isinstance(predictions_rows, list):
-            for i in range(0, len(predictions_rows)):
-                prediction = predictions_rows[i]
+            for i, prediction in enumerate(predictions_rows):
                 if isinstance(prediction, list):
                     if index == len(prediction):
                         prediction.append(order + i)

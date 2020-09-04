@@ -1760,24 +1760,30 @@ performance for large ensembles:
     local_models = [Model(model_id) for model_id in model_ids]
     local_ensemble = Ensemble(local_models)
 
-The ``Ensemble`` object can also be instantiated using local models previously
-stored in disks or memory object caching systems. To retrieve these models
-provide a list of model ids as first argument and an extra argument
-named ``cache_get`` that should be a function receiving the model id
-to be retrieved and returning a local model object.
+Local Ensemble caching
+---------------------
+
+Ensembles can become quite large objects and demand large memory resources.
+If your usual scenario is using many of them
+constantly in a disordered way, the best strategy is setting up a cache
+system to store them. The local ensemble class provides helpers to
+interact with that cache. Here's an example using ``Redis``.
 
 .. code-block:: python
 
-    from bigml.model import Model
-    model_ids = ['model/50c0de043b563519830001c2', \
-                 'model/50c0de043b5635198300031b']
-    def cache_get(model_id):
-        """ Retrieves a JSON model structure and builds a local model object
-
-        """
-        model_file = model_id.replace("/", "_")
-        return Model(json.load(open(model_file)))
-    local_ensemble = Ensemble(model_ids, cache_get=cache_get)
+    from ensemble import Ensemble
+    import redis
+    r = redis.Redis()
+    # First build as you would any core Ensemble object:
+    local_ensemble = Ensemble('ensemble/5126965515526876630001b2')
+    # Store a serialized version in Redis
+    ensemble.dump(cache_set=r.set)
+    # (retrieve the external rep from its convenient place)
+    # Speedy Build from external rep
+    local_ensemble = Ensemble('ensemble/5126965515526876630001b2', \
+        cache_get=r.get)
+    # Get scores same as always:
+    local_ensemble.predict({"src_bytes": 350})
 
 
 Local Ensemble's Predictions
@@ -1932,6 +1938,33 @@ instantiate the corresponding local object, so that you can use its
     input_data = {"petal length": 3, "petal width": 1}
     logistic_regression_prediction = local_supervised_1.predict(input_data)
     model_prediction = local_supervised_2.predict(input_data)
+
+Local caching
+-------------
+
+All local models can use an external cache system to manage memory storage and
+recovery. The ``get`` and ``set`` functions of the cache manager should be
+passed to the constructor or  ``dump`` function. Here's an example on how to
+cache a linear regression:
+
+.. code-block:: python
+
+from bigml.linear import LinearRegression
+lm = LinearRegression("linearregression/5e827ff85299630d22007198")
+lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
+    "sepal width": 4, "species": "Iris-setosa"}, full=True)
+import redis
+r = redis.Redis()
+# First build as you would any core LinearRegression object:
+# Store a serialized version in Redis
+lm.dump(cache_set=r.set)
+# (retrieve the external rep from its convenient place)
+# Speedy Build from external rep
+lm = LinearRegression("linearregression/5e827ff85299630d22007198", \
+    cache_get=r.get)
+# Get predictions same as always:
+lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
+    "sepal width": 4, "species": "Iris-setosa"}, full=True)
 
 
 Rule Generation

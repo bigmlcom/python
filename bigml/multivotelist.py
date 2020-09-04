@@ -18,13 +18,12 @@
 """
 import logging
 
+from bigml.util import PRECISION
 
 LOGGER = logging.getLogger('BigML')
 
-from bigml.util import PRECISION
 
-
-class MultiVoteList(object):
+class MultiVoteList():
     """A multiple vote prediction in compact format
 
     Uses a number of predictions to generate a combined prediction.

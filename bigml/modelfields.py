@@ -25,12 +25,14 @@ is used for local predictions.
 import logging
 import re
 
-from bigml.util import invert_dictionary, DEFAULT_LOCALE
-from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT
-from bigml.api_handlers.resourcehandler import get_resource_type,  \
-    resource_is_ready
-from bigml.predicate import TM_FULL_TERM, TM_ALL
 from bigml_chronos import chronos
+
+from bigml.util import invert_dictionary, dump, dumps, DEFAULT_LOCALE
+from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT, \
+    ENSEMBLE_PATH
+from bigml.api_handlers.resourcehandler import get_resource_type
+from bigml.predicate import TM_FULL_TERM, TM_ALL
+
 
 
 LOGGER = logging.getLogger('BigML')
@@ -39,6 +41,8 @@ DATE_FNS = {
     "day-of-month": lambda x: x.day,
     "day-of-week": lambda x: x.weekday() + 1,
     "millisecond": lambda x: x.microsecond / 1000}
+
+NUMERIC = "numeric"
 
 
 def parse_terms(text, case_sensitive=True):
@@ -97,27 +101,17 @@ def check_model_fields(model):
     return False
 
 
-def check_model_structure(model, inner_key="model"):
+def check_model_structure(model, inner_key=None):
     """Checks the model structure to see if it contains all the
     main expected keys
 
     """
+    if inner_key is None:
+        inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
     return (isinstance(model, dict) and 'resource' in model and
             model['resource'] is not None and
-            ('object' in model and inner_key in model['object'] or
+            (('object' in model and inner_key in model['object']) or
              inner_key in model))
-
-
-def lacks_info(model, inner_key="model"):
-    """Whether the information in `model` is not enough to use it locally
-
-    """
-    try:
-        return not (resource_is_ready(model) and \
-            check_model_structure(model, inner_key) and \
-            check_model_fields(model))
-    except Exception:
-        return True
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):
@@ -154,7 +148,6 @@ def get_datetime_subfields(fields):
     for fid, finfo in list(fields.items()):
         if finfo.get('parent_optype', False) == 'datetime':
             parent_id = finfo["parent_ids"][0]
-            parent_name = fields[parent_id]["name"]
             subfield = {fid: finfo["datatype"]}
             if parent_id in list(subfields.keys()):
                 subfields[parent_id].update(subfield)
@@ -205,7 +198,7 @@ def add_expanded_dates(input_data, datetime_fields):
     return input_data
 
 
-class ModelFields(object):
+class ModelFields():
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
 
@@ -223,10 +216,8 @@ class ModelFields(object):
                 self.fields.update(fields)
                 if not (hasattr(self, "input_fields") and self.input_fields):
                     self.input_fields = [field_id for field_id, field in \
-                        sorted( \
-                        [(field_id, field) for field_id,
-                         field in list(self.fields.items())],
-                        key=lambda x: x[1].get("column_number")) \
+                        sorted(list(self.fields.items()),
+                               key=lambda x: x[1].get("column_number")) \
                         if not self.objective_id or \
                         field_id != self.objective_id]
                 self.model_fields = {}
@@ -256,6 +247,17 @@ class ModelFields(object):
                     self.categories = {}
                 if terms or categories or numerics:
                     self.add_terms(categories, numerics)
+
+                if self.objective_id is not None and \
+                        hasattr(self, "resource_id") and self.resource_id and \
+                        get_resource_type(self.resource_id) != ENSEMBLE_PATH:
+                    # Only for models. Ensembles need their own logic
+                    self.regression = \
+                        (not hasattr(self, "boosting") or not self.boosting) \
+                        and self.fields[self.objective_id][ \
+                        'optype'] == NUMERIC \
+                        or (hasattr(self, "boosting") and self.boosting and \
+                        self.boosting.get("objective_class") is None)
 
             except KeyError:
                 raise Exception("Wrong field structure.")
@@ -403,10 +405,9 @@ class ModelFields(object):
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
             return result
-        else:
-            LOGGER.error("Failed to read input data in the expected"
-                         " {field:value} format.")
-            return ({}, []) if add_unused_fields else {}
+        LOGGER.error("Failed to read input data in the expected"
+                     " {field:value} format.")
+        return ({}, []) if add_unused_fields else {}
 
     def get_unique_terms(self, input_data):
         """Parses the input data to find the list of unique terms in the
@@ -470,3 +471,18 @@ class ModelFields(object):
                     unique_terms[field_id] = [(input_data_field, 1)]
                     del input_data[field_id]
         return unique_terms
+
+    def dump(self, output=None, cache_set=None):
+        """Uses msgpack to serialize the resource object
+        If cache_set is filled with a cache set method, the method is called
+
+        """
+        self_vars = vars(self)
+        dump(self_vars, output=output, cache_set=cache_set)
+
+    def dumps(self):
+        """Uses msgpack to serialize the resource object to a string
+
+        """
+        self_vars = vars(self)
+        dumps(self_vars)

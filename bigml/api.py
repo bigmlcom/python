@@ -39,7 +39,7 @@ import json
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.api_handlers.resourcehandler import ResourceHandler, check_resource
+from bigml.api_handlers.resourcehandler import ResourceHandler
 from bigml.api_handlers.sourcehandler import SourceHandler
 from bigml.api_handlers.datasethandler import DatasetHandler
 from bigml.api_handlers.modelhandler import ModelHandler
@@ -208,7 +208,7 @@ def filter_kwargs(kwargs, list_of_keys, out=False):
     for key in kwargs:
         if (key not in list_of_keys and out) or \
                (key in list_of_keys and not out):
-           new_kwargs[key] = kwargs[key]
+            new_kwargs[key] = kwargs[key]
     return new_kwargs
 
 def get_fields(resource):
@@ -299,7 +299,6 @@ class BigML(ExternalConnectorHandler,
         given by the organization administrator.
 
         """
-
         BigMLConnection.__init__(self, username=username, api_key=api_key,
                                  debug=debug,
                                  set_locale=set_locale, storage=storage,
@@ -467,7 +466,7 @@ class BigML(ExternalConnectorHandler,
         if self.project or self.organization:
             info += "    Scope info: %s\n" % \
                 "%s\n                %s" % (self.organization or "",
-                                             self.project or "")
+                                            self.project or "")
 
 
         info += "\nAuthentication string:\n"
@@ -506,13 +505,13 @@ class BigML(ExternalConnectorHandler,
                                     - status.get("tasks")),
                 "tasks_in_progress": status.get("tasks_in_progress"),
                 "error": None}
-        else:
-            return {
-                "tasks": 0,
-                "max_tasks": 0,
-                "available_tasks": 0,
-                "tasks_in_progress": 0,
-                "error": status["error"]}
+
+        return {
+            "tasks": 0,
+            "max_tasks": 0,
+            "available_tasks": 0,
+            "tasks_in_progress": 0,
+            "error": status["error"]}
 
     def get_fields(self, resource):
         """Retrieve fields used by a resource.
@@ -601,12 +600,12 @@ class BigML(ExternalConnectorHandler,
             status = get_status(resource)
             code = status['code']
             return STATUSES.get(code, "UNKNOWN")
-        else:
-            status = get_status(resource)
-            if status['code'] != UPLOADING:
-                LOGGER.error("Wrong resource id")
-                return
-            return STATUSES[UPLOADING]
+
+        status = get_status(resource)
+        if status['code'] != UPLOADING:
+            LOGGER.error("Wrong resource id")
+            return
+        return STATUSES[UPLOADING]
 
     def check_resource(self, resource,
                        query_string='', wait_time=1):
@@ -640,7 +639,7 @@ class BigML(ExternalConnectorHandler,
         if self.storage is not None:
             try:
                 stored_resource = os.path.join(self.storage,
-                                              resource_id.replace("/", "_"))
+                                               resource_id.replace("/", "_"))
                 with open(stored_resource) as resource_file:
                     resource = json.loads(resource_file.read())
                 # we check that the stored resource has the information
@@ -657,7 +656,7 @@ class BigML(ExternalConnectorHandler,
                              " for the first time and store it locally for further"
                              " use. Please export BIGML_USERNAME"
                              " and BIGML_API_KEY."  % resource_id)
-        api_getter = self.getters[get_resource_type(resource_id)]
+
         resource = check_resource(resource_id, query_string=query_string,
                                   api=self, retries=retries)
         return resource

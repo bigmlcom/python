@@ -21,7 +21,7 @@
 
 SUPPORTED_LANGUAGES = ["JSON", "CSV"]
 
-class AssociationRule(object):
+class AssociationRule():
     """ Object encapsulating an association rule as described in
         https://bigml.com/developers/associations
 

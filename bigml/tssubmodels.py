@@ -41,8 +41,7 @@ def season_contribution(s_list, step):
         period = len(s_list)
         index = abs(- period + 1 + step % period)
         return s_list[index]
-    else:
-        return 0
+    return 0
 
 
 def trivial_forecast(submodel, horizon):

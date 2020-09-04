@@ -23,17 +23,16 @@ is used for local predictions.
 """
 import logging
 import sys
-import locale
-import os
 import json
 
 from bigml.api import FINISHED
-from bigml.api import get_status, BigML, get_model_id, ID_GETTERS, \
-    check_resource, get_resource_type, get_api_connection
+from bigml.api import get_status, get_model_id, ID_GETTERS, \
+    get_api_connection
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
-from bigml.modelfields import (ModelFields, check_model_structure,
-                               check_model_fields)
+from bigml.modelfields import ModelFields, check_model_structure, \
+    check_model_fields
+from bigml.api_handlers.resourcehandler import resource_is_ready
 
 LOGGER = logging.getLogger('BigML')
 
@@ -56,7 +55,8 @@ def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
 
     """
 
-    check_local_fn = None if no_check_fields else check_model_fields
+    check_local_fn = check_local_but_fields if no_check_fields \
+        else check_local_info
     return api.retrieve_resource(resource_id, query_string=query_string,
                                  check_local_fn=check_local_fn,
                                  retries=retries)
@@ -85,7 +85,31 @@ def print_importance(instance, out=sys.stdout):
         count += 1
 
 
-def get_resource_dict(resource, resource_type, api=None):
+def check_local_but_fields(model):
+    """Whether the information in `model` is enough to use it locally
+       except for the fields section
+
+    """
+    try:
+
+        return resource_is_ready(model) and \
+            check_model_structure(model)
+    except Exception:
+        return False
+
+
+def check_local_info(model):
+    """Whether the information in `model` is enough to use it locally
+
+    """
+    try:
+        return check_local_but_fields(model) and \
+            check_model_fields(model)
+    except Exception:
+        return False
+
+def get_resource_dict(resource, resource_type, api=None,
+                      no_check_fields=False):
     """Extracting the resource JSON info as a dict from the first argument of
        the local object constructors, that can be:
 
@@ -116,27 +140,33 @@ def get_resource_dict(resource, resource_type, api=None):
                         api.error_message(resource,
                                           resource_type=resource_type,
                                           method="get"))
-                else:
-                    raise IOError("Failed to open the expected JSON file"
-                                  " at %s." % resource)
+                raise IOError("Failed to open the expected JSON file"
+                              " at %s." % resource)
         except ValueError:
             raise ValueError("Failed to interpret %s."
                              " JSON file expected." % resource)
 
+    # dict resource or file path argument:
     # checks whether the information needed for local predictions is in
     # the first argument
-    if isinstance(resource, dict) and \
-            not check_model_fields(resource):
+    check_fn = check_local_but_fields if no_check_fields else \
+        check_local_info
+
+    if isinstance(resource, dict) and not check_fn( \
+            resource):
         # if the fields used by the model are not
         # available, use only ID to retrieve it again
         resource = get_id(resource)
         resource_id = resource
 
+    # resource ID or failed resource info:
+    # trying to read the resource from storage or from the API
     if not (isinstance(resource, dict) and 'resource' in resource and
             resource['resource'] is not None):
         query_string = ONLY_MODEL
         resource = retrieve_resource(api, resource_id,
-                                     query_string=query_string)
+                                     query_string=query_string,
+                                     no_check_fields=no_check_fields)
     else:
         resource_id = get_id(resource)
 
@@ -156,12 +186,19 @@ class BaseModel(ModelFields):
 
     Uses a BigML remote model to build a local version that contains the
     main features of a model, except its tree structure.
+        model: the model dict or ID
+        api: connection to the API
+        fields: fields dict (used in ensembles where fields info can be shared)
+        checked: boolean that avoids rechecking the model structure when it
+                 has already been checked previously in a derived class
 
     """
 
-    def __init__(self, model, api=None, fields=None):
+    def __init__(self, model, api=None, fields=None, checked=True):
 
-        if check_model_structure(model):
+        check_fn = check_local_but_fields if fields is not None else \
+            check_local_info
+        if isinstance(model, dict) and (checked or check_fn(model)):
             self.resource_id = model['resource']
         else:
             # If only the model id is provided, the short version of the model
@@ -176,13 +213,9 @@ class BaseModel(ModelFields):
                 query_string = EXCLUDE_FIELDS
             else:
                 query_string = ONLY_MODEL
-            model = retrieve_resource(self.api, self.resource_id,
-                                      query_string=query_string)
-            # Stored copies of the model structure might lack some necessary
-            # keys
-            if not check_model_structure(model):
-                model = self.api.get_model(self.resource_id,
-                                           query_string=query_string)
+            model = retrieve_resource(api, self.resource_id,
+                                      query_string=query_string,
+                                      no_check_fields=fields is not None)
 
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
@@ -225,7 +258,6 @@ class BaseModel(ModelFields):
                                              in self.field_importance
                                              if element[0] in fields]
                 self.locale = model.get('locale', DEFAULT_LOCALE)
-
             else:
                 raise Exception("The model isn't finished yet")
         else:

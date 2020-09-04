@@ -21,8 +21,8 @@ This module defines a local class to handle the results of an execution
 """
 import json
 
-from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status, BigML, get_api_connection, ID_GETTERS
+
+from bigml.api import get_api_connection, ID_GETTERS
 from bigml.basemodel import retrieve_resource
 
 
@@ -58,9 +58,8 @@ def get_resource_dict(resource, resource_type, api=None):
                         api.error_message(resource,
                                           resource_type=resource_type,
                                           method="get"))
-                else:
-                    raise IOError("Failed to open the expected JSON file"
-                                  " at %s." % resource)
+                raise IOError("Failed to open the expected JSON file"
+                              " at %s." % resource)
         except ValueError:
             raise ValueError("Failed to interpret %s."
                              " JSON file expected." % resource)
@@ -74,7 +73,7 @@ def get_resource_dict(resource, resource_type, api=None):
     return resource_id, resource
 
 
-class Execution(object):
+class Execution():
     """A class to deal with the information in an execution result
 
     """
@@ -99,11 +98,11 @@ class Execution(object):
         except ValueError as resource:
             try:
                 execution = json.loads(str(resource))
+                self.resource_id = execution["resource"]
             except ValueError:
                 raise ValueError("The execution resource was faulty: \n%s" % \
                     resource)
-                pass
-            self.resource_id = execution["resource"]
+
         if 'object' in execution and isinstance(execution['object'], dict):
             execution = execution['object']
             self.status = execution["status"]

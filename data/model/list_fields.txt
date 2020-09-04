@@ -1,0 +1,3 @@
+<species                          : categorical>
+[petal length                     : numeric]
+[petal width                      : numeric]

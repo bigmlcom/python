@@ -18,6 +18,8 @@
 """ Testing local model information output methods
 
 """
+
+
 from .world import world, setup_module, teardown_module
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
@@ -296,3 +298,36 @@ class TestLocalModelOutputs(object):
             model_create.the_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_model(self)
             inspect_model.i_check_the_model_summary_with(self, example[4])
+
+    def test_scenario7(self):
+        """
+            Scenario: Unit tests for output generators:
+                Given I read a model from "<data>" file
+                And I create a local model
+                And I apply a generator function "<function>" with args "<args>"
+                Then I check the result with "<expected_file>" file
+        """
+
+        print(self.test_scenario7.__doc__)
+
+        examples = [
+            ['data/model/iris.json', 'data/model/distribution_iris.txt',
+                                     'data/model/list_fields.txt',
+                                     'data/model/tree_csv.txt'],
+            ['data/model/regression.json', 'data/model/rdistribution_iris.txt',
+                                           'data/model/rlist_fields.txt',
+                                           'data/model/rtree_csv.txt'],
+            ['data/model/w_iris.json', 'data/model/wdistribution_iris.txt',
+                                       'data/model/wlist_fields.txt',
+                                       'data/model/wtree_csv.txt'],
+            ['data/model/w_regression.json', 'data/model/wrdistribution_iris.txt',
+                                             'data/model/wrlist_fields.txt',
+                                             'data/model/wrtree_csv.txt']]
+        for example in examples:
+            print("\nTesting with:\n", example)
+            world.debug=True
+            model_create.i_read_model_file(self, example[0])
+            prediction_compare.i_create_a_local_model(self)
+            inspect_model.i_check_print_distribution(self, example[1])
+            inspect_model.i_list_fields(self, example[2])
+            inspect_model.i_create_tree_csv(self, example[3])

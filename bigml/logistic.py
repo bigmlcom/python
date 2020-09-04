@@ -42,13 +42,14 @@ logistic_regression.predict({"petal length": 3, "petal width": 1,
 import logging
 import math
 import copy
-import json
 
 from functools import cmp_to_key
 
 from bigml.api import FINISHED
-from bigml.api import get_status, get_api_connection
-from bigml.util import cast, check_no_missing_numerics, PRECISION, NUMERIC
+from bigml.api import get_status, get_api_connection, \
+    get_logistic_regression_id
+from bigml.util import cast, check_no_missing_numerics, use_cache, load, \
+    PRECISION, NUMERIC
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.model import parse_operating_point, sort_categories
 from bigml.modelfields import ModelFields
@@ -87,7 +88,13 @@ class LogisticRegression(ModelFields):
 
     """
 
-    def __init__(self, logistic_regression, api=None):
+    def __init__(self, logistic_regression, api=None, cache_get=None):
+
+        if use_cache(cache_get):
+            # using a cache to store the model attributes
+            self.__dict__ = load(get_logistic_regression_id( \
+                logistic_regression), cache_get)
+            return
 
         self.resource_id = None
         self.class_names = None
@@ -109,12 +116,12 @@ class LogisticRegression(ModelFields):
         self.lr_normalize = None
         self.balance_fields = None
         self.regularization = None
-        self.api = get_api_connection(api)
+        api = get_api_connection(api)
 
         old_coefficients = False
 
         self.resource_id, logistic_regression = get_resource_dict( \
-            logistic_regression, "logisticregression", api=self.api)
+            logistic_regression, "logisticregression", api=api)
 
         if 'object' in logistic_regression and \
             isinstance(logistic_regression['object'], dict):
@@ -224,8 +231,7 @@ class LogisticRegression(ModelFields):
 
         if compact:
             return [category['probability'] for category in distribution]
-        else:
-            return distribution
+        return distribution
 
     def predict_operating(self, input_data,
                           operating_point=None):
@@ -460,10 +466,6 @@ class LogisticRegression(ModelFields):
                     probability += coefficients[ \
                         len(self.categories[field_id])]
                 else:
-                    """ codings are given as arrays of coefficients. The
-                    last one is for missings and the previous ones are
-                    one per category as found in summary
-                    """
                     coeff_index = 0
                     for contribution in \
                             list(self.field_codings[field_id].values())[0]:

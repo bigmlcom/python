@@ -314,7 +314,7 @@ def docstring_comment(model):
 
     """
     docstring = ("Predictor for %s from %s" % (
-        model.tree.fields[model.tree.objective_id]['name'],
+        model.fields[model.objective_id]['name'],
         model.resource_id))
     model.description = (str( \
         model.description).strip() \
@@ -327,7 +327,7 @@ def java_class_definition(model):
 
     """
     docstring = model.java_comment()
-    field_obj = model.tree.fields[model.tree.objective_id]
+    field_obj = model.fields[model.objective_id]
     if not 'CamelCase' in field_obj:
         field_obj['CamelCase'] = to_camel_java(field_obj['name'], False)
     output = \
@@ -358,7 +358,7 @@ def signature_name_vb(text, model):
 ' Predictor for %s from %s
 ' %s
 '
-""" % (model.tree.fields[model.tree.objective_id]['name'],
+""" % (model.fields[model.objective_id]['name'],
        model.resource_id,
        model.description if model.description else default_description)
     return ("Predict{0}".format(obj_field_for_name), header)
@@ -396,7 +396,7 @@ def print_distribution(distribution, out=sys.stdout):
     out.flush()
 
 
-def filter_nodes(nodes_list, ids=None, subtree=True):
+def old_filter_nodes(nodes_list, ids=None, subtree=True):
     """Filters the contents of a nodes_list. If any of the nodes is in the
        ids list, the rest of nodes are removed. If none is in the ids list
        we include or exclude the nodes depending on the subtree flag.

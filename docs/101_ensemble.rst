@@ -1,3 +1,6 @@
+.. toctree::
+   :hidden:
+
 BigML Bindings: 101 - Using an Ensemble
 =======================================
 

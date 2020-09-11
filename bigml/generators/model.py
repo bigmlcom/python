@@ -29,7 +29,7 @@ from functools import reduce, partial
 from bigml.path import Path, BRIEF
 from bigml.basemodel import print_importance
 from bigml.io import UnicodeWriter
-from bigml.util import markdown_cleanup, prefix_as_comment, utf8
+from bigml.util import markdown_cleanup, prefix_as_comment, utf8, NUMERIC
 from bigml.predicate import Predicate
 from bigml.model import PYTHON_CONV
 from bigml.predict_utils.common import missing_branch, \
@@ -38,6 +38,10 @@ from bigml.predicate_utils.utils import predicate_to_rule, \
     LT, LE, EQ, NE, GE, GT, IN, to_lisp_rule, INVERSE_OP
 from bigml.tree_utils import MAX_ARGS_LENGTH, tableau_string, slugify, \
     sort_fields, TM_TOKENS, TM_ALL, TM_FULL_TERM, TERM_OPTIONS, ITEM_OPTIONS
+from bigml.generators.tree import plug_in_body
+from bigml.generators.boosted_tree import boosted_plug_in_body
+from bigml.generators.tree import filter_nodes
+
 
 # templates for static Python
 BIGML_SCRIPT = os.path.dirname(__file__)
@@ -55,6 +59,7 @@ DEFAULT_IMPURITY = 0.2
 
 INDENT = '    '
 
+DFT_ATTR = "output"
 
 # Map operator str to its corresponding python operator
 PYTHON_OPERATOR = {
@@ -254,27 +259,6 @@ def get_ids_path(model, filter_id):
     return ids_path
 
 
-def filter_nodes(trees_list, offsets, ids=None, subtree=True):
-    """Filters the contents of a trees_list. If any of the nodes is in the
-       ids list, the rest of nodes are removed. If none is in the ids list
-       we include or exclude the nodes depending on the subtree flag.
-
-    """
-    if not trees_list:
-        return None
-    trees = trees_list[:]
-    if ids is not None:
-        for tree in trees:
-            node = get_node(tree)
-            node_id = node[offsets["id"]]
-            if node_id in ids:
-                trees = [tree]
-                return trees
-    if not subtree:
-        trees = []
-    return trees
-
-
 def generate_rules(tree, offsets, objective_id, fields,
                    depth=0, ids_path=None, subtree=True):
     """Translates a tree model into a set of IF-THEN rules.
@@ -360,8 +344,8 @@ def python(model, out=sys.stdout, hadoop=False,
                                      subtree=subtree) or
                 hadoop_python_reducer(out=out))
     return tree_python(model.tree, model.offsets, model.fields,
-                       model.objective_id, out, docstring(model),
-                       ids_path=ids_path, subtree=subtree)
+                       model.objective_id, model.boosting, out,
+                       docstring(model), ids_path=ids_path, subtree=subtree)
 
 def hadoop_python_mapper(model, out=sys.stdout, ids_path=None,
                          subtree=True):
@@ -451,169 +435,81 @@ def hadoop_python_reducer(out=sys.stdout):
     out.write(utf8(output))
     out.flush()
 
-def tree_python(tree, offsets, fields, objective_id,
+def tree_python(tree, offsets, fields, objective_id, boosting,
                 out, docstring_str, input_map=False,
-                ids_path=None, subtree=True):
+                ids_path=None, subtree=True, attr=DFT_ATTR):
     """Writes a python function that implements the model.
 
     """
     args = []
+    args_tree = []
     parameters = sort_fields(fields)
     if not input_map:
-        input_map = len(parameters) > MAX_ARGS_LENGTH
+        input_map = len(parameters) > MAX_ARGS_LENGTH and MAX_ARGS_LENGTH > 0
     reserved_keywords = keyword.kwlist if not input_map else None
     prefix = "_" if not input_map else ""
     for field in parameters:
-        slug = slugify(fields[field[0]]['name'],
+        field_name_to_show = fields[field[0]]['name'].strip()
+        if field_name_to_show == "":
+            field_name_to_show = field[0]
+        slug = slugify(field_name_to_show,
                        reserved_keywords=reserved_keywords, prefix=prefix)
         fields[field[0]].update(slug=slug)
         if not input_map:
             if field[0] != objective_id:
                 args.append("%s=None" % (slug))
+                args_tree.append("%s=%s" % (slug, slug))
     if input_map:
         args.append("data={}")
+        args_tree.append("data=data")
+
+    function_name = fields[objective_id]['slug'] if \
+        not boosting else \
+        fields[boosting["objective_field"]]['slug']
+    if prefix == "_" and function_name[0] == prefix:
+        function_name = function_name[1:]
+    if function_name == "":
+        function_name = "field_" + objective_id
+    python_header = "# -*- coding: utf-8 -*-\n"
     predictor_definition = ("def predict_%s" %
-                            fields[objective_id]['slug'])
+                            function_name)
     depth = len(predictor_definition) + 1
-    predictor = "%s(%s):\n" % (
-        predictor_definition,
-        (",\n" + " " * depth).join(args))
+    predictor = "%s(%s):\n" % (predictor_definition,
+                               (",\n" + " " * depth).join(args))
+
     predictor_doc = (INDENT + "\"\"\" " + docstring_str +
                      "\n" + INDENT + "\"\"\"\n")
+    body_fn = boosted_plug_in_body if boosting else plug_in_body
     body, term_analysis_predicates, item_analysis_predicates = \
-        python_body(tree, offsets, fields, objective_id, input_map=input_map,
-                    ids_path=ids_path,
-                    subtree=subtree)
+        body_fn(tree, offsets, fields, objective_id,
+                fields[objective_id]["optype"] == NUMERIC,
+                input_map=input_map,
+                ids_path=ids_path, subtree=subtree)
     terms_body = ""
     if term_analysis_predicates or item_analysis_predicates:
         terms_body = term_analysis_body(fields,
                                         term_analysis_predicates,
                                         item_analysis_predicates)
-    predictor += predictor_doc + terms_body + body
+    predictor = python_header + predictor + \
+        predictor_doc + terms_body + body
+
+    predictor_model = "def predict"
+    depth = len(predictor_model) + 1
+    predictor += "\n\n%s(%s):\n" % (predictor_model,
+                                    (",\n" + " " * depth).join(args))
+    predictor += "%sprediction = predict_%s(%s)\n" % ( \
+        INDENT, function_name, ", ".join(args_tree))
+
+    if boosting is not None:
+        predictor += "%sprediction.update({\"weight\": %s})\n" % \
+            (INDENT, self.boosting.get("weight"))
+        if boosting.get("objective_class") is not None:
+            predictor += "%sprediction.update({\"class\": \"%s\"})\n" % \
+                (INDENT, boosting.get("objective_class"))
+    predictor += "%sreturn prediction" % INDENT
+
     out.write(utf8(predictor))
     out.flush()
-
-
-def python_body(tree, offsets, fields, objective_id,
-                depth=1, cmv=None, input_map=False,
-                ids_path=None, subtree=True):
-    """Translate the model into a set of "if" python statements.
-
-    `depth` controls the size of indentation. As soon as a value is missing
-    that node is returned without further evaluation.
-
-    """
-
-    node = get_node(tree)
-
-    def map_data(field, missing=False):
-        """Returns the subject of the condition in map format when
-           more than MAX_ARGS_LENGTH arguments are used.
-        """
-        if input_map:
-            if missing:
-                return "data.get('%s')" % field
-            return "data['%s']" % field
-        return field
-    if cmv is None:
-        cmv = []
-    body = ""
-    term_analysis_fields = []
-    item_analysis_fields = []
-
-    children_number = node[offsets["children#"]]
-    children = [] if children_number == 0 else node[offsets["children"]]
-    children = filter_nodes(children, offsets, ids=ids_path,
-                            subtree=subtree)
-    if children:
-        [_, field, _, _, _] = get_predicate(children[0])
-
-        has_missing_branch = (missing_branch(children) or none_value(children))
-        # the missing is singled out as a special case only when there's
-        # no missing branch in the children list
-        if not has_missing_branch and \
-                fields[field]["optype"] not in ["text", "items"] and \
-                fields[field]['slug'] not in cmv:
-            body += ("%sif (%s is None):\n" %
-                     (INDENT * depth,
-                      map_data(fields[field]['slug'], True)))
-            if fields[objective_id]['optype'] == 'numeric':
-                value = node[offsets["output"]]
-            else:
-                value = repr(node[offsets["output"]])
-            body += ("%sreturn %s\n" %
-                     (INDENT * (depth + 1),
-                      value))
-            cmv.append(fields[field]['slug'])
-
-        for child in children:
-            pre_condition = ""
-            [operator, field, ch_value, term, missing] = get_predicate(child)
-            if has_missing_branch and value is not None:
-                negation = "" if missing else " not"
-                connection = "or" if missing else "and"
-                pre_condition = (
-                    "%s is%s None %s " % (
-                        map_data(fields[field]['slug'], True),
-                        negation,
-                        connection))
-                if not missing:
-                    cmv.append(fields[field]['slug'])
-            optype = fields[field]['optype']
-            if (optype == 'numeric' or optype == 'text' or
-                    optype == 'items'
-                    or value is None):
-                value = ch_value
-            else:
-                value = repr(ch_value)
-            if optype in ['text', 'items']:
-                if optype == 'text':
-                    term_analysis_fields.append((field, term))
-                    matching_function = "term_matches"
-                else:
-                    item_analysis_fields.append((field, term))
-                    matching_function = "item_matches"
-
-                body += (
-                    "%sif (%s%s(%s, \"%s\", %s\"%s\") %s %s):"
-                    "\n" %
-                    (INDENT * depth, pre_condition, matching_function,
-                     map_data(fields[field]['slug'], False),
-                     fields[field]['slug'],
-                     ('u' if isinstance(term, str)
-                      else ''),
-                     term.replace("\"", "\\\""),
-                     PYTHON_OPERATOR[operator],
-                     value))
-            else:
-                operator = (MISSING_OPERATOR[operator] if
-                            ch_value is None else
-                            PYTHON_OPERATOR[operator])
-                if ch_value is None:
-                    cmv.append(fields[field]['slug'])
-                body += (
-                    "%sif (%s%s %s %s):\n" %
-                    (INDENT * depth, pre_condition,
-                     map_data(fields[field]['slug'], False),
-                     operator,
-                     value))
-            next_level = python_body(child,
-                                     offsets, fields, objective_id,
-                                     depth + 1, cmv=cmv[:],
-                                     input_map=input_map,
-                                     ids_path=ids_path,
-                                     subtree=subtree)
-            body += next_level[0]
-            term_analysis_fields.extend(next_level[1])
-            item_analysis_fields.extend(next_level[2])
-    else:
-        if fields[objective_id]['optype'] == 'numeric':
-            value = node[offsets["output"]]
-        else:
-            value = repr(node[offsets["output"]])
-        body = "%sreturn %s\n" % (INDENT * depth, value)
-
-    return body, term_analysis_fields, item_analysis_fields
 
 
 def term_analysis_body(fields, term_analysis_predicates,
@@ -622,7 +518,8 @@ def term_analysis_body(fields, term_analysis_predicates,
     analysis fields
 
     """
-    body = """import re
+    body = """
+    import re
 """
     # static content
 
@@ -632,7 +529,7 @@ def term_analysis_body(fields, term_analysis_predicates,
     tm_full_term = '%s'
     tm_all = '%s'
 
-    """  % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
+"""  % (TM_TOKENS, TM_FULL_TERM, TM_ALL)
         with open(TERM_TEMPLATE) as template_handler:
             body += template_handler.read()
 
@@ -640,19 +537,22 @@ def term_analysis_body(fields, term_analysis_predicates,
                                      term_analysis_predicates])
         term_analysis_predicates = set(term_analysis_predicates)
         body += """
-term_analysis = {"""
+    term_analysis = {"""
         for field_id in term_analysis_options:
             field = fields[field_id]
             body += """
-    \"%s\": {""" % field['slug']
-            for option in field['term_analysis']:
+        \"%s\": {""" % field['slug']
+            options = sorted(field['term_analysis'].keys())
+            for option in options:
                 if option in TERM_OPTIONS:
                     body += """
             \"%s\": %s,""" % (option, repr(field['term_analysis'][option]))
             body += """
-    },"""
-            body += """
-}"""
+        },"""
+        body += """
+    }"""
+        body += """
+    term_forms = {"""
         term_forms = {}
         for field_id, term in term_analysis_predicates:
             alternatives = []
@@ -666,19 +566,18 @@ term_analysis = {"""
                     terms = [term]
                     terms.extend(all_forms.get(term, []))
                     term_forms[field['slug']][term] = terms
+        for field in term_forms:
             body += """
-term_forms = {"""
-            for field in term_forms:
+        \"%s\": {""" % field
+            terms = sorted(term_forms[field].keys())
+            for term in terms:
                 body += """
-    \"%s\": {""" % field
-                for term in term_forms[field]:
-                    body += """
-        u\"%s\": %s,""" % (term, term_forms[field][term])
-                body += """
-    },
-            """
+            \"%s\": %s,""" % (term, term_forms[field][term])
             body += """
-}
+        },"""
+        body += """
+    }
+
 """
     if item_analysis_predicates:
         with open(ITEMS_TEMPLATE) as template_handler:
@@ -688,26 +587,27 @@ term_forms = {"""
                                      item_analysis_predicates])
         item_analysis_predicates = set(item_analysis_predicates)
         body += """
-item_analysis = {"""
+    item_analysis = {"""
         for field_id in item_analysis_options:
             field = fields[field_id]
             body += """
-    \"%s\": {""" % field['slug']
+        \"%s\": {""" % field['slug']
             for option in field['item_analysis']:
                 if option in ITEM_OPTIONS:
                     body += """
             \"%s\": %s,""" % (option, repr(field['item_analysis'][option]))
             body += """
-    },"""
+        },"""
         body += """
-}
+    }
+
 """
 
     return body
 
 
 def tableau(model, out=sys.stdout, hadoop=False,
-            filter_id=None, subtree=True):
+            filter_id=None, subtree=True, attr=DFT_ATTR):
     """Returns a basic tableau function that implements the model.
 
     `out` is file descriptor to write the tableau code.
@@ -722,7 +622,7 @@ def tableau(model, out=sys.stdout, hadoop=False,
     response = tree_tableau(model.tree, model.offsets, model.fields,
                             model.objective_id,
                             out, ids_path=ids_path,
-                            subtree=subtree)
+                            subtree=subtree, attr=attr)
     if response:
         out.write("END\n")
     else:
@@ -735,7 +635,7 @@ def tableau(model, out=sys.stdout, hadoop=False,
 
 def tableau_body(tree, offsets, fields, objective_id,
                  body="", conditions=None, cmv=None,
-                 ids_path=None, subtree=True):
+                 ids_path=None, subtree=True, attr=DFT_ATTR):
     """Translate the model into a set of "if" statements in Tableau syntax
 
     `depth` controls the size of indentation. As soon as a value is missing
@@ -769,9 +669,9 @@ def tableau_body(tree, offsets, fields, objective_id,
             body += ("%s %s THEN " %
                      (alternate, " AND ".join(conditions)))
             if fields[objective_id]['optype'] == 'numeric':
-                value = node[offsets["output"]]
+                value = node[offsets[attr]]
             else:
-                value = tableau_string(node[offsets["output"]])
+                value = tableau_string(node[offsets[attr]])
             body += ("%s\n" % value)
             cmv.append(fields[field]['name'])
             alternate = "ELSEIF"
@@ -815,13 +715,13 @@ def tableau_body(tree, offsets, fields, objective_id,
                 post_condition))
             body = tableau_body(child, offsets, fields, objective_id,
                                 body, conditions[:], cmv=cmv[:],
-                                ids_path=ids_path, subtree=subtree)
+                                ids_path=ids_path, subtree=subtree, attr=attr)
             del conditions[-1]
     else:
         if fields[objective_id]['optype'] == 'numeric':
-            value = tree[offsets["output"]]
+            value = tree[offsets[attr]]
         else:
-            value = tableau_string(node[offsets["output"]])
+            value = tableau_string(node[offsets[attr]])
         body += (
             "%s %s THEN" % (alternate, " AND ".join(conditions)))
         body += " %s\n" % value
@@ -829,12 +729,12 @@ def tableau_body(tree, offsets, fields, objective_id,
     return body
 
 def tree_tableau(tree, offsets, fields, objective_id,
-                 out, ids_path=None, subtree=True):
+                 out, ids_path=None, subtree=True, attr=DFT_ATTR):
     """Writes a Tableau function that implements the model.
 
     """
     body = tableau_body(tree, offsets, fields, objective_id,
-                        ids_path=ids_path, subtree=subtree)
+                        ids_path=ids_path, subtree=subtree, attr=attr)
     if not body:
         return False
     out.write(utf8(body))

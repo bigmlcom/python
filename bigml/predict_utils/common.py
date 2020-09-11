@@ -33,12 +33,19 @@ PREDICATE_INFO_LENGTH = 5
 DISTRIBUTION_GROUPS = ['bins', 'counts', 'categories']
 
 
+def mintree_split(children):
+    """Returns the field ID for the split
+
+    """
+    return children[0][FIELD_OFFSET]
+
+
 def one_branch(children, input_data):
     """Check if there's only one branch to be followed
 
     """
-    missing = children[0][FIELD_OFFSET] in input_data
-    return (missing or missing_branch(children)
+    no_missing = mintree_split(children) in input_data
+    return (no_missing or missing_branch(children)
             or none_value(children))
 
 

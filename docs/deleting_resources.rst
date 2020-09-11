@@ -1,3 +1,6 @@
+.. toctree::
+   :hidden:
+
 Deleting Resources
 ==================
 

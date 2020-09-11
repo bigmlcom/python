@@ -61,7 +61,7 @@ from bigml.predict_utils.common import FIELD_OFFSET, extract_distribution
 from bigml.api import FINISHED, STATUSES
 from bigml.api import get_status, get_api_connection, get_model_id
 from bigml.util import find_locale, cast, use_cache, load
-from bigml.util import DEFAULT_LOCALE, PRECISION
+from bigml.util import DEFAULT_LOCALE, PRECISION, NUMERIC
 from bigml.constants import LAST_PREDICTION, PROPORTIONAL
 from bigml.basemodel import BaseModel, get_resource_dict
 from bigml.multivote import ws_confidence
@@ -226,7 +226,7 @@ def to_prediction(model, value_as_string, data_locale=DEFAULT_LOCALE):
         value_as_string = str(value_as_string, "utf-8")
 
     objective_id = model.objective_id
-    if model.fields[objective_id]['optype'] == 'numeric':
+    if model.fields[objective_id]['optype'] == NUMERIC:
         if data_locale is None:
             data_locale = model.locale
         find_locale(data_locale)

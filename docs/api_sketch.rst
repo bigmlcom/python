@@ -1,3 +1,6 @@
+.. toctree::
+   :hidden:
+
 BigML Bindings: Modeling and prediction process
 ===============================================
 

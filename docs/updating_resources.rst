@@ -1,3 +1,6 @@
+.. toctree::
+   :hidden:
+
 Updating Resources
 ==================
 

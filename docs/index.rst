@@ -1,7 +1,6 @@
 .. toctree::
    :hidden:
 
-   index
    ml_resources
    creating_resources
    101_model

@@ -29,7 +29,7 @@ from copy import copy
 
 
 from bigml.util import NUMERIC
-from bigml.predicate_utils.model import INVERSE_OP
+from bigml.predicate_utils.utils import INVERSE_OP
 from bigml.predict_utils.common import get_node, get_predicate
 from bigml.tree_utils import old_filter_nodes, missing_branch, \
     none_value

@@ -367,7 +367,10 @@ class EnsemblePredictor():
         for model_id in self.model_ids:
             local_model = Model(model_id, api=self.api,
                                 fields=self.fields)
-            local_flat_tree = FlatTree(local_model.tree, local_model.boosting)
+            local_flat_tree = FlatTree(local_model.tree, local_model.offsets,
+                                       local_model.fields,
+                                       local_model.objective_id,
+                                       local_model.boosting)
             with open(os.path.join(directory, "%s.py" %
                                    model_id.replace("/", "_")), "w") \
                     as handler:

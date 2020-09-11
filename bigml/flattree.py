@@ -28,8 +28,8 @@ from copy import copy
 
 
 
-
-from bigml.tree_utils import filter_nodes, missing_branch, \
+from bigml.util import NUMERIC
+from bigml.tree_utils import old_filter_nodes, missing_branch, \
     none_value
 from bigml.tree_utils import INDENT, PYTHON_OPERATOR, \
     TM_TOKENS, TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, \
@@ -51,23 +51,23 @@ TERM_TEMPLATE = "%s/out_model/static/term_analysis.txt" % BIGML_SCRIPT
 ITEMS_TEMPLATE = "%s/out_model/static/items_analysis.txt" % BIGML_SCRIPT
 
 
-def map_nodes(tree, nodes=None):
+def map_nodes(tree, offsets, nodes=None):
     """Map nodes by ID
 
     """
     if nodes is None:
         nodes = {}
 
-    node = copy(tree)
-    delattr(node, "fields")
-    delattr(node, "objective_id")
-    delattr(node, "children")
+    node = Node(tree, offsets)
+
     children = []
-    for child in tree.children:
-        children.append("n_%s" % child.id)
-        nodes = map_nodes(child, nodes)
+    for child in node.children:
+        nodes = map_nodes(child, offsets, nodes)
+        ch_node = Node(child, offsets)
+        children.append("n_%s" % ch_node.id)
+
     node.children = children
-    nodes["n_%s" % tree.id] = node
+    nodes["n_%s" % node.id] = node
     return nodes
 
 
@@ -145,17 +145,38 @@ def split_condition_code(self, field, depth,
             value)
 
 
+class Node():
+    """Structure to store the node information
+
+    """
+    def __init__(self, tree, offsets):
+        predicate = get_predicate(tree)
+        if isinstance(predicate, bool):
+            self.predicate = predicate
+        else:
+            [operator, field, value, term, missing] = predicate
+            self.predicate = Predicate(INVERSE_OP[operator],
+                                       field, value, term)
+        node = get_node(tree)
+        for attr in offsets:
+            if attr not in ["children#", "children"]:
+                setattr(self, attr, node[offset[attr]])
+        children = [] if node[offsets["children#"]] == 0 else \
+            node[offsets["children"]]
+        setattr(self, "children", children)
+
 
 class FlatTree():
     """A tree-like predictive model.
 
     """
-    def __init__(self, tree, boosting=None):
+    def __init__(self, tree, offsets, fields, objective_id,
+                 boosting=None):
 
-        self.fields = tree.fields
-        self.objective_id = tree.objective_id
-        self.regression = tree.regression
-        self.nodes = map_nodes(tree)
+        self.fields = fields
+        self.objective_id = objective_id
+        self.regression = fields[objective_id]["optype"] == NUMERIC
+        self.nodes = map_nodes(tree, offsets)
         self.boosting = boosting
 
     def missing_check_code(self, field, node, depth, metric):
@@ -340,8 +361,8 @@ class FlatTree():
         item_analysis_fields = []
         functions = []
 
-        nodes = filter_nodes(list(self.nodes.values()), ids=ids_path,
-                             subtree=subtree)
+        nodes = old_filter_nodes(list(self.nodes.values()), ids=ids_path,
+                                 subtree=subtree)
         if nodes:
 
             for node in nodes:

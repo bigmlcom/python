@@ -56,6 +56,7 @@ from bigml.multimodel import MultiModel
 from bigml.basemodel import BaseModel, print_importance, check_local_but_fields
 from bigml.modelfields import ModelFields, NUMERIC
 from bigml.multivotelist import MultiVoteList
+from bigml.tree_utils import add_distribution
 from bigml.util import cast, use_cache, load, dump, dumps
 
 
@@ -97,6 +98,11 @@ class Ensemble(ModelFields):
 
     def __init__(self, ensemble, api=None, max_models=None, cache_get=None):
 
+        self.model_splits = []
+        self.multi_model = None
+        self.api = get_api_connection(api)
+        self.fields = None
+        self.class_names = None
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_ensemble_id(ensemble), cache_get)
@@ -122,18 +128,13 @@ class Ensemble(ModelFields):
         self.objective_id = None
         self.distributions = None
         self.distribution = None
-        self.models_splits = []
-        self.multi_model = None
         self.boosting = None
         self.boosting_offsets = None
         self.cache_get = None
         self.regression = False
-        self.fields = None
-        self.class_names = None
         self.importance = {}
         query_string = ONLY_MODEL
         no_check_fields = False
-        self.api = get_api_connection(api)
         self.input_fields = []
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
@@ -242,17 +243,7 @@ class Ensemble(ModelFields):
                 max_models=max_models)
 
         if self.fields:
-            summary = self.fields[self.objective_id]['summary']
-            if 'bins' in summary:
-                distribution = summary['bins']
-            elif 'counts' in summary:
-                distribution = summary['counts']
-            elif 'categories' in summary:
-                distribution = summary['categories']
-            else:
-                distribution = []
-            self.distribution = distribution
-
+            add_distribution(self)
         self.regression = \
             self.fields[self.objective_id].get('optype') == NUMERIC
         if self.boosting:

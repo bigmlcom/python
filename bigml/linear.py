@@ -101,13 +101,13 @@ class LinearRegression(ModelFields):
 
     def __init__(self, linear_regression, api=None, cache_get=None):
 
+        self.xtx_inverse = []
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_linear_regression_id(linear_regression),
                                  cache_get)
             for index, elem in enumerate(self.xtx_inverse):
                 self.xtx_inverse[index] = np.array(elem)
-
             return
 
         self.resource_id = None

@@ -37,7 +37,8 @@ from bigml.predict_utils.common import missing_branch, \
 from bigml.predicate_utils.utils import predicate_to_rule, \
     LT, LE, EQ, NE, GE, GT, IN, to_lisp_rule, INVERSE_OP
 from bigml.tree_utils import MAX_ARGS_LENGTH, tableau_string, slugify, \
-    sort_fields, TM_TOKENS, TM_ALL, TM_FULL_TERM, TERM_OPTIONS, ITEM_OPTIONS
+    sort_fields, TM_TOKENS, TM_ALL, TM_FULL_TERM, TERM_OPTIONS, ITEM_OPTIONS, \
+    PYTHON_OPERATOR
 from bigml.generators.tree import plug_in_body
 from bigml.generators.boosted_tree import boosted_plug_in_body
 from bigml.generators.tree import filter_nodes
@@ -61,16 +62,6 @@ INDENT = '    '
 
 DFT_ATTR = "output"
 
-# Map operator str to its corresponding python operator
-PYTHON_OPERATOR = {
-    LT: "<",
-    LE: "<=",
-    EQ: "==",
-    NE: "!=",
-    GE: ">=",
-    GT: ">",
-    IN: "in"
-}
 
 MISSING_OPERATOR = {
     EQ: "is",
@@ -312,7 +303,7 @@ def rules(model, out=sys.stdout, filter_id=None, subtree=True):
         """Prints out an IF-THEN rule version of the tree.
 
         """
-        for field in [(key, val) for key, val in sort_fields(fields)]:
+        for field in sort_fields(fields):
 
             slug = slugify(fields[field[0]]['name'])
             fields[field[0]].update(slug=slug)
@@ -410,9 +401,9 @@ def hadoop_python_mapper(model, out=sys.stdout, ids_path=None,
     out.write(output)
     out.flush()
 
-    tree_python(model.tree, model.offsets, model.fields,
-                model.objective_id, out, docstring(model),
-                ids_path=ids_path, subtree=subtree)
+    tree_python(model.tree, model.offsets, model.fields, model.objective_id,
+                False if not hasattr(model, "boosting") else model.boosting,
+                out, docstring(model), ids_path=ids_path, subtree=subtree)
 
     output = \
 """
@@ -437,7 +428,7 @@ def hadoop_python_reducer(out=sys.stdout):
 
 def tree_python(tree, offsets, fields, objective_id, boosting,
                 out, docstring_str, input_map=False,
-                ids_path=None, subtree=True, attr=DFT_ATTR):
+                ids_path=None, subtree=True):
     """Writes a python function that implements the model.
 
     """
@@ -445,7 +436,7 @@ def tree_python(tree, offsets, fields, objective_id, boosting,
     args_tree = []
     parameters = sort_fields(fields)
     if not input_map:
-        input_map = len(parameters) > MAX_ARGS_LENGTH and MAX_ARGS_LENGTH > 0
+        input_map = len(parameters) > MAX_ARGS_LENGTH
     reserved_keywords = keyword.kwlist if not input_map else None
     prefix = "_" if not input_map else ""
     for field in parameters:
@@ -464,8 +455,7 @@ def tree_python(tree, offsets, fields, objective_id, boosting,
         args_tree.append("data=data")
 
     function_name = fields[objective_id]['slug'] if \
-        not boosting else \
-        fields[boosting["objective_field"]]['slug']
+        not boosting else fields[boosting["objective_field"]]['slug']
     if prefix == "_" and function_name[0] == prefix:
         function_name = function_name[1:]
     if function_name == "":
@@ -502,7 +492,7 @@ def tree_python(tree, offsets, fields, objective_id, boosting,
 
     if boosting is not None:
         predictor += "%sprediction.update({\"weight\": %s})\n" % \
-            (INDENT, self.boosting.get("weight"))
+            (INDENT, boosting.get("weight"))
         if boosting.get("objective_class") is not None:
             predictor += "%sprediction.update({\"class\": \"%s\"})\n" % \
                 (INDENT, boosting.get("objective_class"))
@@ -533,8 +523,8 @@ def term_analysis_body(fields, term_analysis_predicates,
         with open(TERM_TEMPLATE) as template_handler:
             body += template_handler.read()
 
-        term_analysis_options = set([predicate[0] for predicate in
-                                     term_analysis_predicates])
+        term_analysis_options = {predicate[0] for predicate in
+                                 term_analysis_predicates}
         term_analysis_predicates = set(term_analysis_predicates)
         body += """
     term_analysis = {"""
@@ -583,8 +573,8 @@ def term_analysis_body(fields, term_analysis_predicates,
         with open(ITEMS_TEMPLATE) as template_handler:
             body += template_handler.read()
 
-        item_analysis_options = set([predicate[0] for predicate in
-                                     item_analysis_predicates])
+        item_analysis_options = {predicate[0] for predicate in
+                                 item_analysis_predicates}
         item_analysis_predicates = set(item_analysis_predicates)
         body += """
     item_analysis = {"""

@@ -24,10 +24,6 @@ to send requests to BigML.io.
 
 import os
 
-from copy import copy
-
-
-
 from bigml.util import NUMERIC
 from bigml.predicate_utils.utils import INVERSE_OP
 from bigml.predict_utils.common import get_node, get_predicate
@@ -36,6 +32,8 @@ from bigml.tree_utils import old_filter_nodes, missing_branch, \
 from bigml.tree_utils import INDENT, PYTHON_OPERATOR, \
     TM_TOKENS, TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, \
     COMPOSED_FIELDS, NUMERIC_VALUE_FIELDS
+from bigml.predicate import Predicate
+
 
 MISSING_OPERATOR = {
     "=": "is",
@@ -156,13 +154,13 @@ class Node():
         if isinstance(predicate, bool):
             self.predicate = predicate
         else:
-            [operator, field, value, term, missing] = predicate
+            [operator, field, value, term, _] = predicate
             self.predicate = Predicate(INVERSE_OP[operator],
                                        field, value, term)
         node = get_node(tree)
         for attr in offsets:
             if attr not in ["children#", "children"]:
-                setattr(self, attr, node[offset[attr]])
+                setattr(self, attr, node[offsets[attr]])
         children = [] if node[offsets["children#"]] == 0 else \
             node[offsets["children"]]
         setattr(self, "children", children)

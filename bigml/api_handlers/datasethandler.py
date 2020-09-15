@@ -27,7 +27,7 @@ except ImportError:
 
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, resource_is_ready, check_resource, get_source_id, \
     get_dataset_id, get_cluster_id
@@ -35,7 +35,7 @@ from bigml.constants import (DATASET_PATH, SOURCE_PATH,
                              TINY_RESOURCE, CLUSTER_PATH)
 
 
-class DatasetHandler(ResourceHandler):
+class DatasetHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls to datasets. It should not
        be instantiated independently.

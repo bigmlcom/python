@@ -19,11 +19,8 @@ This module defines functions that generate python code to make local
 predictions
 """
 
-from bigml.tree_utils import (
-    slugify, sort_fields,
-    MAX_ARGS_LENGTH, INDENT, PYTHON_OPERATOR, TM_TOKENS,
-    TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, COMPOSED_FIELDS,
-    NUMERIC_VALUE_FIELDS)
+from bigml.tree_utils import INDENT, COMPOSED_FIELDS
+
 from bigml.predict_utils.common import missing_branch, \
     none_value, get_node, get_predicate, mintree_split
 from bigml.generators.tree_common import value_to_print, map_data, \
@@ -85,12 +82,12 @@ def plug_in_body(tree, offsets, fields, objective_id, regression,
         one_branch = not has_missing_branch or \
             fields[field]['optype'] in COMPOSED_FIELDS
         if (one_branch and
-            not fields[field]['slug'] in cmv):
+                not fields[field]['slug'] in cmv):
             body += missing_check_code(tree, offsets, fields, objective_id,
                                        field, depth, input_map, cmv, metric)
 
         for child in children:
-            [_, field, value,_, _] = get_predicate(child)
+            [_, field, value, _, _] = get_predicate(child)
             pre_condition = ""
             # code when missing_splits has been used
             if has_missing_branch and value is not None:
@@ -100,7 +97,7 @@ def plug_in_body(tree, offsets, fields, objective_id, regression,
             # complete split condition code
             body += split_condition_code( \
                 child, fields, depth, input_map, pre_condition,
-                term_analysis_fields, item_analysis_fields)
+                term_analysis_fields, item_analysis_fields, cmv)
 
             # value to be determined in next node
             next_level = plug_in_body(child, offsets, fields, objective_id,

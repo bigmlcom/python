@@ -26,13 +26,13 @@ except ImportError:
     import json
 import os
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_library_id, get_resource_type, check_resource
 from bigml.constants import LIBRARY_PATH, TINY_RESOURCE
 
 
-class LibraryHandler(ResourceHandler):
+class LibraryHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the whizzml libraries' REST calls. It should not
        be instantiated independently.

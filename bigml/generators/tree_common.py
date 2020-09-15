@@ -20,12 +20,9 @@ predictions
 """
 
 from bigml.tree_utils import (
-    slugify, sort_fields,
-    MAX_ARGS_LENGTH, INDENT, PYTHON_OPERATOR, TM_TOKENS,
-    TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, COMPOSED_FIELDS,
-    NUMERIC_VALUE_FIELDS)
-from bigml.predict_utils.common import missing_branch, \
-    none_value, get_node, get_predicate
+    INDENT, PYTHON_OPERATOR, NUMERIC_VALUE_FIELDS)
+from bigml.predict_utils.common import \
+    get_node, get_predicate, MISSING_OFFSET
 
 MISSING_OPERATOR = {
     "=": "is",
@@ -49,8 +46,7 @@ def map_data(field, input_map=False, missing=False):
     if input_map:
         if missing:
             return "data.get('%s')" % field
-        else:
-            return "data['%s']" % field
+        return "data['%s']" % field
     return field
 
 
@@ -66,20 +62,20 @@ def missing_prefix_code(tree, fields, field, input_map, cmv):
     if not missing:
         cmv.append(fields[field]['slug'])
     return "%s is%s None %s " % (map_data(fields[field]['slug'],
-                                           input_map,
-                                           True),
-                                  negation,
-                                  connection)
+                                          input_map,
+                                          True),
+                                 negation,
+                                 connection)
 
 
 def split_condition_code(tree, fields, depth, input_map,
                          pre_condition, term_analysis_fields,
-                         item_analysis_fields):
+                         item_analysis_fields, cmv):
     """Condition code for the split
     """
 
     predicate = get_predicate(tree)
-    [operation, field, value, term, missing] = predicate
+    [operation, field, value, term, _] = predicate
     optype = fields[field]['optype']
     value = value_to_print(value, optype)
 

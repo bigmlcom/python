@@ -38,7 +38,7 @@ OFFSETS = { \
              "confidence": 3,
              "distribution": 4,
              "wdistribution": 5,
-             "weight":6,
+             "weight": 6,
              "children#": 7,
              "children": 8}}
 

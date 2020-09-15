@@ -113,7 +113,7 @@ class MultiModel():
             else:
                 for model in models:
                     self.models.append(Model(model, api=api, fields=fields,
-                                       cache_get=cache_get))
+                                             cache_get=cache_get))
         else:
             self.models.append(Model(models, api=api, fields=fields,
                                      cache_get=cache_get))

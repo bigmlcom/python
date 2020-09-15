@@ -41,6 +41,8 @@ from bigml.basemodel import BaseModel, print_importance, retrieve_resource, \
     check_local_info
 from bigml.model import Model
 from bigml.flattree import FlatTree
+from bigml.util import NUMERIC
+from bigml.tree_utils import add_distribution
 
 
 BOOSTING = 1
@@ -115,19 +117,10 @@ class EnsemblePredictor():
                              " command.")
 
         if self.fields:
-            summary = self.fields[self.objective_id]['summary']
-            if 'bins' in summary:
-                distribution = summary['bins']
-            elif 'counts' in summary:
-                distribution = summary['counts']
-            elif 'categories' in summary:
-                distribution = summary['categories']
-            else:
-                distribution = []
-            self.distribution = distribution
+            add_distribution(self)
 
         self.regression = \
-            self.fields[self.objective_id].get('optype') == 'numeric'
+            self.fields[self.objective_id].get('optype') == NUMERIC
         if self.boosting:
             self.boosting_offsets = ensemble['object'].get('initial_offset',
                                                            0) \

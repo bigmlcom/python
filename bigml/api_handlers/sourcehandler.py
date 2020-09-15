@@ -50,10 +50,10 @@ from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_source_id
 from bigml.constants import SOURCE_PATH
-from bigml.api_handlers.resourcehandler import ResourceHandler, LOGGER
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
 
 
-class SourceHandler(ResourceHandler):
+class SourceHandlerMixin(ResourceHandlerMixin):
 
     """This class is used by the BigML class as
        a mixin that provides the REST calls to sources. It should not

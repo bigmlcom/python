@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_deepnet_id
 from bigml.constants import DEEPNET_PATH
 
 
-class DeepnetHandler(ResourceHandler):
+class DeepnetHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

@@ -26,14 +26,14 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, get_topic_distribution_id, check_resource, \
     get_topic_model_id
 from bigml.constants import (TOPIC_DISTRIBUTION_PATH, TINY_RESOURCE)
 
 
-class TopicDistributionHandler(ResourceHandler):
+class TopicDistributionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

@@ -51,9 +51,10 @@ from bigml.model import LAST_PREDICTION
 from bigml.basemodel import get_resource_dict, retrieve_resource
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics, use_cache, load, \
-    dump, dumps
+    dump, dumps, NUMERIC
 from bigml.supervised import SupervisedModel
 from bigml.modelfields import ModelFields
+from bigml.tree_utils import add_distribution
 
 
 
@@ -188,6 +189,7 @@ class Fusion(ModelFields):
                                   in range(0, number_of_models, max_models)]
 
         if self.fields:
+            add_distribution(self)
             summary = self.fields[self.objective_id]['summary']
             if 'bins' in summary:
                 distribution = summary['bins']
@@ -200,7 +202,7 @@ class Fusion(ModelFields):
             self.distribution = distribution
 
         self.regression = \
-            self.fields[self.objective_id].get('optype') == 'numeric'
+            self.fields[self.objective_id].get('optype') == NUMERIC
 
         if not self.regression:
             objective_field = self.fields[self.objective_id]

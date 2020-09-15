@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_batch_centroid_id
 from bigml.constants import BATCH_CENTROID_PATH, CLUSTER_PATH
 
 
-class BatchCentroidHandler(ResourceHandler):
+class BatchCentroidHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

@@ -26,14 +26,14 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_execution_id, get_resource_type, get_script_id, check_resource
 from bigml.constants import (EXECUTION_PATH, SCRIPT_PATH,
                              TINY_RESOURCE)
 
 
-class ExecutionHandler(ResourceHandler):
+class ExecutionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the executions' REST calls. It should not
        be instantiated independently.

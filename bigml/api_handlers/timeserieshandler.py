@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_time_series_id
 from bigml.constants import TIME_SERIES_PATH
 
 
-class TimeSeriesHandler(ResourceHandler):
+class TimeSeriesHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

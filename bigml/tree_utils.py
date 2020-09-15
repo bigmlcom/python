@@ -143,6 +143,22 @@ PYTHON_KEYWORDS = [
 ]
 
 
+def add_distribution(model):
+    """Adding the distribution attribute
+
+    """
+    summary = model.fields[model.objective_id]['summary']
+    if 'bins' in summary:
+        distribution = summary['bins']
+    elif 'counts' in summary:
+        distribution = summary['counts']
+    elif 'categories' in summary:
+        distribution = summary['categories']
+    else:
+        distribution = []
+    model.distribution = distribution
+
+
 def split(children):
     """Returns the field that is used by the node to make a decision.
 

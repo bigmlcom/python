@@ -39,49 +39,49 @@ import json
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.api_handlers.resourcehandler import ResourceHandler
-from bigml.api_handlers.sourcehandler import SourceHandler
-from bigml.api_handlers.datasethandler import DatasetHandler
-from bigml.api_handlers.modelhandler import ModelHandler
-from bigml.api_handlers.ensemblehandler import EnsembleHandler
-from bigml.api_handlers.predictionhandler import PredictionHandler
-from bigml.api_handlers.clusterhandler import ClusterHandler
-from bigml.api_handlers.centroidhandler import CentroidHandler
-from bigml.api_handlers.anomalyhandler import AnomalyHandler
-from bigml.api_handlers.anomalyscorehandler import AnomalyScoreHandler
-from bigml.api_handlers.evaluationhandler import EvaluationHandler
-from bigml.api_handlers.batchpredictionhandler import BatchPredictionHandler
-from bigml.api_handlers.batchcentroidhandler import BatchCentroidHandler
-from bigml.api_handlers.batchanomalyscorehandler \
-    import BatchAnomalyScoreHandler
-from bigml.api_handlers.projecthandler import ProjectHandler
-from bigml.api_handlers.samplehandler import SampleHandler
-from bigml.api_handlers.correlationhandler import CorrelationHandler
-from bigml.api_handlers.statisticaltesthandler import StatisticalTestHandler
-from bigml.api_handlers.logistichandler import LogisticRegressionHandler
-from bigml.api_handlers.associationhandler import AssociationHandler
-from bigml.api_handlers.associationsethandler import AssociationSetHandler
-from bigml.api_handlers.configurationhandler import ConfigurationHandler
-from bigml.api_handlers.topicmodelhandler import TopicModelHandler
-from bigml.api_handlers.topicdistributionhandler \
-    import TopicDistributionHandler
-from bigml.api_handlers.batchtopicdistributionhandler  \
-    import BatchTopicDistributionHandler
-from bigml.api_handlers.timeserieshandler import TimeSeriesHandler
-from bigml.api_handlers.forecasthandler import ForecastHandler
-from bigml.api_handlers.deepnethandler import DeepnetHandler
-from bigml.api_handlers.optimlhandler import OptimlHandler
-from bigml.api_handlers.fusionhandler import FusionHandler
-from bigml.api_handlers.pcahandler import PCAHandler
-from bigml.api_handlers.projectionhandler import ProjectionHandler
-from bigml.api_handlers.linearhandler import LinearRegressionHandler
-from bigml.api_handlers.batchprojectionhandler import BatchProjectionHandler
-from bigml.api_handlers.scripthandler import ScriptHandler
-from bigml.api_handlers.executionhandler import ExecutionHandler
-from bigml.api_handlers.libraryhandler import LibraryHandler
 from bigml.constants import STORAGE, ALL_FIELDS
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
+from bigml.api_handlers.sourcehandler import SourceHandlerMixin
+from bigml.api_handlers.datasethandler import DatasetHandlerMixin
+from bigml.api_handlers.modelhandler import ModelHandlerMixin
+from bigml.api_handlers.ensemblehandler import EnsembleHandlerMixin
+from bigml.api_handlers.predictionhandler import PredictionHandlerMixin
+from bigml.api_handlers.clusterhandler import ClusterHandlerMixin
+from bigml.api_handlers.centroidhandler import CentroidHandlerMixin
+from bigml.api_handlers.anomalyhandler import AnomalyHandlerMixin
+from bigml.api_handlers.anomalyscorehandler import AnomalyScoreHandlerMixin
+from bigml.api_handlers.evaluationhandler import EvaluationHandlerMixin
+from bigml.api_handlers.batchpredictionhandler import BatchPredictionHandlerMixin
+from bigml.api_handlers.batchcentroidhandler import BatchCentroidHandlerMixin
+from bigml.api_handlers.batchanomalyscorehandler \
+    import BatchAnomalyScoreHandlerMixin
+from bigml.api_handlers.projecthandler import ProjectHandlerMixin
+from bigml.api_handlers.samplehandler import SampleHandlerMixin
+from bigml.api_handlers.correlationhandler import CorrelationHandlerMixin
+from bigml.api_handlers.statisticaltesthandler import StatisticalTestHandlerMixin
+from bigml.api_handlers.logistichandler import LogisticRegressionHandlerMixin
+from bigml.api_handlers.associationhandler import AssociationHandlerMixin
+from bigml.api_handlers.associationsethandler import AssociationSetHandlerMixin
+from bigml.api_handlers.configurationhandler import ConfigurationHandlerMixin
+from bigml.api_handlers.topicmodelhandler import TopicModelHandlerMixin
+from bigml.api_handlers.topicdistributionhandler \
+    import TopicDistributionHandlerMixin
+from bigml.api_handlers.batchtopicdistributionhandler  \
+    import BatchTopicDistributionHandlerMixin
+from bigml.api_handlers.timeserieshandler import TimeSeriesHandlerMixin
+from bigml.api_handlers.forecasthandler import ForecastHandlerMixin
+from bigml.api_handlers.deepnethandler import DeepnetHandlerMixin
+from bigml.api_handlers.optimlhandler import OptimlHandlerMixin
+from bigml.api_handlers.fusionhandler import FusionHandlerMixin
+from bigml.api_handlers.pcahandler import PCAHandlerMixin
+from bigml.api_handlers.projectionhandler import ProjectionHandlerMixin
+from bigml.api_handlers.linearhandler import LinearRegressionHandlerMixin
+from bigml.api_handlers.batchprojectionhandler import BatchProjectionHandlerMixin
+from bigml.api_handlers.scripthandler import ScriptHandlerMixin
+from bigml.api_handlers.executionhandler import ExecutionHandlerMixin
+from bigml.api_handlers.libraryhandler import LibraryHandlerMixin
 from bigml.api_handlers.externalconnectorhandler import \
-    ExternalConnectorHandler
+    ExternalConnectorHandlerMixin
 
 
 # Repeating constants and functions for backwards compatibility
@@ -235,23 +235,24 @@ def get_fields(resource):
     return fields
 
 
-class BigML(ExternalConnectorHandler,
-            LinearRegressionHandler, BatchProjectionHandler,
-            ProjectionHandler, PCAHandler,
-            ConfigurationHandler, FusionHandler,
-            OptimlHandler,
-            DeepnetHandler, ForecastHandler, TimeSeriesHandler,
-            BatchTopicDistributionHandler, TopicDistributionHandler,
-            TopicModelHandler, LibraryHandler, ExecutionHandler, ScriptHandler,
-            AssociationSetHandler, AssociationHandler,
-            LogisticRegressionHandler,
-            StatisticalTestHandler, CorrelationHandler,
-            SampleHandler, ProjectHandler,
-            BatchAnomalyScoreHandler, BatchCentroidHandler,
-            BatchPredictionHandler, EvaluationHandler, AnomalyScoreHandler,
-            AnomalyHandler, CentroidHandler, ClusterHandler, PredictionHandler,
-            EnsembleHandler, ModelHandler, DatasetHandler,
-            SourceHandler, ResourceHandler, BigMLConnection):
+class BigML(ExternalConnectorHandlerMixin,
+            LinearRegressionHandlerMixin, BatchProjectionHandlerMixin,
+            ProjectionHandlerMixin, PCAHandlerMixin,
+            ConfigurationHandlerMixin, FusionHandlerMixin,
+            OptimlHandlerMixin,
+            DeepnetHandlerMixin, ForecastHandlerMixin, TimeSeriesHandlerMixin,
+            BatchTopicDistributionHandlerMixin, TopicDistributionHandlerMixin,
+            TopicModelHandlerMixin, LibraryHandlerMixin, ExecutionHandlerMixin,
+            ScriptHandlerMixin, AssociationSetHandlerMixin,
+            AssociationHandlerMixin, LogisticRegressionHandlerMixin,
+            StatisticalTestHandlerMixin, CorrelationHandlerMixin,
+            SampleHandlerMixin, ProjectHandlerMixin,
+            BatchAnomalyScoreHandlerMixin, BatchCentroidHandlerMixin,
+            BatchPredictionHandlerMixin, EvaluationHandlerMixin,
+            AnomalyScoreHandlerMixin, AnomalyHandlerMixin,
+            CentroidHandlerMixin, ClusterHandlerMixin, PredictionHandlerMixin,
+            EnsembleHandlerMixin, ModelHandlerMixin, DatasetHandlerMixin,
+            SourceHandlerMixin, ResourceHandlerMixin, BigMLConnection):
     """Entry point to create, retrieve, list, update, and delete
     BigML resources.
 
@@ -305,44 +306,44 @@ class BigML(ExternalConnectorHandler,
                                  domain=domain, project=project,
                                  organization=organization,
                                  short_debug=short_debug)
-        ResourceHandler.__init__(self)
-        SourceHandler.__init__(self)
-        DatasetHandler.__init__(self)
-        ModelHandler.__init__(self)
-        EnsembleHandler.__init__(self)
-        PredictionHandler.__init__(self)
-        ClusterHandler.__init__(self)
-        CentroidHandler.__init__(self)
-        AnomalyHandler.__init__(self)
-        AnomalyScoreHandler.__init__(self)
-        EvaluationHandler.__init__(self)
-        BatchPredictionHandler.__init__(self)
-        BatchCentroidHandler.__init__(self)
-        BatchAnomalyScoreHandler.__init__(self)
-        ProjectHandler.__init__(self)
-        SampleHandler.__init__(self)
-        CorrelationHandler.__init__(self)
-        StatisticalTestHandler.__init__(self)
-        LogisticRegressionHandler.__init__(self)
-        AssociationHandler.__init__(self)
-        AssociationSetHandler.__init__(self)
-        ScriptHandler.__init__(self)
-        ExecutionHandler.__init__(self)
-        LibraryHandler.__init__(self)
-        TopicModelHandler.__init__(self)
-        TopicDistributionHandler.__init__(self)
-        BatchTopicDistributionHandler.__init__(self)
-        TimeSeriesHandler.__init__(self)
-        ForecastHandler.__init__(self)
-        DeepnetHandler.__init__(self)
-        OptimlHandler.__init__(self)
-        FusionHandler.__init__(self)
-        ConfigurationHandler.__init__(self)
-        PCAHandler.__init__(self)
-        ProjectionHandler.__init__(self)
-        BatchProjectionHandler.__init__(self)
-        LinearRegressionHandler.__init__(self)
-        ExternalConnectorHandler.__init__(self)
+        ResourceHandlerMixin.__init__(self)
+        SourceHandlerMixin.__init__(self)
+        DatasetHandlerMixin.__init__(self)
+        ModelHandlerMixin.__init__(self)
+        EnsembleHandlerMixin.__init__(self)
+        PredictionHandlerMixin.__init__(self)
+        ClusterHandlerMixin.__init__(self)
+        CentroidHandlerMixin.__init__(self)
+        AnomalyHandlerMixin.__init__(self)
+        AnomalyScoreHandlerMixin.__init__(self)
+        EvaluationHandlerMixin.__init__(self)
+        BatchPredictionHandlerMixin.__init__(self)
+        BatchCentroidHandlerMixin.__init__(self)
+        BatchAnomalyScoreHandlerMixin.__init__(self)
+        ProjectHandlerMixin.__init__(self)
+        SampleHandlerMixin.__init__(self)
+        CorrelationHandlerMixin.__init__(self)
+        StatisticalTestHandlerMixin.__init__(self)
+        LogisticRegressionHandlerMixin.__init__(self)
+        AssociationHandlerMixin.__init__(self)
+        AssociationSetHandlerMixin.__init__(self)
+        ScriptHandlerMixin.__init__(self)
+        ExecutionHandlerMixin.__init__(self)
+        LibraryHandlerMixin.__init__(self)
+        TopicModelHandlerMixin.__init__(self)
+        TopicDistributionHandlerMixin.__init__(self)
+        BatchTopicDistributionHandlerMixin.__init__(self)
+        TimeSeriesHandlerMixin.__init__(self)
+        ForecastHandlerMixin.__init__(self)
+        DeepnetHandlerMixin.__init__(self)
+        OptimlHandlerMixin.__init__(self)
+        FusionHandlerMixin.__init__(self)
+        ConfigurationHandlerMixin.__init__(self)
+        PCAHandlerMixin.__init__(self)
+        ProjectionHandlerMixin.__init__(self)
+        BatchProjectionHandlerMixin.__init__(self)
+        LinearRegressionHandlerMixin.__init__(self)
+        ExternalConnectorHandlerMixin.__init__(self)
         self.status_url = "%s%s" % (self.url, STATUS_PATH)
 
 

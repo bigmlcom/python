@@ -58,7 +58,7 @@ class Centroid():
     def __init__(self, centroid_info):
         self.center = centroid_info.get('center', {})
         self.count = centroid_info.get('count', 0)
-        self.centroid_id = centroid_info.get( \
+        self.centroid_id = centroid_info.get(
             'id', centroid_info.get("centroid_id", None))
         self.name = centroid_info.get('name', None)
         self.distance = centroid_info.get('distance', {})

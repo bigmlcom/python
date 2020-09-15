@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_batch_anomaly_score_id
 from bigml.constants import BATCH_ANOMALY_SCORE_PATH, ANOMALY_PATH
 
 
-class BatchAnomalyScoreHandler(ResourceHandler):
+class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.
@@ -65,6 +65,7 @@ class BatchAnomalyScoreHandler(ResourceHandler):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_anomaly_score_url, body)
+        return
 
     def get_batch_anomaly_score(self, batch_anomaly_score, query_string=''):
         """Retrieves a batch anomaly score.

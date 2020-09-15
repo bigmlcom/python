@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_prediction_id, check_resource, get_resource_id, get_resource_type
 from bigml.constants import SUPERVISED_PATHS, TINY_RESOURCE, PREDICTION_PATH
 
 
-class PredictionHandler(ResourceHandler):
+class PredictionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

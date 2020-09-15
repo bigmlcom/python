@@ -238,7 +238,7 @@ class Association(ModelFields):
                     predictions[rhs]["rules"] = []
                 predictions[rhs]["rules"].append(rule.rule_id)
         # choose the best k predictions
-        k = len(list(predictions.keys())) if k is None else k
+        k = len(predictions) if k is None else k
         predictions = sorted(list(predictions.items()),
                              key=lambda x: x[1]["score"], reverse=True)[:k]
         final_predictions = []

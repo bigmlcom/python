@@ -19,15 +19,12 @@ This module defines functions that generate python code to make local
 predictions
 """
 
-from bigml.tree_utils import (
-    slugify, sort_fields,
-    MAX_ARGS_LENGTH, INDENT, PYTHON_OPERATOR, TM_TOKENS,
-    TM_FULL_TERM, TM_ALL, TERM_OPTIONS, ITEM_OPTIONS, COMPOSED_FIELDS,
-    NUMERIC_VALUE_FIELDS)
+from bigml.tree_utils import COMPOSED_FIELDS, INDENT
 from bigml.predict_utils.common import missing_branch, \
     none_value, get_node, get_predicate, mintree_split
 from bigml.generators.tree_common import value_to_print, map_data, \
     missing_prefix_code, filter_nodes, split_condition_code
+from bigml.util import NUMERIC
 
 
 MISSING_OPERATOR = {
@@ -36,7 +33,7 @@ MISSING_OPERATOR = {
 }
 
 
-def missing_check_code(tree, offsets, fields, objective_id,
+def missing_check_code(tree, offsets, fields,
                        field, depth, input_map, cmv):
     """Builds the code to predict when the field is missing
     """
@@ -44,9 +41,9 @@ def missing_check_code(tree, offsets, fields, objective_id,
     code = "%sif (%s is None):\n" % \
            (INDENT * depth,
             map_data(fields[field]['slug'], input_map, True))
-    value = value_to_print(node[offsets["output"]], "numeric")
+    value = value_to_print(node[offsets["output"]], NUMERIC)
     code += "%sreturn {\"prediction\":%s" % (INDENT * (depth + 1),
-                                              value)
+                                             value)
     code += "}\n"
     cmv.append(fields[field]['slug'])
     return code
@@ -82,14 +79,12 @@ def boosted_plug_in_body(tree, offsets, fields, objective_id, regression,
         # no missing branch in the children list
         one_branch = not has_missing_branch or \
             fields[field]['optype'] in COMPOSED_FIELDS
-        if (one_branch and
-            not fields[field]['slug'] in cmv):
+        if (one_branch and not fields[field]['slug'] in cmv):
             body += missing_check_code(tree, offsets, fields,
                                        field, depth, input_map, cmv)
 
         for child in children:
-            [_, field, value, _, _]
-            field = child.predicate.field
+            [_, field, value, _, _] = get_predicate(child)
             pre_condition = ""
             # code when missing_splits has been used
             if has_missing_branch and value is not None:
@@ -100,11 +95,11 @@ def boosted_plug_in_body(tree, offsets, fields, objective_id, regression,
             body += split_condition_code( \
                 child, fields,
                 depth, input_map, pre_condition,
-                term_analysis_fields, item_analysis_fields)
+                term_analysis_fields, item_analysis_fields, cmv)
 
             # value to be determined in next node
             next_level = boosted_plug_in_body( \
-                child, offsets, fields, objective_id, depth + 1,
+                child, offsets, fields, objective_id, regression, depth + 1,
                 cmv=cmv[:], input_map=input_map, ids_path=ids_path,
                 subtree=subtree)
 

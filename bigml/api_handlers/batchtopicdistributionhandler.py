@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_batch_topic_distribution_id
 from bigml.constants import BATCH_TOPIC_DISTRIBUTION_PATH, TOPIC_MODEL_PATH
 
 
-class BatchTopicDistributionHandler(ResourceHandler):
+class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.
@@ -64,6 +64,7 @@ class BatchTopicDistributionHandler(ResourceHandler):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_topic_distribution_url, body)
+        return
 
     def get_batch_topic_distribution(self, batch_topic_distribution,
                                      query_string=''):
@@ -85,6 +86,7 @@ class BatchTopicDistributionHandler(ResourceHandler):
         if batch_topic_distribution_id:
             return self._get("%s%s" % (self.url, batch_topic_distribution_id),
                              query_string=query_string)
+        return
 
     def download_batch_topic_distribution(self,
                                           batch_topic_distribution,

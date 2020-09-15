@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_batch_prediction_id
 from bigml.constants import BATCH_PREDICTION_PATH, SUPERVISED_PATHS
 
 
-class BatchPredictionHandler(ResourceHandler):
+class BatchPredictionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.
@@ -67,6 +67,7 @@ class BatchPredictionHandler(ResourceHandler):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_prediction_url, body)
+        return
 
     def get_batch_prediction(self, batch_prediction, query_string=''):
         """Retrieves a batch prediction.

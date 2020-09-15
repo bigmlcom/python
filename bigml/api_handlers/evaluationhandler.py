@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_evaluation_id
 from bigml.constants import SUPERVISED_PATHS, TIME_SERIES_PATH, EVALUATION_PATH
 
 
-class EvaluationHandler(ResourceHandler):
+class EvaluationHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.
@@ -66,6 +66,7 @@ class EvaluationHandler(ResourceHandler):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.evaluation_url, body)
+        return
 
     def get_evaluation(self, evaluation, query_string=''):
         """Retrieves an evaluation.

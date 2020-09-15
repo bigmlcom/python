@@ -492,7 +492,7 @@ def http_ok(resource):
 
 
 
-class ResourceHandler():
+class ResourceHandlerMixin():
     """This class is used by the BigML class as
        a mixin that provides the get method for all kind of
        resources and auxiliar utilities to check their status. It should not

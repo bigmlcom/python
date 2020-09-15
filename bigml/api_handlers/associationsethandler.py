@@ -26,7 +26,7 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, \
     get_association_set_id, get_association_id
@@ -34,7 +34,7 @@ from bigml.constants import ASSOCIATION_SET_PATH, ASSOCIATION_PATH, \
     TINY_RESOURCE
 
 
-class AssociationSetHandler(ResourceHandler):
+class AssociationSetHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.
@@ -77,8 +77,7 @@ class AssociationSetHandler(ResourceHandler):
             "association": association_id})
 
         body = json.dumps(create_args)
-        return self._create(self.association_set_url, body,
-                            verify=self.verify)
+        return self._create(self.association_set_url, body, verify=self.verify)
 
     def get_association_set(self, association_set, query_string=''):
         """Retrieves an association set.

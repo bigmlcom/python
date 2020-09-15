@@ -177,7 +177,7 @@ def apply_predicates(node, input_data, fields):
     return True
 
 
-def apply_predicate(operator, field, value, term, missing, input_data,
+def apply_predicate(operation, field, value, term, missing, input_data,
                     field_info):
     """Applies the operators defined in the predicate as strings to
     the provided input data
@@ -188,8 +188,8 @@ def apply_predicate(operator, field, value, term, missing, input_data,
         # doesn't contain branch
         if term is None:
             return missing or (
-                operator == EQ and value is None)
-    elif operator == NE and value is None:
+                operation == EQ and value is None)
+    elif operation == NE and value is None:
         return True
 
     if term is not None:
@@ -201,15 +201,15 @@ def apply_predicate(operator, field, value, term, missing, input_data,
             options = field_info['term_analysis']
             input_terms = term_matches(input_data.get(field, ""), terms,
                                        options)
-            return OPERATOR[operator](input_terms, value)
+            return OPERATOR[operation](input_terms, value)
         # new items optype
         options = field_info['item_analysis']
         input_items = item_matches(input_data.get(field, ""), term,
                                    options)
-        return OPERATOR[operator](input_items, value)
-    if operator == IN:
-        return OPERATOR[operator](value, input_data[field])
-    return OPERATOR[operator](input_data[field], value)
+        return OPERATOR[operation](input_items, value)
+    if operation == IN:
+        return OPERATOR[operation](value, input_data[field])
+    return OPERATOR[operation](input_data[field], value)
 
 
 def pack_predicate(predicate):
@@ -237,7 +237,7 @@ def pack_predicate(predicate):
     return node
 
 
-def predicate_to_rule(operator, field_info, value, term,
+def predicate_to_rule(operation, field_info, value, term,
                       missing, label='name'):
     """Predicate condition string
 
@@ -249,20 +249,20 @@ def predicate_to_rule(operator, field_info, value, term,
         name = field_info[label]
     else:
         name = ""
-    operator = INVERSE_OP[operator]
+    operation = INVERSE_OP[operation]
     full_term = is_full_term(term, field_info)
     relation_missing = " or missing" if missing else ""
     if term is not None:
         relation_suffix = ''
-        if ((operator == '<' and value <= 1) or
-                (operator == '<=' and value == 0)):
+        if ((operation == '<' and value <= 1) or
+                (operation == '<=' and value == 0)):
             relation_literal = ('is not equal to' if full_term
                                 else 'does not contain')
         else:
             relation_literal = 'is equal to' if full_term else 'contains'
             if not full_term:
-                if operator != '>' or value != 0:
-                    relation_suffix = (RELATIONS[operator] %
+                if operation != '>' or value != 0:
+                    relation_suffix = (RELATIONS[operation] %
                                        (value,
                                         plural('time', value)))
         return "%s %s %s %s%s" % (name, relation_literal,
@@ -270,15 +270,15 @@ def predicate_to_rule(operator, field_info, value, term,
                                   relation_missing)
     if value is None:
         return "%s %s" % (name,
-                          "is missing" if operator == '='
+                          "is missing" if operation == '='
                           else "is not missing")
     return "%s %s %s%s" % (name,
-                           operator,
+                           operation,
                            value,
                            relation_missing)
 
 
-def to_lisp_rule(operator, field, value, term,
+def to_lisp_rule(operation, field, value, term,
                  missing, field_info):
     """Builds rule string in LISP from a predicate
 
@@ -291,15 +291,15 @@ def to_lisp_rule(operator, field, value, term,
             language = options.get('language')
             language = "" if language is None else " %s" % language
             return "(%s (occurrences (f %s) %s %s%s) %s)" % (
-                operator, field, term,
+                operation, field, term,
                 case_insensitive, language, value)
         if field_info['optype'] == 'items':
             return "(%s (if (contains-items? %s %s) 1 0) %s)" % (
-                operator, field, term, value)
+                operation, field, term, value)
     if value is None:
-        negation = "" if operator == "=" else "not "
+        negation = "" if operation == "=" else "not "
         return "(%s missing? %s)" % (negation, field)
-    rule = "(%s (f %s) %s)" % (operator,
+    rule = "(%s (f %s) %s)" % (operation,
                                field,
                                value)
     if missing:

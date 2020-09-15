@@ -34,7 +34,7 @@ except ImportError:
 
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_script_id, get_resource_type, check_resource
 from bigml.constants import SCRIPT_PATH, TINY_RESOURCE
@@ -67,11 +67,10 @@ def retrieve_script_args(gist_url):
                 if response.status_code == HTTP_OK:
                     script_args["json"] = response.text
         return script_args
-    else:
-        raise ValueError("The url did not contain the expected structure.")
+    raise ValueError("The url did not contain the expected structure.")
 
 
-class ScriptHandler(ResourceHandler):
+class ScriptHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the whizzml script' REST calls. It should not
        be instantiated independently.

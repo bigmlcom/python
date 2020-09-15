@@ -26,14 +26,14 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_statistical_test_id, get_resource_type, get_dataset_id, check_resource
 from bigml.constants import (STATISTICAL_TEST_PATH, DATASET_PATH,
                              TINY_RESOURCE)
 
 
-class StatisticalTestHandler(ResourceHandler):
+class StatisticalTestHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the statistical tests' REST calls. It should not
        be instantiated independently.

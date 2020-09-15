@@ -26,7 +26,7 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_external_connector_id
 from bigml.constants import EXTERNAL_CONNECTOR_PATH, \
@@ -48,7 +48,7 @@ def get_env_connection_info():
     return connection_info
 
 
-class ExternalConnectorHandler(ResourceHandler):
+class ExternalConnectorHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the external connectors' REST calls. It should not
        be instantiated independently.

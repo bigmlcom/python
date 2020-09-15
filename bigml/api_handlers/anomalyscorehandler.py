@@ -26,14 +26,14 @@ except ImportError:
     import json
 
 
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, get_anomaly_score_id, get_anomaly_id
 from bigml.constants import ANOMALY_SCORE_PATH, ANOMALY_PATH, \
     TINY_RESOURCE
 
 
-class AnomalyScoreHandler(ResourceHandler):
+class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

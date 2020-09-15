@@ -148,6 +148,7 @@ class Cluster(ModelFields):
     def __init__(self, cluster, api=None, cache_get=None):
 
         self.api = get_api_connection(api)
+        self.centroids = None
         if use_cache(cache_get):
             # using a cache to store the cluster attributes
             self.__dict__ = load(get_cluster_id(cluster), cache_get)
@@ -158,7 +159,6 @@ class Cluster(ModelFields):
             return
 
         self.resource_id = None
-        self.centroids = None
         self.cluster_global = None
         self.total_ss = None
         self.within_ss = None

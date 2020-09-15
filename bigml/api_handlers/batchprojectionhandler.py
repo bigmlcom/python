@@ -26,13 +26,13 @@ except ImportError:
     import json
 
 from bigml.bigmlconnection import DOWNLOAD_DIR
-from bigml.api_handlers.resourcehandler import ResourceHandler
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_batch_projection_id
 from bigml.constants import BATCH_PROJECTION_PATH, PCA_PATH
 
 
-class BatchProjectionHandler(ResourceHandler):
+class BatchProjectionHandlerMixin(ResourceHandlerMixin):
     """This class is used by the BigML class as
        a mixin that provides the REST calls models. It should not
        be instantiated independently.

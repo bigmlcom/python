@@ -87,6 +87,8 @@ class TopicModel(ModelFields):
 
     def __init__(self, topic_model, api=None, cache_get=None):
 
+        self.lang = None
+        self.stemmer = None
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_topic_model_id(topic_model), cache_get)
@@ -95,8 +97,6 @@ class TopicModel(ModelFields):
             return
 
         self.resource_id = None
-        self.lang = None
-        self.stemmer = None
         self.seed = None
         self.case_sensitive = False
         self.bigrams = False

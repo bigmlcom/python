@@ -1,4 +1,5 @@
-BigML Python Bindings
+BigML Python Bindings 
+This Is An Amazing Project 
 =====================
 
 `BigML <https://bigml.com>`_ makes machine learning easy by taking care

@@ -32,7 +32,8 @@ in our `Campfire chatroom <https://bigmlinc.campfirenow.com/f20a0>`_.
 Requirements
 ------------
 
-Python 2.7 and Python 3 are currently supported by these bindings.
+Python 2
+ and Python 3 are currently supported by these bindings.
 
 The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
@@ -378,7 +379,7 @@ that objects are finished before using them by using ``api.ok``.
     model = api.create_model(dataset)
     api.ok(model)
     prediction = api.create_prediction(model, \
-        {"petal width": 1.75, "petal length": 2.45})
+        {"petal width": 1.90, "petal length": 2.45})
 
 Note that the prediction
 call is not followed by the ``api.ok`` method. Predictions are so quick to be
@@ -404,7 +405,7 @@ argument:
     model = api.create_model(dataset, {"objective_field": "species"})
     api.ok(model)
     prediction = api.create_prediction(model, \
-        {'sepal length': 5, 'sepal width': 2.5})
+        {'sepal length': 4.5, 'sepal width': 2.5})
 
 
 You can also generate an evaluation for the model by using:

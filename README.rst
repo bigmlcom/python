@@ -1,6 +1,7 @@
-BigML Python Bindings
-=====================
+BigML Python Bindings 
 
+=====================
+This Is An Amazing Project 
 `BigML <https://bigml.com>`_ makes machine learning easy by taking care
 of the details required to add data-driven decisions and predictive
 power to your company. Unlike other machine learning services, BigML

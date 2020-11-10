@@ -68,10 +68,8 @@ class ProjectHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(project, PROJECT_PATH,
                             message="A project id is needed.")
-        project_id = get_project_id(project)
-        if project_id:
-            return self._get("%s%s" % (self.url, project_id),
-                             query_string=query_string, organization=True)
+        return self.get_resource(project, query_string=query_string,
+                                 organization=True)
 
     def list_projects(self, query_string=''):
         """Lists all your projects.
@@ -85,11 +83,7 @@ class ProjectHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(project, PROJECT_PATH,
                             message="A project id is needed.")
-        project_id = get_project_id(project)
-        if project_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, project_id), body,
-                                organization=True)
+        return self.update_resource(project, changes, organization=True)
 
     def delete_project(self, project):
         """Deletes a project.
@@ -97,7 +91,4 @@ class ProjectHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(project, PROJECT_PATH,
                             message="A project id is needed.")
-        project_id = get_project_id(project)
-        if project_id:
-            return self._delete("%s%s" % (self.url, project_id),
-                                organization=True)
+        return self.delete_resource(batch_centroid, organization=True)

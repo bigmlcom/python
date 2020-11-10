@@ -84,10 +84,7 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(centroid, CENTROID_PATH,
                             message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            return self._get("%s%s" % (self.url, centroid_id),
-                             query_string=query_string)
+        return self.get_resource(centroid, query_string=query_string)
 
     def list_centroids(self, query_string=''):
         """Lists all your centroids.
@@ -101,10 +98,7 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(centroid, CENTROID_PATH,
                             message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, centroid_id), body)
+        return self.update_resource(centroid, changes)
 
     def delete_centroid(self, centroid):
         """Deletes a centroid.
@@ -112,6 +106,4 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(centroid, CENTROID_PATH,
                             message="A centroid id is needed.")
-        centroid_id = get_centroid_id(centroid)
-        if centroid_id:
-            return self._delete("%s%s" % (self.url, centroid_id))
+        return self.delete_resource(centroid)

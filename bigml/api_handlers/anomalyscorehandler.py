@@ -85,10 +85,7 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
                             message="An anomaly score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            return self._get("%s%s" % (self.url, anomaly_score_id),
-                             query_string=query_string)
+        return self.get_resource(anomaly_score, query_string=query_string)
 
     def list_anomaly_scores(self, query_string=''):
         """Lists all your anomaly_scores.
@@ -102,10 +99,7 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
                             message="An anomaly_score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, anomaly_score_id), body)
+        return self.update_resource(anomaly_score, changes)
 
     def delete_anomaly_score(self, anomaly_score):
         """Deletes an anomaly_score.
@@ -113,6 +107,4 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
                             message="An anomaly_score id is needed.")
-        anomaly_score_id = get_anomaly_score_id(anomaly_score)
-        if anomaly_score_id:
-            return self._delete("%s%s" % (self.url, anomaly_score_id))
+        return self.delete_resource(anomaly_score)

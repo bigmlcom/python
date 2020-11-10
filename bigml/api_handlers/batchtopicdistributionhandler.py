@@ -81,16 +81,12 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        batch_topic_distribution_id = get_batch_topic_distribution_id( \
-            batch_topic_distribution)
-        if batch_topic_distribution_id:
-            return self._get("%s%s" % (self.url, batch_topic_distribution_id),
-                             query_string=query_string)
-        return
+        return self.get_resource(batch_topic_distribution,
+                                 query_string=query_string)
 
     def download_batch_topic_distribution(self,
                                           batch_topic_distribution,
-                                          filename=None):
+                                          filename=None, retries=10):
         """Retrieves the batch topic distribution file.
 
            Downloads topic distributions, that are stored in a remote CSV file.
@@ -101,12 +97,8 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        batch_topic_distribution_id = get_batch_topic_distribution_id( \
-            batch_topic_distribution)
-        if batch_topic_distribution_id:
-            return self._download("%s%s%s" % \
-                (self.url, batch_topic_distribution_id, DOWNLOAD_DIR), \
-                filename=filename)
+        return self._download_resource(batch_centroid, filename,
+                                       retries=retries)
 
     def list_batch_topic_distributions(self, query_string=''):
         """Lists all your batch topic distributions.
@@ -122,12 +114,7 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        batch_topic_distribution_id = get_batch_topic_distribution_id( \
-            batch_topic_distribution)
-        if batch_topic_distribution_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url,
-                                          batch_topic_distribution_id), body)
+        return self.update_resource(batch_topic_distribution, changes)
 
     def delete_batch_topic_distribution(self, batch_topic_distribution):
         """Deletes a batch topic distribution.
@@ -136,8 +123,4 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        batch_topic_distribution_id = get_batch_topic_distribution_id( \
-            batch_topic_distribution)
-        if batch_topic_distribution_id:
-            return self._delete("%s%s" % (self.url,
-                                          batch_topic_distribution_id))
+        return self.delete_resource(batch_topic_distribution)

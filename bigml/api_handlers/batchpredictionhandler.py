@@ -81,12 +81,10 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        batch_prediction_id = get_batch_prediction_id(batch_prediction)
-        if batch_prediction_id:
-            return self._get("%s%s" % (self.url, batch_prediction_id),
-                             query_string=query_string)
+        return self.get_resource(batch_prediction, query_string=query_string)
 
-    def download_batch_prediction(self, batch_prediction, filename=None):
+    def download_batch_prediction(self, batch_prediction, filename=None,
+                                  retries=10):
         """Retrieves the batch predictions file.
 
            Downloads predictions, that are stored in a remote CSV file. If
@@ -95,10 +93,8 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        batch_prediction_id = get_batch_prediction_id(batch_prediction)
-        if batch_prediction_id:
-            return self._download("%s%s%s" % (self.url, batch_prediction_id,
-                                              DOWNLOAD_DIR), filename=filename)
+        return self._download_resource(batch_prediction, filename,
+                                       retries=retries)
 
     def list_batch_predictions(self, query_string=''):
         """Lists all your batch predictions.
@@ -112,10 +108,7 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        batch_prediction_id = get_batch_prediction_id(batch_prediction)
-        if batch_prediction_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, batch_prediction_id), body)
+        return self.update_resource(batch_prediction, changes)
 
     def delete_batch_prediction(self, batch_prediction):
         """Deletes a batch prediction.
@@ -123,6 +116,4 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        batch_prediction_id = get_batch_prediction_id(batch_prediction)
-        if batch_prediction_id:
-            return self._delete("%s%s" % (self.url, batch_prediction_id))
+        return self.delete_resource(batch_prediction)

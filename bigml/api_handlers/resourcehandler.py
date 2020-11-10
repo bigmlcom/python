@@ -517,8 +517,44 @@ class ResourceHandlerMixin():
         resource_id = get_resource_id(resource)
 
         if resource_id:
-            return self._get("%s%s" % (self.url, resource_id),
-                             **kwargs)
+            return self._get("%s%s" % (self.url, resource_id), **kwargs)
+
+    def update_resource(self, resource, changes, **kwargs):
+        """Updates a remote resource.
+
+           The resource parameter should be a string containing the
+           resource id or the dict returned by the corresponding create method.
+
+        """
+        resource_id, error = self.final_resource(resource)
+        if error or resource_id is None:
+            raise Exception("Failed to update %s. Only correctly finished "
+                            "resources can be updated. Please, check "
+                            "the resource status.")
+        body = json.dumps(changes)
+        return self._update("%s%s" % (self.url, resource_id), body, **kwargs)
+
+    def delete_resource(self, resource, **kwargs):
+        """Delete a remote resource
+
+        """
+        resource_id = get_resource_id(resource)
+        if resource_id:
+            return self._delete("%s%s" % (self.url, resource_id), **kwargs)
+
+    def _download_resource(self, resource, filenamen, retries=10):
+        """Download CSV information from downloadable resources
+
+        """
+        resource_id, error = self.final_resource(resource, retries=retries)
+        if error or resource_id is None:
+            raise Exception("Failed to download %s. Only correctly finished "
+                            "resources can be downloaded. Please, check "
+                            "the resource status.")
+        return self._download("%s%s%s" % (self.url, resource_id,
+                                          DOWNLOAD_DIR),
+                              filename=filename,
+                              retries=retries)
 
     def ok(self, resource, query_string='', wait_time=1,
            max_requests=None, raise_on_error=False, retries=None,
@@ -850,3 +886,15 @@ class ResourceHandlerMixin():
                                                             tags))
         raise ValueError("First agument is expected to be a non-empty"
                          " tag.")
+
+    def final_resource(resource, retries=10):
+        """Waits for a resource to finish or fail and returns
+           its ID and the error information
+
+        """
+        resource = check_resource( \
+            resource,
+            query_string=c.TINY_RESOURCE,
+            retries=retries,
+            api=self)
+        return get_resource_id(resource), resource.get("error")

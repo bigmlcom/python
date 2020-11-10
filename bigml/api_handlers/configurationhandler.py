@@ -71,10 +71,7 @@ class ConfigurationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(configuration, CONFIGURATION_PATH,
                             message="A configuration id is needed.")
-        configuration_id = get_configuration_id(configuration)
-        if configuration_id:
-            return self._get("%s%s" % (self.url, configuration_id),
-                             query_string=query_string)
+        return self.get_resource(configuration, query_string=query_string)
 
     def list_configurations(self, query_string=''):
         """Lists all your configurations.
@@ -88,10 +85,7 @@ class ConfigurationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(configuration, CONFIGURATION_PATH,
                             message="A configuration id is needed.")
-        configuration_id = get_configuration_id(configuration)
-        if configuration_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, configuration_id), body)
+        return self.update_resource(configuration, changes)
 
     def delete_configuration(self, configuration):
         """Deletes a configuration.
@@ -99,6 +93,4 @@ class ConfigurationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(configuration, CONFIGURATION_PATH,
                             message="A configuration id is needed.")
-        configuration_id = get_configuration_id(configuration)
-        if configuration_id:
-            return self._delete("%s%s" % (self.url, configuration_id))
+        return self.delete_resource(configuration)

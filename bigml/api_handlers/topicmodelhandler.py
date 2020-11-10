@@ -73,12 +73,11 @@ class TopicModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_model, TOPIC_MODEL_PATH,
                             message="A Topic Model id is needed.")
-        topic_model_id = get_topic_model_id(topic_model)
-        if topic_model_id:
-            return self._get("%s%s" % (self.url, topic_model_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(topic_model,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
+
 
     def topic_model_is_ready(self, topic_model, **kwargs):
         """Checks whether a topic model's status is FINISHED.
@@ -101,10 +100,7 @@ class TopicModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_model, TOPIC_MODEL_PATH,
                             message="A topic model id is needed.")
-        topic_model_id = get_topic_model_id(topic_model)
-        if topic_model_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, topic_model_id), body)
+        return self.update_resource(topic_model, changes)
 
     def delete_topic_model(self, topic_model):
         """Deletes a Topic Model.
@@ -112,6 +108,4 @@ class TopicModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_model, TOPIC_MODEL_PATH,
                             message="A topic model id is needed.")
-        topic_model_id = get_topic_model_id(topic_model)
-        if topic_model_id:
-            return self._delete("%s%s" % (self.url, topic_model_id))
+        return self.delete_resource(topic_model)

@@ -83,10 +83,7 @@ class ForecastHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(forecast, FORECAST_PATH,
                             message="A forecast id is needed.")
-        forecast_id = get_forecast_id(forecast)
-        if forecast_id:
-            return self._get("%s%s" % (self.url, forecast_id),
-                             query_string=query_string)
+        return self.get_resource(forecast, query_string=query_string)
 
     def list_forecasts(self, query_string=''):
         """Lists all your forecasts.
@@ -100,10 +97,7 @@ class ForecastHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(forecast, FORECAST_PATH,
                             message="A forecast id is needed.")
-        forecast_id = get_forecast_id(forecast)
-        if forecast_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, forecast_id), body)
+        return self.update_resource(forecast, changes)
 
     def delete_forecast(self, forecast):
         """Deletes a forecast.
@@ -111,6 +105,4 @@ class ForecastHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(forecast, FORECAST_PATH,
                             message="A forecast id is needed.")
-        forecast_id = get_forecast_id(forecast)
-        if forecast_id:
-            return self._delete("%s%s" % (self.url, forecast_id))
+        return self.delete_resource(forecast)

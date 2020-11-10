@@ -73,12 +73,11 @@ class AnomalyHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly, ANOMALY_PATH,
                             message="A anomaly id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            return self._get("%s%s" % (self.url, anomaly_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource( \
+            anomaly,
+            query_string=query_string,
+            shared_username=shared_username,
+            shared_api_key=shared_api_key)
 
     def anomaly_is_ready(self, anomaly, **kwargs):
         """Checks whether an anomaly detector's status is FINISHED.
@@ -101,10 +100,7 @@ class AnomalyHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly, ANOMALY_PATH,
                             message="An anomaly detector id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, anomaly_id), body)
+        return self.update_resource(anomaly, changes)
 
     def delete_anomaly(self, anomaly):
         """Deletes an anomaly detector.
@@ -112,6 +108,4 @@ class AnomalyHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(anomaly, ANOMALY_PATH,
                             message="An anomaly detector id is needed.")
-        anomaly_id = get_anomaly_id(anomaly)
-        if anomaly_id:
-            return self._delete("%s%s" % (self.url, anomaly_id))
+        return self.delete_resource(anomaly)

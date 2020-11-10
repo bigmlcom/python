@@ -3,6 +3,12 @@
 History
 -------
 
+6.0.1 (2020-11-11)
+~~~~~~~~~~~~~~~~~~
+
+- Changing local anomaly filter.
+- Fixing update and download methods to wait for the resource to be finished.
+
 6.0.0 (2020-09-02)
 ~~~~~~~~~~~~~~~~~~
 

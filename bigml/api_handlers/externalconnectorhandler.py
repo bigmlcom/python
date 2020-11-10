@@ -104,10 +104,7 @@ class ExternalConnectorHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(external_connector, EXTERNAL_CONNECTOR_PATH,
                             message="An external connector id is needed.")
-        external_connector_id = get_external_connector_id(external_connector)
-        if external_connector_id:
-            return self._get("%s%s" % (self.url, external_connector_id),
-                             query_string=query_string)
+        return self.get_resource(external_connector, query_string=query_string)
 
     def list_external_connectors(self, query_string=''):
         """Lists all your external connectors.
@@ -121,11 +118,7 @@ class ExternalConnectorHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(external_connector, EXTERNAL_CONNECTOR_PATH,
                             message="An external connector id is needed.")
-        external_connector_id = get_external_connector_id(external_connector)
-        if external_connector_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, external_connector_id),
-                                body)
+        return self.update_resource(external_connector, changes)
 
     def delete_external_connector(self, external_connector, query_string=''):
         """Deletes an external connector.
@@ -133,7 +126,4 @@ class ExternalConnectorHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(external_connector, EXTERNAL_CONNECTOR_PATH,
                             message="An external connector id is needed.")
-        external_connector_id = get_external_connector_id(external_connector)
-        if external_connector_id:
-            return self._delete("%s%s" % (self.url, external_connector_id),
-                                query_string=query_string)
+        return self.delete_resource(external_connector)

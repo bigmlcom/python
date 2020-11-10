@@ -105,10 +105,7 @@ class ExecutionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(execution, EXECUTION_PATH,
                             message="An execution id is needed.")
-        execution_id = get_execution_id(execution)
-        if execution_id:
-            return self._get("%s%s" % (self.url, execution_id),
-                             query_string=query_string)
+        return self.get_resource(execution, query_string=query_string)
 
     def list_executions(self, query_string=''):
         """Lists all your executions.
@@ -122,10 +119,7 @@ class ExecutionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(execution, EXECUTION_PATH,
                             message="An execution id is needed.")
-        execution_id = get_execution_id(execution)
-        if execution_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, execution_id), body)
+        return self.update_resource(execution, changes)
 
     def delete_execution(self, execution, query_string=''):
         """Deletes an execution.
@@ -133,7 +127,4 @@ class ExecutionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(execution, EXECUTION_PATH,
                             message="An execution id is needed.")
-        execution_id = get_execution_id(execution)
-        if execution_id:
-            return self._delete("%s%s" % (self.url, execution_id),
-                                query_string=query_string)
+        return self.delete_resource(execution, query_string=query_string)

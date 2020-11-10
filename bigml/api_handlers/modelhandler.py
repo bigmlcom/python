@@ -122,12 +122,10 @@ class ModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            return self._get("%s%s" % (self.url, model_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(model,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def model_is_ready(self, model, **kwargs):
         """Checks whether a model's status is FINISHED.
@@ -150,10 +148,7 @@ class ModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, model_id), body)
+        return self.update_resource(model, changes)
 
     def delete_model(self, model):
         """Deletes a model.
@@ -161,6 +156,4 @@ class ModelHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
-        model_id = get_model_id(model)
-        if model_id:
-            return self._delete("%s%s" % (self.url, model_id))
+        return self.delete_resource(model)

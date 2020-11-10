@@ -243,10 +243,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")
-        source_id = get_source_id(source)
-        if source_id:
-            return self._get("%s%s" % (self.url, source_id),
-                             query_string=query_string)
+        return self.get_resource(source, query_string=query_string)
 
     def source_is_ready(self, source):
         """Checks whether a source' status is FINISHED.
@@ -271,10 +268,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")
-        source_id = get_source_id(source)
-        if source_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, source_id), body)
+        return self.update_resource(source, changes)
 
     def delete_source(self, source):
         """Deletes a remote source permanently.
@@ -282,6 +276,4 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")
-        source_id = get_source_id(source)
-        if source_id:
-            return self._delete("%s%s" % (self.url, source_id))
+        return self.delete_resource(source)

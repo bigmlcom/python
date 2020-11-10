@@ -76,12 +76,10 @@ class FusionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(fusion, FUSION_PATH,
                             message="A fusion id is needed.")
-        fusion_id = get_fusion_id(fusion)
-        if fusion_id:
-            return self._get("%s%s" % (self.url, fusion_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(fusion,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def fusion_is_ready(self, fusion, **kwargs):
         """Checks whether a fusion's status is FINISHED.
@@ -104,11 +102,7 @@ class FusionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(fusion, FUSION_PATH,
                             message="A fusion id is needed.")
-        fusion_id = get_fusion_id(fusion)
-        if fusion_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, fusion_id), body)
+        return self.update_resource(fusion, changes)
 
     def delete_fusion(self, fusion):
         """Deletes a fusion.
@@ -116,6 +110,4 @@ class FusionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(fusion, FUSION_PATH,
                             message="A fusion id is needed.")
-        fusion_id = get_fusion_id(fusion)
-        if fusion_id:
-            return self._delete("%s%s" % (self.url, fusion_id))
+        return self.delete_resource(fusion)

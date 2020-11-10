@@ -86,10 +86,7 @@ class CorrelationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(correlation, CORRELATION_PATH,
                             message="A correlation id is needed.")
-        correlation_id = get_correlation_id(correlation)
-        if correlation_id:
-            return self._get("%s%s" % (self.url, correlation_id),
-                             query_string=query_string)
+        return self.get_resource(correlation, query_string=query_string)
 
     def list_correlations(self, query_string=''):
         """Lists all your correlations.
@@ -103,10 +100,7 @@ class CorrelationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(correlation, CORRELATION_PATH,
                             message="A correlation id is needed.")
-        correlation_id = get_correlation_id(correlation)
-        if correlation_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, correlation_id), body)
+        return self.update_resource(correlation, changes)
 
     def delete_correlation(self, correlation):
         """Deletes a correlation.
@@ -114,6 +108,4 @@ class CorrelationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(correlation, CORRELATION_PATH,
                             message="A correlation id is needed.")
-        correlation_id = get_correlation_id(correlation)
-        if correlation_id:
-            return self._delete("%s%s" % (self.url, correlation_id))
+        return self.delete_resource(correlation)

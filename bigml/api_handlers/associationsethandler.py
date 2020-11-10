@@ -85,10 +85,7 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(association_set, ASSOCIATION_SET_PATH,
                             message="An association set id is needed.")
-        association_set_id = get_association_set_id(association_set)
-        if association_set_id:
-            return self._get("%s%s" % (self.url, association_set_id),
-                             query_string)
+        return self.get_resource(association_set, query_string=query_string)
 
     def list_association_sets(self, query_string=''):
         """Lists all your association sets.
@@ -102,10 +99,7 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(association_set, ASSOCIATION_SET_PATH,
                             message="An association set id is needed.")
-        association_set_id = get_association_set_id(association_set)
-        if association_set_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, association_set_id), body)
+        return self.update_resource(association_set, changes)
 
     def delete_association_set(self, association_set):
         """Deletes an association set.
@@ -113,6 +107,4 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(association_set, ASSOCIATION_SET_PATH,
                             message="An association set id is needed.")
-        association_set_id = get_association_set_id(association_set)
-        if association_set_id:
-            return self._delete("%s%s" % (self.url, association_set_id))
+        return self.delete_resource(association_set)

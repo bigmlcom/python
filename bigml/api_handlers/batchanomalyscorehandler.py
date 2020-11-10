@@ -80,11 +80,8 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
                             message="A batch anomaly score id is needed.")
-        batch_anomaly_score_id = get_batch_anomaly_score_id(
-            batch_anomaly_score)
-        if batch_anomaly_score_id:
-            return self._get("%s%s" % (self.url, batch_anomaly_score_id),
-                             query_string=query_string)
+        return self.get_resource(batch_anomaly_score,
+                                 query_string=query_string)
 
     def download_batch_anomaly_score(self, batch_anomaly_score, filename=None):
         """Retrieves the batch anomaly score file.
@@ -95,11 +92,9 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
                             message="A batch anomaly score id is needed.")
-        batch_anomaly_score_id = get_batch_anomaly_score_id(
-            batch_anomaly_score)
-        if batch_anomaly_score_id:
-            return self._download("%s%s%s" % (self.url, batch_anomaly_score_id,
-                                              DOWNLOAD_DIR), filename=filename)
+        return self._download_resource(batch_anomaly_score,
+                                       filename,
+                                       retries=retries)
 
     def list_batch_anomaly_scores(self, query_string=''):
         """Lists all your batch anomaly scores.
@@ -113,12 +108,7 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
                             message="A batch anomaly score id is needed.")
-        batch_anomaly_score_id = get_batch_anomaly_score_id(
-            batch_anomaly_score)
-        if batch_anomaly_score_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url,
-                                          batch_anomaly_score_id), body)
+        return self.update_resource(batch_anomaly_score, changes)
 
     def delete_batch_anomaly_score(self, batch_anomaly_score):
         """Deletes a batch anomaly score.
@@ -126,7 +116,4 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
                             message="A batch anomaly score id is needed.")
-        batch_anomaly_score_id = get_batch_anomaly_score_id(
-            batch_anomaly_score)
-        if batch_anomaly_score_id:
-            return self._delete("%s%s" % (self.url, batch_anomaly_score_id))
+        return self.delete_resource(batch_anomaly_score)

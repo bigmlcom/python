@@ -147,10 +147,7 @@ class ScriptHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(script, SCRIPT_PATH,
                             message="A script id is needed.")
-        script_id = get_script_id(script)
-        if script_id:
-            return self._get("%s%s" % (self.url, script_id),
-                             query_string=query_string)
+        return self.get_resource(script, query_string=query_string)
 
     def list_scripts(self, query_string=''):
         """Lists all your scripts.
@@ -164,10 +161,7 @@ class ScriptHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(script, SCRIPT_PATH,
                             message="A script id is needed.")
-        script_id = get_script_id(script)
-        if script_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, script_id), body)
+        return self.update_resource(script, changes)
 
     def delete_script(self, script):
         """Deletes a script.
@@ -175,6 +169,4 @@ class ScriptHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(script, SCRIPT_PATH,
                             message="A script id is needed.")
-        script_id = get_script_id(script)
-        if script_id:
-            return self._delete("%s%s" % (self.url, script_id))
+        return self.delete_resource(script)

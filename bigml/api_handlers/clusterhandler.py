@@ -73,12 +73,10 @@ class ClusterHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(cluster, CLUSTER_PATH,
                             message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            return self._get("%s%s" % (self.url, cluster_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(cluster,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def cluster_is_ready(self, cluster, **kwargs):
         """Checks whether a cluster's status is FINISHED.
@@ -101,10 +99,7 @@ class ClusterHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(cluster, CLUSTER_PATH,
                             message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, cluster_id), body)
+        return self.update_resource(cluster, changes)
 
     def delete_cluster(self, cluster):
         """Deletes a cluster.
@@ -112,6 +107,4 @@ class ClusterHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(cluster, CLUSTER_PATH,
                             message="A cluster id is needed.")
-        cluster_id = get_cluster_id(cluster)
-        if cluster_id:
-            return self._delete("%s%s" % (self.url, cluster_id))
+        return self.delete_resource(cluster)

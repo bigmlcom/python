@@ -80,10 +80,7 @@ class EvaluationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(evaluation, EVALUATION_PATH,
                             message="An evaluation id is needed.")
-        evaluation_id = get_evaluation_id(evaluation)
-        if evaluation_id:
-            return self._get("%s%s" % (self.url, evaluation_id),
-                             query_string=query_string)
+        return self.get_resource(evaluation, query_string=query_string)
 
     def list_evaluations(self, query_string=''):
         """Lists all your evaluations.
@@ -97,10 +94,7 @@ class EvaluationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(evaluation, EVALUATION_PATH,
                             message="An evaluation id is needed.")
-        evaluation_id = get_evaluation_id(evaluation)
-        if evaluation_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, evaluation_id), body)
+        return self.update_resource(evaluation, changes)
 
     def delete_evaluation(self, evaluation):
         """Deletes an evaluation.
@@ -108,6 +102,4 @@ class EvaluationHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(evaluation, EVALUATION_PATH,
                             message="An evaluation id is needed.")
-        evaluation_id = get_evaluation_id(evaluation)
-        if evaluation_id:
-            return self._delete("%s%s" % (self.url, evaluation_id))
+        return self.delete_resource(evaluation)

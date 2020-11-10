@@ -76,13 +76,10 @@ class TimeSeriesHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(time_series, TIME_SERIES_PATH,
                             message="A time series id is needed.")
-        time_series_id = get_time_series_id(
-            time_series)
-        if time_series_id:
-            return self._get("%s%s" % (self.url, time_series_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(time_series,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def time_series_is_ready(self, time_series, **kwargs):
         """Checks whether a time series's status is FINISHED.
@@ -105,12 +102,7 @@ class TimeSeriesHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(time_series, TIME_SERIES_PATH,
                             message="A time series id is needed.")
-        time_series_id = get_time_series_id(
-            time_series)
-        if time_series_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, time_series_id), body)
+        return self.update_resource(time_series, changes)
 
     def delete_time_series(self, time_series):
         """Deletes a time series.
@@ -118,6 +110,4 @@ class TimeSeriesHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(time_series, TIME_SERIES_PATH,
                             message="A time series id is needed.")
-        time_series_id = get_time_series_id(time_series)
-        if time_series_id:
-            return self._delete("%s%s" % (self.url, time_series_id))
+        return self.delete_resource(time_series)

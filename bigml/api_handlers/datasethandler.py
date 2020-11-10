@@ -135,10 +135,7 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._get("%s%s" % (self.url, dataset_id),
-                             query_string=query_string)
+        return self.get_resource(dataset, query_string=query_string)
 
     def dataset_is_ready(self, dataset):
         """Check whether a dataset' status is FINISHED.
@@ -161,10 +158,7 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, dataset_id), body)
+        return self.update_resource(dataset, changes)
 
     def delete_dataset(self, dataset):
         """Deletes a dataset.
@@ -172,9 +166,7 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._delete("%s%s" % (self.url, dataset_id))
+        return self.delete_resource(dataset)
 
     def error_counts(self, dataset, raise_on_error=True):
         """Returns the ids of the fields that contain errors and their number.
@@ -209,9 +201,4 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        dataset_id = get_dataset_id(dataset)
-        if dataset_id:
-            return self._download("%s%s%s" % (self.url, dataset_id,
-                                              DOWNLOAD_DIR),
-                                  filename=filename,
-                                  retries=retries)
+        return self._download_resource(dataset, filename, retries=retries)

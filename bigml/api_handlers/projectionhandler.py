@@ -89,10 +89,7 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(projection, PROJECTION_PATH,
                             message="A projection id is needed.")
-        projection_id = get_projection_id(projection)
-        if projection_id:
-            return self._get("%s%s" % (self.url, projection_id),
-                             query_string=query_string)
+        return self.get_resource(projection, query_string=query_string)
 
     def list_projections(self, query_string=''):
         """Lists all your projections.
@@ -106,10 +103,7 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(projection, PROJECTION_PATH,
                             message="A projection id is needed.")
-        projection_id = get_projection_id(projection)
-        if projection_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, projection_id), body)
+        return self.update_resource(projection, changes)
 
     def delete_projection(self, projection):
         """Deletes a projection.
@@ -117,6 +111,4 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(projection, PROJECTION_PATH,
                             message="A projection id is needed.")
-        projection_id = get_projection_id(projection)
-        if projection_id:
-            return self._delete("%s%s" % (self.url, projection_id))
+        return self.delete_resource(projection)

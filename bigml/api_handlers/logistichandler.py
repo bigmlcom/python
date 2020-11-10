@@ -76,13 +76,10 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(logistic_regression, LOGISTIC_REGRESSION_PATH,
                             message="A logistic regression id is needed.")
-        logistic_regression_id = get_logistic_regression_id(
-            logistic_regression)
-        if logistic_regression_id:
-            return self._get("%s%s" % (self.url, logistic_regression_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(logistic_regression,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def logistic_regression_is_ready(self, logistic_regression, **kwargs):
         """Checks whether a logistic regressioin's status is FINISHED.
@@ -105,12 +102,7 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(logistic_regression, LOGISTIC_REGRESSION_PATH,
                             message="A logistic regression id is needed.")
-        logistic_regression_id = get_logistic_regression_id(
-            logistic_regression)
-        if logistic_regression_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, logistic_regression_id), body)
+        return self.update_resource(logistic_regression, changes)
 
     def delete_logistic_regression(self, logistic_regression):
         """Deletes a logistic regression.
@@ -118,7 +110,4 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(logistic_regression, LOGISTIC_REGRESSION_PATH,
                             message="A logistic regression id is needed.")
-        logistic_regression_id = get_logistic_regression_id(
-            logistic_regression)
-        if logistic_regression_id:
-            return self._delete("%s%s" % (self.url, logistic_regression_id))
+        return self.delete_resource(logistic_regression)

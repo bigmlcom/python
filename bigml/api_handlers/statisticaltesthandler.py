@@ -85,10 +85,7 @@ class StatisticalTestHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(statistical_test, STATISTICAL_TEST_PATH,
                             message="A statistical test id is needed.")
-        statistical_test_id = get_statistical_test_id(statistical_test)
-        if statistical_test_id:
-            return self._get("%s%s" % (self.url, statistical_test_id),
-                             query_string=query_string)
+        return self.get_resource(statistical_test, query_string=query_string)
 
     def list_statistical_tests(self, query_string=''):
         """Lists all your statistical tests.
@@ -102,10 +99,7 @@ class StatisticalTestHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(statistical_test, STATISTICAL_TEST_PATH,
                             message="A statistical test id is needed.")
-        statistical_test_id = get_statistical_test_id(statistical_test)
-        if statistical_test_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, statistical_test_id), body)
+        return self.update_resource(statistical_test, changes)
 
     def delete_statistical_test(self, statistical_test):
         """Deletes a statistical test.
@@ -113,6 +107,4 @@ class StatisticalTestHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(statistical_test, STATISTICAL_TEST_PATH,
                             message="A statistical test id is needed.")
-        statistical_test_id = get_statistical_test_id(statistical_test)
-        if statistical_test_id:
-            return self._delete("%s%s" % (self.url, statistical_test_id))
+        return self.delete_resource(statistical_test)

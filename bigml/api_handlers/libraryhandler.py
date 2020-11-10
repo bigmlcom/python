@@ -104,10 +104,7 @@ class LibraryHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(library, LIBRARY_PATH,
                             message="A library id is needed.")
-        library_id = get_library_id(library)
-        if library_id:
-            return self._get("%s%s" % (self.url, library_id),
-                             query_string=query_string)
+        return self.get_resource(library, query_string=query_string)
 
     def list_libraries(self, query_string=''):
         """Lists all your libraries.
@@ -121,10 +118,7 @@ class LibraryHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(library, LIBRARY_PATH,
                             message="A library id is needed.")
-        library_id = get_library_id(library)
-        if library_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, library_id), body)
+        return self.update_resource(library, changes)
 
     def delete_library(self, library):
         """Deletes a library.
@@ -132,6 +126,4 @@ class LibraryHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(library, LIBRARY_PATH,
                             message="A library id is needed.")
-        library_id = get_library_id(library)
-        if library_id:
-            return self._delete("%s%s" % (self.url, library_id))
+        return self.delete_resource(library)

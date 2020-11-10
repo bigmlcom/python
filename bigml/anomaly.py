@@ -240,24 +240,15 @@ class Anomaly(ModelFields):
         anomaly_filters = []
         for anomaly in self.top_anomalies:
             filter_rules = []
-            row = anomaly.get('row', [])
-            for index, value in enumerate(row):
-                field_id = self.input_fields[index]
-                if field_id in self.id_fields:
-                    continue
-                if value is None or value == EMPTY_STR:
-                    filter_rules.append('(missing? "%s")' % field_id)
-                else:
-                    if (self.fields[field_id]["optype"]
-                            in ["categorical", "text"]):
-                        value = json.dumps(value)
-                    filter_rules.append('(= (f "%s") %s)' % (field_id, value))
-            if filter_rules:
-                anomaly_filters.append("(and %s)" % " ".join(filter_rules))
+            row = anomaly.get('row_number')
+            if row is not None:
+                filter_rules.append('(= (row-number) %s)' % row)
 
         anomalies_filter = " ".join(anomaly_filters)
-        if include:
-            if len(anomaly_filters) == 1:
+        if len(anomaly_filters) == 1:
+            if include:
                 return anomalies_filter
+            return "(not %s)" % anomalies_filter
+        if include:
             return "(or %s)" % anomalies_filter
         return "(not (or %s))" % anomalies_filter

@@ -76,13 +76,10 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(linear_regression, LINEAR_REGRESSION_PATH,
                             message="A linear regression id is needed.")
-        linear_regression_id = get_linear_regression_id(
-            linear_regression)
-        if linear_regression_id:
-            return self._get("%s%s" % (self.url, linear_regression_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(linear_regression,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def linear_regression_is_ready(self, linear_regression, **kwargs):
         """Checks whether a linear regressioin's status is FINISHED.
@@ -105,12 +102,7 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(linear_regression, LINEAR_REGRESSION_PATH,
                             message="A linear regression id is needed.")
-        linear_regression_id = get_linear_regression_id(
-            linear_regression)
-        if linear_regression_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, linear_regression_id), body)
+        return self.update_resource(linear_regression, changes)
 
     def delete_linear_regression(self, linear_regression):
         """Deletes a linear regression.
@@ -118,7 +110,4 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(linear_regression, LINEAR_REGRESSION_PATH,
                             message="A linear regression id is needed.")
-        linear_regression_id = get_linear_regression_id(
-            linear_regression)
-        if linear_regression_id:
-            return self._delete("%s%s" % (self.url, linear_regression_id))
+        return self.delete_resource(linear_regression)

@@ -76,12 +76,10 @@ class OptimlHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(optiml, OPTIML_PATH,
                             message="An optiml id is needed.")
-        optiml_id = get_optiml_id(optiml)
-        if optiml_id:
-            return self._get("%s%s" % (self.url, optiml_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(optiml,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def optiml_is_ready(self, optiml, **kwargs):
         """Checks whether an optiml's status is FINISHED.
@@ -104,11 +102,7 @@ class OptimlHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(optiml, OPTIML_PATH,
                             message="An optiml id is needed.")
-        optiml_id = get_optiml_id(optiml)
-        if optiml_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, optiml_id), body)
+        return self.update_resource(optiml, changes)
 
     def delete_optiml(self, optiml):
         """Deletes an optiml.
@@ -116,6 +110,4 @@ class OptimlHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(optiml, OPTIML_PATH,
                             message="An optiml id is needed.")
-        optiml_id = get_optiml_id(optiml)
-        if optiml_id:
-            return self._delete("%s%s" % (self.url, optiml_id))
+        return self.delete_resource(optiml)

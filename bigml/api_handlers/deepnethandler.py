@@ -76,12 +76,10 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(deepnet, DEEPNET_PATH,
                             message="A deepnet id is needed.")
-        deepnet_id = get_deepnet_id(deepnet)
-        if deepnet_id:
-            return self._get("%s%s" % (self.url, deepnet_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(deepnet,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def deepnet_is_ready(self, deepnet, **kwargs):
         """Checks whether a deepnet's status is FINISHED.
@@ -104,11 +102,7 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(deepnet, DEEPNET_PATH,
                             message="A deepnet id is needed.")
-        deepnet_id = get_deepnet_id(deepnet)
-        if deepnet_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, deepnet_id), body)
+        return self.update_resource(deepnet, changes)
 
     def delete_deepnet(self, deepnet):
         """Deletes a deepnet.
@@ -116,6 +110,4 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(deepnet, DEEPNET_PATH,
                             message="A deepnet id is needed.")
-        deepnet_id = get_deepnet_id(deepnet)
-        if deepnet_id:
-            return self._delete("%s%s" % (self.url, deepnet_id))
+        return self.delete_resource(deepnet)

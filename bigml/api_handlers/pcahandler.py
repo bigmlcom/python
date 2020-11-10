@@ -74,12 +74,10 @@ class PCAHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(pca, PCA_PATH,
                             message="A PCA id is needed.")
-        pca_id = get_pca_id(pca)
-        if pca_id:
-            return self._get("%s%s" % (self.url, pca_id),
-                             query_string=query_string,
-                             shared_username=shared_username,
-                             shared_api_key=shared_api_key)
+        return self.get_resource(pca,
+                                 query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def pca_is_ready(self, pca, **kwargs):
         """Checks whether a pca's status is FINISHED.
@@ -102,11 +100,7 @@ class PCAHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(pca, PCA_PATH,
                             message="A PCA id is needed.")
-        pca_id = get_pca_id(pca)
-        if pca_id:
-            body = json.dumps(changes)
-            return self._update(
-                "%s%s" % (self.url, pca_id), body)
+        return self.update_resource(pca, changes)
 
     def delete_pca(self, pca):
         """Deletes a PCA.
@@ -114,6 +108,4 @@ class PCAHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(pca, PCA_PATH,
                             message="A PCA id is needed.")
-        pca_id = get_pca_id(pca)
-        if pca_id:
-            return self._delete("%s%s" % (self.url, pca_id))
+        return self.delete_resource(pca)

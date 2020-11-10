@@ -85,10 +85,7 @@ class SampleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(sample, SAMPLE_PATH,
                             message="A sample id is needed.")
-        sample_id = get_sample_id(sample)
-        if sample_id:
-            return self._get("%s%s" % (self.url, sample_id),
-                             query_string=query_string)
+        return self.get_resource(sample, query_string=query_string)
 
     def list_samples(self, query_string=''):
         """Lists all your samples.
@@ -102,10 +99,7 @@ class SampleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(sample, SAMPLE_PATH,
                             message="A sample id is needed.")
-        sample_id = get_sample_id(sample)
-        if sample_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, sample_id), body)
+        return self.update_resource(sample, changes)
 
     def delete_sample(self, sample):
         """Deletes a sample.
@@ -113,6 +107,4 @@ class SampleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(sample, SAMPLE_PATH,
                             message="A sample id is needed.")
-        sample_id = get_sample_id(sample)
-        if sample_id:
-            return self._delete("%s%s" % (self.url, sample_id))
+        return self.delete_resource(sample)

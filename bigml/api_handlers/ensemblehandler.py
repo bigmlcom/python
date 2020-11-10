@@ -58,7 +58,8 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         body = json.dumps(create_args)
         return self._create(self.ensemble_url, body)
 
-    def get_ensemble(self, ensemble, query_string=''):
+    def get_ensemble(self, ensemble, query_string='',
+                     shared_username=None, shared_api_key=None):
         """Retrieves an ensemble.
 
            The ensemble parameter should be a string containing the
@@ -70,10 +71,9 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            return self._get("%s%s" % (self.url, ensemble_id),
-                             query_string=query_string)
+        return self.get_resource(ensemble, query_string=query_string,
+                                 shared_username=shared_username,
+                                 shared_api_key=shared_api_key)
 
     def ensemble_is_ready(self, ensemble):
         """Checks whether a ensemble's status is FINISHED.
@@ -96,10 +96,7 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, ensemble_id), body)
+        return self.update_resource(ensemble, changes)
 
     def delete_ensemble(self, ensemble):
         """Deletes a ensemble.
@@ -107,6 +104,4 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
-        ensemble_id = get_ensemble_id(ensemble)
-        if ensemble_id:
-            return self._delete("%s%s" % (self.url, ensemble_id))
+        return self.delete_resource(ensemble)

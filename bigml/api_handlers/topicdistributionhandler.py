@@ -83,10 +83,7 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_distribution, TOPIC_DISTRIBUTION_PATH,
                             message="A topic distribution id is needed.")
-        topic_distribution_id = get_topic_distribution_id(topic_distribution)
-        if topic_distribution_id:
-            return self._get("%s%s" % (self.url, topic_distribution_id),
-                             query_string=query_string)
+        return self.get_resource(topic_distribution, query_string=query_string)
 
     def list_topic_distributions(self, query_string=''):
         """Lists all your topic distributions.
@@ -100,11 +97,7 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_distribution, TOPIC_DISTRIBUTION_PATH,
                             message="A topic distribution id is needed.")
-        topic_distribution_id = get_topic_distribution_id(topic_distribution)
-        if topic_distribution_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % \
-                (self.url, topic_distribution_id), body)
+        return self.update_resource(topic_distribution, changes)
 
     def delete_topic_distribution(self, topic_distribution):
         """Deletes a topic distribution.
@@ -112,6 +105,4 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(topic_distribution, TOPIC_DISTRIBUTION_PATH,
                             message="A topic distribution id is needed.")
-        topic_distribution_id = get_topic_distribution_id(topic_distribution)
-        if topic_distribution_id:
-            return self._delete("%s%s" % (self.url, topic_distribution_id))
+        return self.delete_resource(topic_distribution)

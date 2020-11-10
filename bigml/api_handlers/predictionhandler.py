@@ -96,10 +96,7 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(prediction, PREDICTION_PATH,
                             message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            return self._get("%s%s" % (self.url, prediction_id),
-                             query_string=query_string)
+        return self.get_resource(prediction, query_string=query_string)
 
     def list_predictions(self, query_string=''):
         """Lists all your predictions.
@@ -113,10 +110,7 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(prediction, PREDICTION_PATH,
                             message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, prediction_id), body)
+        return self.update_resource(prediction, changes)
 
     def delete_prediction(self, prediction):
         """Deletes a prediction.
@@ -124,6 +118,4 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(prediction, PREDICTION_PATH,
                             message="A prediction id is needed.")
-        prediction_id = get_prediction_id(prediction)
-        if prediction_id:
-            return self._delete("%s%s" % (self.url, prediction_id))
+        return self.delete_resource(prediction)

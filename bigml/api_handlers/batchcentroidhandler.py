@@ -78,12 +78,10 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
                             message="A batch centroid id is needed.")
-        batch_centroid_id = get_batch_centroid_id(batch_centroid)
-        if batch_centroid_id:
-            return self._get("%s%s" % (self.url, batch_centroid_id),
-                             query_string=query_string)
+        return self.get_resource(batch_centroid, query_string=query_string)
 
-    def download_batch_centroid(self, batch_centroid, filename=None):
+    def download_batch_centroid(self, batch_centroid, filename=None,
+                                retries=10):
         """Retrieves the batch centroid file.
 
            Downloads centroids, that are stored in a remote CSV file. If
@@ -92,10 +90,8 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
                             message="A batch centroid id is needed.")
-        batch_centroid_id = get_batch_centroid_id(batch_centroid)
-        if batch_centroid_id:
-            return self._download("%s%s%s" % (self.url, batch_centroid_id,
-                                              DOWNLOAD_DIR), filename=filename)
+        return self._download_resource(batch_centroid, filename,
+                                       retries=retries)
 
     def list_batch_centroids(self, query_string=''):
         """Lists all your batch centroids.
@@ -109,10 +105,7 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
                             message="A batch centroid id is needed.")
-        batch_centroid_id = get_batch_centroid_id(batch_centroid)
-        if batch_centroid_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, batch_centroid_id), body)
+        return self.update_resource(batch_centroid, changes)
 
     def delete_batch_centroid(self, batch_centroid):
         """Deletes a batch centroid.
@@ -120,6 +113,4 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
                             message="A batch centroid id is needed.")
-        batch_centroid_id = get_batch_centroid_id(batch_centroid)
-        if batch_centroid_id:
-            return self._delete("%s%s" % (self.url, batch_centroid_id))
+        return self.delete_resource(batch_centroid)

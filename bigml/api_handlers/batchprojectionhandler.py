@@ -78,12 +78,10 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_projection, BATCH_PROJECTION_PATH,
                             message="A batch projection id is needed.")
-        batch_projection_id = get_batch_projection_id(batch_projection)
-        if batch_projection_id:
-            return self._get("%s%s" % (self.url, batch_projection_id),
-                             query_string=query_string)
+        return self.get_resource(batch_projection, query_string=query_string)
 
-    def download_batch_projection(self, batch_projection, filename=None):
+    def download_batch_projection(self, batch_projection, filename=None,
+                                  retries=10):
         """Retrieves the batch projections file.
 
            Downloads projections, that are stored in a remote CSV file. If
@@ -92,10 +90,8 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_projection, BATCH_PROJECTION_PATH,
                             message="A batch projection id is needed.")
-        batch_projection_id = get_batch_projection_id(batch_projection)
-        if batch_projection_id:
-            return self._download("%s%s%s" % (self.url, batch_projection_id,
-                                              DOWNLOAD_DIR), filename=filename)
+        return self._download_resource(batch_projection, filename,
+                                       retries=retries)
 
     def list_batch_projections(self, query_string=''):
         """Lists all your batch projections.
@@ -109,10 +105,7 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_projection, BATCH_PROJECTION_PATH,
                             message="A batch projection id is needed.")
-        batch_projection_id = get_batch_projection_id(batch_projection)
-        if batch_projection_id:
-            body = json.dumps(changes)
-            return self._update("%s%s" % (self.url, batch_projection_id), body)
+        return self.update_resource(batch_projection, changes)
 
     def delete_batch_projection(self, batch_projection):
         """Deletes a batch projection.
@@ -120,6 +113,4 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(batch_projection, BATCH_PROJECTION_PATH,
                             message="A batch projection id is needed.")
-        batch_projection_id = get_batch_projection_id(batch_projection)
-        if batch_projection_id:
-            return self._delete("%s%s" % (self.url, batch_projection_id))
+        return self.delete_resource(batch_projection)

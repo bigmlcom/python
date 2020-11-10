@@ -32,15 +32,16 @@ in our `Campfire chatroom <https://bigmlinc.campfirenow.com/f20a0>`_.
 Requirements
 ------------
 
-Python 2.7 and Python 3 are currently supported by these bindings.
+Only ``Python 3`` versions are currently supported by these bindings.
+Support for Python 2.7.X ended in version ``4.32.3``.
 
 The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
-`poster <http://atlee.ca/software/poster/#download>`_,
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_ and
 `requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_
-`bigml-chronos <https://pypi.org/project/bigml-chronos>`_
-libraries. These
+`bigml-chronos <https://pypi.org/project/bigml-chronos>`_,
+`numpy <http://www.numpy.org/>`_ and
+`scipy <http://www.scipy.org/>`_ libraries. These
 libraries are automatically installed during the setup. Support for Google
 App Engine has been added as of version 3.0.0, using the `urlfetch` package
 instead of `requests`.
@@ -48,15 +49,6 @@ instead of `requests`.
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
 libraries is ``simplejson`` is not found.
-
-Additional `numpy <http://www.numpy.org/>`_ and
-`scipy <http://www.scipy.org/>`_ libraries are needed in case you want to use
-local predictions for regression models (including the error information)
-using proportional missing strategy. As these are quite heavy libraries and
-they are not heavily used in these bindings,
-they are not included in the automatic installation
-dependencies. The test suite includes some tests that will need these
-libraries to be installed.
 
 Also in order to use local `Topic Model` predictions, you will need to install
 `pystemmer <https://pypi.python.org/pypi/PyStemmer>`_. Using the `pip install`
@@ -85,19 +77,36 @@ from the Git repository
 Running the Tests
 -----------------
 
+
 The test will be run using `nose <https://nose.readthedocs.org/en/latest/>`_ ,
 that is installed on setup, and you'll need to set up your authentication
 via environment variables, as explained
-below. With that in place, you can run the test suite simply by issuing
+in the authentication section. Also some of the tests need other environment
+variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization
+members and ``BIGML_EXTERNAL_CONN_HOST``, ``BIGML_EXTERNAL_CONN_PORT``,
+``BIGML_EXTERNAL_CONN_DB``, ``BIGML_EXTERNAL_CONN_USER``,
+``BIGML_EXTERNAL_CONN_PWD`` and ``BIGML_EXTERNAL_CONN_SOURCE``
+in order to test external data connectors.
+
+With that in place, you can run the test suite simply by issuing
 
 .. code-block:: bash
 
     $ python setup.py nosetests
 
-Some tests need the `numpy <http://www.numpy.org/>`_ and
-`scipy <http://www.scipy.org/>`_ libraries to be installed too. They are not
-automatically installed as a dependency, as they are quite heavy and very
-seldom used.
+Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
+automatically run the test suite in virtual environments for all
+supported Python versions.  To install Tox:
+
+.. code-block:: bash
+
+    $ pip install tox
+
+Then run the tests from the top-level project directory:
+
+.. code-block:: bash
+
+    $ tox
 
 Importing the module
 --------------------

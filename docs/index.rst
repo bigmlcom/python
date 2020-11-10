@@ -61,6 +61,7 @@ The basic third-party dependencies are the
 `requests <https://github.com/kennethreitz/requests>`_,
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_,
 `requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_,
+`bigml-chronos <https://pypi.org/project/bigml-chronos>`_,
 `numpy <http://www.numpy.org/>`_ and
 `scipy <http://www.scipy.org/>`_ libraries. These
 libraries are automatically installed during the setup. Support for Google

@@ -28,7 +28,7 @@ except ImportError:
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    resource_is_ready, get_logistic_regression_id
+    resource_is_ready
 from bigml.constants import LOGISTIC_REGRESSION_PATH
 
 

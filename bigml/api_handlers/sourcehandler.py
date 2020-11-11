@@ -48,7 +48,7 @@ from bigml.bigmlconnection import (
     HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    resource_is_ready, get_source_id
+    resource_is_ready
 from bigml.constants import SOURCE_PATH
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
 

@@ -25,10 +25,8 @@ try:
 except ImportError:
     import json
 
-from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_batch_anomaly_score_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import BATCH_ANOMALY_SCORE_PATH, ANOMALY_PATH
 
 
@@ -83,7 +81,8 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         return self.get_resource(batch_anomaly_score,
                                  query_string=query_string)
 
-    def download_batch_anomaly_score(self, batch_anomaly_score, filename=None):
+    def download_batch_anomaly_score(self, batch_anomaly_score, filename=None,
+                                     retries=10):
         """Retrieves the batch anomaly score file.
 
            Downloads anomaly scores, that are stored in a remote CSV file. If

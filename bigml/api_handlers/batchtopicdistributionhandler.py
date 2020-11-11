@@ -25,10 +25,8 @@ try:
 except ImportError:
     import json
 
-from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_batch_topic_distribution_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import BATCH_TOPIC_DISTRIBUTION_PATH, TOPIC_MODEL_PATH
 
 
@@ -97,7 +95,7 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        return self._download_resource(batch_centroid, filename,
+        return self._download_resource(batch_topic_distribution, filename,
                                        retries=retries)
 
     def list_batch_topic_distributions(self, query_string=''):

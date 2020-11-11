@@ -27,8 +27,7 @@ except ImportError:
 
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_project_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import PROJECT_PATH
 
 
@@ -91,4 +90,4 @@ class ProjectHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(project, PROJECT_PATH,
                             message="A project id is needed.")
-        return self.delete_resource(batch_centroid, organization=True)
+        return self.delete_resource(project, organization=True)

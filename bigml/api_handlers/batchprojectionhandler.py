@@ -25,10 +25,8 @@ try:
 except ImportError:
     import json
 
-from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_batch_projection_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import BATCH_PROJECTION_PATH, PCA_PATH
 
 

@@ -35,7 +35,7 @@ from bigml.model import PYTHON_CONV
 from bigml.predict_utils.common import missing_branch, \
     none_value, get_node, get_predicate
 from bigml.predicate_utils.utils import predicate_to_rule, \
-    LT, LE, EQ, NE, GE, GT, IN, to_lisp_rule, INVERSE_OP
+    to_lisp_rule, INVERSE_OP
 from bigml.tree_utils import MAX_ARGS_LENGTH, tableau_string, slugify, \
     sort_fields, TM_TOKENS, TM_ALL, TM_FULL_TERM, TERM_OPTIONS, ITEM_OPTIONS, \
     PYTHON_OPERATOR

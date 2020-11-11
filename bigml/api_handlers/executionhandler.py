@@ -28,7 +28,7 @@ except ImportError:
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_execution_id, get_resource_type, get_script_id, check_resource
+    get_resource_type, get_script_id, check_resource
 from bigml.constants import (EXECUTION_PATH, SCRIPT_PATH,
                              TINY_RESOURCE)
 

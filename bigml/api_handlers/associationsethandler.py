@@ -28,8 +28,7 @@ except ImportError:
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_resource_type, check_resource, \
-    get_association_set_id, get_association_id
+    get_resource_type, check_resource, get_association_id
 from bigml.constants import ASSOCIATION_SET_PATH, ASSOCIATION_PATH, \
     TINY_RESOURCE
 

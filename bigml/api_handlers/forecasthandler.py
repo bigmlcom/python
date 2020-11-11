@@ -28,7 +28,7 @@ except ImportError:
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_forecast_id, check_resource, get_time_series_id, get_resource_type
+    check_resource, get_time_series_id, get_resource_type
 from bigml.constants import (FORECAST_PATH, TIME_SERIES_PATH, TINY_RESOURCE)
 
 class ForecastHandlerMixin(ResourceHandlerMixin):

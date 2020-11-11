@@ -27,8 +27,7 @@ except ImportError:
 
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_external_connector_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import EXTERNAL_CONNECTOR_PATH, \
     EXTERNAL_CONNECTION_ATTRS
 
@@ -126,4 +125,5 @@ class ExternalConnectorHandlerMixin(ResourceHandlerMixin):
         """
         check_resource_type(external_connector, EXTERNAL_CONNECTOR_PATH,
                             message="An external connector id is needed.")
-        return self.delete_resource(external_connector)
+        return self.delete_resource(external_connector,
+                                    query_string=query_string)

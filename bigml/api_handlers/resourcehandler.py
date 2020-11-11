@@ -21,6 +21,7 @@
 import time
 import os
 import datetime
+import json
 
 from xml.dom import minidom
 
@@ -29,7 +30,8 @@ import bigml.constants as c
 from bigml.util import get_exponential_wait, get_status, is_status_final, \
     save, save_json
 from bigml.util import DFT_STORAGE
-from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, LOGGER
+from bigml.bigmlconnection import HTTP_OK, HTTP_ACCEPTED, HTTP_CREATED, \
+    LOGGER, DOWNLOAD_DIR
 from bigml.constants import WAITING, QUEUED, STARTED, IN_PROGRESS, \
     SUMMARIZED, FINISHED, UPLOADING, FAULTY, UNKNOWN, RUNNABLE
 
@@ -542,7 +544,7 @@ class ResourceHandlerMixin():
         if resource_id:
             return self._delete("%s%s" % (self.url, resource_id), **kwargs)
 
-    def _download_resource(self, resource, filenamen, retries=10):
+    def _download_resource(self, resource, filename, retries=10):
         """Download CSV information from downloadable resources
 
         """
@@ -887,7 +889,7 @@ class ResourceHandlerMixin():
         raise ValueError("First agument is expected to be a non-empty"
                          " tag.")
 
-    def final_resource(resource, retries=10):
+    def final_resource(self, resource, retries=10):
         """Waits for a resource to finish or fail and returns
            its ID and the error information
 

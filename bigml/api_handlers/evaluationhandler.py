@@ -27,8 +27,7 @@ except ImportError:
 
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
-from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_evaluation_id
+from bigml.api_handlers.resourcehandler import check_resource_type
 from bigml.constants import SUPERVISED_PATHS, TIME_SERIES_PATH, EVALUATION_PATH
 
 

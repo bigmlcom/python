@@ -28,7 +28,7 @@ except ImportError:
 
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    get_resource_type, check_resource, get_centroid_id, get_cluster_id
+    get_resource_type, check_resource, get_cluster_id
 from bigml.constants import CENTROID_PATH, CLUSTER_PATH, TINY_RESOURCE
 
 

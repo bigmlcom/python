@@ -26,7 +26,6 @@ except ImportError:
     import json
 
 
-from bigml.bigmlconnection import DOWNLOAD_DIR
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, resource_is_ready, check_resource, get_source_id, \

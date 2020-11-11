@@ -243,7 +243,7 @@ class Anomaly(ModelFields):
             if row is not None:
                 filter_rules.append('(= (row-number) %s)' % row)
 
-        anomalies_filter = " ".join(anomaly_filters)
+        anomalies_filter = " ".join(filter_rules)
         if len(anomaly_filters) == 1:
             if include:
                 return anomalies_filter

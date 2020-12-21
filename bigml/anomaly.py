@@ -238,12 +238,11 @@ class Anomaly(ModelFields):
         """
         anomaly_filters = []
         for anomaly in self.top_anomalies:
-            filter_rules = []
             row = anomaly.get('row_number')
             if row is not None:
-                filter_rules.append('(= (row-number) %s)' % row)
+                anomaly_filters.append('(= (row-number) %s)' % row)
 
-        anomalies_filter = " ".join(filter_rules)
+        anomalies_filter = " ".join(anomaly_filters)
         if len(anomaly_filters) == 1:
             if include:
                 return anomalies_filter

@@ -3,6 +3,11 @@
 History
 -------
 
+6.0.3 (2021-01-20)
+~~~~~~~~~~~~~~~~~~
+
+- Raising exceptions if trying to update a failed resource.
+
 6.0.2 (2020-12-21)
 ~~~~~~~~~~~~~~~~~~
 

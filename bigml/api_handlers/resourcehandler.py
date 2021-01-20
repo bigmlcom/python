@@ -899,4 +899,8 @@ class ResourceHandlerMixin():
             query_string=c.TINY_RESOURCE,
             retries=retries,
             api=self)
-        return get_resource_id(resource), resource.get("error")
+        error = resource.get("error")
+        if resource["object"]["status"]["code"] == c.FAULTY:
+            error = "%s (%s)" % (resource.get("error"),
+                                 resource["object"]["status"]["message"])
+        return get_resource_id(resource), error

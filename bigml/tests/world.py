@@ -218,11 +218,10 @@ def teardown_module():
     """Operations to be performed after each module
 
     """
-
-    if os.path.exists('./tmp'):
-        shutil.rmtree('./tmp')
-
     if not world.debug and not world.short_debug:
+        if os.path.exists('./tmp'):
+            shutil.rmtree('./tmp')
+
         world.delete_resources()
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']

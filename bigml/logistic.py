@@ -109,6 +109,7 @@ class LogisticRegression(ModelFields):
         self.data_field_types = {}
         self.field_codings = {}
         self.numeric_fields = {}
+        self.default_numeric_value = None
         self.bias = None
         self.missing_numerics = None
         self.c = None
@@ -128,6 +129,8 @@ class LogisticRegression(ModelFields):
             logistic_regression = logistic_regression['object']
         try:
             self.input_fields = logistic_regression.get("input_fields", [])
+            self.default_numeric_value = logistic_regression.get(
+                "default_numeric_value")
             self.dataset_field_types = logistic_regression.get(
                 "dataset_field_types", {})
             self.weight_field = logistic_regression.get("weight_field")
@@ -316,45 +319,43 @@ class LogisticRegression(ModelFields):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
         if full:
-            input_data, unused_fields = new_data
-        else:
-            input_data = new_data
+            norm_input_data, unused_fields = norm_input_data
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
         if operating_point:
             return self.predict_operating( \
-                input_data, operating_point=operating_point)
+                norm_input_data, operating_point=operating_point)
         if operating_kind:
             return self.predict_operating_kind( \
-                input_data, operating_kind=operating_kind)
+                norm_input_data, operating_kind=operating_kind)
 
         # In case that missing_numerics is False, checks that all numeric
         # fields are present in input data.
-        if not self.missing_numerics:
-            check_no_missing_numerics(input_data, self.model_fields,
+        if not self.missing_numerics and self.default_numeric_value is None:
+            check_no_missing_numerics(norm_input_data, self.model_fields,
                                       self.weight_field)
 
         if self.balance_fields:
-            balance_input(input_data, self.fields)
+            balance_input(norm_input_data, self.fields)
 
         # Computes text and categorical field expansion
-        unique_terms = self.get_unique_terms(input_data)
+        unique_terms = self.get_unique_terms(norm_input_data)
 
         probabilities = {}
         total = 0
         # Computes the contributions for each category
         for category in self.coefficients:
             probability = self.category_probability( \
-                input_data, unique_terms, category)
+                norm_input_data, unique_terms, category)
             try:
                 order = self.categories[self.objective_id].index(category)
             except ValueError:

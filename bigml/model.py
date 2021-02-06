@@ -333,6 +333,7 @@ class Model(BaseModel):
         self.regression = False
         self.boosting = None
         self.class_names = None
+        self.default_numeric_value = None
         api = get_api_connection(api)
         # retrieving model information from
         self.resource_id, model = get_resource_dict( \
@@ -350,6 +351,7 @@ class Model(BaseModel):
                 if self.boosting == {}:
                     self.boosting = False
 
+                self.default_numeric_value = model.get('default_numeric_value')
                 self.input_fields = model["input_fields"]
                 BaseModel.__init__(self, model, api=api, fields=fields)
 
@@ -644,18 +646,17 @@ class Model(BaseModel):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
         if full:
-            input_data, unused_fields = new_data
-        else:
-            input_data = new_data
+            norm_input_data, unused_fields = norm_input_data
+
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         full_prediction = self._predict( \
-            input_data, missing_strategy=missing_strategy,
+            norm_input_data, missing_strategy=missing_strategy,
             operating_point=operating_point, operating_kind=operating_kind,
             unused_fields=unused_fields)
         if full:

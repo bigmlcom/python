@@ -121,6 +121,7 @@ class Association(ModelFields):
         self.resource_id = None
         self.complement = None
         self.discretization = {}
+        self.default_numeric_value = None
         self.field_discretizations = {}
         self.items = []
         self.max_k = None
@@ -145,6 +146,8 @@ class Association(ModelFields):
             status = get_status(association)
             if 'code' in status and status['code'] == FINISHED:
                 self.input_fields = association['input_fields']
+                self.default_numeric_value = association.get( \
+                    'default_numeric_value')
                 associations = association['associations']
                 fields = associations['fields']
                 ModelFields.__init__( \
@@ -203,10 +206,10 @@ class Association(ModelFields):
         if score_by and score_by not in SCORES:
             raise ValueError("The available values of score_by are: %s" %
                              ", ".join(SCORES))
-        input_data = self.filter_input_data(input_data)
+        norm_input_data = self.filter_input_data(input_data)
         # retrieving the items in input_data
         items_indexes = [item.index for item in
-                         self.get_items(input_map=input_data)]
+                         self.get_items(input_map=norm_input_data)]
         if score_by is None:
             score_by = self.search_strategy
 
@@ -217,7 +220,7 @@ class Association(ModelFields):
             # if the rhs corresponds to a non-itemized field and this field
             # is already in input_data, don't add rhs
             if field_type in NO_ITEMS and self.items[rule.rhs[0]].field_id in \
-                    input_data:
+                    norm_input_data:
                 continue
             # if an itemized content is in input_data, don't add it to the
             # prediction

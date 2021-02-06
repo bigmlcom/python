@@ -67,7 +67,6 @@ INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Mean', lambda x: sum(x)/float(len(x))),
                           ('Maximum', max)]
 GLOBAL_CLUSTER_LABEL = 'Global'
-NUMERIC_DEFAULTS = ["mean", "median", "minimum", "maximum", "zero"]
 
 
 def parse_terms(text, case_sensitive=True):
@@ -166,6 +165,7 @@ class Cluster(ModelFields):
         self.ratio_ss = None
         self.critical_value = None
         self.input_fields = []
+        self.default_numeric_value = None
         self.summary_fields = []
         self.default_numeric_value = None
         self.k = None
@@ -286,21 +286,18 @@ class Cluster(ModelFields):
         """
         return self.critical_value is not None
 
-    def fill_numeric_defaults(self, input_data, average="mean"):
+    def fill_numeric_defaults(self, input_data):
         """Checks whether input data is missing a numeric field and
-        fills it with the average quantity provided in the
-        ``average`` parameter
+        fills it with the average quantity set in default_numeric_value
+
         """
 
         for field_id, field in list(self.fields.items()):
             if (field_id not in self.summary_fields and \
                     field['optype'] == NUMERIC and
                     field_id not in input_data):
-                if average not in NUMERIC_DEFAULTS:
-                    raise ValueError("The available defaults are: %s" % \
-                 ", ".join(NUMERIC_DEFAULTS))
-                default_value = 0 if average == "zero" \
-                    else field['summary'].get(average)
+                default_value = 0 if self.default_numeric_value == "zero" \
+                    else field['summary'].get(self.default_numeric_value)
                 input_data[field_id] = default_value
         return input_data
 
@@ -385,8 +382,7 @@ class Cluster(ModelFields):
         # Checks that all numeric fields are present in input data and
         # fills them with the default average (if given) when otherwise
         try:
-            self.fill_numeric_defaults(clean_input_data,
-                                       self.default_numeric_value)
+            self.fill_numeric_defaults(clean_input_data)
         except ValueError:
             raise Exception("Missing values in input data. Input"
                             " data must contain values for all "

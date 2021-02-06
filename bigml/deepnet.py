@@ -106,6 +106,7 @@ class Deepnet(ModelFields):
         self.class_names = []
         self.preprocess = []
         self.optimizer = None
+        self.default_numeric_value = None
         self.missing_numerics = False
         api = get_api_connection(api)
         self.resource_id, deepnet = get_resource_dict( \
@@ -114,6 +115,7 @@ class Deepnet(ModelFields):
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
         self.input_fields = deepnet['input_fields']
+        self.default_numeric_value = deepnet.get('default_numeric_value')
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):
             status = get_status(deepnet)
             objective_field = deepnet['objective_fields']
@@ -224,15 +226,13 @@ class Deepnet(ModelFields):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data, add_unused_fields=full)
         if full:
-            input_data, unused_fields = new_data
-        else:
-            input_data = new_data
+            norm_input_data, unused_fields = norm_input_data
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
@@ -242,18 +242,18 @@ class Deepnet(ModelFields):
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             return self.predict_operating( \
-                input_data, operating_point=operating_point)
+                norm_input_data, operating_point=operating_point)
         if operating_kind:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             return self.predict_operating_kind( \
-                input_data, operating_kind=operating_kind)
+                norm_input_data, operating_kind=operating_kind)
 
         # Computes text and categorical field expansion
-        unique_terms = self.get_unique_terms(input_data)
+        unique_terms = self.get_unique_terms(norm_input_data)
 
-        input_array = self.fill_array(input_data, unique_terms)
+        input_array = self.fill_array(norm_input_data, unique_terms)
 
         if self.networks:
             prediction = self.predict_list(input_array)

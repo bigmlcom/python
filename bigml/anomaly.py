@@ -50,13 +50,13 @@ from bigml.predicate_utils.utils import apply_predicates
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
-from bigml.modelfields import ModelFields
+from bigml.modelfields import ModelFields, NUMERIC
 from bigml.util import cast, use_cache, load
 
 
 DEPTH_FACTOR = 0.5772156649
 PREDICATES_OFFSET = 3
-EMPTY_STR = ""
+
 
 def build_tree(children, node=None):
     """Builds a compressed version of the tree structure as an list of
@@ -144,6 +144,7 @@ class Anomaly(ModelFields):
         self.resource_id = None
         self.sample_size = None
         self.input_fields = None
+        self.default_numeric_value = None
         self.mean_depth = None
         self.expected_mean_depth = None
         self.iforest = None
@@ -156,6 +157,7 @@ class Anomaly(ModelFields):
             anomaly = anomaly['object']
             self.sample_size = anomaly.get('sample_size')
             self.input_fields = anomaly.get('input_fields')
+            self.default_numeric_value = anomaly.get('default_numeric_value')
             self.id_fields = anomaly.get('id_fields', [])
 
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
@@ -211,10 +213,10 @@ class Anomaly(ModelFields):
         if self.sample_size == 1 and self.normalization_factor is None:
             return 1
         # Checks and cleans input_data leaving the fields used in the model
-        input_data = self.filter_input_data(input_data)
+        norm_input_data = self.filter_input_data(input_data)
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         depth_sum = 0
 
@@ -224,7 +226,7 @@ class Anomaly(ModelFields):
                             "Anomaly object from a complete anomaly detector "
                             "resource.")
         for tree in self.iforest:
-            tree_depth = calculate_depth(tree[1], input_data, self.fields)
+            tree_depth = calculate_depth(tree[1], norm_input_data, self.fields)
             depth_sum += tree_depth
 
         observed_mean_depth = float(depth_sum) / len(self.iforest)
@@ -250,3 +252,18 @@ class Anomaly(ModelFields):
         if include:
             return "(or %s)" % anomalies_filter
         return "(not (or %s))" % anomalies_filter
+
+    def fill_numeric_defaults(self, input_data):
+        """Checks whether input data is missing a numeric field and
+        fills it with the average quantity set in default_numeric_value
+
+        """
+
+        for field_id, field in list(self.fields.items()):
+            if (field_id not in self.id_fields and \
+                    field['optype'] == NUMERIC and
+                    field_id not in input_data):
+                default_value = 0 if self.default_numeric_value == "zero" \
+                    else field['summary'].get(self.default_numeric_value)
+                input_data[field_id] = default_value
+        return input_data

@@ -126,6 +126,7 @@ class LinearRegression(ModelFields):
         self.mean_squared_error = None
         self.number_of_parameters = None
         self.number_of_samples = None
+        self.default_numeric_value = None
         api = get_api_connection(api)
         self.resource_id, linear_regression = get_resource_dict( \
             linear_regression, "linearregression", api=api)
@@ -135,6 +136,8 @@ class LinearRegression(ModelFields):
             linear_regression = linear_regression['object']
         try:
             self.input_fields = linear_regression.get("input_fields", [])
+            self.default_numeric_value = linear_regression.get( \
+                "default_numeric_value")
             self.dataset_field_types = linear_regression.get(
                 "dataset_field_types", {})
             self.weight_field = linear_regression.get("weight_field")
@@ -295,26 +298,27 @@ class LinearRegression(ModelFields):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
         if full:
-            new_data, unused_fields = new_data
+            norm_input_data, unused_fields = norm_input_data
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(new_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         # In case that the training data has no missings, input data shouldn't
-        check_no_training_missings(new_data, self.model_fields,
+        check_no_training_missings(norm_input_data, self.model_fields,
                                    self.weight_field,
                                    self.objective_id)
 
         # Computes text and categorical field expansion
-        unique_terms = self.get_unique_terms(new_data)
+        unique_terms = self.get_unique_terms(norm_input_data)
 
         # Creates an input vector with the values for all expanded fields.
-        input_array = self.expand_input(new_data, unique_terms)
-        compact_input_array = self.expand_input(new_data, unique_terms, True)
+        input_array = self.expand_input(norm_input_data, unique_terms)
+        compact_input_array = self.expand_input(norm_input_data, unique_terms,
+                                                True)
 
         prediction = dot([flatten(self.coefficients)], [input_array])[0][0]
 

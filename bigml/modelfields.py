@@ -371,6 +371,23 @@ class ModelFields():
                 del input_data[f_id]
         return input_data
 
+    def fill_numeric_defaults(self, input_data):
+        """Fills the value set as default for numeric missing fields if user
+        created the model with the default_numeric_value option
+
+        """
+        if hasattr(self, "default_numeric_value") and \
+                self.default_numeric_value is not None:
+            for key in self.fields:
+                if key in self.model_fields and \
+                        (self.objective_id is None or \
+                         key != self.objective_id) and  \
+                        self.fields[key]["optype"] == NUMERIC and \
+                        input_data.get(key) is None:
+                    input_data[key] = self.fields[key]["summary"].get( \
+                        self.default_numeric_value, 0)
+        return input_data
+
     def filter_input_data(self, input_data,
                           add_unused_fields=False):
         """Filters the keys given in input_data checking against model fields.
@@ -399,6 +416,8 @@ class ModelFields():
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
+            # we fill the input with the chosen default, if selected
+            new_input = self.fill_numeric_defaults(new_input)
             datetime_fields = self.expand_datetime_fields(new_input)
             new_input = add_expanded_dates(new_input, datetime_fields)
             new_input = self.remove_parent_datetimes(new_input)

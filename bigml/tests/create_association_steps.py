@@ -50,6 +50,22 @@ def i_create_an_association_from_dataset(step):
     world.associations.append(resource['resource'])
 
 
+#@step(r'I create an association from a dataset with params (.*)$')
+def i_create_an_association_from_dataset_with_params(step, parms=None):
+    dataset = world.dataset.get('resource')
+    if parms is not None:
+        parms = json.loads(parms)
+    else:
+        parms = {}
+    parms.update({'name': 'new association'})
+    resource = world.api.create_association(dataset, parms)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.association = resource['object']
+    world.associations.append(resource['resource'])
+
+
 #@step(r'I create an association with search strategy "(.*)" from a dataset$')
 def i_create_an_association_with_strategy_from_dataset(step, strategy):
     dataset = world.dataset.get('resource')

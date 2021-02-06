@@ -103,6 +103,7 @@ class Ensemble(ModelFields):
         self.api = get_api_connection(api)
         self.fields = None
         self.class_names = None
+        self.default_numeric_value = None
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_ensemble_id(ensemble), cache_get)
@@ -172,6 +173,7 @@ class Ensemble(ModelFields):
                 query_string = EXCLUDE_FIELDS
                 no_check_fields = True
             self.input_fields = ensemble['object'].get('input_fields')
+            self.default_numeric_value = ensemble.get('default_numeric_value')
 
         number_of_models = len(models)
         if max_models is None:
@@ -689,17 +691,15 @@ class Ensemble(ModelFields):
         """
 
         # Checks and cleans input_data leaving the fields used in the model
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data,
             add_unused_fields=full)
         unused_fields = None
         if full:
-            input_data, unused_fields = new_data
-        else:
-            input_data = new_data
+            norm_input_data, unused_fields = norm_input_data
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(input_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         if median and method is None:
             # predictions with median are only available with old combiners
@@ -716,7 +716,7 @@ class Ensemble(ModelFields):
                 raise ValueError("The operating_point argument can only be"
                                  " used in classifications.")
             prediction = self.predict_operating( \
-                input_data,
+                norm_input_data,
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
             if full:
@@ -729,11 +729,11 @@ class Ensemble(ModelFields):
                 # combiners
                 method = 1 if operating_kind == "confidence" else 0
                 return self.predict( \
-                    input_data, method=method,
+                    norm_input_data, method=method,
                     options=options, missing_strategy=missing_strategy,
                     operating_point=None, operating_kind=None, full=full)
             prediction = self.predict_operating_kind( \
-                input_data,
+                norm_input_data,
                 missing_strategy=missing_strategy,
                 operating_kind=operating_kind)
             return prediction
@@ -750,7 +750,7 @@ class Ensemble(ModelFields):
                                          fields=self.fields)
 
                 votes_split = multi_model._generate_votes(
-                    input_data,
+                    norm_input_data,
                     missing_strategy=missing_strategy,
                     unused_fields=unused_fields)
                 if median:
@@ -761,7 +761,7 @@ class Ensemble(ModelFields):
             # When only one group of models is found you use the
             # corresponding multimodel to predict
             votes_split = self.multi_model._generate_votes(
-                input_data, missing_strategy=missing_strategy,
+                norm_input_data, missing_strategy=missing_strategy,
                 unused_fields=unused_fields)
 
             votes = MultiVote(votes_split.predictions,
@@ -777,7 +777,7 @@ class Ensemble(ModelFields):
             options = {"categories": categories}
         result = votes.combine(method=method, options=options, full=full)
         if full:
-            unused_fields = set(input_data.keys())
+            unused_fields = set(norm_input_data.keys())
             for prediction in votes.predictions:
                 unused_fields = unused_fields.intersection( \
                     set(prediction.get("unused_fields", [])))

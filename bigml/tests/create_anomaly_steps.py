@@ -74,6 +74,23 @@ def i_create_an_anomaly_with_top_n_from_dataset(step, top_n):
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
 
+#@step(r'I create an anomaly detector with (\d+) from a dataset$')
+def i_create_an_anomaly_with_params(step, parms=None):
+    dataset = world.dataset.get('resource')
+    if parms is not None:
+        parms = json.loads(parms)
+    else:
+        parms = {}
+    parms.update({"seed": 'BigML'})
+    resource = world.api.create_anomaly(
+        dataset, parms)
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED,
+        "Expected: %s, found: %s" % (HTTP_CREATED, world.status))
+    world.location = resource['location']
+    world.anomaly = resource['object']
+    world.anomalies.append(resource['resource'])
+
 #@step(r'I create an anomaly detector from a dataset list$')
 def i_create_an_anomaly_from_dataset_list(step):
     resource = world.api.create_anomaly(world.dataset_ids, {'seed': 'BigML'})
@@ -96,7 +113,6 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "anomaly")
         i_get_the_anomaly(step, world.anomaly['resource'])
         status = get_status(world.anomaly)
-    print("Anomaly created.")
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')

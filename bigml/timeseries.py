@@ -142,6 +142,7 @@ class TimeSeries(ModelFields):
 
         self.resource_id = None
         self.input_fields = []
+        self.default_numeric_value = None
         self.objective_fields = []
         self.all_numeric_objectives = False
         self.period = 1
@@ -163,6 +164,8 @@ class TimeSeries(ModelFields):
             time_series = time_series['object']
         try:
             self.input_fields = time_series.get("input_fields", [])
+            self.default_numeric_value = time_series.get( \
+                "default_numeric_value")
             self._forecast = time_series.get("forecast")
             self.objective_fields = time_series.get(
                 "objective_fields", [])
@@ -229,14 +232,13 @@ class TimeSeries(ModelFields):
 
         # Checks and cleans input_data leaving only the fields used as
         # objective fields in the model
-        new_data = self.filter_objectives( \
+        norm_input_data = self.filter_objectives( \
             input_data)
-        input_data = new_data
 
         # filter submodels: filtering the submodels in the time-series
         # model to be used in the prediction
         filtered_submodels = {}
-        for field_id, field_input in list(input_data.items()):
+        for field_id, field_input in list(norm_input_data.items()):
             filter_info = field_input.get("ets_models", {})
             if not filter_info:
                 filter_info = DEFAULT_SUBMODEL
@@ -246,7 +248,7 @@ class TimeSeries(ModelFields):
         forecasts = {}
         for field_id, submodels in list(filtered_submodels.items()):
             forecasts[field_id] = compute_forecasts(submodels, \
-                input_data[field_id]["horizon"])
+                norm_input_data[field_id]["horizon"])
 
         return forecasts
 

@@ -97,6 +97,7 @@ class PCA(ModelFields):
 
         self.resource_id = None
         self.input_fields = []
+        self.default_numeric_value = None
         self.term_forms = {}
         self.tag_clouds = {}
         self.dataset_field_types = {}
@@ -118,6 +119,7 @@ class PCA(ModelFields):
             pca = pca['object']
         try:
             self.input_fields = pca.get("input_fields", [])
+            self.default_numeric_value = pca.get("default_numeric_value")
             self.dataset_field_types = pca.get("dataset_field_types", {})
             self.famd_j = 1 if (self.dataset_field_types['categorical'] != \
                 self.dataset_field_types['total']) else \
@@ -180,23 +182,23 @@ class PCA(ModelFields):
 
         """
 
-        new_data = self.filter_input_data( \
+        norm_input_data = self.filter_input_data( \
             input_data,
             add_unused_fields=False)
 
         # Strips affixes for numeric values and casts to the final field type
-        cast(new_data, self.fields)
+        cast(norm_input_data, self.fields)
 
         # Computes text and categorical field expansion into an input array of
         # terms and frequencies
-        unique_terms = self.get_unique_terms(new_data)
+        unique_terms = self.get_unique_terms(norm_input_data)
 
 
         # Creates an input vector with the values for all expanded fields.
         # The input mask marks the non-missing or categorical fields
         # The `missings` variable is a boolean indicating whether there's
         # non-categorical fields missing
-        input_array, missings, input_mask = self.expand_input(new_data,
+        input_array, missings, input_mask = self.expand_input(norm_input_data,
                                                               unique_terms)
         components = self.eigenvectors[:]
         if max_components is not None:

@@ -55,9 +55,12 @@ def i_create_a_linear_regression_with_params(step, params):
 
 #@step(r'I create a Linear Regression with objective and params$')
 def i_create_a_linear_regression_with_objective_and_params(step,
-                                                           objective,
-                                                           params):
-    params = json.loads(params)
+                                                           objective=None,
+                                                           params=None):
+    if params is not None:
+        params = json.loads(params)
+    else:
+        params = {}
     if objective is not None:
         params.update({"objective_field": objective})
     dataset = world.dataset.get('resource')

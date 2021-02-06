@@ -202,13 +202,14 @@ def i_create_a_logistic_model(step):
 
 
 #@step(r'I create a logistic regression model with objective "(.*?)" and parms "(.*)"$')
-def i_create_a_logistic_model_with_objective_and_parms(step, objective, parms=None):
+def i_create_a_logistic_model_with_objective_and_parms(step, objective=None, parms=None):
     dataset = world.dataset.get('resource')
     if parms is None:
         parms = {}
     else:
         parms = json.loads(parms)
-    parms.update({"objective_field": objective})
+    if objective is not None:
+        parms.update({"objective_field": objective})
     resource = world.api.create_logistic_regression( \
         dataset, parms)
     world.status = resource['code']
@@ -260,13 +261,14 @@ def i_create_a_no_suggest_deepnet(step):
     world.deepnets.append(resource['resource'])
 
 #@step(r'I create a deepnet model with objective "(.*?)" and parms "(.*)"$')
-def i_create_a_deepnet_with_objective_and_params(step, objective, parms=None):
+def i_create_a_deepnet_with_objective_and_params(step, objective=None, parms=None):
     dataset = world.dataset.get('resource')
     if parms is None:
         parms = {}
     else:
         parms = json.loads(parms)
-    parms.update({"objective_field": objective})
+    if objective is not None:
+        parms.update({"objective_field": objective})
     resource = world.api.create_deepnet(dataset, parms)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
@@ -542,3 +544,30 @@ def i_create_local_linear_regression_from_file(step, export_file):
 def check_linear_regression_id_local_id(step):
     eq_(world.local_linear_regression.resource_id,
         world.linear_regression["resource"])
+
+def local_logistic_prediction_is(step, input_data, prediction):
+    eq_(world.local_logistic.predict(input_data), prediction)
+
+def local_linear_prediction_is(step, input_data, prediction):
+    eq_(world.local_linear_regression.predict(input_data), prediction)
+
+def local_deepnet_prediction_is(step, input_data, prediction):
+    eq_(world.local_deepnet.predict(input_data), prediction)
+
+def local_ensemble_prediction_is(step, input_data, prediction):
+    eq_(world.local_ensemble.predict(input_data), prediction)
+
+def local_model_prediction_is(step, input_data, prediction):
+    eq_(world.local_model.predict(input_data), prediction)
+
+def local_cluster_prediction_is(step, input_data, prediction):
+    eq_(world.local_cluster.centroid(input_data), prediction)
+
+def local_anomaly_prediction_is(step, input_data, prediction):
+    eq_(world.local_anomaly.anomaly_score(input_data), prediction)
+
+def local_association_prediction_is(step, input_data, prediction):
+    eq_(world.local_association.association_set(input_data), prediction)
+
+def local_time_series_prediction_is(step, input_data, prediction):
+    eq_(world.local_time_series.centroid(input_data), prediction)

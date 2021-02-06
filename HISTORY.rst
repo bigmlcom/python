@@ -3,6 +3,12 @@
 History
 -------
 
+6.0.4 (2021-02-06)
+~~~~~~~~~~~~~~~~~~
+
+- Improving local models with default numeric values to automatically fill in
+  missings in input data.
+
 6.0.3 (2021-01-20)
 ~~~~~~~~~~~~~~~~~~
 

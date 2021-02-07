@@ -296,6 +296,10 @@ class Cluster(ModelFields):
             if (field_id not in self.summary_fields and \
                     field['optype'] == NUMERIC and
                     field_id not in input_data):
+                if self.default_numeric_value is None:
+                    raise Exception("Missing values in input data. Input"
+                                    " data must contain values for all "
+                                    "numeric fields to compute a distance.")
                 default_value = 0 if self.default_numeric_value == "zero" \
                     else field['summary'].get(self.default_numeric_value)
                 input_data[field_id] = default_value
@@ -378,18 +382,6 @@ class Cluster(ModelFields):
         """
         # Checks and cleans input_data leaving the fields used in the model
         clean_input_data = self.filter_input_data(input_data)
-
-        # Checks that all numeric fields are present in input data and
-        # fills them with the default average (if given) when otherwise
-        try:
-            self.fill_numeric_defaults(clean_input_data)
-        except ValueError:
-            raise Exception("Missing values in input data. Input"
-                            " data must contain values for all "
-                            "numeric fields to compute a distance.")
-        # Strips affixes for numeric values and casts to the final field type
-        cast(clean_input_data, self.fields)
-
         unique_terms = self.get_unique_terms(clean_input_data)
 
         return clean_input_data, unique_terms

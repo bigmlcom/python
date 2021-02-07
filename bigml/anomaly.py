@@ -260,9 +260,10 @@ class Anomaly(ModelFields):
         """
 
         for field_id, field in list(self.fields.items()):
-            if (field_id not in self.id_fields and \
-                    field['optype'] == NUMERIC and
-                    field_id not in input_data):
+            if field_id not in self.id_fields and \
+                    field['optype'] == NUMERIC and \
+                    field_id not in input_data and \
+                    self.default_numeric_value is not None:
                 default_value = 0 if self.default_numeric_value == "zero" \
                     else field['summary'].get(self.default_numeric_value)
                 input_data[field_id] = default_value

@@ -416,11 +416,11 @@ class ModelFields():
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
-            # we fill the input with the chosen default, if selected
-            new_input = self.fill_numeric_defaults(new_input)
             datetime_fields = self.expand_datetime_fields(new_input)
             new_input = add_expanded_dates(new_input, datetime_fields)
             new_input = self.remove_parent_datetimes(new_input)
+            # we fill the input with the chosen default, if selected
+            new_input = self.fill_numeric_defaults(new_input)
             result = (new_input, unused_fields) if add_unused_fields else \
                 new_input
             return result

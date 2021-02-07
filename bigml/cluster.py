@@ -381,10 +381,14 @@ class Cluster(ModelFields):
 
         """
         # Checks and cleans input_data leaving the fields used in the model
-        clean_input_data = self.filter_input_data(input_data)
-        unique_terms = self.get_unique_terms(clean_input_data)
+        # and adding default numeric values if set
+        norm_input_data = self.filter_input_data(input_data)
+        # Strips affixes for numeric values and casts to the final field type
+        cast(norm_input_data, self.fields)
 
-        return clean_input_data, unique_terms
+        unique_terms = self.get_unique_terms(norm_input_data)
+
+        return norm_input_data, unique_terms
 
     def distances2_to_point(self, reference_point,
                             list_of_points):

@@ -321,7 +321,7 @@ class TestLocalFromFile(object):
 
     def test_scenario9(self):
         """
-            Scenario 9: Successfully creating a local association from an exported file:
+            Scenario 9: Successfully creating a local time series from an exported file:
                 Given I create a data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
@@ -331,7 +331,6 @@ class TestLocalFromFile(object):
                 And I export the time series to "<exported_file>"
                 When I create a local time series from the file "<exported_file>"
                 Then the time series ID and the local time series ID match
-                And the prediction for "<input_data>" is "<prediction>"
                 Examples:
                 | data                | time_1  | time_2 | time_3 | exported_file
                 | ../data/iris.csv | 10      | 10     | 50 | ./tmp/time_series.json
@@ -350,7 +349,6 @@ class TestLocalFromFile(object):
             timeseries_create.i_export_time_series(self, example[4])
             timeseries_create.i_create_local_time_series_from_file(self, example[4])
             timeseries_create.check_time_series_id_local_id(self)
-            model_create.local_time_series_prediction_is(self, example[5], example[6])
 
 
     def test_scenario10(self):

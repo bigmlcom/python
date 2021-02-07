@@ -532,7 +532,7 @@ class ResourceHandlerMixin():
         if error or resource_id is None:
             raise Exception("Failed to update %s. Only correctly finished "
                             "resources can be updated. Please, check "
-                            "the resource status.")
+                            "the resource status." % resource_id)
         body = json.dumps(changes)
         return self._update("%s%s" % (self.url, resource_id), body, **kwargs)
 
@@ -552,7 +552,7 @@ class ResourceHandlerMixin():
         if error or resource_id is None:
             raise Exception("Failed to download %s. Only correctly finished "
                             "resources can be downloaded. Please, check "
-                            "the resource status.")
+                            "the resource status. %s" % (resource_id, error))
         return self._download("%s%s%s" % (self.url, resource_id,
                                           DOWNLOAD_DIR),
                               filename=filename,
@@ -900,7 +900,12 @@ class ResourceHandlerMixin():
             retries=retries,
             api=self)
         error = resource.get("error")
-        if resource["object"]["status"]["code"] == c.FAULTY:
-            error = "%s (%s)" % (resource.get("error"),
-                                 resource["object"]["status"]["message"])
+        try:
+            if resource.get("object", resource)["status"]["code"] == c.FAULTY:
+                error = "%s (%s)" % (resource.get("error"),
+                                     resource.get("object", resource)[ \
+                                        "status"]["message"])
+        except KeyError:
+            error = "Could not get resource status info for %s" % \
+                resource.get("resource", resource)
         return get_resource_id(resource), error

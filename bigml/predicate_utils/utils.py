@@ -160,15 +160,16 @@ def count_items_matches(text, item, regexp):
 
     return len(matches)
 
-def apply_predicates(node, input_data, fields):
-    num_predicates = node[1]
+def apply_predicates(node, input_data, fields, normalize_repeats=False):
+    shift = 1 if normalize_repeats else 0
+    num_predicates = node[1 + shift]
 
     for i in range(num_predicates):
-        operation = node[OPERATION_OFFSET + (PREDICATE_INFO_LENGTH * i)]
-        field = node[FIELD_OFFSET + (PREDICATE_INFO_LENGTH * i)]
-        value = node[VALUE_OFFSET + (PREDICATE_INFO_LENGTH * i)]
-        term = node[TERM_OFFSET + (PREDICATE_INFO_LENGTH * i)]
-        missing = node[MISSING_OFFSET + (PREDICATE_INFO_LENGTH * i)]
+        operation = node[OPERATION_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
+        field = node[FIELD_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
+        value = node[VALUE_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
+        term = node[TERM_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
+        missing = node[MISSING_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
 
         if not apply_predicate(operation, field, value, term, missing,
                                input_data, fields[field]):

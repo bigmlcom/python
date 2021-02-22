@@ -58,71 +58,111 @@ DEPTH_FACTOR = 0.5772156649
 PREDICATES_OFFSET = 3
 
 
-def build_tree(children, node=None):
+def get_repeat_depth(population):
+    """
+
+    """
+    repeat_depth = 0
+    if population > 1:
+        h = DEPTH_FACTOR + math.log(population - 1)
+        repeat_depth = max([1.0,
+                            2 * (h - (float(population - 1) / population))])
+    return repeat_depth
+
+
+def build_tree(node, add_population=False):
     """Builds a compressed version of the tree structure as an list of
     lists. Starting from the root node, that is represented by a list:
         [len(children), children1, children2, etc.]
     And each child is represented by a list whose elements are:
         [weight, len(predicates), operator_code, field, value, term, missing,
          ..., len(children), children_nodes_list*]
-    """
-    outer = node if node else list()
-    outer.append(len(children))
-    for child in children:
-        inner = list()
-        inner.append(child.get('weight'))
-        predicates = child.get('predicates')
-        if predicates and not (predicates is True or predicates == [True]):
-            predicates = [x for x in predicates if x is not True]
-            inner.append(len(predicates))
-            for pred in predicates:
-                operation = pred.get('op')
-                value = pred.get('value')
-                missing = False
-                if operation.endswith("*"):
-                    operation = operation[0: -1]
-                    missing = True
-                elif operation == 'in' and None in value:
-                    missing = True
 
-                inner.append(OPERATOR_CODE.get(operation))
-                inner.append(pred.get('field'))
-                inner.append(value)
-                inner.append(pred.get('term'))
-                inner.append(missing)
-        else:
-            inner.append(0)
-        next_gen = child.get('children')
-        if next_gen:
-            build_tree(next_gen, node=inner)
-        else:
-            inner.append(0)
-        outer.append(inner)
+    When the normalize_repeats flag is set to True, we need to add the
+    population of the node: [population, len(children), ...]
+    """
+    outer = list()
+    outer.append(node.get('weight', 1))
+    if add_population:
+        outer.append(get_repeat_depth(node.get("population", 0)))
+    build_predicates(node, outer)
+    children = node.get("children", [])
+    outer.append(len(children))
+
+    if not children:
+        return outer
+
+    for child in children:
+        outer.append(build_tree(child, add_population=add_population))
 
     return outer
 
 
-def calculate_depth(node, input_data, fields, depth=0):
+def build_predicates(node, encoded_node):
+    predicates = node.get('predicates')
+    if predicates and not (predicates is True or predicates == [True]):
+        predicates = [x for x in predicates if x is not True]
+        encoded_node.append(len(predicates))
+        for pred in predicates:
+            operation = pred.get('op')
+            value = pred.get('value')
+            missing = False
+            if operation.endswith("*"):
+                operation = operation[0: -1]
+                missing = True
+            elif operation == 'in' and None in value:
+                missing = True
+
+            encoded_node.append(OPERATOR_CODE.get(operation))
+            encoded_node.append(pred.get('field'))
+            encoded_node.append(value)
+            encoded_node.append(pred.get('term'))
+            encoded_node.append(missing)
+    else:
+        encoded_node.append(0) # no predicates
+
+    return encoded_node
+
+
+def calculate_depth(node, input_data, fields, depth=0,
+                    normalize_repeats=False):
     """Computes the depth in the tree for the input data
 
     """
 
-    weight = node[0] if node[0] else 1
-    num_predicates = node[1]
-    num_children = node[2 + (5 * num_predicates)]
+    weight = node[0]
+    shift = 0
+    repeat_depth = 0
+    if normalize_repeats:
+        shift = 1
+        repeat_depth = node[1]
 
-    if not apply_predicates(node, input_data, fields):
+    num_predicates = node[1 + shift]
+    num_children = node[2 + shift + (5 * num_predicates)]
+
+    if num_predicates > 0 and \
+            not apply_predicates(node, input_data, fields,
+                                 normalize_repeats=normalize_repeats):
         return depth
 
     depth += weight
+
     if num_children > 0:
-        start = PREDICATES_OFFSET + (PREDICATE_INFO_LENGTH * num_predicates)
+        start = PREDICATES_OFFSET + (PREDICATE_INFO_LENGTH * num_predicates) \
+            + shift
         end = PREDICATES_OFFSET + num_children + ( \
-            PREDICATE_INFO_LENGTH * num_predicates)
+            PREDICATE_INFO_LENGTH * num_predicates) + shift
         children = node[slice(start, end)]
         for child in children:
-            if apply_predicates(child, input_data, fields):
-                return calculate_depth(child, input_data, fields, depth)
+            if apply_predicates(child, input_data, fields,
+                                normalize_repeats=normalize_repeats):
+                return calculate_depth(child, input_data, fields, depth,
+                                       normalize_repeats=normalize_repeats)
+    else:
+        if depth > 1:
+            depth += repeat_depth
+
+        depth += repeat_depth
 
     return depth
 
@@ -147,6 +187,7 @@ class Anomaly(ModelFields):
         self.default_numeric_value = None
         self.mean_depth = None
         self.expected_mean_depth = None
+        self.normalize_repeats = None
         self.iforest = None
         self.id_fields = []
         api = get_api_connection(api)
@@ -158,6 +199,7 @@ class Anomaly(ModelFields):
             self.sample_size = anomaly.get('sample_size')
             self.input_fields = anomaly.get('input_fields')
             self.default_numeric_value = anomaly.get('default_numeric_value')
+            self.normalize_repeats = anomaly.get('normalize_repeats', False)
             self.id_fields = anomaly.get('id_fields', [])
 
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
@@ -180,9 +222,11 @@ class Anomaly(ModelFields):
                     self.normalization_factor is not None else \
                     self.norm_factor()
                 iforest = anomaly['model'].get('trees', [])
+                self.iforest = []
                 if iforest:
                     self.iforest = [
-                        build_tree([anomaly_tree['root']])
+                        build_tree([anomaly_tree['root']],
+                                   add_population=self.normalize_repeats)
                         for anomaly_tree in iforest]
                 self.top_anomalies = anomaly['model']['top_anomalies']
             else:
@@ -226,7 +270,10 @@ class Anomaly(ModelFields):
                             "Anomaly object from a complete anomaly detector "
                             "resource.")
         for tree in self.iforest:
-            tree_depth = calculate_depth(tree[1], norm_input_data, self.fields)
+            tree_depth = calculate_depth(
+                tree,
+                norm_input_data, self.fields,
+                normalize_repeats=self.normalize_repeats)
             depth_sum += tree_depth
 
         observed_mean_depth = float(depth_sum) / len(self.iforest)

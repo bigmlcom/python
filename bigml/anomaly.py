@@ -72,14 +72,13 @@ def get_repeat_depth(population):
 
 def build_tree(node, add_population=False):
     """Builds a compressed version of the tree structure as an list of
-    lists. Starting from the root node, that is represented by a list:
-        [len(children), children1, children2, etc.]
-    And each child is represented by a list whose elements are:
+    lists. Starting from the root node, each node
+    is represented by a list whose elements are:
         [weight, len(predicates), operator_code, field, value, term, missing,
          ..., len(children), children_nodes_list*]
 
     When the normalize_repeats flag is set to True, we need to add the
-    population of the node: [population, len(children), ...]
+    population of the node: [weight, population, len(predicates), ...]
     """
     outer = list()
     outer.append(node.get('weight', 1))
@@ -225,7 +224,7 @@ class Anomaly(ModelFields):
                 self.iforest = []
                 if iforest:
                     self.iforest = [
-                        build_tree([anomaly_tree['root']],
+                        build_tree(anomaly_tree['root'],
                                    add_population=self.normalize_repeats)
                         for anomaly_tree in iforest]
                 self.top_anomalies = anomaly['model']['top_anomalies']

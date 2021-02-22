@@ -141,7 +141,7 @@ class TestComparePrediction(object):
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create an anomaly detector
+                And I create an anomaly detector with params "<params>"
                 And I wait until the anomaly detector is ready less than <time_3> secs
                 And I create a local anomaly detector
                 When I create an anomaly score for "<data_input>"
@@ -154,7 +154,9 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/tiny_kdd.csv', '30', '30', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802']]
+            ['data/tiny_kdd.csv', '30', '30', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802', '{}'],
+            ['data/repeat_iris.csv', '30', '30', '30', '{"sepal width":3.5, "petal width": 0.2, "sepal length": 5.1, "petal length": 1.4, "species": "Iris-setosa"}', '0.50', '{"normalize_repeats": false}'],
+            ['data/repeat_iris.csv', '30', '30', '30', '{"sepal width":3.5, "petal width": 0.2, "sepal length": 5.1, "petal length": 1.4, "species": "Iris-setosa"}', '0.24', '{"normalize_repeats": true}']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
             print("\nTesting with:\n", example)
@@ -162,7 +164,7 @@ class TestComparePrediction(object):
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            anomaly_create.i_create_an_anomaly(self)
+            anomaly_create.i_create_an_anomaly_with_params(self, example[6])
             anomaly_create.the_anomaly_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_anomaly(self)
             prediction_create.i_create_an_anomaly_score(self, example[4])

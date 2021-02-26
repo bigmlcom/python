@@ -164,6 +164,8 @@ def apply_predicates(node, input_data, fields, normalize_repeats=False):
     shift = 1 if normalize_repeats else 0
     num_predicates = node[1 + shift]
 
+    predicates_ok = 0
+
     for i in range(num_predicates):
         operation = node[OPERATION_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
         field = node[FIELD_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
@@ -171,12 +173,12 @@ def apply_predicates(node, input_data, fields, normalize_repeats=False):
         term = node[TERM_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
         missing = node[MISSING_OFFSET + (PREDICATE_INFO_LENGTH * i) + shift]
 
-        if not apply_predicate(operation, field, value, term, missing,
-                               input_data, fields[field]):
-            return False
+        predicate_ok = apply_predicate(operation, field, value, term, missing,
+                                       input_data, fields[field])
+        if predicate_ok:
+            predicates_ok += 1
 
-    return True
-
+    return predicates_ok
 
 def apply_predicate(operation, field, value, term, missing, input_data,
                     field_info):

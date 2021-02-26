@@ -139,9 +139,21 @@ def calculate_depth(node, input_data, fields, depth=0,
     num_predicates = node[1 + shift]
     num_children = node[2 + shift + (5 * num_predicates)]
 
-    if num_predicates > 0 and \
-            not apply_predicates(node, input_data, fields,
-                                 normalize_repeats=normalize_repeats):
+    predicates_ok = 0
+
+    if num_predicates > 0:
+        predicates_ok = apply_predicates(node, input_data, fields,
+                                         normalize_repeats=normalize_repeats)
+
+
+    # some of the predicates where met and depth > 1 in a leaf
+    if num_predicates > 0 and predicates_ok > 0 and \
+            predicates_ok < num_predicates and \
+            depth > 1 and num_children == 0:
+        return depth + repeat_depth
+
+
+    if num_predicates > 0 and predicates_ok != num_predicates:
         return depth
 
     depth += weight
@@ -153,14 +165,14 @@ def calculate_depth(node, input_data, fields, depth=0,
             PREDICATE_INFO_LENGTH * num_predicates) + shift
         children = node[slice(start, end)]
         for child in children:
-            if apply_predicates(child, input_data, fields,
-                                normalize_repeats=normalize_repeats):
+            num_predicates = child[1 + shift]
+            predicates_ok = apply_predicates( \
+                child, input_data, fields,
+                normalize_repeats=normalize_repeats)
+            if predicates_ok == num_predicates:
                 return calculate_depth(child, input_data, fields, depth,
                                        normalize_repeats=normalize_repeats)
     else:
-        if depth > 1:
-            depth += repeat_depth
-
         depth += repeat_depth
 
     return depth

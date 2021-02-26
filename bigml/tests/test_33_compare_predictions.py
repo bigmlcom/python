@@ -156,7 +156,7 @@ class TestComparePrediction(object):
         examples = [
             ['data/tiny_kdd.csv', '30', '30', '30', '{"000020": 255.0, "000004": 183.0, "000016": 4.0, "000024": 0.04, "000025": 0.01, "000026": 0.0, "000019": 0.25, "000017": 4.0, "000018": 0.25, "00001e": 0.0, "000005": 8654.0, "000009": "0", "000023": 0.01, "00001f": 123.0}', '0.69802', '{}'],
             ['data/repeat_iris.csv', '30', '30', '30', '{"sepal width":3.5, "petal width": 0.2, "sepal length": 5.1, "petal length": 1.4, "species": "Iris-setosa"}', '0.50', '{"normalize_repeats": false}'],
-            ['data/repeat_iris.csv', '30', '30', '30', '{"sepal width":3.5, "petal width": 0.2, "sepal length": 5.1, "petal length": 1.4, "species": "Iris-setosa"}', '0.24', '{"normalize_repeats": true}']]
+            ['data/repeat_iris.csv', '30', '30', '30', '{"sepal width":3.5, "petal width": 0.2, "sepal length": 5.1, "petal length": 1.4, "species": "Iris-setosa"}', '0.36692', '{"normalize_repeats": true}']]
         show_doc(self.test_scenario3, examples)
         for example in examples:
             print("\nTesting with:\n", example)

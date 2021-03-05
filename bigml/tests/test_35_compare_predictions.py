@@ -106,13 +106,12 @@ class TestComparePrediction(object):
                 Examples:
                 | data             | time_1  | time_2 | time_3 | input_data  | projection | params
 
-
         """
         examples = [
             ['data/iris.csv', '30', '30', '120', '{}',
              '{"PC2": 0, "PC3": 0, "PC1": 0, "PC6": 0, "PC4": 5e-05, "PC5": 0}', '{}'],
             ['data/iris.csv', '30', '30', '120', '{"petal length": 1}',
-             '{"PC2": 0.08708, "PC3": 0.20929, "PC1": 1.56084, "PC6": -1.34463, "PC4": 0.7295, "PC5": -1.00876}', '{}'],
+             '{"PC2": 0.08708, "PC3": 0.20929, "PC1": 1.56084, "PC6": -1.34463, "PC4": 0.7295, "PC5": -1.00876}', '{}']]
         show_doc(self.test_scenario5, examples)
 
         for example in examples:
@@ -148,7 +147,6 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | input_data  | projection | params
-
 
         """
         examples = [

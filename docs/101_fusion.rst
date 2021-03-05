@@ -88,7 +88,7 @@ files to create the local `Fusion` object:
                "filename": "my_dir/my_fusion.json")
     # creating the local fusion from the file
     from bigml.fusion import Fusion
-    local_fusion = Model("my_dir/my_fusion.json")
+    local_fusion = Fusion("my_dir/my_fusion.json")
     # predicting for some input data
     local_fusion.predict({"petal length": 2.45, "sepal length": 2,
                           "petal width": 1.75, "sepal witdh": 3})

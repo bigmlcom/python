@@ -6,7 +6,7 @@ History
 6.1.0 (2021-03-06)
 ~~~~~~~~~~~~~~~~~~
 
-- Fixing local anomalies when repeate_normalize has been used.
+- Fixing local anomalies when normalize_repeats has been used.
 
 6.0.3 (2021-02-06)
 ~~~~~~~~~~~~~~~~~~

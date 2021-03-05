@@ -59,7 +59,7 @@ PREDICATES_OFFSET = 3
 
 
 def get_repeat_depth(population):
-    """
+    """Computes the correction to depth used to normalize repeats
 
     """
     repeat_depth = 0

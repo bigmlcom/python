@@ -113,6 +113,45 @@ class TestComparePrediction(object):
              '{"PC2": 0, "PC3": 0, "PC1": 0, "PC6": 0, "PC4": 5e-05, "PC5": 0}', '{}'],
             ['data/iris.csv', '30', '30', '120', '{"petal length": 1}',
              '{"PC2": 0.08708, "PC3": 0.20929, "PC1": 1.56084, "PC6": -1.34463, "PC4": 0.7295, "PC5": -1.00876}', '{}'],
+        show_doc(self.test_scenario5, examples)
+
+        for example in examples:
+            print("\nTesting with:\n", example)
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            pca_create.i_create_a_pca_with_params(self, example[6])
+            pca_create.the_pca_is_finished_in_less_than(self, example[3])
+            compare_predictions.create_local_pca(self)
+            projection_create.i_create_a_projection(self, example[4])
+            projection_create.the_projection_is(self, example[5])
+            compare_predictions.i_create_a_local_projection(self, example[4])
+            compare_predictions.the_local_projection_is(self, example[5])
+
+
+
+    def test_scenario5_b(self):
+        """
+            Scenario: Successfully comparing projections for PCAs:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a PCA with "<params>"
+                And I wait until the PCA is ready less than <time_3> secs
+                And I create a local PCA
+                When I create a projection for "<input_data>"
+                Then the projection is "<projection>"
+                And I create a local projection for "<data_input>"
+                Then the local projection is "<projection>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | input_data  | projection | params
+
+
+        """
+        examples = [
             ['data/iris.csv', '30', '30', '120', '{"species": "Iris-versicolor"}',
              '{"PC2": 1.8602, "PC3": -2.00864, "PC1": -0.61116, "PC6": -0.66983, "PC4": -2.44618, "PC5": 0.43414}', '{}'],
             ['data/iris.csv', '30', '30', '120', '{"petal length": 1, "sepal length": 0, "petal width": 0, "sepal width": 0, "species": "Iris-versicolor"}',

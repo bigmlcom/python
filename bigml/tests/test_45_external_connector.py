@@ -64,10 +64,10 @@ class TestExternalConnector(object):
             connector_create.external_connector_has_args(example[1])
             args = {"source": "postgresql",
                  "externalconnector_id": world.external_connector["resource"][18:],
-                 "query": "SELECT * FROM rnacen.auth_group"}
+                 "query": "SELECT * FROM public.iris"}
             source_create.i_create_using_connector(self, \
                 {"source": "postgresql",
                  "externalconnector_id": world.external_connector["resource"][18:],
-                 "query": "SELECT * FROM rnacen.auth_group"})
+                 "query": "SELECT * FROM public.iris"})
             source_create.the_source_is_finished(self, example[3])
             source_create.source_has_args(self, json.dumps({"external_data": args}))

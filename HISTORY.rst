@@ -3,6 +3,15 @@
 History
 -------
 
+
+6.1.1 (2021-06-11)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing api `get` method. The query string argument was lost.
+- Improving api `get`, `create` and `update` methods to avoid unneeded
+  iterations.
+- Improving docs.
+
 6.1.0 (2021-03-06)
 ~~~~~~~~~~~~~~~~~~
 

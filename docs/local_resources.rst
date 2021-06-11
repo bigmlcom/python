@@ -1952,22 +1952,22 @@ cache a linear regression:
 
 .. code-block:: python
 
-from bigml.linear import LinearRegression
-lm = LinearRegression("linearregression/5e827ff85299630d22007198")
-lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
-    "sepal width": 4, "species": "Iris-setosa"}, full=True)
-import redis
-r = redis.Redis()
-# First build as you would any core LinearRegression object:
-# Store a serialized version in Redis
-lm.dump(cache_set=r.set)
-# (retrieve the external rep from its convenient place)
-# Speedy Build from external rep
-lm = LinearRegression("linearregression/5e827ff85299630d22007198", \
-    cache_get=r.get)
-# Get predictions same as always:
-lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
-    "sepal width": 4, "species": "Iris-setosa"}, full=True)
+    from bigml.linear import LinearRegression
+    lm = LinearRegression("linearregression/5e827ff85299630d22007198")
+    lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
+        "sepal width": 4, "species": "Iris-setosa"}, full=True)
+    import redis
+    r = redis.Redis()
+    # First build as you would any core LinearRegression object:
+    # Store a serialized version in Redis
+    lm.dump(cache_set=r.set)
+    # (retrieve the external rep from its convenient place)
+    # Speedy Build from external rep
+    lm = LinearRegression("linearregression/5e827ff85299630d22007198", \
+        cache_get=r.get)
+    # Get predictions same as always:
+    lm.predict({"petal length": 4, "sepal length":4, "petal width": 4, \
+        "sepal width": 4, "species": "Iris-setosa"}, full=True)
 
 
 Rule Generation

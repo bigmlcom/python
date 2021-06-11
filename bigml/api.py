@@ -40,6 +40,7 @@ import json
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
 from bigml.constants import STORAGE, ALL_FIELDS
+from bigml.util import is_in_progress
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.sourcehandler import SourceHandlerMixin
 from bigml.api_handlers.datasethandler import DatasetHandlerMixin
@@ -389,9 +390,9 @@ class BigML(ExternalConnectorHandlerMixin,
         except KeyError:
             raise ValueError("Failed to create %s. This kind of resource"
                              " does not exist." % resource_type)
-        if finished:
+        if finished and is_in_progress(resource_info):
             ok_kwargs = filter_kwargs(kwargs, ['query_string'])
-            ok_kwargs.update({"error_retries": 5})
+            ok_kwargs.update({"error_retries": 5, "debug": self.debug})
             self.ok(resource_info, **ok_kwargs)
         return resource_info
 
@@ -401,15 +402,16 @@ class BigML(ExternalConnectorHandlerMixin,
         """
         finished = kwargs.get('finished', True)
         get_kwargs = filter_kwargs(kwargs,
-                                   ['finished'])
+                                   ['finished'],
+                                   out=True)
         try:
             resource_type = get_resource_type(resource)
             resource_info = self.getters[resource_type](resource, **get_kwargs)
         except KeyError:
             raise ValueError("%s is not a resource or ID." % resource)
-        if finished:
+        if finished and is_in_progress(resource_info):
             ok_kwargs = filter_kwargs(kwargs, ['query_string'])
-            ok_kwargs.update({"error_retries": 5})
+            ok_kwargs.update({"error_retries": 5, "debug": self.debug})
             self.ok(resource_info, **ok_kwargs)
         return resource_info
 
@@ -427,9 +429,9 @@ class BigML(ExternalConnectorHandlerMixin,
                                                          **update_kwargs)
         except KeyError:
             raise ValueError("%s is not a resource or ID." % resource)
-        if finished:
+        if finished and is_in_progress(resource_info):
             ok_kwargs = filter_kwargs(kwargs, ['query_string'])
-            ok_kwargs.update({"error_retries": 5})
+            ok_kwargs.update({"error_retries": 5, "debug": self.debug})
             self.ok(resource_info, **ok_kwargs)
         return resource_info
 

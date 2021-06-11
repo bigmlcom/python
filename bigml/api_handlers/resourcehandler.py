@@ -611,7 +611,7 @@ class ResourceHandlerMixin():
                                         "error": err})
         else:
             LOGGER.error("The resource %s couldn't be retrieved: %s",
-                         (resource["location"], resource['error']))
+                         resource["location"], resource['error'])
             if raise_on_error:
                 exception_on_error(resource)
 

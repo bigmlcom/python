@@ -142,6 +142,14 @@ def is_url(value):
     return url and url.scheme and url.netloc and url.path
 
 
+def is_in_progress(resource):
+    """Returns True if the resource has no error and has not finished yet
+
+    """
+    return resource.get("error") is None \
+        and get_status(resource).get("code") != c.FINISHED
+
+
 def markdown_cleanup(text):
     """Returns the text without markdown codes
 
@@ -481,11 +489,12 @@ def is_status_final(resource):
     """Try whether a resource is in a final state
 
     """
+    status = {}
     try:
         status = get_status(resource)
     except ValueError:
-        status['code'] = None
-    return status['code'] in [c.FINISHED, c.FAULTY]
+        pass
+    return status.get('code') in [c.FINISHED, c.FAULTY]
 
 
 def save_json(resource, path):

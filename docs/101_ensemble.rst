@@ -87,7 +87,7 @@ file to create the local `Ensemble` object:
     from bigml.api import BigML
     api = BigML()
     api.export("ensemble/5968ec46983efc21b000001b",
-               "filename": "my_ensemble.json")
+               filename="my_ensemble.json")
     # creating the ensemble from the file
     from bigml.ensemble import Ensemble
     local_ensemble = Ensemble("my_ensemble.json")

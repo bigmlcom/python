@@ -53,7 +53,7 @@ file to create the local `TimeSeries` object:
     from bigml.api import BigML
     api = BigML()
     api.export("timeseries/5968ec46983efc21b000001b",
-               "filename": "my_time_series.json")
+               filename="my_time_series.json")
     # creating the time series from the file
     from bigml.timeseries import TimeSeries
     local_time_series = TimeSeries("my_timeseries.json")

@@ -49,7 +49,7 @@ file to create the local `Association` object:
     from bigml.api import BigML
     api = BigML()
     api.export("association/5968ec46983efc21b000001b",
-               "filename": "my_association.json")
+               filename="my_association.json")
     # creating the association from the file
     from bigml.association import Association
     local_association = Association("my_association.json")

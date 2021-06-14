@@ -95,7 +95,7 @@ file to create the local `Anomaly` object:
     from bigml.api import BigML
     api = BigML()
     api.export("anomaly/5968ec46983efc21b000001b",
-               "filename": "my_anomaly.json")
+               filename="my_anomaly.json")
     # creating an anomaly object using the information in the file
     from bigml.anomaly import Anomaly
     local_anomaly = Anomaly("my_anomaly.json")

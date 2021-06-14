@@ -94,7 +94,7 @@ file to create the local `LinearRegression` object:
     from bigml.api import BigML
     api = BigML()
     api.export("linearregression/5968ec46983efc21b000001b",
-               "filename": "my_linear_regression.json")
+               filename="my_linear_regression.json")
     # creating the linear regression from the file
     from bigml.linear import LinearRegression
     local_linear_regression = LinearRegression( \

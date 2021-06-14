@@ -87,7 +87,7 @@ file to create the local `Deepnet` object:
     from bigml.api import BigML
     api = BigML()
     api.export("deepnet/5968ec46983efc21b000001b",
-               "filename": "my_deepnet.json")
+               filename="my_deepnet.json")
     # creating the deepnet from the file
     from bigml.deepnet import Deepnet
     local_deepnet = Deepnet("my_deepnet.json")

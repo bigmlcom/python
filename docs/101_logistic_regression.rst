@@ -92,7 +92,7 @@ file to create the local `LogisticRegression` object:
     from bigml.api import BigML
     api = BigML()
     api.export("logisticregression/5968ec46983efc21b000001b",
-               "filename": "my_logistic_regression.json")
+               filename="my_logistic_regression.json")
     # creating the logistic regression from the file
     from bigml.logistic import LogisticRegression
     local_logistic_regression = LogisticRegression( \

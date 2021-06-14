@@ -87,7 +87,7 @@ file to create the local `Model` object:
     from bigml.api import BigML
     api = BigML()
     api.export("model/5968ec46983efc21b000001b",
-               "filename": "my_model.json")
+               filename="my_model.json")
     # creating the model from the file
     from bigml.model import Model
     local_model = Model("my_model.json")

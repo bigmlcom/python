@@ -90,7 +90,7 @@ file to create the local `TopicModel` object:
     from bigml.api import BigML
     api = BigML()
     api.export("topicmodel/5968ec46983efc21b000001b",
-               "filename": "my_topic_model.json")
+               filename="my_topic_model.json")
     # creating the topic model from the file
     from bigml.topicmodel import TopicModel
     local_topic_model = TopicModel("my_topic_model.json")

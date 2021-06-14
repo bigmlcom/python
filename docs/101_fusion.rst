@@ -85,7 +85,7 @@ files to create the local `Fusion` object:
     from bigml.api import BigML
     api = BigML()
     api.export("fusion/5968ec46983efc21b000001b",
-               "filename": "my_dir/my_fusion.json")
+               filename="my_dir/my_fusion.json")
     # creating the local fusion from the file
     from bigml.fusion import Fusion
     local_fusion = Fusion("my_dir/my_fusion.json")

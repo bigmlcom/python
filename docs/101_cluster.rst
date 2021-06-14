@@ -104,7 +104,7 @@ file to create the local `Cluster` object:
     from bigml.api import BigML
     api = BigML()
     api.export("cluster/5968ec46983efc21b000001b",
-               "filename": "my_cluster.json")
+               filename="my_cluster.json")
     # creating the cluster from the file
     from bigml.cluster import Cluster
     local_cluster = Cluster("my_cluster.json")

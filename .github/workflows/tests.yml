@@ -1,4 +1,4 @@
-name: "Python bindings test"
+name: "Python bindings tests"
 
 on:
   pull_request:

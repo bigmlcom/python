@@ -47,7 +47,7 @@ jobs:
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS
 
-  tests-01+:
+  tests-01:
 
     runs-on: ubuntu-latest
     strategy:
@@ -87,7 +87,7 @@ jobs:
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS
 
-  tests-13+:
+  tests-13:
 
     runs-on: ubuntu-latest
     strategy:
@@ -107,7 +107,7 @@ jobs:
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS
 
-  tests-23+:
+  tests-23:
 
     runs-on: ubuntu-latest
     strategy:
@@ -127,7 +127,7 @@ jobs:
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS
 
-  tests-42+:
+  tests-42:
 
     runs-on: ubuntu-latest
     strategy:

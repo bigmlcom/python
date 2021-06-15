@@ -1,0 +1,148 @@
+name: "Python bindings test"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  tests-05:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *05*
+      run: |
+        export TESTS=$(for t in "05"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-35:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *35*
+      run: |
+        export TESTS=$(for t in "35"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-01+:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *01 02 03 04 06 07 08 09 10 11 12*
+      run: |
+        export TESTS=$(for t in "01 02 03 04 06 07 08 09 10 11 12"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-36:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *36*
+      run: |
+        export TESTS=$(for t in "36"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-13+:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 30 31 32 34 39 43*
+      run: |
+        export TESTS=$(for t in "13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 30 31 32 34 39 43"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-23+:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *23 37 38 40 41 45 33*
+      run: |
+        export TESTS=$(for t in "23 37 38 40 41 45 33"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS
+
+  tests-42+:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+    - name: Install packages
+      run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *42 44*
+      run: |
+        export TESTS=$(for t in "42 44"; do ls bigml/tests/*$t*;done|past -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS

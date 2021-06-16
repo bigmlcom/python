@@ -22,6 +22,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
     steps:
     - name: Install packages
       uses: actions/checkout@v2
@@ -53,6 +54,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages
@@ -85,6 +87,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages
@@ -117,6 +120,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages
@@ -149,6 +153,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages
@@ -181,6 +186,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages
@@ -213,6 +219,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
+        BIGML_DELTA: ${{ secrets.BIGML_DELTA }}
 
     steps:
     - name: Install packages

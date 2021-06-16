@@ -13,7 +13,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
-
+    env:
+        BIGML_USERNAME: {{ secret.BIGML_USERNAME }}
+        BIGML_API_KEY: {{ secret.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: {{ secret.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: {{ secret.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: {{ secret.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: {{ secret.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: {{ secret.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: {{ secret.BIGML_EXGTERNAL_CONN_PWD }}
     steps:
     - name: Install packages
       uses: actions/checkout@v2

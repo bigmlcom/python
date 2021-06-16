@@ -44,6 +44,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages
@@ -67,6 +76,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages
@@ -90,6 +108,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages
@@ -113,6 +140,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages
@@ -136,6 +172,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages
@@ -159,6 +204,15 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXGTERNAL_CONN_PWD }}
 
     steps:
     - name: Install packages

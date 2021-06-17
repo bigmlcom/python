@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         python: [3.8]
-    shell: bash
     env:
         BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
         BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
@@ -35,6 +34,7 @@ jobs:
         pip install .
 
     - name: Run tests *05*
+      shell: bash
       run: |
         export TESTS=$(for t in "05"; do ls bigml/tests/*$t*.py;done|past -sd ",")
         echo $TESTS

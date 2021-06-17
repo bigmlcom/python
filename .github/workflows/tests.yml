@@ -233,6 +233,6 @@ jobs:
 
     - name: Run tests *42 44*
       run: |
-        export TESTS=$(for t in "42 "44"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "42" "44"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

@@ -35,6 +35,8 @@ jobs:
 
     - name: Run tests *05*
       run: |
-        export TESTS=$(for t in "05"; do dir bigml/tests/*$t*;done|past -sd ",")
+        pwd
+        ls bigml/tests/*05*.py
+        export TESTS=$(for t in "05"; do ls bigml/tests/*$t*.py;done|past -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

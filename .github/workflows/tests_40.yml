@@ -1,4 +1,4 @@
-name: "Python bindings tests 23"
+name: "Python bindings tests 40"
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  tests-23:
+  tests-40:
 
     runs-on: ubuntu-latest
     strategy:
@@ -36,6 +36,6 @@ jobs:
 
     - name: Run tests *23 37 38 40 41 45 33*
       run: |
-        export TESTS=$(for t in "23" "37" "33"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "40" "41" "45" "38"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

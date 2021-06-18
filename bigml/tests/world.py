@@ -134,11 +134,16 @@ class World(object):
                            " connection, but they seem to be unset. Please,"
                            "set them before testing.")
         self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug,
-                         short_debug=self.short_debug, storage=(None if
-                         not (self.debug or self.short_debug) else
-                         "./debug_storage"))
+                         short_debug=self.short_debug,
+                         organization=None if not hasattr(
+                            self.api, "organization") else organization,
+                         storage=(None if not (self.debug or self.short_debug)
+                         else "./debug_storage"))
+        print("----------------------------------------------------------")
         print(self.api.connection_info())
         print(self.external_connection_info())
+        print("----------------------------------------------------------")
+
 
     def external_connection_info(self):
         """Printable string: The information used to connect to a external
@@ -218,6 +223,7 @@ def teardown_module():
     """Operations to be performed after each module
 
     """
+    print("Teardown module ---------------------------")
     if not world.debug and not world.short_debug:
         if os.path.exists('./tmp'):
             shutil.rmtree('./tmp')

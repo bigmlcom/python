@@ -3,6 +3,10 @@
 History
 -------
 
+6.1.2 (2021-06-16)
+------------------
+
+- Changing tests mechanism to github actions.
 
 6.1.1 (2021-06-11)
 ~~~~~~~~~~~~~~~~~~

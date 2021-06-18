@@ -1,0 +1,41 @@
+name: "Python bindings tests 13"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  tests-13:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+    env:
+        BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
+        BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
+        BIGML_ORGANIZATION: ${{ secrets.BIGML_ORGANIZATION }}
+        BIGML_EXTERNAL_CONN_HOST: ${{ secrets.BIGML_EXTERNAL_CONN_HOST }}
+        BIGML_EXTERNAL_CONN_PORT: ${{ secrets.BIGML_EXTERNAL_CONN_PORT }}
+        BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
+        BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
+        BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXTERNAL_CONN_PWD }}
+        BIGML_DELTA: 5
+
+    steps:
+    - name: Install packages
+      uses: actions/checkout@v2
+      with:
+        ref: actions
+    - run: |
+        pip install cython
+        pip install pystemmer==2.0.0
+        pip install .
+
+    - name: Run tests *13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 30 31 32 34 39 43*
+      run: |
+        export TESTS=$(for t in "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "24" "25" "26" "27" "28" "29" "30" "31" "32" "34" "39" "43"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        echo $TESTS
+        python setup.py nosetests --nocapture --tests=$TESTS

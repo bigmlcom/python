@@ -218,6 +218,7 @@ def teardown_module():
     """Operations to be performed after each module
 
     """
+    print("Teardown module ---------------------------")
     if not world.debug and not world.short_debug:
         if os.path.exists('./tmp'):
             shutil.rmtree('./tmp')

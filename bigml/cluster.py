@@ -225,25 +225,6 @@ class Cluster(ModelFields):
                         # clusters retrieved from API will only contain
                         # model fields
                         pass
-                for field_id, field in list(fields.items()):
-                    if field['optype'] == 'text':
-                        self.term_forms[field_id] = {}
-                        self.term_forms[field_id].update(field[
-                            'summary']['term_forms'])
-                        self.tag_clouds[field_id] = {}
-                        self.tag_clouds[field_id].update(field[
-                            'summary']['tag_cloud'])
-                        self.term_analysis[field_id] = {}
-                        self.term_analysis[field_id].update(
-                            field['term_analysis'])
-                    if field['optype'] == 'items':
-                        self.items[field_id] = {}
-                        self.items[field_id].update(
-                            dict(field['summary']['items']))
-                        self.item_analysis[field_id] = {}
-                        self.item_analysis[field_id].update(
-                            field['item_analysis'])
-
                 missing_tokens = cluster['clusters'].get('missing_tokens')
                 ModelFields.__init__(self, fields,
                                      missing_tokens=missing_tokens)
@@ -329,7 +310,7 @@ class Cluster(ModelFields):
                             input_data_field if case_sensitive
                             else input_data_field.lower())
                     unique_terms[field_id] = get_unique_terms(
-                        terms, self.term_forms[field_id],
+                        terms, self.fields[field_id]["summary"]["term_forms"],
                         self.tag_clouds.get(field_id, []))
                 else:
                     unique_terms[field_id] = input_data_field

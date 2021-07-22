@@ -56,7 +56,7 @@ from bigml.modelfields import ModelFields
 
 LOGGER = logging.getLogger('BigML')
 
-EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_cloud",
+EXPANSION_ATTRIBUTES = {"categorical": "categories", "text": "tag_clouds",
                         "items": "items"}
 
 
@@ -175,7 +175,7 @@ class LogisticRegression(ModelFields):
                 missing_tokens = logistic_regression_info.get("missing_tokens")
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=objective_id, terms=True, categories=True,
+                    objective_id=objective_id, categories=True,
                     numerics=True, missing_tokens=missing_tokens)
                 self.field_codings = logistic_regression_info.get( \
                   'field_codings', {})
@@ -189,8 +189,7 @@ class LogisticRegression(ModelFields):
                         del self.field_codings[field_id]
                 if old_coefficients:
                     self.map_coefficients()
-                categories = self.fields[self.objective_id].get( \
-                    "summary", {}).get('categories')
+                categories = self.categories[self.objective_id]
                 if len(list(self.coefficients.keys())) > len(categories):
                     self.class_names = [""]
                 else:
@@ -198,8 +197,7 @@ class LogisticRegression(ModelFields):
                 self.class_names.extend(sorted([category[0]
                                                 for category in categories]))
                 # order matters
-                self.objective_categories = [category[0]
-                                             for category in categories]
+                self.objective_categories = categories
             else:
                 raise Exception("The logistic regression isn't finished yet")
         else:
@@ -517,8 +515,8 @@ class LogisticRegression(ModelFields):
                 if optype != 'categorical' or \
                         not field_id in self.field_codings or \
                         list(self.field_codings[field_id].keys())[0] == "dummy":
-                    length = len(self.fields[field_id]['summary'][ \
-                        EXPANSION_ATTRIBUTES[optype]])
+                    length = len(getattr(
+                        self, EXPANSION_ATTRIBUTES[optype])[field_id])
                     # missing coefficient
                     length += 1
                 else:

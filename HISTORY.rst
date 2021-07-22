@@ -3,6 +3,11 @@
 History
 -------
 
+6.2.0 (2021-07-22)
+------------------
+
+- Minimizing local model information when text or items fields are used.
+
 6.1.2 (2021-06-16)
 ------------------
 

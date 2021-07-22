@@ -173,7 +173,7 @@ class LinearRegression(ModelFields):
                 objective_id = extract_objective(objective_field)
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=objective_id, terms=True, categories=True,
+                    objective_id=objective_id, categories=True,
                     numerics=True, missing_tokens=missing_tokens)
                 self.field_codings = linear_regression_info.get( \
                   'field_codings', {})

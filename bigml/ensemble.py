@@ -278,6 +278,8 @@ class Ensemble(ModelFields):
                                           self.api,
                                           fields=self.fields,
                                           class_names=self.class_names)
+            for index, model in enumerate(self.multi_model.models):
+               self.multi_model.models[index].term_forms = self.term_forms
 
     def _add_models_attrs(self, model, max_models=None):
         """ Adds the boosting and fields info when the ensemble is built from
@@ -506,6 +508,8 @@ class Ensemble(ModelFields):
                                          api=self.api,
                                          fields=self.fields,
                                          class_names=self.class_names)
+                for index, model in enumerate(multi_model.models):
+                   multi_model.models[index].term_forms = self.term_forms
 
                 votes_split = multi_model.generate_votes_distribution( \
                     input_data,
@@ -748,6 +752,8 @@ class Ensemble(ModelFields):
                 multi_model = MultiModel(models,
                                          api=self.api,
                                          fields=self.fields)
+                for index, model in enumerate(multi_model.models):
+                    multi_model.models[index].term_forms = self.term_forms
 
                 votes_split = multi_model._generate_votes(
                     norm_input_data,

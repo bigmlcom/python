@@ -126,19 +126,16 @@ class Deepnet(ModelFields):
                 ModelFields.__init__(
                     self, self.fields,
                     objective_id=extract_objective(objective_field),
-                    terms=True, categories=True, missing_tokens=missing_tokens)
+                    categories=True, missing_tokens=missing_tokens)
 
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC
                 if not self.regression:
-                    self.class_names = [category for category, _ in \
-                        self.fields[self.objective_id][ \
-                        'summary']['categories']]
+                    self.class_names = self.categories[self.objective_id][:]
                     self.class_names.sort()
                     # order matters
-                    self.objective_categories = [category for \
-                        category, _ in self.fields[self.objective_id][ \
-                       "summary"]["categories"]]
+                    self.objective_categories = self.categories[
+                        self.objective_id]
 
                 self.missing_numerics = deepnet.get('missing_numerics', False)
                 if 'network' in deepnet:

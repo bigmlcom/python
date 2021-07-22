@@ -34,7 +34,7 @@ OFFSETS = { \
     "children": 6}
 
 
-def build_boosting_tree(node_dict, node=None):
+def build_boosting_tree(node_dict, node=None, terms=None):
     """Builds a compressed version of the tree structure as an list of
     lists. Starting from the root node, that is represented by a list:
         [#predicates, op-code, field, value, term, missing...]
@@ -43,6 +43,8 @@ def build_boosting_tree(node_dict, node=None):
         [id, output, count, g_sum, h_sum,
          #children, children_nodes_list*]
     """
+    if terms is None:
+        terms = {}
     predicate = node_dict.get('predicate', True)
     outer = node if node else list(pack_predicate(predicate))
     children = node_dict.get("children", [])
@@ -55,8 +57,14 @@ def build_boosting_tree(node_dict, node=None):
     children_list = list()
     for child in children:
         predicate = child.get('predicate')
+        field = predicate.get("field")
+        if field not in terms:
+            terms[field] = []
+        term = predicate.get("term")
+        if term not in terms[field]:
+            terms[field].append(term)
         inner = pack_predicate(predicate)
-        build_boosting_tree(child, node=inner)
+        build_boosting_tree(child, node=inner, terms=terms)
         children_list.append(inner)
     if children_list:
         outer.append(children_list)

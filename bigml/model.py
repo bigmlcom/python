@@ -358,17 +358,19 @@ class Model(BaseModel):
                 root = model['model']['root']
                 self.weighted = "weighted_objective_summary" in root
 
+                terms = {}
+
                 if self.boosting:
                     # build boosted tree
                     self.tree = b.build_boosting_tree( \
-                        model['model']['root'])
+                        model['model']['root'], terms=terms)
                 elif self.regression:
                     self.root_distribution = model['model'][ \
                         'distribution']['training']
                     # build regression tree
                     self.tree = r.build_regression_tree(root, \
                         distribution=self.root_distribution, \
-                        weighted=self.weighted)
+                        weighted=self.weighted, terms=terms)
                 else:
                     # build classification tree
                     self.root_distribution = model['model'][\
@@ -379,13 +381,26 @@ class Model(BaseModel):
                     self.tree = c.build_classification_tree( \
                         model['model']['root'], \
                         distribution=self.root_distribution, \
-                        weighted=self.weighted)
+                        weighted=self.weighted, terms=terms)
                     self.class_names = sorted( \
                         [category[0] for category in \
                         self.root_distribution["categories"]])
                     self.objective_categories = [category for \
                         category, _ in self.fields[self.objective_id][ \
                        "summary"]["categories"]]
+
+                if not hasattr(self, "tag_clouds"):
+                    self.tag_clouds = {}
+                if not hasattr(self, "items"):
+                    self.items = {}
+
+                if terms:
+                    # only the terms used in the model are kept
+                    for field_id in terms:
+                        if self.tag_clouds.get(field_id):
+                            self.tag_clouds[field_id] = terms[field_id]
+                        elif self.items.get(field_id):
+                            self.items[field_id] = terms[field_id]
 
                 if self.boosting:
                     self.tree_type = BOOSTING

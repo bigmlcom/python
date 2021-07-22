@@ -125,7 +125,7 @@ def regression_error(distribution_variance, population, r_z=1.96):
 
 
 def build_regression_tree(node_dict, node=None, distribution=None,
-                          weighted=False):
+                          weighted=False, terms=None):
     """Builds a compressed version of the tree structure as an list of
     lists. Starting from the root node, that is represented by a list:
         [weight, #predicates, op-code, field, value, term, missing...]
@@ -135,6 +135,8 @@ def build_regression_tree(node_dict, node=None, distribution=None,
          distribution_unit, max_bins, max. min, median,
          wdistribution, wdistribution_unit, children_nodes_list*]
     """
+    if terms is None:
+        terms = {}
     predicate = node_dict.get('predicate', True)
     outer = node if node else list(pack_predicate(predicate))
     outer.append(node_dict.get("id"))
@@ -173,8 +175,14 @@ def build_regression_tree(node_dict, node=None, distribution=None,
     children_list = list()
     for child in children:
         predicate = child.get('predicate')
+        field = predicate.get("field")
+        if field not in terms:
+            terms[field] = []
+        term = predicate.get("term")
+        if term not in terms[field]:
+            terms[field].append(term)
         inner = pack_predicate(predicate)
-        build_regression_tree(child, node=inner, weighted=weighted)
+        build_regression_tree(child, node=inner, weighted=weighted, terms=terms)
         children_list.append(inner)
     if children_list:
         outer.append(children_list)

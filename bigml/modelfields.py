@@ -205,7 +205,7 @@ class ModelFields():
     """
 
     def __init__(self, fields, objective_id=None, data_locale=None,
-                 missing_tokens=None, terms=False, categories=False,
+                 missing_tokens=None, categories=False,
                  numerics=False):
         if isinstance(fields, dict):
             try:
@@ -235,18 +235,16 @@ class ModelFields():
                     self.data_locale = DEFAULT_LOCALE
                 if self.missing_tokens is None:
                     self.missing_tokens = DEFAULT_MISSING_TOKENS
-                if terms:
-                    # adding text and items information to handle terms
-                    # expansion
-                    self.term_forms = {}
-                    self.tag_clouds = {}
-                    self.term_analysis = {}
-                    self.items = {}
-                    self.item_analysis = {}
+                # adding text and items information to handle terms
+                # expansion
+                self.term_forms = []
+                self.tag_clouds = {}
+                self.term_analysis = {}
+                self.items = {}
+                self.item_analysis = {}
                 if categories:
                     self.categories = {}
-                if terms or categories or numerics:
-                    self.add_terms(categories, numerics)
+                self.add_terms(categories, numerics)
 
                 if self.objective_id is not None and \
                         hasattr(self, "resource_id") and self.resource_id and \
@@ -267,26 +265,30 @@ class ModelFields():
 
         """
         for field_id, field in list(self.fields.items()):
-            if field['optype'] == 'text':
-                self.term_forms[field_id] = {}
-                self.term_forms[field_id].update(
-                    field['summary']['term_forms'])
+            if field['optype'] == 'text' and \
+                    self.fields[field_id]['summary'].get('tag_cloud'):
+                self.term_forms.append(field_id)
                 self.tag_clouds[field_id] = []
                 self.tag_clouds[field_id] = [tag for [tag, _] in field[
                     'summary']['tag_cloud']]
+                del self.fields[field_id]["summary"]["tag_cloud"]
                 self.term_analysis[field_id] = {}
                 self.term_analysis[field_id].update(
                     field['term_analysis'])
-            if field['optype'] == 'items':
+            if field['optype'] == 'items' and \
+                    self.fields[field_id]["summary"].get("items"):
                 self.items[field_id] = []
                 self.items[field_id] = [item for item, _ in \
                     field['summary']['items']]
+                del self.fields[field_id]["summary"]["items"]
                 self.item_analysis[field_id] = {}
                 self.item_analysis[field_id].update(
                     field['item_analysis'])
-            if categories and field['optype'] == 'categorical':
+            if categories and field['optype'] == 'categorical' and \
+                    self.fields[field_id]["summary"]["categories"]:
                 self.categories[field_id] = [category for \
                     [category, _] in field['summary']['categories']]
+                del self.fields[field_id]["summary"]["categories"]
             if field['optype'] == 'datetime' and \
                     hasattr(self, "coeff_ids"):
                 self.coeff_id = [coeff_id for coeff_id in self.coeff_ids \
@@ -458,7 +460,7 @@ class ModelFields():
                                                        terms[0] != full_term)):
                         terms.append(full_term)
                     unique_terms[field_id] = get_unique_terms(
-                        terms, self.term_forms[field_id],
+                        terms, self.fields[field_id]["summary"]["term_forms"],
                         self.tag_clouds.get(field_id, []))
                 else:
                     unique_terms[field_id] = [(input_data_field, 1)]

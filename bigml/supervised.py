@@ -45,6 +45,7 @@ import json
 
 from bigml.api import get_resource_id, get_resource_type, \
     get_api_connection
+from bigml.basemodel import BaseModel
 from bigml.model import Model
 from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression

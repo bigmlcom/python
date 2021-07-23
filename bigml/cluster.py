@@ -97,7 +97,6 @@ def get_unique_terms(terms, term_forms, tag_cloud):
 
     """
     extend_forms = {}
-    tag_cloud = list(tag_cloud.keys())
     for term, forms in list(term_forms.items()):
         for form in forms:
             extend_forms[form] = term
@@ -273,7 +272,7 @@ class Cluster(ModelFields):
 
         """
 
-        for field_id, field in list(self.fields.items()):
+        for field_id, field in self.fields.items():
             if (field_id not in self.summary_fields and \
                     field['optype'] == NUMERIC and
                     field_id not in input_data):
@@ -524,7 +523,7 @@ class Cluster(ModelFields):
         """
         rows = []
         writer = None
-        field_ids = list(self.centroids[0].center.keys())
+        field_ids = self.centroids[0].center.keys()
         headers = ["Centroid_name"]
         headers.extend(["%s" % self.fields[field_id]["name"]
                         for field_id in field_ids])
@@ -546,7 +545,7 @@ class Cluster(ModelFields):
                             measure.title())
                     row.append(result)
                 intercentroids = True
-            for measure, result in list(centroid.distance.items()):
+            for measure, result in centroid.distance.items():
                 if measure in CSV_STATISTICS:
                     if not header_complete:
                         headers.append("Distance %s" %
@@ -565,7 +564,7 @@ class Cluster(ModelFields):
             if len(self.centroids) > 1:
                 for measure, result in cluster_global_distance():
                     row.append(result)
-            for measure, result in list(self.cluster_global.distance.items()):
+            for measure, result in self.cluster_global.distance.items():
                 if measure in CSV_STATISTICS:
                     row.append(result)
             # header is already in rows then insert cluster_global after it
@@ -607,7 +606,7 @@ class Cluster(ModelFields):
         for centroid in centroids_list:
             out.write(utf8("\n%s%s: " % (INDENT, centroid.name)))
             connector = ""
-            for field_id, value in list(centroid.center.items()):
+            for field_id, value in centroid.center.items():
                 if isinstance(value, str):
                     value = "\"%s\"" % value
                 out.write(utf8("%s%s: %s" % (connector,

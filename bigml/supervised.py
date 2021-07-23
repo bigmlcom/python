@@ -99,7 +99,7 @@ def extract_id(model, api):
     return resource_id, model
 
 
-class SupervisedModel():
+class SupervisedModel(BaseModel):
     """ A lightweight wrapper around any supervised model.
 
     Uses any BigML remote supervised model to build a local version

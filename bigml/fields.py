@@ -412,9 +412,9 @@ class Fields():
                              "You could retry the get remote call "
                              " with 'limit=-1' as query string.")
 
-        return dict([(field_id, summary.get('missing_count', 0))
-                     for field_id, summary in summaries
-                     if summary.get('missing_count', 0) > 0])
+        return {field_id: summary.get('missing_count', 0))
+                for field_id, summary in summaries
+                if summary.get('missing_count', 0) > 0}
 
     def stats(self, field_name):
         """Returns the summary information for the field

@@ -279,7 +279,7 @@ class Ensemble(ModelFields):
                                           fields=self.fields,
                                           class_names=self.class_names)
             for index, model in enumerate(self.multi_model.models):
-               self.multi_model.models[index].term_forms = self.term_forms
+                self.multi_model.models[index].term_forms = self.term_forms
 
     def _add_models_attrs(self, model, max_models=None):
         """ Adds the boosting and fields info when the ensemble is built from
@@ -508,8 +508,8 @@ class Ensemble(ModelFields):
                                          api=self.api,
                                          fields=self.fields,
                                          class_names=self.class_names)
-                for index, model in enumerate(multi_model.models):
-                   multi_model.models[index].term_forms = self.term_forms
+                for index, _ in enumerate(multi_model.models):
+                    multi_model.models[index].term_forms = self.term_forms
 
                 votes_split = multi_model.generate_votes_distribution( \
                     input_data,
@@ -752,7 +752,7 @@ class Ensemble(ModelFields):
                 multi_model = MultiModel(models,
                                          api=self.api,
                                          fields=self.fields)
-                for index, model in enumerate(multi_model.models):
+                for index, _ in enumerate(multi_model.models):
                     multi_model.models[index].term_forms = self.term_forms
 
                 votes_split = multi_model._generate_votes(
@@ -814,8 +814,7 @@ class Ensemble(ModelFields):
             # Extracts importance from ensemble information
             importances = [model_info['importance'] for model_info in
                            self.distributions]
-            for index in range(0, len(importances)):
-                model_info = importances[index]
+            for model_info in importances:
                 for field_info in model_info:
                     field_id = field_info[0]
                     if field_id not in field_importance:

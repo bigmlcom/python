@@ -144,7 +144,7 @@ class PCA(ModelFields):
                 missing_tokens = pca_info.get("missing_tokens")
                 ModelFields.__init__(
                     self, fields,
-                    objective_id=None, terms=True, categories=True,
+                    objective_id=None, categories=True,
                     numerics=False, missing_tokens=missing_tokens)
 
                 for field_id in self.categories:

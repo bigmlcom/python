@@ -101,8 +101,8 @@ PYTHON_CONV = {
     "day-of-week": "lambda x: int(locale.atof(x))",
     "day-of-month": "lambda x: int(locale.atof(x))"}
 
-PYTHON_FUNC = dict([(numtype, eval(function))
-                    for numtype, function in PYTHON_CONV.items()])
+PYTHON_FUNC = {numtype: eval(function)
+               for numtype, function in PYTHON_CONV.items()}
 
 
 def init_structure(to):

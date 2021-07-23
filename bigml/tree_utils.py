@@ -163,10 +163,11 @@ def split(children):
     """Returns the field that is used by the node to make a decision.
 
     """
-    field = set([child.predicate.field for child in children])
+    field = {child.predicate.field for child in children}
 
     if len(field) == 1:
         return field.pop()
+    return None
 
 
 def java_string(text):

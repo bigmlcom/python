@@ -147,8 +147,7 @@ def calculate_depth(node, input_data, fields, depth=0,
 
 
     # some of the predicates where met and depth > 1 in a leaf
-    if num_predicates > 0 and predicates_ok > 0 and \
-            predicates_ok < num_predicates and \
+    if num_predicates > 0 and 0 < predicates_ok < num_predicates and \
             depth > 1 and num_children == 0:
         return depth + repeat_depth
 

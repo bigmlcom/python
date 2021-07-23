@@ -234,7 +234,7 @@ class FlatTree():
             with open(TERM_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            term_analysis_options = set([x[0] for x in term_analysis_predicates])
+            term_analysis_options = {x[0] for x in term_analysis_predicates}
             term_analysis_predicates = set(term_analysis_predicates)
             body += """
     term_analysis = {"""
@@ -284,7 +284,7 @@ class FlatTree():
             with open(ITEMS_TEMPLATE) as template_handler:
                 body += template_handler.read()
 
-            item_analysis_options = set([x[0] for x in item_analysis_predicates])
+            item_analysis_options = {[x[0] for x in item_analysis_predicates]}
             item_analysis_predicates = set(item_analysis_predicates)
             body += """
     item_analysis = {"""

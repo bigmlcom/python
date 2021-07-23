@@ -50,7 +50,6 @@ from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
-from bigml.basemodel import BaseModel
 
 
 COMPONENT_CLASSES = {
@@ -100,7 +99,7 @@ def extract_id(model, api):
     return resource_id, model
 
 
-class SupervisedModel(BaseModel):
+class SupervisedModel():
     """ A lightweight wrapper around any supervised model.
 
     Uses any BigML remote supervised model to build a local version

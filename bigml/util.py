@@ -123,8 +123,7 @@ def invert_dictionary(dictionary, field='name'):
     It does not check whether new keys are duplicated though.
 
     """
-    return dict([[value[field], key]
-                 for key, value in list(dictionary.items())])
+    return {value[field]: key for key, value in dictionary.items()}
 
 
 def localize(number):

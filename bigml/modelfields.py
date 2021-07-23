@@ -222,10 +222,9 @@ class ModelFields():
                         field_id != self.objective_id]
                 self.model_fields = {}
                 self.datetime_parents = []
-                self.model_fields.update(
-                    dict([(field_id, field) for field_id, field in \
-                    list(self.fields.items()) if field_id in self.input_fields and \
-                    self.fields[field_id].get("preferred", True)]))
+                self.model_fields.update({field_id: field for field_id, field \
+                    in self.fields.items() if field_id in self.input_fields \
+                    and self.fields[field_id].get("preferred", True)})
                 # if any of the model fields is a generated datetime field
                 # we need to add the parent datetime field
                 self.model_fields = self.add_datetime_parents()
@@ -304,7 +303,7 @@ class ModelFields():
            transformation is applied to ensure unicity.
 
         """
-        unique_names = set([fields[key]['name'] for key in fields])
+        unique_names = {fields[key]['name'] for key in fields}
         if len(unique_names) < len(fields):
             self.transform_repeated_names(fields)
 

@@ -197,6 +197,7 @@ def count(listing):
     """
     if 'meta' in listing and 'query_total' in listing['meta']:
         return listing['meta']['query_total']
+    return None
 
 
 def filter_kwargs(kwargs, list_of_keys, out=False):
@@ -231,8 +232,7 @@ def get_fields(resource):
             fields = resource.get('fields', {})
 
         if resource_type == SAMPLE_PATH:
-            fields = dict([(field['id'], field) for field in
-                           fields])
+            fields = {field['id']: field for field in fields}
     return fields
 
 
@@ -542,7 +542,6 @@ class BigML(ExternalConnectorHandlerMixin,
         except KeyError:
             resource = self._get("%s%s" % (self.url, resource_id))
             fields = get_fields(resource)
-
         return fields
 
     def pprint(self, resource, out=sys.stdout):

@@ -52,7 +52,7 @@ from bigml.io import UnicodeWriter, UnicodeReader
 LOGGER = logging.getLogger('BigML')
 
 
-def read_votes(votes_files, to_prediction, data_locale=None):
+def read_votes(votes_files, to_prediction_fn, data_locale=None):
     """Reads the votes found in the votes' files.
 
        Returns a list of MultiVote objects containing the list of predictions.
@@ -74,7 +74,7 @@ def read_votes(votes_files, to_prediction, data_locale=None):
         index = 0
         with UnicodeReader(votes_file) as rdr:
             for row in rdr:
-                prediction = to_prediction(row[0], data_locale=data_locale)
+                prediction = to_prediction_fn(row[0], data_locale=data_locale)
                 if index > (len(votes) - 1):
                     votes.append(MultiVote([]))
                 distribution = None

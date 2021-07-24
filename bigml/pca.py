@@ -142,22 +142,23 @@ class PCA(ModelFields):
                         sorted(list(self.fields.items()),
                                key=lambda x: x[1].get("column_number"))]
                 missing_tokens = pca_info.get("missing_tokens")
+                for field_id, field in fields.items():
+                    if field["optype"] == "categorical":
+                        probabilities = [probability for _, probability in \
+                                         field["summary"]["categories"]]
+                        if field["summary"].get("missing_count", 0) > 0:
+                            probabilities.append(
+                                field["summary"]["missing_count"])
+                        total = float(sum(probabilities))
+                        if total > 0:
+                            probabilities = [probability / total for probability \
+                                in probabilities]
+                        self.categories_probabilities[field_id] = probabilities
                 ModelFields.__init__(
                     self, fields,
                     objective_id=None, categories=True,
                     numerics=False, missing_tokens=missing_tokens)
 
-                for field_id in self.categories:
-                    field = self.fields[field_id]
-                    probabilities = [probability for _, probability in \
-                                     field["summary"]["categories"]]
-                    if field["summary"].get("missing_count", 0) > 0:
-                        probabilities.append(field["summary"]["missing_count"])
-                    total = float(sum(probabilities))
-                    if total > 0:
-                        probabilities = [probability / total for probability \
-                            in probabilities]
-                    self.categories_probabilities[field_id] = probabilities
                 self.components = pca_info.get('components')
                 self.eigenvectors = pca_info.get('eigenvectors')
                 self.cumulative_variance = pca_info.get('cumulative_variance')

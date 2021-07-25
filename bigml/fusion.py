@@ -205,10 +205,7 @@ class Fusion(ModelFields):
             self.fields[self.objective_id].get('optype') == NUMERIC
 
         if not self.regression:
-            objective_field = self.fields[self.objective_id]
-            categories = objective_field['summary']['categories']
-            classes = [category[0] for category in categories]
-            self.class_names = sorted(classes)
+            self.class_names = sorted(self.categories[self.objective_id])
             self.objective_categories = [category for \
                 category, _ in self.fields[self.objective_id][ \
                "summary"]["categories"]]

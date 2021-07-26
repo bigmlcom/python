@@ -194,8 +194,7 @@ class LogisticRegression(ModelFields):
                     self.class_names = [""]
                 else:
                     self.class_names = []
-                self.class_names.extend(sorted([category[0]
-                                                for category in categories]))
+                self.class_names.extend(sorted(categories))
                 # order matters
                 self.objective_categories = categories
             else:

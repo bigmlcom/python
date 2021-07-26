@@ -131,11 +131,10 @@ class Deepnet(ModelFields):
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC
                 if not self.regression:
-                    self.class_names = self.categories[self.objective_id][:]
-                    self.class_names.sort()
                     # order matters
                     self.objective_categories = self.categories[
                         self.objective_id]
+                    self.class_names = sorted(self.objective_categories)
 
                 self.missing_numerics = deepnet.get('missing_numerics', False)
                 if 'network' in deepnet:

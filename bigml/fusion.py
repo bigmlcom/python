@@ -72,11 +72,11 @@ def rearrange_prediction(origin_classes, destination_classes, prediction):
     """
     new_prediction = []
     for class_name in destination_classes:
-        origin_index = origin_classes.index(class_name)
-        if origin_index > -1:
+        try:
+            origin_index = origin_classes.index(class_name)
             new_prediction.append(prediction[origin_index])
-        else:
-            new_prediction = 0.0
+        except ValueError:
+            new_prediction.append(0.0)
     return new_prediction
 
 
@@ -188,31 +188,29 @@ class Fusion(ModelFields):
                                   for index
                                   in range(0, number_of_models, max_models)]
 
-        if self.fields:
-            add_distribution(self)
-            summary = self.fields[self.objective_id]['summary']
-            if 'bins' in summary:
-                distribution = summary['bins']
-            elif 'counts' in summary:
-                distribution = summary['counts']
-            elif 'categories' in summary:
-                distribution = summary['categories']
-            else:
-                distribution = []
-            self.distribution = distribution
-
-        self.regression = \
-            self.fields[self.objective_id].get('optype') == NUMERIC
-
-        if not self.regression:
-            self.class_names = sorted(self.categories[self.objective_id])
-            self.objective_categories = [category for \
-                category, _ in self.fields[self.objective_id][ \
-               "summary"]["categories"]]
 
         ModelFields.__init__( \
             self, self.fields,
             objective_id=self.objective_id)
+
+        add_distribution(self)
+        summary = self.fields[self.objective_id]['summary']
+        if 'bins' in summary:
+            distribution = summary['bins']
+        elif 'counts' in summary:
+            distribution = summary['counts']
+        elif 'categories' in summary:
+            distribution = summary['categories']
+            self.objective_categories = [
+                category for category, _ in distribution]
+            self.class_names = sorted(
+                self.objective_categories)
+        else:
+            distribution = []
+        self.distribution = distribution
+        self.regression = \
+            self.fields[self.objective_id].get('optype') == NUMERIC
+
 
     def get_fusion_resource(self, fusion):
         """Extracts the fusion resource info. The fusion argument can be

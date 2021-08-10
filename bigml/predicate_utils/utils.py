@@ -83,12 +83,6 @@ def term_matches(text, forms_list, options):
     if token_mode == TM_FULL_TERM:
         return full_term_match(text, first_term, case_sensitive)
 
-    # In token_mode='all' we will match full terms using equals and
-    # tokens using contains
-    if token_mode == TM_ALL and len(forms_list) == 1:
-        if re.match(FULL_TERM_PATTERN, first_term):
-            return full_term_match(text, first_term, case_sensitive)
-
     return term_matches_tokens(text, forms_list, case_sensitive)
 
 def is_full_term(term, field):
@@ -132,7 +126,9 @@ def term_matches_tokens(text, forms_list, case_sensitive):
     """Counts the number of occurences of the words in forms_list in the text
     """
     flags = get_tokens_flags(case_sensitive)
-    expression = r'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join(forms_list)
+
+    expression = r'(\b|_)%s(\b|_)' % '(\\b|_)|(\\b|_)'.join([re.escape(term) \
+        for term in forms_list])
     pattern = re.compile(expression, flags=flags)
     matches = re.findall(pattern, text)
     return len(matches)
@@ -154,7 +150,7 @@ def item_matches(text, item, options):
 def count_items_matches(text, item, regexp):
     """ Counts the number of occurences of the item in the text
     """
-    expression = r'(^|%s)%s($|%s)' % (regexp, item, regexp)
+    expression = r'(^|%s)%s($|%s)' % (regexp, re.escape(item), regexp)
     pattern = re.compile(expression, flags=re.U)
     matches = re.findall(pattern, text)
 

@@ -3,6 +3,11 @@
 History
 -------
 
+6.2.1 (2021-08-10)
+------------------
+
+- Fixing predictions for local models with text fields.
+
 6.2.0 (2021-07-22)
 ------------------
 

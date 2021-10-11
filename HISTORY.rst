@@ -3,6 +3,11 @@
 History
 -------
 
+6.2.2 (2021-10-11)
+------------------
+
+- Fixing underlying dependency used in datetime fields.
+
 6.2.1 (2021-08-10)
 ------------------
 

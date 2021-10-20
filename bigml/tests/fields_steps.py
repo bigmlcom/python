@@ -71,6 +71,12 @@ def check_summary_like_expected(step, summary_file, expected_file):
 
 #@step(r'I update the "<.*>" with the file "<.*>"')
 def update_with_summary_file(step, resource, summary_file):
+    if get_resource_type(resource) == "source":
+        # We need to download the source again, as it could have been closed
+        resource = world.api.get_source(resource)
+        if resource.get("object", {}).get("closed", False):
+            resource = world.api.clone_source(resource)
+            world.api.ok(resource)
     fields = Fields(resource)
     changes = fields.filter_fields_update( \
         fields.new_fields_structure(res_filename(summary_file)))

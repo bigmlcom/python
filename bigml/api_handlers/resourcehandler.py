@@ -708,6 +708,35 @@ class ResourceHandlerMixin():
 
         return create_args
 
+    def _set_clone_from_args(self, origin, resource_type, args=None,
+                             wait_time=3, retries=10):
+        """Builds args dictionary for the create call to clone resources.
+           The first argument needs to be a resource or resource ID that
+           has one of the types in resource_type
+
+        """
+        if isinstance(origin, dict) and origin.get("id"):
+            origin = origin.get("id")
+
+        origin_id = get_resource_id(origin)
+
+        if origin_id is not None:
+            check_resource_type(origin, resource_type,
+                                message=("Failed to find a %s as the resource"
+                                         " to clone." % resource_type))
+            origin = check_resource(origin,
+                                    query_string=c.TINY_RESOURCE,
+                                    wait_time=wait_time, retries=retries,
+                                    raise_on_error=True, api=self)
+
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        create_args.update({"origin": origin_id})
+
+        return create_args
+
     def check_origins(self, dataset, model, args, model_types=None,
                       wait_time=3, retries=10):
         """Returns True if the dataset and model needed to build

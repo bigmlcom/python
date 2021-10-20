@@ -64,9 +64,9 @@ class TestComparePrediction(object):
         """
         examples = [
             ['data/iris.csv', '30', '50', '60', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
-            ['data/iris.csv', '30', '50', '60', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-setosa', '{}'],
-            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-setosa', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 42.15473, '{}'],
+            ['data/iris.csv', '30', '50', '60', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-versicolor', '{}'],
+            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-versicolor', '{}'],
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.65609, '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1, examples)
 
@@ -148,7 +148,7 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '60', '{"petal width": 4}', '000004', 'Iris-versicolor', '{}', {"kind": "probability", "threshold": 1, "positive_class": "Iris-virginica"}]]
+            ['data/iris.csv', '10', '50', '60', '{"petal width": 4}', '000004', 'Iris-setosa', '{}', {"kind": "probability", "threshold": 1, "positive_class": "Iris-virginica"}]]
         show_doc(self.test_scenario3, examples)
 
         for example in examples:
@@ -567,28 +567,28 @@ class TestComparePrediction(object):
         examples = [
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
-             '000002', 0.04082],
+             '000002', -0.02616],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
-             '000002', 0.02919],
+             '000002', 0.13352],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
-             '000002', 0.0199],
+             '000002', 0.10071],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1920-06-45T20:21:20.320", "cat-0":"cat1"}',
-             '000002', 0.0199],
+             '000002', 0.10071],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
-             '000002', 0.28517],
+             '000002', 0.15235],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1950-11-06T05:34:05.602", "cat-0":"cat1"}',
-             '000002', -0.05673],
+             '000002', -0.07686],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1932-01-30T19:24:11.440",  "cat-0":"cat2"}',
-             '000002', 0.16183],
+             '000002', 0.0017],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
-             '000002', 0.0199]
+             '000002', 0.10071]
 ]
         show_doc(self.test_scenario12, examples)
 

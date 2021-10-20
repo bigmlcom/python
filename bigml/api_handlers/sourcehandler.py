@@ -254,6 +254,17 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         source = self.get_source(source)
         return resource_is_ready(source)
 
+    def clone_source(self, source,
+                     args=None, wait_time=3, retries=10):
+        """Creates a cloned source from an existing `source`
+
+        """
+        create_args = self._set_clone_from_args(
+            source, "source", args=args, wait_time=wait_time, retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.source_url, body)
+
     def list_sources(self, query_string=''):
         """Lists all your remote sources.
 

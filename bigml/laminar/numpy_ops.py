@@ -69,7 +69,8 @@ ACTIVATORS = {
     'softplus': softplus,
     'relu': relu,
     'softmax': softmax,
-    'identity': lambda x: x
+    'identity': lambda x: x,
+    'linear': lambda x: x
 }
 
 

@@ -222,7 +222,7 @@ class TestOptimlFusion(object):
              '{"tags":["my_fusion_4_tag"], "missing_numerics": true}',
              'my_fusion_4_tag',
              '{"petal width": 1.75, "petal length": 2.45}', "000004",
-             "Iris-setosa", '0.4727']]
+             "Iris-setosa", '0.4726']]
         for example in examples:
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])
@@ -280,7 +280,7 @@ class TestOptimlFusion(object):
              '{"petal width": 1.75, "petal length": 2.45}',
              "000004",
              "Iris-setosa",
-             '0.4727',
+             '0.4726',
              '{"tags":["my_fusion_5_tag"], "missing_numerics": false, "balance_fields": false }']]
         for example in examples:
             print("\nTesting with:\n", example)
@@ -339,7 +339,7 @@ class TestOptimlFusion(object):
              '{"petal width": 1.75, "petal length": 2.45}',
              "000004",
              "Iris-setosa",
-             '0.4727',
+             '0.4726',
              '{"tags":["my_fusion_6_tag"], "missing_numerics": false, "balance_fields": false }', '[1, 2]']]
         for example in examples:
             print("\nTesting with:\n", example)

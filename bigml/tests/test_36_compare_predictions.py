@@ -60,7 +60,8 @@ class TestComparePrediction(object):
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
 
-
+,
+            ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']
         """
         examples = [
             ['data/iris.csv', '30', '50', '60', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],

@@ -3,6 +3,11 @@
 History
 -------
 
+6.3.0 (2021-10-21)
+------------------
+
+- Adding activators to local deepnets prediction functions.
+
 6.2.2 (2021-10-11)
 ------------------
 

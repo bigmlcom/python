@@ -25,7 +25,7 @@ import numpy as np
 from scipy.special import expit
 
 from bigml.laminar.constants import LARGE_EXP, MATRIX_PARAMS, \
-    VEC_PARAMS
+    VEC_PARAMS, ALPHA, LAMBDA, LEAKY_RELU_CONST
 
 
 def to_numpy_array(xs):
@@ -63,6 +63,19 @@ def softmax(xs):
     return dist
 
 
+def selu(xs):
+    x_cpy = to_numpy_array(xs)
+
+    return np.where(x_cpy > 0,
+                    LAMBDA * x_cpy,
+                    LAMBDA * ALPHA * (np.exp(x_cpy) - 1))
+
+def leaky_relu(xs):
+    x_cpy = to_numpy_array(xs)
+
+    return np.maximum(x_cpy, x_cpy * LEAKY_RELU_CONST)
+
+
 ACTIVATORS = {
     'tanh': np.tanh,
     'sigmoid': expit,
@@ -70,8 +83,12 @@ ACTIVATORS = {
     'relu': relu,
     'softmax': softmax,
     'identity': lambda x: x,
-    'linear': lambda x: x
-}
+    'linear': lambda x: x,
+    'swish': lambda x: x * expit(x),
+    'mish': lambda x: np.tanh(softplus(x)),
+    'relu6': lambda x: np.clip(relu(x), 0, 6),
+    'leaky_relu': leaky_relu,
+    'selu': selu}
 
 
 def plus(mat, vec):

@@ -29,6 +29,9 @@ from . import inspect_model_steps as inspect_model
 
 class TestLocalModelOutputs(object):
 
+    def __init__(self):
+        self.shared = {} # stores shared objects references
+
     def setup(self):
         """
             Debug information
@@ -76,12 +79,15 @@ class TestLocalModelOutputs(object):
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/if_then_rules_tiny_kdd.txt']]
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            source_create.i_upload_a_file(self, example[0], shared=example[0])
+            source_create.the_source_is_finished(self, example[1],
+                shared=example[0])
+            dataset_create.i_create_a_dataset(self, shared=example[0])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2], shared=example[0])
+            model_create.i_create_a_model(self, shared=example[0])
+            model_create.the_model_is_finished_in_less_than(self, example[3],
+                shared=example[0])
             prediction_compare.i_create_a_local_model(self)
             inspect_model.i_translate_the_tree_into_IF_THEN_rules(self)
             inspect_model.i_check_if_the_output_is_like_expected_file(self, example[4])
@@ -109,10 +115,11 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '10', '10', '30', 'data/model/if_then_rules_iris_missing2_MISSINGS.txt']]
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            source_create.i_upload_a_file(self, example[0], shared=example[0])
+            source_create.the_source_is_finished(self, example[1], shared=example[0])
+            dataset_create.i_create_a_dataset(self, shared=example[0])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2], shared=example[0])
             model_create.i_create_a_model_with_missing_splits(self)
             model_create.the_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_model(self)
@@ -157,7 +164,8 @@ class TestLocalModelOutputs(object):
             source_create.the_source_is_finished(self, example[1])
             source_create.i_update_source_with(self, example[4])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2])
             model_create.i_create_a_model(self)
             model_create.the_model_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_model(self)
@@ -200,12 +208,14 @@ class TestLocalModelOutputs(object):
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/data_distribution_tiny_kdd.txt']]
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            source_create.i_upload_a_file(self, example[0], shared=example[0])
+            source_create.the_source_is_finished(self, example[1], shared=example[0])
+            dataset_create.i_create_a_dataset(self, shared=example[0])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2], shared=example[0])
+            model_create.i_create_a_model(self, shared=example[0])
+            model_create.the_model_is_finished_in_less_than(self, example[3],
+                shared=example[0])
             prediction_compare.i_create_a_local_model(self)
             inspect_model.i_check_the_data_distribution(self, example[4])
 
@@ -245,12 +255,15 @@ class TestLocalModelOutputs(object):
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/predictions_distribution_tiny_kdd.txt']]
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            source_create.i_upload_a_file(self, example[0], shared=example[0])
+            source_create.the_source_is_finished(self, example[1],
+                shared=example[0])
+            dataset_create.i_create_a_dataset(self, shared=example[0])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2], shared=example[0])
+            model_create.i_create_a_model(self, shared=example[0])
+            model_create.the_model_is_finished_in_less_than(self, example[3],
+                shared=example[0])
             prediction_compare.i_create_a_local_model(self)
             inspect_model.i_check_the_predictions_distribution(self, example[4])
 
@@ -290,12 +303,15 @@ class TestLocalModelOutputs(object):
             ['data/tiny_kdd.csv', '30', '30', '30', 'data/model/summarize_tiny_kdd.txt']]
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            source_create.i_upload_a_file(self, example[0], shared=example[0])
+            source_create.the_source_is_finished(self, example[1],
+                shared=example[0])
+            dataset_create.i_create_a_dataset(self, shared=example[0])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                example[2], shared=example[0])
+            model_create.i_create_a_model(self, shared=example[0])
+            model_create.the_model_is_finished_in_less_than(self, example[3],
+                shared=example[0])
             prediction_compare.i_create_a_local_model(self)
             inspect_model.i_check_the_model_summary_with(self, example[4])
 

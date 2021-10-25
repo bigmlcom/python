@@ -19,6 +19,7 @@
 
 """
 import os
+import shutil
 
 
 from bigml.api import BigML
@@ -53,7 +54,7 @@ def setup_module():
         {"name": world.test_project_name})['resource']
     world.api = BigML(world.USERNAME, world.API_KEY, debug=world.debug,
                       project=world.project_id)
-    print(world.api.connection_info())
+    print("New connection: ", world.api.connection_info())
     world.clear()
 
 
@@ -82,7 +83,7 @@ def teardown_module():
         world.api.delete_project(world.project_id)
     world.project_id = world.bck_project_id
     world.api = world.bck_api
-    print(world.api.connection_info())
+    print("New connection: ", world.api.connection_info())
 
 
 class TestOrgPrediction(object):

@@ -26,31 +26,29 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-
 from . import read_dataset_steps as read
 
-#@step(r'I create a dataset$')
-def i_create_a_dataset(step):
-    resource = world.api.create_dataset(world.source['resource'])
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.dataset = resource['object']
-    world.datasets.append(resource['resource'])
 
+#@step(r'I create a dataset$')
+def i_create_a_dataset(step, shared=None):
+    if shared is None or step.shared.get(shared, {}).get("dataset") is None:
+        resource = world.api.create_dataset(world.source['resource'])
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.dataset = resource['object']
+        world.datasets.append(resource['resource'])
 
 #@step(r'I download the dataset file to "(.*)"$')
 def i_export_a_dataset(step, local_file):
     world.api.download_dataset(world.dataset['resource'],
                                filename=res_filename(local_file))
 
-
 #@step(r'file "(.*)" is like file "(.*)"$')
 def files_equal(step, local_file, data):
     contents_local_file = open(res_filename(local_file)).read()
     contents_data = open(res_filename(data)).read()
     eq_(contents_local_file, contents_data)
-
 
 #@step(r'I create a dataset with "(.*)"')
 def i_create_a_dataset_with(step, data="{}"):
@@ -79,8 +77,13 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the dataset is ready less than (\d+)')
-def the_dataset_is_finished_in_less_than(step, secs):
-    wait_until_dataset_status_code_is(step, FINISHED, FAULTY, secs)
+def the_dataset_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or step.shared.get(shared, {}).get("dataset") is None:
+        wait_until_dataset_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            step.shared[shared]["dataset"]= world.dataset
+    else:
+        world.dataset = step.shared[shared]["dataset"]
 
 #@step(r'I make the dataset public')
 def make_the_dataset_public(step):

@@ -40,14 +40,15 @@ from . import read_model_steps as read
 NO_MISSING_SPLITS = {'missing_splits': False}
 
 #@step(r'I create a model$')
-def i_create_a_model(step):
-    dataset = world.dataset.get('resource')
-    resource = world.api.create_model(dataset, args=NO_MISSING_SPLITS)
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.model = resource['object']
-    world.models.append(resource['resource'])
+def i_create_a_model(step, shared=None):
+    if shared is None or step.shared.get(shared, {}).get("model") is None:
+        dataset = world.dataset.get('resource')
+        resource = world.api.create_model(dataset, args=NO_MISSING_SPLITS)
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.model = resource['object']
+        world.models.append(resource['resource'])
 
 #@step(r'I export the model$')
 def i_export_model(step, filename):
@@ -100,8 +101,14 @@ def wait_until_model_status_code_is(step, code1, code2, secs):
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the model is ready less than (\d+)')
-def the_model_is_finished_in_less_than(step, secs):
-    wait_until_model_status_code_is(step, FINISHED, FAULTY, secs)
+def the_model_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or step.shared.get(shared, {}).get("model") is None:
+        wait_until_model_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            step.shared[shared]["model"] = world.model
+    else:
+        world.model = step.shared[shared]["model"]
+
 
 #@step(r'I create a model with "(.*)"')
 def i_create_a_model_with(step, data="{}"):

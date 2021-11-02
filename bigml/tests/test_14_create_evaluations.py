@@ -163,7 +163,7 @@ class TestEvaluation(object):
         """
         print(self.test_scenario4.__doc__)
         examples = [
-            ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.95007']]
+            ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.97007']]
         for example in examples:
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file(self, example[0])

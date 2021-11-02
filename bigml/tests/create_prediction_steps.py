@@ -114,7 +114,7 @@ def i_create_a_proportional_prediction(step, data=None):
 
 def check_prediction(got, expected):
     if not isinstance(got, str):
-        assert_almost_equals(got, float(expected), 5)
+        assert_almost_equals(got, float(expected), 4)
     else:
         eq_(got, expected)
 

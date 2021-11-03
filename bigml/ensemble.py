@@ -45,6 +45,7 @@ import os
 
 from functools import cmp_to_key
 
+from bigml.exceptions import NoRootDecisionTree
 from bigml.api import get_ensemble_id, get_model_id, get_api_connection
 from bigml.model import Model, parse_operating_point, sort_categories
 from bigml.generators.model import print_distribution
@@ -917,23 +918,27 @@ class Ensemble(ModelFields):
                 models.extend(split)
         else:
             models = self.model_ids
+
         for index, model_id in enumerate(models):
-            if isinstance(model_id, Model):
-                local_model = model_id
-            elif self.cache_get is not None:
-                local_model = self.cache_get(model_id)
-            else:
-                local_model = Model(model_id, self.api)
-            if (max_models is not None and index > 0 and
-                    index % max_models == 0):
-                gc.collect()
-            fields.update(local_model.fields)
-            if (objective_id is not None and
-                    objective_id != local_model.objective_id):
-                # the models' objective field have different ids, no global id
-                no_objective_id = True
-            else:
-                objective_id = local_model.objective_id
+            try:
+                if isinstance(model_id, Model):
+                    local_model = model_id
+                elif self.cache_get is not None:
+                    local_model = self.cache_get(model_id)
+                else:
+                    local_model = Model(model_id, self.api)
+                if (max_models is not None and index > 0 and
+                        index % max_models == 0):
+                    gc.collect()
+                fields.update(local_model.fields)
+                if (objective_id is not None and
+                        objective_id != local_model.objective_id):
+                    # the models' objective field have different ids, no global id
+                    no_objective_id = True
+                else:
+                    objective_id = local_model.objective_id
+            except NoRootDecisionTree:
+                pass
         if no_objective_id:
             objective_id = None
         gc.collect()

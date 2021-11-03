@@ -276,3 +276,28 @@ class TestEnsemblePrediction(object):
             prediction_create.the_prediction_is(self, example[5], example[6])
             prediction_create.create_local_ensemble_prediction_using_median_with_confidence(self, example[4])
             compare_pred.the_local_prediction_is(self, example[6])
+
+
+    def test_scenario7(self):
+        """
+            Scenario: Successfully creating a local prediction from an Ensemble created from file storage:
+                Given I create a local Ensemble from path "<path>"
+                When I create a local ensemble prediction with confidence for "<data_input>"
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+                And the local probabilities are "<probabilities>"
+
+                Examples:
+                | path             |  data_input    |prediction  | confidence | probabilities
+        """
+        print(self.test_scenario7.__doc__)
+        examples = [
+            ['bigml/tests/my_no_root_ensemble/ensemble.json', '{"petal width": 0.5}',
+             'Iris-setosa', '0.3533', '["0.3533", "0.31", "0.33666"]' ]]
+        for example in examples:
+            print("\nTesting with:\n", example)
+            ensemble_create.create_local_ensemble(self, path=example[0])
+            prediction_create.create_local_ensemble_prediction_with_confidence(self, example[1])
+            compare_pred.the_local_prediction_is(self, example[2])
+            compare_pred.the_local_prediction_confidence_is(self, example[3])
+            compare_pred.the_local_probabilities_are(self, example[4])

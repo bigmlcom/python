@@ -3,6 +3,11 @@
 History
 -------
 
+6.3.1 (2021-11-03)
+------------------
+
+- Improving local ensembles to handle faulty models with no root.
+
 6.3.0 (2021-10-21)
 ------------------
 

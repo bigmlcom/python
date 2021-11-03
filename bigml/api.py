@@ -649,7 +649,8 @@ class BigML(ExternalConnectorHandlerMixin,
                 if check_local_fn is None or check_local_fn(resource):
                     return resource
             except ValueError:
-                raise ValueError("The file %s contains no JSON")
+                raise ValueError("The file %s contains no JSON" %
+                    stored_resource)
             except IOError:
                 pass
         if self.auth == '?username=;api_key=;':

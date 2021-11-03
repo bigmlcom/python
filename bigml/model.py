@@ -57,6 +57,7 @@ import bigml.predict_utils.regression as r
 import bigml.predict_utils.boosting as b
 
 from bigml.predict_utils.common import FIELD_OFFSET, extract_distribution
+from bigml.exceptions import NoRootDecisionTree
 
 from bigml.api import FINISHED, STATUSES
 from bigml.api import get_status, get_api_connection, get_model_id
@@ -355,7 +356,12 @@ class Model(BaseModel):
                 self.input_fields = model["input_fields"]
                 BaseModel.__init__(self, model, api=api, fields=fields)
 
-                root = model['model']['root']
+                try:
+                    root = model['model']['root']
+                except KeyError:
+                    raise NoRootDecisionTree("Model %s has no `root` element"
+                        " and cannot be used"
+                        % self.resource_id)
                 self.weighted = "weighted_objective_summary" in root
 
                 terms = {}

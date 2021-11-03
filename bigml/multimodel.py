@@ -40,6 +40,7 @@ import ast
 
 from functools import partial
 
+from bigml.exceptions import NoRootDecisionTree
 from bigml.model import Model, cast_prediction, to_prediction
 from bigml.model import LAST_PREDICTION
 from bigml.util import get_predictions_file_name
@@ -112,11 +113,18 @@ class MultiModel():
                 self.models = models
             else:
                 for model in models:
-                    self.models.append(Model(model, api=api, fields=fields,
-                                             cache_get=cache_get))
+                    # some models have no root info and should not be added
+                    try:
+                        self.models.append(Model(model, api=api, fields=fields,
+                                                 cache_get=cache_get))
+                    except NoRootDecisionTree:
+                        pass
         else:
-            self.models.append(Model(models, api=api, fields=fields,
-                                     cache_get=cache_get))
+            try:
+                self.models.append(Model(models, api=api, fields=fields,
+                                         cache_get=cache_get))
+            except NoRootDecisionTree:
+                pass
 
     def list_models(self):
         """Lists all the model/ids that compound the multi model.

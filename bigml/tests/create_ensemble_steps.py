@@ -79,9 +79,13 @@ def the_ensemble_is_finished_in_less_than(step, secs):
 
 
 #@step(r'I create a local Ensemble$')
-def create_local_ensemble(step):
-    world.local_ensemble = Ensemble(world.ensemble_id, world.api)
-    world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
+def create_local_ensemble(step, path=None):
+    if path is None:
+        world.local_ensemble = Ensemble(world.ensemble_id, world.api)
+        world.local_model = Model(world.local_ensemble.model_ids[0], world.api)
+    else:
+        world.local_ensemble = Ensemble(res_filename(path))
+        world.local_model = world.local_ensemble.multi_model.models[0]
 
 #@step(r'I create a local Ensemble$')
 def create_local_supervised_ensemble(step):

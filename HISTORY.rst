@@ -3,6 +3,11 @@
 History
 -------
 
+6.3.2 (2021-12-02)
+------------------
+
+- Fixing local deepnet prediction method to fit new deepnet structure.
+
 6.3.1 (2021-11-03)
 ------------------
 

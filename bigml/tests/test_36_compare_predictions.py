@@ -607,3 +607,52 @@ class TestComparePrediction(object):
             prediction_compare.i_create_a_local_deepnet_prediction(self,
                                                                    example[4])
             prediction_compare.the_local_prediction_is(self, example[6])
+
+    def test_scenario13(self):
+        """
+            Scenario: Successfully comparing predictions for deepnets:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I create a deepnet with objective "<objective>" and "<params>"
+                And I wait until the deepnet is ready less than <time_3> secs
+                And I create a local deepnet
+                When I create a prediction for "<data_input>"
+                Then the prediction for "<objective>" is "<prediction>"
+                And I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+
+                Examples:
+                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
+            ['data/movies.csv', '10', '50', '60',
+             '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
+             '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
+             '000009', 3.92329,
+             '{"hidden_layers": [{"number_of_nodes": 32, "activation_function": "sigmoid"}]}'],
+
+
+        """
+        examples = [
+            ['data/movies.csv', '10', '50', '60',
+             '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
+             '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
+             '000009', 4.04241,
+             '{"search": true}']]
+        show_doc(self.test_scenario13, examples)
+
+        for example in examples:
+            print("\nTesting with:\n", example)
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source_create.i_update_source_with(self, data=example[4])
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            model_create.i_create_a_deepnet_with_objective_and_params(self, example[6], example[8])
+            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
+            prediction_compare.i_create_a_local_deepnet(self)
+            prediction_create.i_create_a_deepnet_prediction(self, example[5])
+            prediction_create.the_prediction_is(self, example[6], example[7])
+            prediction_compare.i_create_a_local_deepnet_prediction(self, example[5])
+            prediction_compare.the_local_prediction_is(self, example[7])

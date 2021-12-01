@@ -141,6 +141,10 @@ class Deepnet(ModelFields):
                     network = deepnet['network']
                     self.network = network
                     self.networks = network.get('networks', [])
+                    # old deepnets might use the latter option
+                    self.output_exposition = self.network.get(
+                        "output_exposition",
+                        self.networks[0].get("output_exposition"))
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
             else:
@@ -248,7 +252,6 @@ class Deepnet(ModelFields):
 
         # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(norm_input_data)
-
         input_array = self.fill_array(norm_input_data, unique_terms)
 
         if self.networks:
@@ -296,11 +299,10 @@ class Deepnet(ModelFields):
         """Prediction with one model
 
         """
-
         layers = net.init_layers(model['layers'])
         y_out = net.propagate(input_array, layers)
         if self.regression:
-            y_mean, y_stdev = moments(model['output_exposition'])
+            y_mean, y_stdev = moments(self.output_exposition)
             y_out = net.destandardize(y_out, y_mean, y_stdev)
             return y_out[0][0]
 

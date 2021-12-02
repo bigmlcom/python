@@ -142,9 +142,13 @@ class Deepnet(ModelFields):
                     self.network = network
                     self.networks = network.get('networks', [])
                     # old deepnets might use the latter option
+                    if self.networks:
+                        self.output_exposition = self.networks[0].get(
+                            "output_exposition")
+                    else:
+                        self.output_exposition = None
                     self.output_exposition = self.network.get(
-                        "output_exposition",
-                        self.networks[0].get("output_exposition"))
+                        "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
             else:

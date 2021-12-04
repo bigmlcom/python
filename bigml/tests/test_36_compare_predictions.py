@@ -637,7 +637,7 @@ class TestComparePrediction(object):
             ['data/movies.csv', '10', '50', '60',
              '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
              '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
-             '000009', 4.04241,
+             '000009', 3.91208,
              '{"search": true}']]
         show_doc(self.test_scenario13, examples)
 

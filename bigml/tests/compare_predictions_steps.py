@@ -213,7 +213,7 @@ def the_local_centroid_is(step, centroid, distance):
 
 #@step(r'I create a local anomaly detector$')
 def i_create_a_local_anomaly(step):
-    world.local_anomaly = Anomaly(world.anomaly['resource'])
+    world.local_anomaly = Anomaly(world.anomaly["resource"])
 
 
 #@step(r'I create a local anomaly score for "(.*)"$')

@@ -196,8 +196,8 @@ class World(object):
         for resource_type in RESOURCE_TYPES:
             object_list = set(getattr(self, plural(resource_type)))
             if object_list:
-                print("Deleting %s %s" % (len(object_list),
-                                          plural(resource_type)))
+                print("Storing %s %s" % (len(object_list),
+                                         plural(resource_type)))
                 store_method = self.api.getters[resource_type]
                 for obj_id in object_list:
                     counter = 0

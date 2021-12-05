@@ -625,19 +625,13 @@ class TestComparePrediction(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
-            ['data/movies.csv', '10', '50', '60',
-             '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
-             '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
-             '000009', 3.92329,
-             '{"hidden_layers": [{"number_of_nodes": 32, "activation_function": "sigmoid"}]}'],
-
 
         """
         examples = [
             ['data/movies.csv', '10', '50', '60',
              '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
              '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
-             '000009', 3.91208,
+             '000009',
              '{"search": true}']]
         show_doc(self.test_scenario13, examples)
 
@@ -649,10 +643,8 @@ class TestComparePrediction(object):
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_deepnet_with_objective_and_params(self, example[6], example[8])
+            model_create.i_create_a_deepnet_with_objective_and_params(self, example[6], example[7])
             model_create.the_deepnet_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_deepnet(self)
             prediction_create.i_create_a_deepnet_prediction(self, example[5])
-            prediction_create.the_prediction_is(self, example[6], example[7])
             prediction_compare.i_create_a_local_deepnet_prediction(self, example[5])
-            prediction_compare.the_local_prediction_is(self, example[7])

@@ -156,7 +156,13 @@ def sum_and_normalize(youts, is_regression):
 
 def propagate(x_in, layers):
     last_X = identities = to_numpy_array(x_in)
-    for layer in layers:
+
+    if any(layer["residuals"] for layer in layers):
+        first_identities = not any(layer["residuals"] for layer in layers[:2])
+    else:
+        first_identities = False
+
+    for i, layer in enumerate(layers):
         w = layer['weights']
         m = layer['mean']
         s = layer['stdev']
@@ -177,5 +183,8 @@ def propagate(x_in, layers):
             identities = last_X
         else:
             last_X = ACTIVATORS[afn](next_in)
+
+            if first_identities and i == 0:
+                identities = last_X
 
     return last_X

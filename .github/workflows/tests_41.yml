@@ -1,4 +1,4 @@
-name: "Python bindings tests 40"
+name: "Python bindings tests 41"
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  tests-40:
+  tests-45:
 
     runs-on: ubuntu-latest
     strategy:
@@ -32,8 +32,8 @@ jobs:
         pip install pystemmer==2.0.0
         pip install .
 
-    - name: Run tests *23 37 38 40 41 45 33*
+    - name: Run tests *41 38*
       run: |
-        export TESTS=$(for t in "40" "41" "45" "38"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "41" "38"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

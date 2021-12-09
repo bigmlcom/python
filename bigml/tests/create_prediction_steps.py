@@ -184,6 +184,8 @@ def wait_until_prediction_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_prediction(step, world.prediction['resource'])
         status = get_status(world.prediction)
+    if status['code'] == int(code2):
+        world.errors.append(world.prediction)
     eq_(status['code'], int(code1))
 
 

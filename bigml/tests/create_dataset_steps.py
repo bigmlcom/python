@@ -74,6 +74,8 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "dataset")
         read.i_get_the_dataset(step, world.dataset['resource'])
         status = get_status(world.dataset)
+    if status['code'] == int(code2):
+        world.errors.append(world.dataset)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the dataset is ready less than (\d+)')

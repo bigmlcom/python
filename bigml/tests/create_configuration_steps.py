@@ -65,6 +65,8 @@ def wait_until_configuration_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_configuration(step, world.configuration['resource'])
         status = get_status(world.configuration)
+    if status['code'] == int(code2):
+        world.errors.append(world.configuration)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the configuration is ready less than (\d+)')

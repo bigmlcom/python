@@ -58,6 +58,8 @@ def wait_until_batch_projection_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_batch_projection(step, world.batch_projection['resource'])
         status = get_status(world.batch_projection)
+    if status['code'] == int(code2):
+        world.errors.append(world.batch_projection)
     eq_(status['code'], int(code1))
 
 

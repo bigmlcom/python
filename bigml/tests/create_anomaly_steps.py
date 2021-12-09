@@ -113,6 +113,8 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "anomaly")
         i_get_the_anomaly(step, world.anomaly['resource'])
         status = get_status(world.anomaly)
+    if status['code'] == int(code2):
+        world.errors.append(world.anomaly)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')

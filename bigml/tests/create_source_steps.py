@@ -161,6 +161,8 @@ def wait_until_source_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "source")
         read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
+    if status['code'] == int(code2):
+        world.errors.append(world.source)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the source is ready less than (\d+)')

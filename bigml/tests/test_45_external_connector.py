@@ -45,8 +45,8 @@ class TestExternalConnector(object):
                 And I wait until the external connector is ready less than <time_1> secs
                 And I update the external connector with args <args>
                 And the external connector has arguments <args>
-                And I create a source from the external connector id
-                Then the source has arguments "<source_args>"
+                # And I create a source from the external connector id
+                # Then the source has arguments "<source_args>"
 
                 Examples:
                 | time_1  | args |
@@ -62,6 +62,7 @@ class TestExternalConnector(object):
             connector_create.i_update_external_connector_with(self, example[1])
             connector_create.the_external_connector_is_finished(self, example[2])
             connector_create.external_connector_has_args(example[1])
+            """
             args = {"source": "postgresql",
                  "externalconnector_id": world.external_connector["resource"][18:],
                  "query": "SELECT * FROM public.iris"}
@@ -71,3 +72,4 @@ class TestExternalConnector(object):
                  "query": "SELECT * FROM public.iris"})
             source_create.the_source_is_finished(self, example[3])
             source_create.source_has_args(self, json.dumps({"external_data": args}))
+            """

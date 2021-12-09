@@ -102,6 +102,8 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "association")
         i_get_the_association(step, association_id)
         status = get_status(world.association)
+    if status['code'] == int(code2):
+        world.errors.append(world.association)
     eq_(status['code'], int(code1))
 
 

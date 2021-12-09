@@ -98,6 +98,8 @@ def wait_until_model_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_model(step, world.model['resource'])
         status = get_status(world.model)
+    if status['code'] == int(code2):
+        world.errors.append(world.model)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the model is ready less than (\d+)')

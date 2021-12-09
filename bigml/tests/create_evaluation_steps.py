@@ -100,6 +100,8 @@ def wait_until_evaluation_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_evaluation(step, world.evaluation['resource'])
         status = get_status(world.evaluation)
+    if status['code'] == int(code2):
+        world.errors.append(world.evaluation)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the evaluation is ready less than (\d+)')

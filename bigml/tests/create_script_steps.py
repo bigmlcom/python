@@ -89,6 +89,8 @@ def wait_until_script_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_script(step, script_id)
         status = get_status(world.script)
+    if status['code'] == int(code2):
+        world.errors.append(world.script)
     eq_(status['code'], int(code1))
 
 

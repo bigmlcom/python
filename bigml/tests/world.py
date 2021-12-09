@@ -24,6 +24,7 @@ import time
 import pkg_resources
 import datetime
 import pprint
+import json
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
@@ -121,7 +122,7 @@ class World(object):
         self.project_id = None
         self.print_connection_info()
         self.delta = int(os.environ.get('BIGML_DELTA', '1'))
-
+        self.errors = []
 
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')
@@ -186,6 +187,10 @@ class World(object):
                     if counter == MAX_RETRIES:
                         print ("Retries to delete the created resources are"
                                " exhausted. Failed to delete.")
+        if world.errors:
+            print("Failed resources: \n\n")
+        for resource in world.errors:
+            print(json.dumps(resource["status"], indent=4))
 
 
     def store_resources(self):

@@ -104,6 +104,8 @@ def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
         logged_wait(start, delta, count, "batchanomalyscore")
         i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
         status = get_status(world.batch_anomaly_score)
+    if status['code'] == int(code2):
+        world.errors.append(world.batch_anomaly_score)
     eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
 
 

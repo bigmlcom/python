@@ -59,6 +59,8 @@ def wait_until_external_connector_status_code_is(step, code1, code2, secs):
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_external_connector(step, world.external_connector['resource'])
         status = get_status(world.external_connector)
+    if status['code'] == int(code2):
+        world.errors.append(world.external_connector)
     eq_(status['code'], int(code1))
 
 #@step(r'I wait until the external_connector is ready less than (\d+)')

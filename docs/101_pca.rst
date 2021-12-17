@@ -1,8 +1,8 @@
 .. toctree::
    :hidden:
 
-BigML Bindings: 101 - Using an PCA
-==================================
+BigML Bindings: 101 - Using a PCA
+=================================
 
 The PCA model is used to find the linear combination of your original
 features that best describes your data. In that sense, the goal of the model

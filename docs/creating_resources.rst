@@ -439,7 +439,7 @@ you can provide the ID of this source in the ``source_id`` attribute.
 If the annotations file contains the source ID information,
 the existing source will be updated to add the new annotations
 (if still open for editing) or will be cloned (if the source is
-closed for editing) and the new source will be updated . In both cases,
+closed for editing) and the new source will be updated. In both cases,
 images won't be uploaded again.
 
 

@@ -157,3 +157,15 @@ class ModelHandlerMixin(ResourceHandlerMixin):
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
         return self.delete_resource(model)
+
+    def clone_model(self, model,
+                    args=None, wait_time=3, retries=10):
+        """Creates a cloned model from an existing `model`
+
+        """
+        create_args = self._set_clone_from_args(
+            model, "model", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.model_url, body)

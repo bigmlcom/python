@@ -159,7 +159,7 @@ class TestEvaluation(object):
 
                 Examples:
                 | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
-                | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.95007   |
+                | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.97007   |
         """
         print(self.test_scenario4.__doc__)
         examples = [

@@ -18,6 +18,8 @@
 """ Comparing remote and local predictions
 
 """
+import json
+
 from .world import world, setup_module, teardown_module, show_doc
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
@@ -60,14 +62,12 @@ class TestComparePrediction(object):
                 Examples:
                 | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
 
-,
-            ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']
         """
         examples = [
             ['data/iris.csv', '30', '50', '60', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
             ['data/iris.csv', '30', '50', '60', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-versicolor', '{}'],
-            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-versicolor', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.65609, '{}'],
+            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-setosa', '{}'],
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 61.94368, '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1, examples)
 
@@ -272,8 +272,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '60', '{"petal length": 2.46}', '000004', 'Iris-setosa', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-setosa', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2.46}', '000004', 'Iris-versicolor', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-versicolor', '{}', "probability"]]
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
@@ -534,14 +534,9 @@ class TestComparePrediction(object):
                 Examples:
                 |data|time_1|time_2|time_3|data_input|objective|prediction
 
-
-
-
-
-
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
-             '000002', 0.04082],
+             '000002', -0.02616],
             ['data/dates2.csv', '20', '45', '60',
              '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
              '000002', 0.02919],
@@ -564,6 +559,25 @@ class TestComparePrediction(object):
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
              '000002', 0.0199]
 
+
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
+             '000002', -0.02616],
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
+             '000002', 0.13352],
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
+             '000002', 0.10071],
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "1920-06-45T20:21:20.320", "cat-0":"cat1"}',
+             '000002', 0.10071],
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
+             '000002', 0.15235],
+            ['data/dates2.csv', '20', '45', '60',
+             '{"time-1": "1950-11-06T05:34:05.602", "cat-0":"cat1"}',
+             '000002', -0.07686],
         """
         examples = [
             ['data/dates2.csv', '20', '45', '60',
@@ -598,53 +612,75 @@ class TestComparePrediction(object):
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
             model_create.i_create_a_no_suggest_deepnet(self)
             model_create.the_deepnet_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_deepnet(self)
             prediction_create.i_create_a_deepnet_prediction(self, example[4])
-            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_create.the_prediction_is(self, example[5], example[6],
+                                                precision=4)
             prediction_compare.i_create_a_local_deepnet_prediction(self,
                                                                    example[4])
-            prediction_compare.the_local_prediction_is(self, example[6])
+            prediction_compare.the_local_prediction_is(self, example[6],
+                                                       precision=4)
 
     def test_scenario13(self):
         """
-            Scenario: Successfully comparing predictions for deepnets:
-                Given I create a data source uploading a "<data>" file
+            Scenario: Successfully comparing remote and local predictions
+                      with raw date input for deepnets with images:
+                Given I create an annotated images data source uploading a "<data>" file
                 And I wait until the source is ready less than <time_1> secs
                 And I create a dataset
                 And I wait until the dataset is ready less than <time_2> secs
-                And I create a deepnet with objective "<objective>" and "<params>"
-                And I wait until the deepnet is ready less than <time_3> secs
+                And I create a deepnet with parms <parms>
+                And I wait until the deepnet is ready
+                less than <time_3> secs
                 And I create a local deepnet
                 When I create a prediction for "<data_input>"
                 Then the prediction for "<objective>" is "<prediction>"
                 And I create a local prediction for "<data_input>"
                 Then the local prediction is "<prediction>"
+                And the local probability is like the remote one
 
                 Examples:
-                | data             | time_1  | time_2 | time_3 | data_input                             | objective | prediction  | params,
+                |data_directory|time_1|time_2|time_3|params|data_input|objective|prediction
 
         """
         examples = [
-            ['data/movies.csv', '10', '50', '60',
-             '{"fields": {"000007": {"optype": "items", "item_analysis": {"separator": "$"}}}}',
-             '{"genres": "Adventure$Action", "timestamp": 993906291, "occupation": "K-12 student"}',
-             '000009',
-             '{"search": true}']]
+            ['data/images', '500', '500', '600',
+             '{"image_id": "data/fruits1e.png", "label":"f1"}',
+             '100003', {"objective_field": "100003",
+                        "number_of_hidden_layers": 1,
+                        "suggest_structure": False,
+                        "missing_numerics": True,
+                        "learning_rate": 1.0,
+                        "max_training_time": 500,
+                        "hidden_layers": [{
+                            "activation_function": "tanh",
+                            "number_of_nodes": 10}]},
+             ['image_id']]]
         show_doc(self.test_scenario13, examples)
 
         for example in examples:
             print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            source_create.i_update_source_with(self, data=example[4])
+            source_create.i_create_annotated_source(
+                self, example[0], args={"image_analysis": {"enabled": False,
+                                                           "extracted_features": []}})
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_deepnet_with_objective_and_params(self, example[6], example[7])
+            dataset_create.the_dataset_is_finished_in_less_than(self,
+                                                                example[2])
+            model_create.i_create_a_deepnet_with_objective_and_params(
+                self, example[5], json.dumps(example[6]))
             model_create.the_deepnet_is_finished_in_less_than(self, example[3])
             prediction_compare.i_create_a_local_deepnet(self)
-            prediction_create.i_create_a_deepnet_prediction(self, example[5])
-            prediction_compare.i_create_a_local_deepnet_prediction(self, example[5])
+            prediction_create.i_create_a_deepnet_prediction(self, example[4],
+                                                            example[7])
+            prediction_compare.i_create_a_local_deepnet_prediction(self,
+                                                                  example[4],
+                                                                  example[7],
+                                                                  full=True)
+            prediction_create.the_prediction_is( \
+                self, example[5], world.local_prediction["prediction"])
+            prediction_compare.eq_local_and_remote_probability(self)

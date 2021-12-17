@@ -150,3 +150,18 @@ def i_create_local_cluster_from_file(step, export_file):
 #@step(r'the cluster ID and the local cluster ID match')
 def check_cluster_id_local_id(step):
     eq_(world.local_cluster.resource_id, world.cluster["resource"])
+
+
+#@step(r'I clone cluster')
+def clone_cluster(step, cluster):
+    resource = world.api.clone_cluster(cluster,
+                                       {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.cluster = resource['object']
+    # save reference
+    world.clusters.append(resource['resource'])
+
+def the_cloned_cluster_is(step, cluster):
+    eq_(world.cluster["origin"], cluster)

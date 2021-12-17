@@ -30,7 +30,7 @@ from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, get_anomaly_id
 from bigml.constants import ANOMALY_SCORE_PATH, ANOMALY_PATH, \
-    TINY_RESOURCE
+    IMAGE_FIELDS_FILTER, SPECIFIC_EXCLUDES
 
 
 class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
@@ -55,15 +55,27 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
         """
         anomaly_id = None
         resource_type = get_resource_type(anomaly)
-        if resource_type == ANOMALY_PATH:
-            anomaly_id = get_anomaly_id(anomaly)
-            check_resource(anomaly_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
+        if resource_type != ANOMALY_PATH:
             raise Exception("An anomaly detector id is needed to create an"
                             " anomaly score. %s found." % resource_type)
+
+        anomaly_id = get_anomaly_id(anomaly)
+        if anomaly_id is None:
+            raise Exception("Failed to detect a correct anomaly detector "
+                "structure in %s." % anomaly)
+
+        if isinstance(anomaly, dict) and anomaly.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = anomaly
+        else:
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(anomaly_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -71,7 +83,7 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data})
+            "input_data": self.prepare_image_fields(model_info, input_data)})
         create_args.update({
             "anomaly": anomaly_id})
 

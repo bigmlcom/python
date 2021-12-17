@@ -56,7 +56,7 @@ class TestMultiDataset(object):
         """
         print(self.test_scenario1.__doc__)
         examples = [
-            ['data/iris.csv', '10', '10', '10', '0.5', '[0.2, 0.3]']]
+            ['data/iris.csv', '50', '50', '50', '0.5', '[0.2, 0.3]']]
         for example in examples:
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')
@@ -92,7 +92,7 @@ class TestMultiDataset(object):
         """
         print(self.test_scenario2.__doc__)
         examples = [
-            ['data/iris.csv', '10', '10', '10', '0.2', '[0.2]']]
+            ['data/iris.csv', '50', '50', '50', '0.2', '[0.2]']]
         for example in examples:
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')
@@ -122,9 +122,9 @@ class TestMultiDataset(object):
                 | data                | time_1  | time_2 | time_3 | rate |rates
                 | ../data/iris.csv | 10      | 10     | 10     | 1.3 |[1, 0.3]
         """
-        print(self.test_scenario1.__doc__)
+        print(self.test_scenario3.__doc__)
         examples = [
-            ['data/iris.csv', '10', '10', '10', '1.3', '[1, 0.3]']]
+            ['data/iris.csv', '50', '50', '50', '1.3', '[1, 0.3]']]
         for example in examples:
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_args(self, example[0], '{}')

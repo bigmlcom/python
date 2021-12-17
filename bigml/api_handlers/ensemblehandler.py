@@ -105,3 +105,15 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
         return self.delete_resource(ensemble)
+
+    def clone_ensemble(self, ensemble,
+                       args=None, wait_time=3, retries=10):
+        """Creates a cloned ensemble from an existing `ensemble`
+
+        """
+        create_args = self._set_clone_from_args(
+            ensemble, "ensemble", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.ensemble_url, body)

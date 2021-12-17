@@ -29,7 +29,8 @@ except ImportError:
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, get_cluster_id
-from bigml.constants import CENTROID_PATH, CLUSTER_PATH, TINY_RESOURCE
+from bigml.constants import CENTROID_PATH, CLUSTER_PATH, SPECIFIC_EXCLUDES, \
+    IMAGE_FIELDS_FILTER
 
 
 class CentroidHandlerMixin(ResourceHandlerMixin):
@@ -54,15 +55,27 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
         """
         cluster_id = None
         resource_type = get_resource_type(cluster)
-        if resource_type == CLUSTER_PATH:
-            cluster_id = get_cluster_id(cluster)
-            check_resource(cluster_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
+        if resource_type != CLUSTER_PATH:
             raise Exception("A cluster id is needed to create a"
                             " centroid. %s found." % resource_type)
+
+        cluster_id = get_cluster_id(cluster)
+        if cluster_id is None:
+            raise Exception("Failed to detect a correct cluster "
+                "structure in %s." % cluster)
+
+        if isinstance(cluster, dict) and cluster.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = cluster
+        else:
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(cluster_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -70,7 +83,7 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data})
+            "input_data": self.prepare_image_fields(model_info, input_data)})
         create_args.update({
             "cluster": cluster_id})
 

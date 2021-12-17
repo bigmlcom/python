@@ -22,6 +22,8 @@ import time
 import os
 import datetime
 import json
+import re
+import abc
 
 from xml.dom import minidom
 
@@ -77,6 +79,40 @@ def get_resource(resource_type, resource):
                 " %s" % (
                     resource, resource_type))
     raise ValueError("%s is not a valid resource ID." % resource)
+
+
+def get_id(pure_id):
+    """Returns last part or a resource ID.
+
+    """
+    if isinstance(pure_id, str):
+        pure_id = re.sub(r'^[^/]*/(%s)' % c.ID_PATTERN, r'\1', pure_id)
+        if c.ID_RE.match(pure_id):
+            return pure_id
+    raise ValueError("%s is not a valid ID." % pure_id)
+
+
+def get_fields(resource):
+    """Returns the field information in a resource dictionary structure
+
+    """
+    try:
+        resource_type = get_resource_type(resource)
+    except ValueError:
+        raise ValueError("Unknown resource structure. Failed to find"
+                         " a valid resource dictionary as argument.")
+
+    if resource_type in c.RESOURCES_WITH_FIELDS:
+        resource = resource.get('object', resource)
+        # fields structure
+        if resource_type in list(c.FIELDS_PARENT.keys()):
+            fields = resource[c.FIELDS_PARENT[resource_type]].get('fields', {})
+        else:
+            fields = resource.get('fields', {})
+
+        if resource_type == c.SAMPLE_PATH:
+            fields = {field['id']: field for field in fields}
+    return fields
 
 
 def resource_is_ready(resource):
@@ -494,13 +530,19 @@ def http_ok(resource):
 
 
 
-class ResourceHandlerMixin():
+class ResourceHandlerMixin(metaclass=abc.ABCMeta):
     """This class is used by the BigML class as
        a mixin that provides the get method for all kind of
        resources and auxiliar utilities to check their status. It should not
        be instantiated independently.
 
     """
+    @abc.abstractmethod
+    def prepare_image_fields(model, input_data):
+        """This is an abstract method that should be implemented in the API
+        final class to create sources for the image fields used in the model
+
+        """
 
     def get_resource(self, resource, **kwargs):
         """Retrieves a remote resource.
@@ -813,7 +855,6 @@ class ResourceHandlerMixin():
                                  " can be exported to PMML.")
 
         resource_id = get_resource_id(resource)
-
         if resource_id:
             if pmml:
                 # only models with no text fields can be exported
@@ -838,6 +879,7 @@ class ResourceHandlerMixin():
             else:
                 resource_info = self._get("%s%s" % (self.url, resource_id),
                                           **kwargs)
+            print(resource_info)
             if not is_status_final(resource_info):
                 self.ok(resource_info)
             if filename is None:
@@ -845,6 +887,9 @@ class ResourceHandlerMixin():
                 filename = os.path.join( \
                     file_dir, resource_id.replace("/", "_"))
             if resource_type in COMPOSED_RESOURCES:
+                if resource.startswith("shared") and "sharing_key" in resource_info["object"]:
+                    kwargs.update({"shared_api_key": resource_info["object"]["sharing_key"],
+                                   "shared_username": self.username})
                 for component_id in resource_info["object"]["models"]:
                     # for weighted fusions we need to retrieve the component
                     # ID

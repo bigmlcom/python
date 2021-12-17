@@ -149,3 +149,17 @@ def i_create_local_ensemble_from_file(step, export_file):
 #@step(r'the ensemble ID and the local ensemble ID match')
 def check_ensemble_id_local_id(step):
     eq_(world.local_ensemble.resource_id, world.ensemble["resource"])
+
+#@step(r'I clone ensemble')
+def clone_ensemble(step, ensemble):
+    resource = world.api.clone_ensemble(ensemble,
+                                        {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.ensemble = resource['object']
+    # save reference
+    world.ensembles.append(resource['resource'])
+
+def the_cloned_ensemble_is(step, ensemble):
+    eq_(world.ensemble["origin"], ensemble)

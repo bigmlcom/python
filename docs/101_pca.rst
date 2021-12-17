@@ -1,0 +1,129 @@
+.. toctree::
+   :hidden:
+
+BigML Bindings: 101 - Using an PCA
+==================================
+
+The PCA model is used to find the linear combination of your original
+features that best describes your data. In that sense, the goal of the model
+is to provide a transformation that allows dimensionality reduction.
+Following the schema described in the `prediction workflow <api_sketch.html>`_,
+document, this is the code snippet that shows the minimal workflow to
+create a PCA model and produce a single projection.
+
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    # step 0: creating a connection to the service (default credentials)
+    # check how to set your credentials in the Authentication section
+    api = BigML()
+    # step 1: creating a source from the data in your local "data/iris.csv" file
+    source = api.create_source("data/iris.csv")
+    # waiting for the source to be finished. Results will be stored in `source`
+    api.ok(source)
+    # step 3: creating a dataset from the previously created `source`
+    dataset = api.create_dataset(source)
+    # waiting for the dataset to be finished
+    api.ok(dataset)
+    # step 5: creating a PCA model
+    pca = api.create_pca(dataset)
+    # waiting for the PCA to be finished
+    api.ok(pca)
+    # the input data to project
+    input_data = {"petal length": 4, "sepal length": 2, "petal width": 1,
+                  "sepal witdh": 3}
+    # getting the transformed components, the projection
+    projection = api.create_projection(pca, input_data)
+
+
+If you want to configure some of the attributes of your PCA,
+like selecting a default numeric value, you can use the second argument
+in the create call.
+
+
+.. code-block:: python
+
+    # step 5: creating a PCA and using mean as numeric value when missing
+    pca = api.create_pca(dataset, {"default_numeric_value": "mean"})
+    # waiting for the PCA to be finished
+    api.ok(pca)
+
+You can check all the available creation arguments in the `API documentation
+<https://bigml.com/api/pca#pc_pca_arguments>`_.
+
+If you want to add the generated principal components to the original
+dataset (or a different dataset), you can do so by creating
+a `batch_projection` resource. In the example, we'll be assuming you already
+created a `PCA` following the steps 0 to 5 in the previous snippet and
+that you want to score the same data you used in the PCA model.
+
+.. code-block:: python
+
+    test_dataset = dataset
+    # step 10: creating a batch projection
+    batch_projection = api.create_batch_projection(pca, test_dataset)
+    # waiting for the batch_projection to be finished
+    api.ok(batch_projection)
+    # downloading the results to your computer
+    api.download_batch_projection(batch_projection,
+                                  filename='my_dir/my_projection.csv')
+
+The batch projection output (as well as any of the resources created)
+can be configured using additional arguments in the corresponding create calls.
+For instance, to include all the information in the original dataset in the
+output you would change `step 10` to:
+
+.. code-block:: python
+
+    batch_projection = api.create_batch_projection(pca, test_dataset,
+                                                   {"all_fields": True})
+
+Check the `API documentation <https://bigml.com/api/>`_ to learn about the
+available configuration options for any BigML resource.
+
+You can also project your data locally using the `PCA`
+class in the `pca` module. A simple example of that is:
+
+.. code-block:: python
+
+    from bigml.pca import PCA
+    local_pca = PCA("pca/6878ec46983efc21b000001b")
+    # Getting the projection of some input data
+    local_pca.projection({"petal length": 4, "sepal length": 2,
+                          "petal width": 1, "sepal witdh": 3})
+
+Or you could store first your PCA information in a file and use that
+file to create the local `PCA` object:
+
+.. code-block:: python
+
+    # downloading the anomaly detector JSON to a local file
+    from bigml.api import BigML
+    api = BigML()
+    api.export("pca/6878ec46983efc21b000001b",
+               filename="my_pca.json")
+    # creating a PCA  object using the information in the file
+    from bigml.pca import PCA
+    local_pca = PCA("my_pca.json")
+    # getting the projection for some input data
+    local_pca.projection({"petal length": 4, "sepal length": 2,
+                          "petal width": 1, "sepal witdh": 3})
+
+If you want to get the projection locally for all the rows in a CSV file
+(first line should contain the field headers):
+
+.. code-block:: python
+
+    import csv
+    from bigml.pca import PCA
+    local_pca = PCA("pca/68714c667811dd5057000ab5")
+    with open("test_data.csv") as test_handler:
+        reader = csv.DictReader(test_handler)
+        for input_data in reader:
+        # predicting for all rows
+            print local_pca.projection(input_data)
+
+Every modeling resource in BigML has its corresponding local class. Check
+the `Local resources <index.html#local-resources>`_ section of the
+documentation to learn more about them.

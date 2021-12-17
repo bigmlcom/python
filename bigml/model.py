@@ -683,7 +683,6 @@ class Model(BaseModel):
         if full:
             return dict((key, value) for key, value in \
                 full_prediction.items() if value is not None)
-
         return full_prediction['prediction']
 
     def _predict(self, input_data, missing_strategy=LAST_PREDICTION,

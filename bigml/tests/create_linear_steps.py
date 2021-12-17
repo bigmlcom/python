@@ -109,3 +109,18 @@ def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the linear is ready less than (\d+)')
 def the_linear_regression_is_finished_in_less_than(step, secs):
     wait_until_linear_regression_status_code_is(step, FINISHED, FAULTY, secs)
+
+
+#@step(r'I clone linear regression')
+def clone_linear_regression(step, linear_regression):
+    resource = world.api.clone_linear_regression(
+        linear_regression, {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.linear_regression = resource['object']
+    # save reference
+    world.linear_regressions.append(resource['resource'])
+
+def the_cloned_linear_regression_is(step, linear_regression):
+    eq_(world.linear_regression["origin"], linear_regression)

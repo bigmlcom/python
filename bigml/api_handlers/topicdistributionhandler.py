@@ -29,7 +29,8 @@ except ImportError:
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, get_topic_model_id
-from bigml.constants import (TOPIC_DISTRIBUTION_PATH, TINY_RESOURCE)
+from bigml.constants import TOPIC_MODEL_PATH, TOPIC_DISTRIBUTION_PATH, \
+    IMAGE_FIELDS_FILTER, SPECIFIC_EXCLUDES
 
 
 class TopicDistributionHandlerMixin(ResourceHandlerMixin):
@@ -52,16 +53,31 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
         """Creates a new topic distribution.
 
         """
+
+        resource_type = get_resource_type(topic_model)
+        if resource_type != TOPIC_MODEL_PATH:
+            raise Exception("A topic model resource id is needed"
+                            " to create a prediction. %s found." %
+                            resource_type)
+
         topic_model_id = get_topic_model_id(topic_model)
-        if topic_model_id is not None:
-            check_resource(topic_model_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
+        if topic_model_id is None:
+            raise Exception("Failed to detect a correct topic model structure"
+                            " in %s." % topic_model)
+
+        if isinstance(topic_model, dict) and \
+                topic_model.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = topic_model
         else:
-            resource_type = get_resource_type(topic_model)
-            raise Exception("A topic model id is needed to create a"
-                            " topic distribution. %s found." % resource_type)
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(topic_model_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -69,7 +85,7 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data,
+            "input_data": self.prepare_image_fields(model_info, input_data),
             "topicmodel": topic_model_id})
 
         body = json.dumps(create_args)

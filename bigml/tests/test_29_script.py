@@ -50,7 +50,7 @@ class TestScript(object):
         """
         print(self.test_scenario1.__doc__)
         examples = [
-            ['(+ 1 1)', '10', '10', 'name', 'my script']]
+            ['(+ 1 1)', '30', '30', 'name', 'my script']]
         for example in examples:
             print("\nTesting with:\n", example)
             script_create.i_create_a_script(self, example[0])

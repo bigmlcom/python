@@ -148,11 +148,17 @@ def i_create_a_local_ensemble_prediction(step, data=None):
     world.local_prediction = world.local_ensemble.predict(data)
 
 #@step(r'I create a local deepnet prediction for "(.*)"$')
-def i_create_a_local_deepnet_prediction(step, data=None):
+def i_create_a_local_deepnet_prediction(step, data=None, image_fields=None,
+                                        full=False):
     if data is None:
         data = "{}"
+    if image_fields is None:
+        image_fields = []
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data)
+    for field in image_fields:
+        if field in data:
+            data[field] = res_filename(data[field])
+    world.local_prediction = world.local_model.predict(data, full=full)
 
 #@step(r'I create a local deepnet prediction with operating point for "(.*)"$')
 def i_create_a_local_deepnet_prediction_with_op(step, data=None,
@@ -303,7 +309,7 @@ def the_highest_local_prediction_confidence_is(step, input_data, confidence):
 
 
 #@step(r'the local prediction is "(.*)"')
-def the_local_prediction_is(step, prediction):
+def the_local_prediction_is(step, prediction, precision=4):
     if (isinstance(world.local_prediction, list) or
         isinstance(world.local_prediction, tuple)):
         local_prediction = world.local_prediction[0]
@@ -317,12 +323,16 @@ def the_local_prediction_is(step, prediction):
             world.local_model.regression) or \
             (isinstance(world.local_model, MultiModel) and \
             world.local_model.models[0].regression):
-        local_prediction = round(float(local_prediction), 4)
-        prediction = round(float(prediction), 4)
+        local_prediction = round(float(local_prediction), precision)
+        prediction = round(float(prediction), precision)
         assert_almost_equal(local_prediction, float(prediction),
-                            places=5)
+                            places=precision)
     else:
-        eq_(local_prediction, prediction)
+        if isinstance(local_prediction, str):
+            eq_(local_prediction, prediction)
+        else:
+            eq_(round(local_prediction, precision),
+                round(prediction, precision))
 
 #@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):
@@ -350,6 +360,11 @@ def the_local_ensemble_prediction_is(step, prediction):
 def the_local_probability_is(step, probability):
     probability =  round(float(probability), 4)
     local_probability = world.local_prediction["probability"]
+
+def eq_local_and_remote_probability(step):
+    local_probability = str(round(world.local_prediction["probability"], 4))
+    remote_probability = str(round(world.prediction["probability"], 4))
+    eq_(local_probability, remote_probability)
 
 #@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):

@@ -1,1 +1,1 @@
-[{"rules": ["000002"], "item": {"count": 16, "complement": false, "field_id": "000000", "name": "hygiene articles"}, "score": 0.01609}]
+[{"item": {"complement": false, "count": 16, "field_id": "000000", "name": "hygiene articles"}, "rules": ["000002"], "score": 0.01609}]

@@ -30,7 +30,7 @@ from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, check_resource, get_association_id
 from bigml.constants import ASSOCIATION_SET_PATH, ASSOCIATION_PATH, \
-    TINY_RESOURCE
+    IMAGE_FIELDS_FILTER, SPECIFIC_EXCLUDES
 
 
 class AssociationSetHandlerMixin(ResourceHandlerMixin):
@@ -55,15 +55,28 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
         """
         association_id = None
         resource_type = get_resource_type(association)
-        if resource_type == ASSOCIATION_PATH:
-            association_id = get_association_id(association)
-            check_resource(association_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
-        else:
-            raise Exception("A association id is needed to create an"
+        if resource_type != ASSOCIATION_PATH:
+            raise Exception("An association id is needed to create an"
                             " association set. %s found." % resource_type)
+
+        association_id = get_association_id(association)
+        if association_id is None:
+            raise Exception("Failed to detect a correct association "
+                "structure in %s." % association)
+
+        if isinstance(association, dict) and \
+                association.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = association
+        else:
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(association_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -71,7 +84,7 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data})
+            "input_data": self.prepare_image_fields(model_info, input_data)})
         create_args.update({
             "association": association_id})
 

@@ -109,3 +109,15 @@ class TopicModelHandlerMixin(ResourceHandlerMixin):
         check_resource_type(topic_model, TOPIC_MODEL_PATH,
                             message="A topic model id is needed.")
         return self.delete_resource(topic_model)
+
+    def clone_topic_model(self, topic_model,
+                          args=None, wait_time=3, retries=10):
+        """Creates a cloned topic model from an existing `topic model`
+
+        """
+        create_args = self._set_clone_from_args(
+            topic_model, "topicmodel", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.topic_model_url, body)

@@ -20,6 +20,7 @@
 """
 from .world import world, setup_module, teardown_module
 from . import create_source_steps as source_create
+from bigml.api_handlers.resourcehandler import get_id
 
 class TestUploadSource(object):
 
@@ -58,3 +59,65 @@ class TestUploadSource(object):
             source_create.i_upload_a_file_with_args(self, example[0], example[2])
             source_create.the_source_is_finished(self, example[1])
             source_create.source_has_args(self, example[2])
+
+    def test_scenario2(self):
+        """
+
+            Scenario: Successfully creating composite source:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                Then I create a composite from the last two sources
+                And I wait until the source is ready less than <time_1> secs
+                Then the composite exists and has the previous two sources
+
+                Examples:
+                | data             | time_1  |
+                | ../data/iris.csv | 30      |
+
+        """
+        print(self.test_scenario2.__doc__)
+        examples = [
+            ['data/iris.csv', '30']]
+        for example in examples:
+            print("\nTesting with:\n", example)
+            sources = []
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            sources.append(get_id(world.source["resource"]))
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            sources.append(get_id(world.source["resource"]))
+            source_create.i_create_composite(self, sources)
+            source_create.the_source_is_finished(self, example[1])
+            for source in sources:
+                world.sources.remove("source/%s" % source)
+            source_create.the_composite_contains(self, sources)
+
+    def test_scenario3(self):
+        """
+
+            Scenario: Successfully cloning source:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I clone the last source
+                And I wait until the source is ready less than <time_1> secs
+                Then the new source the first one as origin
+
+                Examples:
+                | data             | time_1  |
+                | ../data/iris.csv | 30      |
+
+        """
+        print(self.test_scenario3.__doc__)
+        examples = [
+            ['data/iris.csv', '30']]
+        for example in examples:
+            print("\nTesting with:\n", example)
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source = world.source["resource"]
+            source_create.clone_source(self, source)
+            source_create.the_source_is_finished(self, example[1])
+            source_create.the_cloned_source_origin_is(self, source)

@@ -94,6 +94,7 @@ PMML_MODELS = [
 # Resource Ids patterns
 ID_PATTERN = '[a-f0-9]{24}'
 SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'
+ID_RE = re.compile(r'^%s$' % ID_PATTERN)
 SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
 DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))
@@ -101,7 +102,8 @@ MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     MODEL_PATH, ID_PATTERN, MODEL_PATH, SHARED_PATTERN))
 PREDICTION_RE = re.compile(r'^%s/%s$' % (PREDICTION_PATH, ID_PATTERN))
 EVALUATION_RE = re.compile(r'^%s/%s$' % (EVALUATION_PATH, ID_PATTERN))
-ENSEMBLE_RE = re.compile(r'^%s/%s$' % (ENSEMBLE_PATH, ID_PATTERN))
+ENSEMBLE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (
+    ENSEMBLE_PATH, ID_PATTERN, ENSEMBLE_PATH, SHARED_PATTERN))
 BATCH_PREDICTION_RE = re.compile(r'^%s/%s$' % (BATCH_PREDICTION_PATH,
                                                ID_PATTERN))
 CLUSTER_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
@@ -253,8 +255,12 @@ FAULTY = -1
 UNKNOWN = -2
 RUNNABLE = -3
 
-# Minimum query string to get model fields
+# Minimum query string to get model status
 TINY_RESOURCE = "full=false"
+
+# Minimum query string to get model image fields and status
+IMAGE_FIELDS_FILTER = ("optype=image;exclude=summary,objective_summary,"
+                       "input_fields,importance,model_fields")
 
 # Default storage folder
 STORAGE = "./storage"
@@ -268,6 +274,7 @@ RESOURCES_WITH_FIELDS = [SOURCE_PATH, DATASET_PATH, MODEL_PATH,
                          SAMPLE_PATH, CORRELATION_PATH, STATISTICAL_TEST_PATH,
                          LOGISTIC_REGRESSION_PATH, ASSOCIATION_PATH,
                          TOPIC_MODEL_PATH, ENSEMBLE_PATH, PCA_PATH,
+                         FUSION_PATH,
                          DEEPNET_PATH, LINEAR_REGRESSION_PATH]
 DEFAULT_MISSING_TOKENS = ["", "N/A", "n/a", "NULL", "null", "-", "#DIV/0",
                           "#REF!", "#NAME?", "NIL", "nil", "NA", "na",
@@ -286,9 +293,23 @@ FIELDS_PARENT = { \
     "correlation": "correlations",
     "sample": "sample",
     "pca": "pca",
+    "fusion": "fusion",
     "timeseries": "timeseries",
     "statisticaltest": "statistical_tests"}
 ALL_FIELDS = "limit=-1"
+SPECIFIC_EXCLUDES = { \
+    "model": ["root"],
+    "anomaly": ["trees"],
+    "cluster": ["clusters"],
+    "logisticregression": ["coefficients"],
+    "linearregression": ["coefficients"],
+    "ensemble": ["models"],
+    "deepnet": ["network"],
+    "topicmodel": ["topics"],
+    "association": ["rules", "rules_summary"],
+    "fusion": ["models"],
+    "pca": ["pca"],
+    "timeseries": ["ets_models"]}
 
 EXTERNAL_CONNECTION_ATTRS = { \
     "BIGML_EXTERNAL_CONN_HOST": "host",
@@ -302,3 +323,5 @@ EXTERNAL_CONNECTION_ATTRS = { \
 # missing strategies
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
+
+IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']

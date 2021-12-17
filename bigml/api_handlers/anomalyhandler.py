@@ -109,3 +109,15 @@ class AnomalyHandlerMixin(ResourceHandlerMixin):
         check_resource_type(anomaly, ANOMALY_PATH,
                             message="An anomaly detector id is needed.")
         return self.delete_resource(anomaly)
+
+    def clone_anomaly(self, anomaly,
+                      args=None, wait_time=3, retries=10):
+        """Creates a cloned anomaly from an existing `anomaly`
+
+        """
+        create_args = self._set_clone_from_args(
+            anomaly, "anomaly", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.anomaly_url, body)

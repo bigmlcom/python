@@ -113,3 +113,17 @@ def i_create_local_time_series_from_file(step, export_file):
 #@step(r'the time series ID and the local time series ID match')
 def check_time_series_id_local_id(step):
     eq_(world.local_time_series.resource_id, world.time_series["resource"])
+
+#@step(r'I clone time series')
+def clone_time_series(step, time_series):
+    resource = world.api.clone_time_series(time_series,
+                                           {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.time_series = resource['object']
+    # save reference
+    world.time_series_set.append(resource['resource'])
+
+def the_cloned_time_series_is(step, time_series):
+    eq_(world.time_series["origin"], time_series)

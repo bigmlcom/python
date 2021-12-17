@@ -1,0 +1,5 @@
+{"description": "Fruit images to test colour distributions",
+ "images_file": "./fruits_hist.zip",
+ "new_fields": [{"name": "new_label", "optype": "categorical"}],
+ "source_id": null,
+ "annotations": "./annotations.json"}

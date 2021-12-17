@@ -145,3 +145,18 @@ def i_create_local_association_from_file(step, export_file):
 #@step(r'the association ID and the local association ID match')
 def check_association_id_local_id(step):
     eq_(world.local_association.resource_id, world.association["resource"])
+
+
+#@step(r'I clone association')
+def clone_association(step, association):
+    resource = world.api.clone_association(association,
+                                           {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.association = resource['object']
+    # save reference
+    world.associations.append(resource['resource'])
+
+def the_cloned_association_is(step, association):
+    eq_(world.association["origin"], association)

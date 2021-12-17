@@ -23,6 +23,7 @@
 import sys
 import os
 import numbers
+import time
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -39,8 +40,10 @@ import mimetypes
 import requests
 
 from requests_toolbelt import MultipartEncoder
+from zipfile import ZipFile
 
-from bigml.util import is_url, maybe_save
+from bigml.util import is_url, maybe_save, filter_by_extension, \
+    infer_field_type
 from bigml.bigmlconnection import (
     HTTP_CREATED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
@@ -48,9 +51,28 @@ from bigml.bigmlconnection import (
     HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    resource_is_ready
-from bigml.constants import SOURCE_PATH
+    resource_is_ready, get_source_id, get_id, get_resource_type
+from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
+from bigml.fields import Fields
+
+
+MAX_CHANGES = 500
+
+
+def compact_regions(regions):
+    """Returns the list of regions in the compact value used for updates """
+
+    out_regions = []
+    for region in regions:
+        new_region = []
+        new_region.append(region.get("label"))
+        new_region.append(region.get("xmin"))
+        new_region.append(region.get("ymin"))
+        new_region.append(region.get("xmax"))
+        new_region.append(region.get("ymax"))
+        out_regions.append(new_region)
+    return out_regions
 
 
 class SourceHandlerMixin(ResourceHandlerMixin):
@@ -144,7 +166,6 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 "message": "The resource couldn't be created"}}
 
         try:
-
             if isinstance(file_name, str):
                 name = os.path.basename(file_name)
                 file_handler = open(file_name, "rb")
@@ -213,6 +234,56 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
+    def clone_source(self, source,
+                     args=None, wait_time=3, retries=10):
+        """Creates a cloned source from an existing `source`
+
+        """
+        create_args = self._set_clone_from_args(
+            source, "source", args=args, wait_time=wait_time, retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.source_url, body)
+
+    def _create_composite(self, sources, args=None,
+                          wait_time=3, retries=10):
+        """Creates a composite source from an existing `source` or list of
+           sources
+
+        """
+        create_args = {}
+        if args is not None:
+            create_args.update(args)
+
+        if not isinstance(sources, list):
+            sources = [sources]
+
+        source_ids = []
+        for source in sources:
+            # we accept full resource IDs or pure IDs and produce pure IDs
+            try:
+                source_id = get_source_id(source)
+            except ValueError:
+                source_id = None
+
+            if source_id is None:
+                pure_id = get_id(source)
+                source_id = "source/%s" % pure_id
+            else:
+                resource_type = get_resource_type(source)
+                pure_id = source_id.replace("source/", "")
+
+            if pure_id is not None:
+                source_ids.append(pure_id)
+            else:
+                raise Exception("A source or list of source ids"
+                                " are needed to create a"
+                                " source.")
+        create_args.update({"sources": source_ids})
+
+        body = json.dumps(create_args)
+        return self._create(self.source_url, body)
+
     def create_source(self, path=None, args=None):
         """Creates a new source.
 
@@ -227,10 +298,252 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         if is_url(path):
             return self._create_remote_source(path, args=args)
         if isinstance(path, list):
+            try:
+                if all([get_id(item) is not None \
+                        for item in path]):
+                    # list of sources
+                    return self._create_composite(path, args=args)
+            except ValueError:
+                pass
             return self._create_inline_source(path, args=args)
         if isinstance(path, dict):
             return self._create_connector_source(path, args=args)
+        try:
+            if get_source_id(path) is not None:
+            # cloning source
+                return self.clone_source(path, args=args)
+        except ValueError:
+            pass
         return self._create_local_source(file_name=path, args=args)
+
+    def create_annotated_source(self, annotations_file, args=None):
+        """Creates a composite source for annotated images.
+
+        Images are usually associated to other information, like labels or
+        numeric fields, which can be regarded as additional attributes
+        related to that image. The associated information can be described
+        as annotations for each of the images. These annotations can be
+        provided as a JSON file that contains the properties associated to
+        each image and the name of the image file, that is used as foreign key.
+        The meta information needed to create the structure of the composite
+        source, such as the fields to be associated and their types,
+        should also be included in the annotations file.
+        This is an example of the expected structure of the annotations file:
+
+            {"description": "Fruit images to test colour distributions",
+             "images_file": "./fruits_hist.zip",
+             "new_fields": [{"name": "new_label", "optype": "categorical"}],
+             "source_id": null,
+             "annotations": [
+                {"file": "f1/fruits1f.png", "new_label": "True"},
+                {"file": "f1/fruits1.png", "new_label": "False"},
+                {"file": "f2/fruits2e.png", "new_label": "False"}]}
+
+        The "images_file" attribute should contain the path to zip-compressed
+        images file and the "annotations" attribute the corresponding
+        annotations. The "new_fields" attribute should be a list of the fields
+        used as annotations for the images.
+
+        Also, if you prefer to keep your annotations in a separate file, you
+        can point to that file in the "annotations" attribute:
+
+            {"description": "Fruit images to test colour distributions",
+             "images_file": "./fruits_hist.zip",
+             "new_fields": [{"name": "new_label", "optype": "categorical"}],
+             "source_id": null,
+             "annotations": "./annotations_detail.json"}
+
+        The created source will contain the fields associated to the
+        uploaded images, plus an additional field named "new_label" with the
+        values defined in this file.
+
+        If a source has already been created from this collection of images,
+        you can provide the ID of this source in the "source_id" attribute.
+        Thus, the existing source will be updated to add the new annotations
+        (if still open for editing) or will be cloned (if the source is
+        closed for editing) and the new source will be updated . In both cases,
+        images won't be uploaded when "source_id" is used.
+
+        """
+
+        if not os.path.exists(annotations_file):
+            raise ValueError("A local path to a JSON file must be provided.")
+
+        with open(annotations_file) as annotations_handler:
+            annotations_info = json.load(annotations_handler)
+
+        if annotations_info.get("images_file") is None:
+            raise ValueError("Failed to find the `images_file` attribute "
+                             "in the annotations file %s" % annotations_file)
+        base_directory = os.path.dirname(annotations_file)
+        zip_path = os.path.join(base_directory,
+                                annotations_info.get("images_file"))
+        if isinstance(annotations_info.get("annotations"), str):
+            annotations = os.path.join(base_directory,
+                                       annotations_info.get("annotations"))
+        else:
+            annotations = annotations_info.get("annotations")
+        # check metadata file attributes
+        if annotations_info.get("source_id") is None:
+            # upload the compressed images
+            source = self.create_source(zip_path, args=args)
+            if (not self.ok(source)):
+                raise IOError("A source could not be created for %s" %
+                              zip_path)
+            source_id = source["resource"]
+        else:
+            source_id = annotations_info.get("source_id")
+        return self.update_composite_annotations(
+            source_id, zip_path, annotations,
+            new_fields=annotations_info.get("new_fields"))
+
+    def update_composite_annotations(self, source, images_file,
+                                     annotations, new_fields=None,
+                                     source_changes=None):
+        """Updates a composite source to add a list of annotations
+        The annotations argument should contain annotations in a BigML-COCO
+        syntax:
+
+            [{"file": "image1.jpg",
+              "label": "label1"}.
+             {"file": "image2.jpg",
+              "label": "label1"},
+             {"file": "image3.jpg",
+              "label": "label2"}]
+
+        or point to a JSON file that contains that information,
+        and the images_file argument should point to a zip file that
+        contains the referrered images sorted as uploaded to build the source.
+
+        If the attributes in the annotations file ("file" excluded) are not
+        already defined in the composite source, the `new_fields` argument
+        can be set to contain a list of the fields and types to be added
+
+            [{"name": "label", "optype": "categorical"}]
+        """
+        if source_changes is None:
+            source_changes = {}
+
+        source_id = get_source_id(source)
+        if source_id:
+            source = self.get_source(source_id)
+            if source.get("object", {}).get("closed"):
+                source = self.clone_source(source_id)
+        # corresponding source IDs
+        try:
+            sources = source["object"]["sources"]
+        except KeyError:
+            raise ValueError("Failed to find the list of sources in the "
+                             "created composite.")
+        try:
+            with ZipFile(images_file) as zip_handler:
+                file_list = zip_handler.namelist()
+            file_list = filter_by_extension(file_list, IMAGE_EXTENSIONS)
+        except IOError:
+            raise ValueError("Failed to find the list of images in zip %s" %
+                             images_file)
+
+        file_to_source = dict(zip(file_list, sources))
+
+        fields = Fields(source)
+
+        # adding the annotation values
+        if annotations:
+            if isinstance(annotations, str):
+                # path to external annotations file
+                try:
+                    with open(annotations) as \
+                            annotations_handler:
+                        annotations = json.load(annotations_handler)
+                except IOError as exc:
+                    raise ValueError("Failed to find annotations in %s" %
+                                     exc)
+            elif not isinstance(annotations, list):
+                raise ValueError("The annotations attribute needs to contain"
+                                 " a list of annotations or the path to "
+                                 " a file with such a list.")
+        if new_fields is None:
+            new_fields = {}
+            for annotation in annotations:
+                for field, value in annotation.items():
+                    if field != "file" and field not in new_fields:
+                        new_fields[field] = infer_field_type(field, value)
+            new_fields = list(new_fields.values())
+
+        # creating new annotation fields, if absent
+        if new_fields:
+            field_names = [field["name"] for _, field in fields.fields.items()]
+            changes = []
+            for field_info in new_fields:
+                if field_info.get("name") not in field_names:
+                    changes.append(field_info)
+            if changes:
+                source_changes.update({"new_fields": changes})
+        if source_changes:
+            source = self.update_source(source["resource"], source_changes)
+            self.ok(source)
+
+        fields = Fields(source)
+
+        changes = []
+        changes_dict = {}
+        for annotation in annotations:
+            filename = annotation.get("file")
+            try:
+                file_index = file_list.index(filename)
+            except ValueError:
+                continue
+            for key in annotation.keys():
+                if key == "file":
+                    continue
+                if key not in changes_dict:
+                    changes_dict[key] = []
+                value = annotation.get(key)
+                changes_dict[key].append((value, file_to_source[filename]))
+
+        for field, values in changes_dict.items():
+            try:
+                optype = fields.fields[fields.field_id(field)]["optype"]
+                if optype == "categorical":
+                    sorted_values = sorted(values, key=lambda x: x[0])
+                    old_value = None
+                    source_ids = []
+                    for value, source_id in sorted_values:
+                        if value != old_value and old_value is not None:
+                            changes.append({"field": field, "value": old_value,
+                                            "components": source_ids})
+                            source_ids = [source_id]
+                            old_value = value
+                        else:
+                            source_ids.append(source_id)
+                            if old_value is None:
+                                old_value = value
+                    changes.append({"field": field, "value": value,
+                                    "components": source_ids})
+                elif optype == "regions":
+                    for value, source_id in values:
+                        changes.append(
+                            {"field": field,
+                             "value": compact_regions(value),
+                             "components": [source_id]})
+                else:
+                    for value, source_id in values:
+                        changes.append(
+                            {"field": field,
+                             "value": value,
+                             "components": [source_id]})
+            except Exception:
+                pass
+
+        # we need to limit the amount of changes per update
+        for offset in range(0, int(len(changes) / MAX_CHANGES) + 1):
+            new_batch = changes[offset: offset + MAX_CHANGES]
+            if new_batch:
+                source = self.update_source(source,
+                                            {"row_values": new_batch})
+                self.ok(source)
+
+        return source
 
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.
@@ -281,10 +594,10 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                             message="A source id is needed.")
         return self.update_resource(source, changes)
 
-    def delete_source(self, source):
+    def delete_source(self, source, query_string=''):
         """Deletes a remote source permanently.
 
         """
         check_resource_type(source, SOURCE_PATH,
                             message="A source id is needed.")
-        return self.delete_resource(source)
+        return self.delete_resource(source, query_string=query_string)

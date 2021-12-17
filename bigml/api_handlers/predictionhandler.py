@@ -29,7 +29,8 @@ except ImportError:
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     check_resource, get_resource_id, get_resource_type
-from bigml.constants import SUPERVISED_PATHS, TINY_RESOURCE, PREDICTION_PATH
+from bigml.constants import SUPERVISED_PATHS, IMAGE_FIELDS_FILTER, \
+    PREDICTION_PATH, FIELDS_PARENT, SPECIFIC_EXCLUDES
 
 
 class PredictionHandlerMixin(ResourceHandlerMixin):
@@ -69,11 +70,22 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
                             resource_type)
 
         model_id = get_resource_id(model)
-        if model_id is not None:
-            check_resource(model_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
+        if model_id is None:
+            raise Exception("Failed to detect a correct model structure"
+                " in %s." % model)
+
+        if isinstance(model, dict) and model.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = model
+        else:
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(model_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -81,7 +93,7 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data})
+            "input_data": self.prepare_image_fields(model_info, input_data)})
         if model_id is not None:
             create_args.update({
                 "model": model_id})

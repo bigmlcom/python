@@ -39,7 +39,7 @@ import json
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.constants import STORAGE, ALL_FIELDS
+from bigml.constants import STORAGE, ALL_FIELDS, TINY_RESOURCE
 from bigml.util import is_in_progress
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.sourcehandler import SourceHandlerMixin
@@ -132,7 +132,7 @@ from bigml.api_handlers.resourcehandler import (
     get_topic_distribution_id, get_batch_topic_distribution_id,
     get_time_series_id, get_forecast_id, get_deepnet_id, get_optiml_id,
     get_fusion_id, get_pca_id, get_projection_id, get_batch_projection_id,
-    get_configuration_id, get_linear_regression_id,
+    get_configuration_id, get_linear_regression_id, get_fields,
     get_script_id, get_execution_id, get_library_id, get_external_connector_id)
 
 
@@ -212,28 +212,6 @@ def filter_kwargs(kwargs, list_of_keys, out=False):
                (key in list_of_keys and not out):
             new_kwargs[key] = kwargs[key]
     return new_kwargs
-
-def get_fields(resource):
-    """Returns the field information in a resource dictionary structure
-
-    """
-    try:
-        resource_type = get_resource_type(resource)
-    except ValueError:
-        raise ValueError("Unknown resource structure. Failed to find"
-                         " a valid resource dictionary as argument.")
-
-    if resource_type in RESOURCES_WITH_FIELDS:
-        resource = resource.get('object', resource)
-        # fields structure
-        if resource_type in list(FIELDS_PARENT.keys()):
-            fields = resource[FIELDS_PARENT[resource_type]].get('fields', {})
-        else:
-            fields = resource.get('fields', {})
-
-        if resource_type == SAMPLE_PATH:
-            fields = {field['id']: field for field in fields}
-    return fields
 
 
 class BigML(ExternalConnectorHandlerMixin,
@@ -375,6 +353,30 @@ class BigML(ExternalConnectorHandlerMixin,
                 resource_type, resource_type))
             self.listers[resource_type] = getattr(self,
                                                   "list_%s" % method_name)
+
+    def prepare_image_fields(self, model_info, input_data):
+        """Creating a source for each image field used by the model
+        that is found in input_data
+
+        """
+        fields = self.get_fields(model_info)
+        image_fields = [field_pair for field_pair in fields.items()
+            if field_pair[1]["optype"] == "image"]
+        new_input_data = {}
+        new_input_data.update(input_data)
+        for image_field, value in image_fields:
+            if image_field in input_data:
+                key = image_field
+                filename = input_data[key]
+            elif value["name"] in input_data:
+                key = value["name"]
+                filename = input_data[key]
+            source = self.create_source(filename)
+            source = self.check_resource(source,
+                                         query_string=TINY_RESOURCE,
+                                         raise_on_error=True)
+            new_input_data[key] = source["resource"]
+        return new_input_data
 
     def create(self, resource_type, *args, **kwargs):
         """Create resources
@@ -610,12 +612,14 @@ class BigML(ExternalConnectorHandlerMixin,
         return STATUSES[UPLOADING]
 
     def check_resource(self, resource,
-                       query_string='', wait_time=1):
+                       query_string='', wait_time=1, retries=None,
+                       raise_on_error=False):
         """Check resource method.
 
         """
         return check_resource(resource,
                               query_string=query_string, wait_time=wait_time,
+                              retries=retries, raise_on_error=raise_on_error,
                               api=self)
 
     def source_from_batch_prediction(self, batch_prediction, args=None):

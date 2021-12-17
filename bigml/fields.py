@@ -48,7 +48,7 @@ import random
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
 from bigml.util import DEFAULT_LOCALE
-from bigml.api import get_resource_type, get_fields
+from bigml.api_handlers.resourcehandler import get_resource_type, get_fields
 from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, SUPERVISED_PATHS, FUSION_PATH,
     RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS)
@@ -196,7 +196,10 @@ class Fields():
         if objective_field is None and objective_column is not None:
             objective_field = objective_column
             objective_field_present = True
-        self.update_objective_field(objective_field, objective_field_present)
+        if self.fields:
+            # empty composite sources will not have an objective field
+            self.update_objective_field(objective_field,
+                                        objective_field_present)
 
     def update_objective_field(self, objective_field, objective_field_present,
                                headers=None):

@@ -29,7 +29,8 @@ except ImportError:
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     check_resource, get_resource_id, get_resource_type
-from bigml.constants import TINY_RESOURCE, PROJECTION_PATH, PCA_PATH
+from bigml.constants import TINY_RESOURCE, PROJECTION_PATH, PCA_PATH, \
+    IMAGE_FIELDS_FILTER, SPECIFIC_EXCLUDES
 
 
 class ProjectionHandlerMixin(ResourceHandlerMixin):
@@ -62,11 +63,22 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
                             resource_type)
 
         pca_id = get_resource_id(pca)
-        if pca_id is not None:
-            check_resource(pca_id,
-                           query_string=TINY_RESOURCE,
-                           wait_time=wait_time, retries=retries,
-                           raise_on_error=True, api=self)
+        if pca_id is None:
+            raise Exception("Failed to detect a correct pca structure"
+                            " in %s." % pca)
+
+        if isinstance(pca, dict) and pca.get("resource") is not None:
+            # retrieving fields info from model structure
+            model_info = pca
+        else:
+            image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
+                ",".join(SPECIFIC_EXCLUDES[resource_type])
+            model_info = check_resource(pca_id,
+                                        query_string=IMAGE_FIELDS_FILTER,
+                                        wait_time=wait_time,
+                                        retries=retries,
+                                        raise_on_error=True,
+                                        api=self)
 
         if input_data is None:
             input_data = {}
@@ -74,7 +86,7 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
         create_args.update({
-            "input_data": input_data})
+            "input_data": self.prepare_image_fields(model_info, input_data)})
         if pca_id is not None:
             create_args.update({
                 "pca": pca_id})

@@ -196,3 +196,16 @@ def i_update_dataset_with(step, data="{}"):
                                         json.loads(data))
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
+
+#@step(r'I clone dataset')
+def clone_dataset(step, dataset):
+    resource = world.api.clone_dataset(dataset, {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.dataset = resource['object']
+    # save reference
+    world.datasets.append(resource['resource'])
+
+def the_cloned_dataset_is(step, dataset):
+    eq_(world.dataset["origin"], dataset)

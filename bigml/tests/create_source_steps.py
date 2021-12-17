@@ -18,7 +18,6 @@
 import time
 import json
 import csv
-import sys
 
 
 from datetime import datetime
@@ -102,12 +101,49 @@ def i_create_using_connector(step, connector):
     # save reference
     world.sources.append(resource['resource'])
 
+#@step(r'I create from list of sources ".*"')
+def i_create_composite(step, sources):
+    resource = world.api.create_source(sources, {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.composites.append(resource['resource'])
+
+def the_composite_contains(step, sources):
+    eq_(world.source["sources"], sources)
+
+#@step(r'I clone source')
+def clone_source(step, source):
+    resource = world.api.clone_source(source, {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.sources.append(resource['resource'])
+
+def the_cloned_source_origin_is(step, source):
+    eq_(world.source["origin"], source)
+
+def i_create_annotated_source(step, directory, args=None):
+    if args is None:
+        args = {}
+    args.update({'project': world.project_id})
+    resource = world.api.create_annotated_source(res_filename(directory),
+                                                 args)
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.source = resource['object']
+    # save reference
+    world.composites.append(resource['resource'])
+
 #@step(r'I create a data source from inline data slurped from "(.*)"')
 def i_create_using_dict_data(step, data):
     # slurp CSV file to local variable
-    mode = 'rb'
-    if sys.version > '3':
-        mode = 'rt'
+    mode = 'rt'
     with open(res_filename(data), mode) as fid:
         reader = csv.DictReader(fid)
         dict_data = [row for row in reader]

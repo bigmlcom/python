@@ -25,7 +25,6 @@ try:
 except ImportError:
     import json
 
-
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     get_resource_type, resource_is_ready, check_resource, get_source_id, \
@@ -193,11 +192,24 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
                 errors_dict[field_id] = errors[field_id]['total']
         return errors_dict
 
-
     def download_dataset(self, dataset, filename=None, retries=10):
         """Donwloads dataset contents to a csv file or file object
 
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        return self._download_resource(dataset, filename, retries=retries)
+        return self._download_resource(dataset,
+                                       filename,
+                                       retries=retries)
+
+    def clone_dataset(self, dataset,
+                      args=None, wait_time=3, retries=10):
+        """Creates a cloned dataset from an existing `dataset`
+
+        """
+        create_args = self._set_clone_from_args(
+            dataset, "dataset", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.dataset_url, body)

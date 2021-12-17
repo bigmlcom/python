@@ -62,9 +62,44 @@ class TestSampleDataset(object):
             source_create.i_upload_a_file(self, example[0])
             source_create.the_source_is_finished(self, example[1])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example[2])
             sample_create.i_create_a_sample_from_dataset(self)
             sample_create.the_sample_is_finished_in_less_than(self, example[3])
             sample_create.i_update_sample_name(self, example[5])
             sample_create.the_sample_is_finished_in_less_than(self, example[4])
             sample_create.i_check_sample_name(self, example[5])
+
+    def test_scenario2(self):
+        """
+
+            Scenario: Successfully cloning dataset:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <time_1> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                And I clone the last dataset
+                And I wait until the dataset is ready less than <time_2> secs
+                Then the new dataset is as the origin dataset
+
+                Examples:
+                | data             | time_1  | time_2
+                | ../data/iris.csv | 30      |30
+
+        """
+        print(self.test_scenario2.__doc__)
+        examples = [
+            ['data/iris.csv', '30', '30']]
+        for example in examples:
+            print("\nTesting with:\n", example)
+            source_create.i_upload_a_file(self, example[0])
+            source_create.the_source_is_finished(self, example[1])
+            source = world.source["resource"]
+            source_create.clone_source(self, source)
+            source_create.the_source_is_finished(self, example[1])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example[2])
+            dataset = world.dataset["resource"]
+            dataset_create.clone_dataset(self, dataset)
+            dataset_create.the_cloned_dataset_is(self, dataset)

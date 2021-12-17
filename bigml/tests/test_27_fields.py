@@ -97,6 +97,7 @@ class TestFields(object):
                 And I wait until the dataset is ready less than <time_2> secs
                 And I create a Fields object from the dataset with objective column "<objective_column>"
                 And I import a summary fields file "<summary_file>" as a fields structure
+                And I clone the source to open it
                 And I update the source with the file "<summary_file>"
                 And I update the dataset with the file "<summary_file>"
                 Then I check the new field structure has field "<field_id>" as "<optype>"
@@ -116,6 +117,8 @@ class TestFields(object):
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[6])
             fields_steps.create_fields_from_dataset(self, example[2])
+            source_create.clone_source(self, world.source["resource"])
+            source_create.the_source_is_finished(self, example[1])
             fields_steps.import_summary_file(self, example[3])
             fields_steps.update_with_summary_file(self, world.source, example[3])
             fields_steps.update_with_summary_file(self, world.dataset, example[3])

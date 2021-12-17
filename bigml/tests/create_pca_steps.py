@@ -95,3 +95,18 @@ def wait_until_pca_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the PCA is ready less than (\d+)')
 def the_pca_is_finished_in_less_than(step, secs):
     wait_until_pca_status_code_is(step, FINISHED, FAULTY, secs)
+
+
+#@step(r'I clone pca')
+def clone_pca(step, pca):
+    resource = world.api.clone_pca(pca,
+                                   {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.pca = resource['object']
+    # save reference
+    world.pcas.append(resource['resource'])
+
+def the_cloned_pca_is(step, pca):
+    eq_(world.pca["origin"], pca)

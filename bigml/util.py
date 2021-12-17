@@ -621,3 +621,24 @@ def load(resource_id, cache_get):
     """
 
     return msgpack.loads(cache_get(resource_id))
+
+
+def filter_by_extension(file_list, extension_list):
+    """Returns the files that match the given extensions
+
+    """
+    return [filename for filename in file_list if \
+        os.path.splitext(filename)[1].lower() in extension_list]
+
+
+def infer_field_type(field, value):
+    """Returns a dictionary containing the name and optype of the field
+    as inferred from the corresponding value
+    """
+    if isinstance(value, str):
+        optype = "categorical"
+    elif isinstance(value, list):
+        optype = "regions"
+    else:
+        optype = "numeric"
+    return {"name": field, "optype": optype}

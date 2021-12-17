@@ -165,3 +165,17 @@ def i_create_local_topic_model_from_file(step, export_file):
 #@step(r'the topic model ID and the local topic model ID match')
 def check_topic_model_id_local_id(step):
     eq_(world.local_topic_model.resource_id, world.topic_model["resource"])
+
+#@step(r'I clone topic model')
+def clone_topic_model(step, topic_model):
+    resource = world.api.clone_topic_model(topic_model,
+                                           {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.topic_model = resource['object']
+    # save reference
+    world.topic_models.append(resource['resource'])
+
+def the_cloned_topic_model_is(step, topic_model):
+    eq_(world.topic_model["origin"], topic_model)

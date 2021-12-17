@@ -40,8 +40,16 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 
 """
 import logging
+import os
 
 from functools import cmp_to_key
+
+# avoiding tensorflow info logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+
+import tensorflow as tf
+tf.autograph.set_verbosity(0)
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
@@ -53,6 +61,9 @@ from bigml.model import parse_operating_point, sort_categories
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
+
+from sensenet.models.wrappers import create_model
+
 
 LOGGER = logging.getLogger('BigML')
 
@@ -119,10 +130,10 @@ class Deepnet(ModelFields):
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):
             status = get_status(deepnet)
             objective_field = deepnet['objective_fields']
-            deepnet = deepnet['deepnet']
+            deepnet_info = deepnet['deepnet']
             if 'code' in status and status['code'] == FINISHED:
-                self.fields = deepnet['fields']
-                missing_tokens = deepnet.get('missing_tokens')
+                self.fields = deepnet_info['fields']
+                missing_tokens = deepnet_info.get('missing_tokens')
                 ModelFields.__init__(
                     self, self.fields,
                     objective_id=extract_objective(objective_field),
@@ -136,9 +147,10 @@ class Deepnet(ModelFields):
                         self.objective_id]
                     self.class_names = sorted(self.objective_categories)
 
-                self.missing_numerics = deepnet.get('missing_numerics', False)
-                if 'network' in deepnet:
-                    network = deepnet['network']
+                self.missing_numerics = deepnet_info.get('missing_numerics',
+                                                         False)
+                if 'network' in deepnet_info:
+                    network = deepnet_info['network']
                     self.network = network
                     self.networks = network.get('networks', [])
                     # old deepnets might use the latter option
@@ -151,6 +163,8 @@ class Deepnet(ModelFields):
                         "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
+
+                self.deepnet = create_model(deepnet)
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:
@@ -181,7 +195,7 @@ class Deepnet(ModelFields):
                 category = unique_terms.get(field_id)
                 if category is not None:
                     category = category[0][0]
-                columns.append([category])
+                columns.append(category)
             else:
                 # when missing_numerics is True and the field had missings
                 # in the training data, then we add a new "is missing?" element
@@ -196,7 +210,7 @@ class Deepnet(ModelFields):
                         columns.extend([0.0, 1.0])
                 else:
                     columns.append(input_data.get(field_id))
-        return pp.preprocess(columns, self.preprocess)
+        return columns
 
     def predict(self, input_data, operating_point=None, operating_kind=None,
                 full=False):
@@ -257,11 +271,10 @@ class Deepnet(ModelFields):
         # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(norm_input_data)
         input_array = self.fill_array(norm_input_data, unique_terms)
-
-        if self.networks:
-            prediction = self.predict_list(input_array)
-        else:
-            prediction = self.predict_single(input_array)
+        prediction = list(self.deepnet(input_array)[0])
+        # prediction is now a numpy array of probabilities for classification
+        # and a numpy array with the value for regressions
+        prediction = self.to_prediction(prediction)
         if full:
             if not isinstance(prediction, dict):
                 prediction = {"prediction": prediction}
@@ -271,33 +284,6 @@ class Deepnet(ModelFields):
                 prediction = prediction["prediction"]
 
         return prediction
-
-    def predict_single(self, input_array):
-        """Makes a prediction with a single network
-
-        """
-        if self.network['trees'] is not None:
-            input_array = pp.tree_transform(input_array, self.network['trees'])
-
-        return self.to_prediction(self.model_predict(input_array,
-                                                     self.network))
-
-    def predict_list(self, input_array):
-        """Makes predictions with a list of networks
-
-        """
-        if self.network['trees'] is not None:
-            input_array_trees = pp.tree_transform(input_array,
-                                                  self.network['trees'])
-        youts = []
-        for model in self.networks:
-            if model['trees']:
-                youts.append(self.model_predict(input_array_trees, model))
-            else:
-                youts.append(self.model_predict(input_array, model))
-
-        return self.to_prediction(net.sum_and_normalize(youts,
-                                                        self.regression))
 
     def model_predict(self, input_array, model):
         """Prediction with one model
@@ -317,12 +303,12 @@ class Deepnet(ModelFields):
 
         """
         if self.regression:
-            return float(y_out)
-        prediction = sorted(enumerate(y_out[0]), key=lambda x: -x[1])[0]
+            return float(y_out[0])
+        prediction = sorted(enumerate(y_out), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
                       "probability": round(prediction[1], PRECISION),
                       "distribution": [{"category": category,
-                                        "probability": round(y_out[0][i],
+                                        "probability": round(y_out[i],
                                                              PRECISION)} \
             for i, category in enumerate(self.class_names)]}
 

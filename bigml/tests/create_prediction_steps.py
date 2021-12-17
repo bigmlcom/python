@@ -20,7 +20,7 @@ import time
 from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
     assert_less
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world, logged_wait, res_filename
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
@@ -112,18 +112,19 @@ def i_create_a_proportional_prediction(step, data=None):
     world.predictions.append(resource['resource'])
 
 
-def check_prediction(got, expected):
+def check_prediction(got, expected, precision=5):
     if not isinstance(got, str):
-        assert_almost_equals(got, float(expected), 4)
+        assert_almost_equals(got, float(expected), precision)
     else:
         eq_(got, expected)
 
-def the_prediction_is(step, objective, prediction):
-    check_prediction(world.prediction['prediction'][objective], prediction)
+def the_prediction_is(step, objective, prediction, precision=5):
+    check_prediction(world.prediction['prediction'][objective], prediction,
+                     precision=precision)
 
-def the_median_prediction_is(step, objective, prediction):
+def the_median_prediction_is(step, objective, prediction, precision=5):
     check_prediction(world.prediction['prediction_path'][
-        'objective_summary']['median'], prediction)
+        'objective_summary']['median'], prediction, precision=precision)
 
 def the_centroid_is_with_distance(step, centroid, distance):
     check_prediction(world.centroid['centroid_name'], centroid)
@@ -270,16 +271,25 @@ def i_create_a_logistic_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
-def i_create_a_deepnet_prediction(step, data=None):
+def i_create_a_deepnet_prediction(step, data=None, image_fields=None):
     if data is None:
         data = "{}"
+    if image_fields is None:
+        image_fields = []
     deepnet = world.deepnet['resource']
     data = json.loads(data)
+    data_image_fields = []
+    for field in image_fields:
+        if field in data:
+            data[field] = res_filename(data[field])
+            data_image_fields.append(field)
     resource = world.api.create_prediction(deepnet, data)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']
     world.prediction = resource['object']
+    for field in data_image_fields:
+        world.sources.append(world.prediction["input_data"][field])
     world.predictions.append(resource['resource'])
 
 def i_create_a_deepnet_prediction_with_op(step, data=None,

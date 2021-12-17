@@ -3,6 +3,12 @@
 History
 -------
 
+7.0.0 (2021-08-03)
+~~~~~~~~~~~~~~~~~~
+
+- Adding composite sources to the API REST interface methods.
+- Adding predictions for images.
+
 6.3.2 (2021-12-02)
 ------------------
 

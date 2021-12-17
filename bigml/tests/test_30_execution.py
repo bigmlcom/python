@@ -56,7 +56,7 @@ class TestExecution(object):
         """
         print(self.test_scenario1.__doc__)
         examples = [
-            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', 2]]
+            ['(+ 1 1)', '30', '30', '30', 'name', 'my execution', 2]]
 
         for example in examples:
             print("\nTesting with:\n", example)
@@ -90,7 +90,7 @@ class TestExecution(object):
         """
         print(self.test_scenario2.__doc__)
         examples = [
-            ['(+ 1 1)', '10', '10', '10', 'name', 'my execution', [2, 2]]]
+            ['(+ 1 1)', '100', '100', '100', 'name', 'my execution', [2, 2]]]
         for example in examples:
             print("\nTesting with:\n", example)
             script_create.i_create_a_script(self, example[0])
@@ -122,8 +122,8 @@ class TestExecution(object):
         """
         print(self.test_scenario3.__doc__)
         examples = [
-            ['data/one_plus_one.whizzml', '10', '10', '10', 'name', 'my execution', 2],
-            ['https://gist.github.com/mmerce/49e0a69cab117b6a11fb490140326020', '10', '10', '10', 'name', 'my execution', 2]
+            ['data/one_plus_one.whizzml', '50', '50', '50', 'name', 'my execution', 2],
+            ['https://gist.github.com/mmerce/49e0a69cab117b6a11fb490140326020', '30', '30', '30', 'name', 'my execution', 2]
 
 ]
         for example in examples:

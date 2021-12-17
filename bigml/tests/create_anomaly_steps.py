@@ -52,6 +52,20 @@ def i_create_an_anomaly(step):
     i_create_an_anomaly_from_dataset(step)
 
 
+#@step(r'I clone anomaly')
+def clone_anomaly(step, anomaly):
+    resource = world.api.clone_anomaly(anomaly,
+                                       {'project': world.project_id})
+    # update status
+    world.status = resource['code']
+    world.location = resource['location']
+    world.anomaly = resource['object']
+    # save reference
+    world.anomalies.append(resource['resource'])
+
+def the_cloned_anomaly_is(step, anomaly):
+    eq_(world.anomaly["origin"], anomaly)
+
 #@step(r'I create an anomaly detector from a dataset$')
 def i_create_an_anomaly_from_dataset(step):
     dataset = world.dataset.get('resource')

@@ -37,6 +37,9 @@ If you want to configure some of the attributes of your anomaly detector,
 like the number of top anomalies retrieved,
 you can use the second argument in the create call.
 
+
+.. code-block:: python
+
     # step 5: creating an anomaly detector with a list of the 20 top anomalies
     anomaly = api.create_anomaly(dataset, {"top_n": 20})
     # waiting for the anomaly detector to be finished

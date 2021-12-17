@@ -27,7 +27,8 @@ import pprint
 import json
 
 from bigml.api import BigML
-from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED
+from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED, \
+    HTTP_NOT_FOUND
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
 from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
 from bigml.util import get_exponential_wait
@@ -38,6 +39,7 @@ RESOURCE_TYPES = [
     'cluster',
     'fusion',
     'optiml',
+    'composite',
     'source',
     'dataset',
     'prediction',
@@ -170,20 +172,27 @@ class World(object):
         """
 
         for resource_type in RESOURCE_TYPES:
-            object_list = set(getattr(self, plural(resource_type)))
+            object_list = getattr(self, plural(resource_type))
+            object_list.reverse()
             if object_list:
                 print("Deleting %s %s" % (len(object_list),
                                           plural(resource_type)))
+                kwargs = {}
+                if resource_type == "composite":
+                    resource_type = "source"
+                    kwargs = {"query_string": "delete_all=true"}
                 delete_method = self.api.deleters[resource_type]
                 for obj_id in object_list:
                     counter = 0
-                    result = delete_method(obj_id)
-                    while (result['code'] != HTTP_NO_CONTENT and
+                    print("Deleting %s" % obj_id)
+                    result = delete_method(obj_id, **kwargs)
+                    while (result['code'] not in [HTTP_NO_CONTENT,
+                                                  HTTP_NOT_FOUND] and
                            counter < MAX_RETRIES):
                         print("Delete failed for %s. Retrying" % obj_id)
                         time.sleep(3 * self.delta)
                         counter += 1
-                        result = delete_method(obj_id)
+                        result = delete_method(obj_id, **kwargs)
                     if counter == MAX_RETRIES:
                         print ("Retries to delete the created resources are"
                                " exhausted. Failed to delete.")
@@ -203,6 +212,8 @@ class World(object):
             if object_list:
                 print("Storing %s %s" % (len(object_list),
                                          plural(resource_type)))
+                if resource_type == "composite":
+                    resource_type = "source"
                 store_method = self.api.getters[resource_type]
                 for obj_id in object_list:
                     counter = 0
@@ -238,7 +249,6 @@ def teardown_module():
             world.project_id)['object']['stats']
         for resource_type, value in list(project_stats.items()):
             if value['count'] != 0:
-                # assert False, ("Increment in %s: %s" % (resource_type, value))
                 print("WARNING: Increment in %s: %s" % (resource_type, value))
         world.api.delete_project(world.project_id)
         world.project_id = None

@@ -225,6 +225,7 @@ class BigMLConnection():
                 raise AttributeError("Cannot find BIGML_API_KEY in"
                                      " your environment")
 
+        self.username = username
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)
         self.project = None
         self.organization = None

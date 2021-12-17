@@ -111,3 +111,15 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         check_resource_type(linear_regression, LINEAR_REGRESSION_PATH,
                             message="A linear regression id is needed.")
         return self.delete_resource(linear_regression)
+
+    def clone_linear_regression(self, linear_regression,
+                                args=None, wait_time=3, retries=10):
+        """Creates a cloned linear regression from an existing `linear regression`
+
+        """
+        create_args = self._set_clone_from_args(
+            linear_regression, "linearregression",
+            args=args, wait_time=wait_time, retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.linear_regression_url, body)

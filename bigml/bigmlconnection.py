@@ -955,8 +955,9 @@ class BigMLConnection():
                           ' requests for a while before resuming.')
                 return error
             if code == HTTP_PAYMENT_REQUIRED:
-                error += ('\nYou\'ll need to buy some more credits to perform'
-                          ' the chosen action')
+                error += ('\nThis operation exceeds your subscription limits.'
+                          ' Please, upgrade your subscription, reduce the '
+                          'dataset size or wait for a running task to finish.')
                 return error
 
         return "Invalid %s structure:\n\n%s" % (resource_type, resource)

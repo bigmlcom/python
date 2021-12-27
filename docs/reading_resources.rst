@@ -156,7 +156,8 @@ Number of instances in datasets created before April 1st, 2012 ordered by size
 ::
 
     [dataset['rows'] for dataset in
-      api.list_datasets("created__lt=2012-04-1;order_by=size")['objects']]
+      api.list_datasets(
+        "created__lt=2012-04-01T00:00:00.00000;order_by=size")['objects']]
 
 Model ids ordered by number of predictions (in descending order).
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -66,8 +66,8 @@ class TestComparePrediction(object):
         examples = [
             ['data/iris.csv', '30', '50', '60', '{"petal width": 4}', '000004', 'Iris-virginica', '{}'],
             ['data/iris.csv', '30', '50', '60', '{"sepal length": 4.1, "sepal width": 2.4}', '000004', 'Iris-versicolor', '{}'],
-            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-setosa', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 61.94368, '{}'],
+            ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004', 'Iris-versicolor', '{}'],
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.65609, '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1, examples)
 
@@ -272,8 +272,8 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/iris.csv', '10', '50', '60', '{"petal length": 2.46}', '000004', 'Iris-versicolor', '{}', "probability"],
-            ['data/iris.csv', '10', '50', '60', '{"petal length": 2}', '000004', 'Iris-versicolor', '{}', "probability"]]
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 2.46}', '000004', 'Iris-setosa', '{}', "probability"],
+            ['data/iris.csv', '10', '50', '60', '{"petal length": 6}', '000004', 'Iris-versicolor', '{}', "probability"]]
         show_doc(self.test_scenario6, examples)
 
         for example in examples:
@@ -648,7 +648,7 @@ class TestComparePrediction(object):
 
         """
         examples = [
-            ['data/images', '500', '500', '600',
+            ['data/images/metadata.json', '500', '500', '600',
              '{"image_id": "data/fruits1e.png", "label":"f1"}',
              '100003', {"objective_field": "100003",
                         "number_of_hidden_layers": 1,

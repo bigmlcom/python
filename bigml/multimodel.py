@@ -19,7 +19,7 @@
 This module defines a Multiple Model to make predictions locally using multiple
 local models.
 
-This module cannot only save you a few credits, but also enormously
+This module can help you enormously to
 reduce the latency for each prediction and let you use your models
 offline.
 

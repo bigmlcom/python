@@ -19,7 +19,7 @@
 This module defines an Ensemble to make predictions locally using its
 associated models.
 
-This module can not only save you a few credits, but also enormously
+This module can help you enormously to
 reduce the latency for each prediction and let you use your models
 offline.
 

@@ -20,7 +20,7 @@ This module defines a PCA to make projections locally or
 embedded into your application without needing to send requests to
 BigML.io.
 
-This module cannot only save you a few credits, but also enormously
+This module can help you enormously to
 reduce the latency for each prediction and let you use your PCAs offline.
 
 Example usage (assuming that you have previously set up the BIGML_USERNAME

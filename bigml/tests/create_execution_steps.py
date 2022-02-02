@@ -97,7 +97,7 @@ def wait_until_execution_status_code_is(step, code1, code2, secs):
            status['code'] != int(code2)):
         count += 1
         progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "execution", process=process)
+        logged_wait(start, delta, count, "execution", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_execution(step, execution_id)
         status = get_status(world.execution)

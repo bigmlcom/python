@@ -265,12 +265,14 @@ def teardown_class():
     world.local_model = None
     world.local_deepnet = None
 
-def logged_wait(start, delta, count, res_description):
+def logged_wait(start, delta, count, res_description, progress=0):
     """Comparing the elapsed time to the expected delta and waiting for
        the next sleep period.
 
     """
-    wait_time = min(get_exponential_wait(delta / 100.0, count), delta)
+    progress = progress if progress > 0.8 else 0 # dumping when almost finished
+    wait_time = min(get_exponential_wait(
+        (1.0 - progress) * delta / 100.0, count), delta)
     print("Sleeping %s" % wait_time)
     time.sleep(wait_time)
     elapsed = (datetime.datetime.utcnow() - start).seconds

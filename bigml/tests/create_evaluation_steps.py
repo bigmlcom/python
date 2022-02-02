@@ -96,7 +96,8 @@ def wait_until_evaluation_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "evaluation")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "evaluation", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_evaluation(step, world.evaluation['resource'])
         status = get_status(world.evaluation)

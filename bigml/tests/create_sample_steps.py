@@ -68,7 +68,8 @@ def wait_until_sample_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "sample")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "sample", process=process)
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_sample(step, sample_id)
         status = get_status(world.sample)

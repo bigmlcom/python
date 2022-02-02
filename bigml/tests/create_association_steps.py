@@ -99,7 +99,8 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "association")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "association", progress=progress)
         i_get_the_association(step, association_id)
         status = get_status(world.association)
     if status['code'] == int(code2):

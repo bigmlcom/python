@@ -68,7 +68,8 @@ def wait_until_tst_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "statisticaltests")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "statisticaltests", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_tst(step, statistical_test_id)
         status = get_status(world.statistical_test)

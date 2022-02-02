@@ -654,8 +654,7 @@ class TestComparePrediction(object):
                         "number_of_hidden_layers": 1,
                         "suggest_structure": False,
                         "missing_numerics": True,
-                        "learning_rate": 1.0,
-                        "max_training_time": 500,
+                        "max_training_time": 100,
                         "hidden_layers": [{
                             "activation_function": "tanh",
                             "number_of_nodes": 10}]},

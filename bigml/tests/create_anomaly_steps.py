@@ -124,7 +124,8 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "anomaly")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "anomaly", progress=progress)
         i_get_the_anomaly(step, world.anomaly['resource'])
         status = get_status(world.anomaly)
     if status['code'] == int(code2):

@@ -405,7 +405,8 @@ def i_create_a_local_logistic_model(step):
 
 #@step(r'I create a local deepnet model$')
 def i_create_a_local_deepnet(step):
-    world.local_model = Deepnet(world.deepnet['resource'])
+    world.local_model = Deepnet({"resource": world.deepnet['resource'],
+                                 "object": world.deepnet})
     if hasattr(world, "local_ensemble"):
         world.local_ensemble = None
 

@@ -86,7 +86,8 @@ def wait_until_topic_model_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "topicmodel")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "topicmodel", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         i_get_the_topic_model(step, world.topic_model['resource'])
         status = get_status(world.topic_model)

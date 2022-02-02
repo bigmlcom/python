@@ -55,7 +55,8 @@ def wait_until_external_connector_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "externalconnector")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "externalconnector", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_external_connector(step, world.external_connector['resource'])
         status = get_status(world.external_connector)

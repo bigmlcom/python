@@ -173,7 +173,8 @@ def the_source_has_been_created_async(step, secs):
     delta = int(secs) * world.delta
     while status['code'] == UPLOADING:
         count += 1
-        logged_wait(start, delta, count, "source")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "source", process=process)
         read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
     eq_(world.resource['code'], HTTP_CREATED)
@@ -194,7 +195,8 @@ def wait_until_source_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "source")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "source", process=process)
         read.i_get_the_source(step, world.source['resource'])
         status = get_status(world.source)
     if status['code'] == int(code2):

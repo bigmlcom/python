@@ -65,7 +65,8 @@ def wait_until_time_series_status_code_is(step, code1, code2, secs):
     while (status['code'] != int(code1) and
            status['code'] != int(code2)):
         count += 1
-        logged_wait(start, delta, count, "timeseries")
+        progress = status.get("progress", 0)
+        logged_wait(start, delta, count, "timeseries", progress=progress)
         assert_less((datetime.utcnow() - start).seconds, delta)
         read.i_get_the_time_series(step, world.time_series['resource'])
         status = get_status(world.time_series)

@@ -18,7 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -27,7 +27,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_statistical_tst_steps import i_get_the_tst
+from .read_resurce_steps import wait_until_status_code_is
 
 
 #@step(r'the statistical test name is "(.*)"')
@@ -59,23 +59,7 @@ def i_update_tst_name(step, name):
 
 #@step(r'I wait until the statistical test status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_tst_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    statistical_test_id = world.statistical_test['resource']
-    i_get_the_tst(step, statistical_test_id)
-    status = get_status(world.statistical_test)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "statisticaltests", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_tst(step, statistical_test_id)
-        status = get_status(world.statistical_test)
-    if status['code'] == int(code2):
-        world.errors.append(world.statistical_test)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.statistical_test)
 
 
 #@step(r'I wait until the statistical test is ready less than (\d+)')

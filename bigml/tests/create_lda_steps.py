@@ -18,10 +18,10 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
-from .read_lda_steps import i_get_the_topic_model
+from .read_resource_steps import wait_until_status_code_is
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -78,22 +78,8 @@ def i_update_topic_model_name(step, name):
 
 #@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_topic_model_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_topic_model(step, world.topic_model['resource'])
-    status = get_status(world.topic_model)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "topicmodel", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_topic_model(step, world.topic_model['resource'])
-        status = get_status(world.topic_model)
-    if status['code'] == int(code2):
-        world.errors.append(world.topic_model)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.topic_model)
+
 
 #@step(r'I wait until the topic model is ready less than (\d+)')
 def the_topic_model_is_finished_in_less_than(step, secs):

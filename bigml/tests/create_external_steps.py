@@ -21,7 +21,7 @@ import sys
 
 
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -31,7 +31,7 @@ from bigml.api import UPLOADING
 from bigml.api import get_status
 
 
-from . import read_external_steps as read
+from .read_resource_steps import wait_until_status_code_is
 
 #@step(r'I create an external connector$')
 def i_create_external_connector(step):
@@ -47,22 +47,8 @@ def i_create_external_connector(step):
 
 #@step(r'I wait until the external connector status code is either (\d) or (\d) less than (\d+)')
 def wait_until_external_connector_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_external_connector(step, world.external_connector['resource'])
-    status = get_status(world.external_connector)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "externalconnector", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        read.i_get_the_external_connector(step, world.external_connector['resource'])
-        status = get_status(world.external_connector)
-    if status['code'] == int(code2):
-        world.errors.append(world.external_connector)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.external_connector)
+
 
 #@step(r'I wait until the external_connector is ready less than (\d+)')
 def the_external_connector_is_finished(step, secs):

@@ -17,7 +17,7 @@
 import time
 import json
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_OK
@@ -26,7 +26,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from . import read_dataset_steps as read
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'I create a dataset$')
@@ -63,21 +63,8 @@ def i_create_a_dataset_with(step, data="{}"):
 
 #@step(r'I wait until the dataset status code is either (\d) or (\d) less than (\d+)')
 def wait_until_dataset_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_dataset(step, world.dataset['resource'])
-    status = get_status(world.dataset)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "dataset", progress=progress)
-        read.i_get_the_dataset(step, world.dataset['resource'])
-        status = get_status(world.dataset)
-    if status['code'] == int(code2):
-        world.errors.append(world.dataset)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.dataset)
+
 
 #@step(r'I wait until the dataset is ready less than (\d+)')
 def the_dataset_is_finished_in_less_than(step, secs, shared=None):

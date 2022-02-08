@@ -20,7 +20,7 @@ import requests
 import csv
 import traceback
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -29,7 +29,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.io import UnicodeReader
 
-from .read_batch_projection_steps import i_get_the_batch_projection
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'I create a batch projection for the dataset with the PCA$')
@@ -46,21 +46,7 @@ def i_create_a_batch_projection(step):
 
 #@step(r'I wait until the batch projection status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_projection_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_batch_projection(step, world.batch_projection['resource'])
-    status = get_status(world.batch_projection)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "batchprojection")
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_batch_projection(step, world.batch_projection['resource'])
-        status = get_status(world.batch_projection)
-    if status['code'] == int(code2):
-        world.errors.append(world.batch_projection)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.batch_projection)
 
 
 #@step(r'I wait until the batch projection is ready less than (\d+)')

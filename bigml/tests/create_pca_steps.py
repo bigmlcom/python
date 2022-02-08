@@ -28,7 +28,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_pca_steps import i_get_the_pca
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the pca name is "(.*)"')
@@ -74,23 +74,7 @@ def i_update_pca_name(step, name):
 
 #@step(r'I wait until the PCA status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_pca_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    pca_id = world.pca['resource']
-    i_get_the_pca(step, pca_id)
-    status = get_status(world.pca)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "pca", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_pca(step, pca_id)
-        status = get_status(world.pca)
-    if status['code'] == int(code2):
-        world.errors.append(world.pca)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.pca)
 
 
 #@step(r'I wait until the PCA is ready less than (\d+)')

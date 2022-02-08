@@ -24,7 +24,8 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from .read_projection_steps import i_get_the_projection
+from .read_resource_step import wait_until_status_code_is
+
 
 def i_create_a_projection(step, data=None):
     if data is None:
@@ -53,22 +54,7 @@ def the_projection_is(step, projection):
 
 
 def wait_until_projection_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_projection(step, world.projection['resource'])
-    status = get_status(world.projection)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "projection")
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_projection(step, world.projection['resource'])
-        status = get_status(world.projection)
-    if status['code'] == int(code2):
-        world.errors.append(world.projection)
-    eq_(status['code'], int(code1))
-
+    wait_until_status_code_is(code1, code2, secs, world.projection)
 
 def the_projection_is_finished_in_less_than(step, secs):
     wait_until_projection_status_code_is(step, FINISHED, FAULTY, secs)

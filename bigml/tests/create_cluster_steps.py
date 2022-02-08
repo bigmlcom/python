@@ -18,10 +18,10 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
-from .read_cluster_steps import i_get_the_cluster
+from .read_resource_steps import wait_until_status_code_is
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -71,22 +71,7 @@ def i_create_a_cluster_with_options(step, options):
 
 #@step(r'I wait until the cluster status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_cluster_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_cluster(step, world.cluster['resource'])
-    status = get_status(world.cluster)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "cluster", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_cluster(step, world.cluster['resource'])
-        status = get_status(world.cluster)
-    if status['code'] == int(code2):
-        world.errors.append(world.cluster)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.cluster)
 
 #@step(r'I wait until the cluster is ready less than (\d+)')
 def the_cluster_is_finished_in_less_than(step, secs):

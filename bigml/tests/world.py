@@ -29,7 +29,8 @@ import json
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED, \
     HTTP_NOT_FOUND
-from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES
+from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES, \
+    TINY_RESOURCE, ALL_FIELDS
 from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
 from bigml.util import get_exponential_wait
 from nose.tools import assert_less
@@ -220,6 +221,16 @@ class World(object):
                     result = store_method(obj_id)
                     self.api.ok(result)
 
+    def get_minimal_resource(self, resource_id):
+        """Retrieving resource info in a minimal way to get status info"""
+        return self.api.get_resource(
+            resource_id, query_string=TINY_RESOURCE)
+
+    def get_maximal_resource(self, resource_id):
+        """Retrieving all resource info for local handling"""
+        return self.api.get_resource(
+            resource_id, query_string=ALL_FIELDS)
+
 
 world = World()
 
@@ -265,15 +276,28 @@ def teardown_class():
     world.local_model = None
     world.local_deepnet = None
 
-def logged_wait(start, delta, count, res_description, progress=0):
+
+
+def logged_wait(start, delta, count, res_description, progress=0, status=None):
     """Comparing the elapsed time to the expected delta and waiting for
        the next sleep period.
 
     """
+    if status is not None:
+        progress = status.get("progress", 0)
+        status_code = status.get("code")
     progress = progress if progress > 0.8 else 0 # dumping when almost finished
     wait_time = min(get_exponential_wait(
-        (1.0 - progress) * delta / 100.0, count), delta)
-    print("Sleeping %s" % wait_time)
+        ((1.0 - progress) * delta / 100.0) + 0.01, count), delta)
+    message = ""
+    if status is not None:
+        message =" (status: %s, progress: %s)" % (
+            status["code"],
+            progress)
+    print("Waiting for %s%s %s secs." % (
+        res_description,
+        message,
+        wait_time))
     time.sleep(wait_time)
     elapsed = (datetime.datetime.utcnow() - start).seconds
     if elapsed > delta / 2.0:

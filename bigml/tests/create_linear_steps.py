@@ -19,7 +19,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -28,7 +28,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_linear_steps import i_get_the_linear_regression
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the linear name is "(.*)"')
@@ -88,23 +88,7 @@ def i_update_linear_regression_name(step, name):
 
 #@step(r'I wait until the linear regression status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    linear_regression_id = world.linear_regression['resource']
-    i_get_the_linear_regression(step, linear_regression_id)
-    status = get_status(world.linear_regression)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "source", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_linear_regression(step, linear_regression_id)
-        status = get_status(world.linear_regression)
-    if status['code'] == int(code2):
-        world.errors.append(world.linear_regression)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.linear_regression)
 
 
 #@step(r'I wait until the linear is ready less than (\d+)')

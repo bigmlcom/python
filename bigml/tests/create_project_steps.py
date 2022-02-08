@@ -21,7 +21,7 @@ import json
 from datetime import datetime
 from urllib.parse import urlencode
 from nose.tools import eq_, assert_less
-from .world import world, logged_wait
+from .world import world
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -29,7 +29,7 @@ from bigml.api import FAULTY
 from bigml.api import UPLOADING
 from bigml.api import get_status
 
-from .read_project_steps import i_get_the_project
+from .read_resource_steps import wait_until_status_code_is
 
 
 def i_create_project(step, name):
@@ -42,26 +42,8 @@ def i_create_project(step, name):
     world.projects.append(resource['resource'])
 
 
-def wait_until_project_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_project(step, world.project['resource'])
-    status = get_status(world.project)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "project")
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_project(step, world.project['resource'])
-        status = get_status(world.project)
-    if status['code'] == int(code2):
-        world.errors.append(world.project)
-    eq_(status['code'], int(code1))
-
-
 def the_project_is_finished(step, secs):
-    wait_until_project_status_code_is(step, FINISHED, FAULTY, secs)
+    wait_until_status_code_is(FINISHED, FAULTY, secs, world.project)
 
 
 def i_update_project_name_with(step, name=""):

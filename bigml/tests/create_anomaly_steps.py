@@ -19,9 +19,9 @@ import json
 import os
 from datetime import datetime
 from nose.tools import eq_, ok_, assert_less
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 
-from .read_anomaly_steps import i_get_the_anomaly
+from .read_resource_steps import wait_until_status_code_is
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -29,7 +29,6 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.anomaly import Anomaly
-from bigml.util import get_exponential_wait
 
 
 #@step(r'I check the anomaly detector stems from the original dataset list')
@@ -63,8 +62,10 @@ def clone_anomaly(step, anomaly):
     # save reference
     world.anomalies.append(resource['resource'])
 
+
 def the_cloned_anomaly_is(step, anomaly):
     eq_(world.anomaly["origin"], anomaly)
+
 
 #@step(r'I create an anomaly detector from a dataset$')
 def i_create_an_anomaly_from_dataset(step):
@@ -75,6 +76,7 @@ def i_create_an_anomaly_from_dataset(step):
     world.location = resource['location']
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
+
 
 #@step(r'I create an anomaly detector with (\d+) anomalies from a dataset$')
 def i_create_an_anomaly_with_top_n_from_dataset(step, top_n):
@@ -87,6 +89,7 @@ def i_create_an_anomaly_with_top_n_from_dataset(step, top_n):
     world.location = resource['location']
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
+
 
 #@step(r'I create an anomaly detector with (\d+) from a dataset$')
 def i_create_an_anomaly_with_params(step, parms=None):
@@ -105,6 +108,7 @@ def i_create_an_anomaly_with_params(step, parms=None):
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
 
+
 #@step(r'I create an anomaly detector from a dataset list$')
 def i_create_an_anomaly_from_dataset_list(step):
     resource = world.api.create_anomaly(world.dataset_ids, {'seed': 'BigML'})
@@ -114,27 +118,16 @@ def i_create_an_anomaly_from_dataset_list(step):
     world.anomaly = resource['object']
     world.anomalies.append(resource['resource'])
 
+
 #@step(r'I wait until the anomaly detector status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_anomaly_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_anomaly(step, world.anomaly['resource'])
-    status = get_status(world.anomaly)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "anomaly", progress=progress)
-        i_get_the_anomaly(step, world.anomaly['resource'])
-        status = get_status(world.anomaly)
-    if status['code'] == int(code2):
-        world.errors.append(world.anomaly)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.anomaly)
+
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')
 def the_anomaly_is_finished_in_less_than(step, secs):
     wait_until_anomaly_status_code_is(step, FINISHED, FAULTY, secs)
+
 
 #@step(r'I create a dataset with only the anomalies')
 def create_dataset_with_anomalies(step):
@@ -144,14 +137,17 @@ def create_dataset_with_anomalies(step):
         {"lisp_filter": local_anomalies.anomalies_filter()})
     world.datasets.append(world.dataset['resource'])
 
+
 #@step(r'I check that the dataset has (\d+) rows')
 def the_dataset_has_n_rows(step, rows):
     eq_(world.dataset['rows'], int(rows))
+
 
 #@step(r'I export the anomaly$')
 def i_export_anomaly(step, filename):
     world.api.export(world.anomaly.get('resource'),
                      filename=res_filename(filename))
+
 
 #@step(r'I create a local anomaly from file "(.*)"')
 def i_create_local_anomaly_from_file(step, export_file):

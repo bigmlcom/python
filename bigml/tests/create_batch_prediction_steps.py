@@ -20,7 +20,7 @@ import requests
 import csv
 import traceback
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, ok_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -29,8 +29,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.io import UnicodeReader
 
-from .read_batch_prediction_steps import (i_get_the_batch_prediction,
-    i_get_the_batch_centroid, i_get_the_batch_anomaly_score)
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'I create a batch prediction for the dataset with the model$')
@@ -61,61 +60,28 @@ def i_create_a_batch_prediction_ensemble(step, params=None):
 
 #@step(r'I wait until the batch prediction status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_batch_prediction(step, world.batch_prediction['resource'])
-    status = get_status(world.batch_prediction)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "batchprediction")
-        i_get_the_batch_prediction(step, world.batch_prediction['resource'])
-        status = get_status(world.batch_prediction)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.batch_prediction)
 
 
 #@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_batch_centroid(step, world.batch_centroid['resource'])
-    status = get_status(world.batch_centroid)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "batchcentroid")
-        i_get_the_batch_centroid(step, world.batch_centroid['resource'])
-        status = get_status(world.batch_centroid)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.batch_centroid)
 
 
 #@step(r'I wait until the batch anomaly score status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
-    status = get_status(world.batch_anomaly_score)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "batchanomalyscore")
-        i_get_the_batch_anomaly_score(step, world.batch_anomaly_score['resource'])
-        status = get_status(world.batch_anomaly_score)
-    if status['code'] == int(code2):
-        world.errors.append(world.batch_anomaly_score)
-    eq_(status['code'], int(code1), msg="%s seconds waited." % delta)
+    wait_until_status_code_is(code1, code2, secs, world.batch_anomaly_score)
 
 
 #@step(r'I wait until the batch prediction is ready less than (\d+)')
 def the_batch_prediction_is_finished_in_less_than(step, secs):
     wait_until_batch_prediction_status_code_is(step, FINISHED, FAULTY, secs)
 
+
 #@step(r'I wait until the batch centroid is ready less than (\d+)')
 def the_batch_centroid_is_finished_in_less_than(step, secs):
     wait_until_batch_centroid_status_code_is(step, FINISHED, FAULTY, secs)
+
 
 #@step(r'I wait until the batch anomaly score is ready less than (\d+)')
 def the_batch_anomaly_score_is_finished_in_less_than(step, secs):
@@ -129,6 +95,7 @@ def i_download_predictions_file(step, filename):
     ok_(file_object is not None)
     world.output = file_object
 
+
 #@step(r'I download the created centroid file to "(.*)"')
 def i_download_centroid_file(step, filename):
     file_object = world.api.download_batch_centroid(
@@ -136,12 +103,14 @@ def i_download_centroid_file(step, filename):
     ok_(file_object is not None)
     world.output = file_object
 
+
 #@step(r'I download the created anomaly score file to "(.*)"')
 def i_download_anomaly_score_file(step, filename):
     file_object = world.api.download_batch_anomaly_score(
         world.batch_anomaly_score, filename=res_filename(filename))
     ok_(file_object is not None)
     world.output = file_object
+
 
 def check_rows(prediction_rows, test_rows):
     row_num = 0
@@ -161,23 +130,28 @@ def check_rows(prediction_rows, test_rows):
             eq_(check_row[index], row[index],
                 "Got: %s/ Expected: %s in line %s" % (row, check_row, row_num))
 
+
 #@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):
     with UnicodeReader(world.output) as prediction_rows:
         with UnicodeReader(res_filename(check_file)) as test_rows:
             check_rows(prediction_rows, test_rows)
 
+
 #@step(r'the batch centroid file is like "(.*)"')
 def i_check_batch_centroid(step, check_file):
     i_check_predictions(step, check_file)
+
 
 #@step(r'the batch anomaly score file is like "(.*)"')
 def i_check_batch_anomaly_score(step, check_file):
     i_check_predictions(step, check_file)
 
+
 #@step(r'I check the batch centroid is ok')
 def i_check_batch_centroid_is_ok(step):
     ok_(world.api.ok(world.batch_centroid))
+
 
 #@step(r'I check the batch anomaly score is ok')
 def i_check_batch_anomaly_score_is_ok(step):

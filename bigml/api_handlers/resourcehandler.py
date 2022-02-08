@@ -529,7 +529,6 @@ def http_ok(resource):
         return resource['code'] in [HTTP_OK, HTTP_CREATED, HTTP_ACCEPTED]
 
 
-
 class ResourceHandlerMixin(metaclass=abc.ABCMeta):
     """This class is used by the BigML class as
        a mixin that provides the get method for all kind of
@@ -879,7 +878,6 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
             else:
                 resource_info = self._get("%s%s" % (self.url, resource_id),
                                           **kwargs)
-            print(resource_info)
             if not is_status_final(resource_info):
                 self.ok(resource_info)
             if filename is None:

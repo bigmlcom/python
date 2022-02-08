@@ -20,12 +20,12 @@ import time
 from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
     assert_less
 from datetime import datetime
-from .world import world, logged_wait, res_filename
+from .world import world, res_filename
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from .read_prediction_steps import i_get_the_prediction
+from .read_resource_steps import wait_until_status_code_is
 
 def i_create_a_prediction(step, data=None):
     if data is None:
@@ -173,22 +173,7 @@ def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
 
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_prediction(step, world.prediction['resource'])
-    status = get_status(world.prediction)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        logged_wait(start, delta, count, "prediction")
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_prediction(step, world.prediction['resource'])
-        status = get_status(world.prediction)
-    if status['code'] == int(code2):
-        world.errors.append(world.prediction)
-    eq_(status['code'], int(code1))
-
+    wait_until_status_code_is(code1, code2, secs, world.prediction)
 
 def the_prediction_is_finished_in_less_than(step, secs):
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)

@@ -19,7 +19,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -29,7 +29,7 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.timeseries import TimeSeries
 
-from . import read_time_series_steps as read
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'I create a time series$')
@@ -55,28 +55,10 @@ def i_create_a_time_series_with_params(step, data="{}"):
     world.time_series_set.append(resource['resource'])
 
 
-#@step(r'I wait until the time series status code is either (\d) or (-\d) less than (\d+)')
-def wait_until_time_series_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_time_series(step, world.time_series['resource'])
-    status = get_status(world.time_series)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "timeseries", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        read.i_get_the_time_series(step, world.time_series['resource'])
-        status = get_status(world.time_series)
-    if status['code'] == int(code2):
-        world.errors.append(world.time_series)
-    eq_(status['code'], int(code1))
 
 #@step(r'I wait until the time series is ready less than (\d+)')
 def the_time_series_is_finished_in_less_than(step, secs):
-    wait_until_time_series_status_code_is(step, FINISHED, FAULTY, secs)
+    wait_until_status_code_is(FINISHED, FAULTY, secs, world.time_series)
 
 
 #@step(r'I create a local TimeSeries$')

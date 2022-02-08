@@ -21,7 +21,7 @@ import csv
 
 
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
@@ -31,7 +31,8 @@ from bigml.api import UPLOADING
 from bigml.api import get_status
 
 
-from . import read_source_steps as read
+from .read_resource_steps import wait_until_status_code_is
+
 
 #@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file, shared=None):
@@ -166,42 +167,13 @@ def i_upload_a_file_async(step, file):
 
 #@step(r'I wait until the source has been created less than (\d+) secs')
 def the_source_has_been_created_async(step, secs):
-    start = datetime.utcnow()
-    read.i_get_the_source(step, world.source['resource'])
-    status = get_status(world.resource)
-    count = 0
-    delta = int(secs) * world.delta
-    while status['code'] == UPLOADING:
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "source", progress=progress)
-        read.i_get_the_source(step, world.source['resource'])
-        status = get_status(world.source)
-    eq_(world.resource['code'], HTTP_CREATED)
-    # update status
-    world.status = world.resource['code']
-    world.location = world.resource['location']
-    world.source = world.resource['object']
-    # save reference
-    world.sources.append(world.resource['resource'])
+    wait_until_status_code_is(code1, code2, secs, world.source)
+
 
 #@step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')
 def wait_until_source_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_source(step, world.source['resource'])
-    status = get_status(world.source)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "source", progress=progress)
-        read.i_get_the_source(step, world.source['resource'])
-        status = get_status(world.source)
-    if status['code'] == int(code2):
-        world.errors.append(world.source)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.source)
+
 
 #@step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs, shared=None):

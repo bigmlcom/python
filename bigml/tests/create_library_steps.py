@@ -18,7 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -27,7 +27,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_library_steps import i_get_the_library
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the library code is "(.*)" and the value of "(.*)" is "(.*)"')
@@ -61,23 +61,7 @@ def i_update_a_library(step, param, param_value):
 
 #@step(r'I wait until the library status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_library_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    library_id = world.library['resource']
-    i_get_the_library(step, library_id)
-    status = get_status(world.library)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "library", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_library(step, library_id)
-        status = get_status(world.library)
-    if status['code'] == int(code2):
-        world.errors.append(world.library)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.library)
 
 
 #@step(r'I wait until the library is ready less than (\d+)')

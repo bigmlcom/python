@@ -24,7 +24,6 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from .read_forecast_steps import i_get_the_forecast
 
 def i_create_a_forecast(step, data=None):
     if data is None:

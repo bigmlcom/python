@@ -19,7 +19,7 @@ import json
 import os
 import io
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import BigML
@@ -29,9 +29,8 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.association import Association
-from bigml.util import get_exponential_wait
 
-from .read_association_steps import i_get_the_association
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the association name is "(.*)"')
@@ -90,22 +89,7 @@ def i_update_association_name(step, name):
 
 #@step(r'I wait until the association status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_association_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    association_id = world.association['resource']
-    i_get_the_association(step, association_id)
-    status = get_status(world.association)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "association", progress=progress)
-        i_get_the_association(step, association_id)
-        status = get_status(world.association)
-    if status['code'] == int(code2):
-        world.errors.append(world.association)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.association)
 
 
 #@step(r'I wait until the association is ready less than (\d+)')

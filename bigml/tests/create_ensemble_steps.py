@@ -18,7 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -31,7 +31,7 @@ from bigml.ensemblepredictor import EnsemblePredictor
 from bigml.model import Model
 from bigml.supervised import SupervisedModel
 
-from .read_ensemble_steps import i_get_the_ensemble
+from .read_resource_steps import wait_until_status_code_is
 
 NO_MISSING_SPLITS = {'missing_splits': False}
 ENSEMBLE_SAMPLE = {'seed': 'BigML',
@@ -59,22 +59,8 @@ def i_create_an_ensemble(step, number_of_models=2, tlp=1):
 #@step(r'I wait until the ensemble status code is either (\d) or (-\d)
 # less than (\d+)')
 def wait_until_ensemble_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_ensemble(step, world.ensemble['resource'])
-    status = get_status(world.ensemble)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "ensemble", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_ensemble(step, world.ensemble['resource'])
-        status = get_status(world.ensemble)
-    if status['code'] == int(code2):
-        world.errors.append(world.ensemble)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.ensemble)
+
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')
 def the_ensemble_is_finished_in_less_than(step, secs):

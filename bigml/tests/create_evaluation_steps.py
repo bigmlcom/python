@@ -17,7 +17,7 @@
 import time
 import json
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world
 from nose.tools import eq_, assert_less, assert_greater
 
 from bigml.api import HTTP_CREATED
@@ -25,7 +25,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_evaluation_steps import i_get_the_evaluation
+from .read_resource_steps import wait_until_status_code_is
 
 #@step(r'I create an evaluation for the model with the dataset$')
 def i_create_an_evaluation(step):
@@ -88,22 +88,8 @@ def i_create_an_evaluation_fusion(step):
 
 #@step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    i_get_the_evaluation(step, world.evaluation['resource'])
-    status = get_status(world.evaluation)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "evaluation", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_evaluation(step, world.evaluation['resource'])
-        status = get_status(world.evaluation)
-    if status['code'] == int(code2):
-        world.errors.append(world.evaluation)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.evaluation)
+
 
 #@step(r'I wait until the evaluation is ready less than (\d+)')
 def the_evaluation_is_finished_in_less_than(step, secs):

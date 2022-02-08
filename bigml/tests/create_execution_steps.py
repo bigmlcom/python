@@ -18,7 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, logged_wait
+from .world import world
 from nose.tools import eq_, assert_less
 
 from bigml.api import HTTP_CREATED
@@ -29,7 +29,7 @@ from bigml.api import get_status
 from bigml.execution import Execution
 
 
-from .read_execution_steps import i_get_the_execution
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the script id is correct, the value of "(.*)" is "(.*)" and the result is "(.*)"')
@@ -87,23 +87,7 @@ def i_update_an_execution(step, param, param_value):
 
 #@step(r'I wait until the execution status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_execution_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    execution_id = world.execution['resource']
-    i_get_the_execution(step, execution_id)
-    status = get_status(world.execution)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "execution", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        i_get_the_execution(step, execution_id)
-        status = get_status(world.execution)
-    if status['code'] == int(code2):
-        world.errors.append(world.execution)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.execution)
 
 
 #@step(r'I wait until the script is ready less than (\d+)')

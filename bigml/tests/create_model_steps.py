@@ -20,7 +20,7 @@ import json
 import os
 from nose.tools import eq_, assert_less
 from datetime import datetime
-from .world import world, res_filename, logged_wait
+from .world import world, res_filename
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -35,7 +35,9 @@ from bigml.linear import LinearRegression
 from bigml.deepnet import Deepnet
 from bigml.fusion import Fusion
 
-from . import read_model_steps as read
+
+from .read_resource_steps import wait_until_status_code_is
+
 
 NO_MISSING_SPLITS = {'missing_splits': False}
 
@@ -86,22 +88,7 @@ def i_create_a_model_from_dataset_list(step):
 
 #@step(r'I wait until the model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_model_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_model(step, world.model['resource'])
-    status = get_status(world.model)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "model", progress=progress)
-        assert_less((datetime.utcnow() - start).seconds, delta)
-        read.i_get_the_model(step, world.model['resource'])
-        status = get_status(world.model)
-    if status['code'] == int(code2):
-        world.errors.append(world.model)
-    eq_(status['code'], int(code1))
+    wait_until_status_code_is(code1, code2, secs, world.model)
 
 #@step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs, shared=None):
@@ -230,20 +217,7 @@ def i_create_a_logistic_model_with_objective_and_parms(step, objective=None, par
 
 #@step(r'I wait until the logistic regression model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
-    status = get_status(world.logistic_regression)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "logisticregression",
-                    progress=progress)
-        read.i_get_the_logistic_model(step, world.logistic_regression['resource'])
-        status = get_status(world.logistic_regression)
-    eq_(status['code'], int(code1))
+   wait_until_status_code_is(code1, code2, secs, world.logistic_regression)
 
 #@step(r'I wait until the logistic regression model is ready less than (\d+)')
 def the_logistic_model_is_finished_in_less_than(step, secs):
@@ -299,18 +273,7 @@ def i_create_a_deepnet_with_objective_and_params(step, objective=None, parms=Non
 
 #@step(r'I wait until the deepnet model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    status = get_status(world.deepnet)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "deepnet", progress=progress)
-        read.i_get_the_deepnet_model(step, world.deepnet['resource'])
-        status = get_status(world.deepnet)
-    eq_(status['code'], int(code1))
+   wait_until_status_code_is(code1, code2, secs, world.deepnet)
 
 #@step(r'I wait until the deepnet model is ready less than (\d+)')
 def the_deepnet_is_finished_in_less_than(step, secs):
@@ -362,19 +325,7 @@ def i_create_an_optiml_with_objective_and_params(step, objective=None, parms=Non
 
 #@step(r'I wait until the optiml status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_optiml_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_optiml(step, world.optiml['resource'])
-    status = get_status(world.optiml)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "optiml", progress=progress)
-        read.i_get_the_optiml(step, world.optiml['resource'])
-        status = get_status(world.optiml)
-    eq_(status['code'], int(code1))
+   wait_until_status_code_is(code1, code2, secs, world.optiml)
 
 #@step(r'I wait until the optiml is ready less than (\d+)')
 def the_optiml_is_finished_in_less_than(step, secs):
@@ -442,19 +393,7 @@ def i_create_a_fusion_with_objective_and_params(step, objective, parms=None):
 
 #@step(r'I wait until the fusion status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_fusion_status_code_is(step, code1, code2, secs):
-    start = datetime.utcnow()
-    delta = int(secs) * world.delta
-    read.i_get_the_fusion(step, world.fusion['resource'])
-    status = get_status(world.fusion)
-    count = 0
-    while (status['code'] != int(code1) and
-           status['code'] != int(code2)):
-        count += 1
-        progress = status.get("progress", 0)
-        logged_wait(start, delta, count, "fusion", progress=progress)
-        read.i_get_the_fusion(step, world.fusion['resource'])
-        status = get_status(world.fusion)
-    eq_(status['code'], int(code1))
+   wait_until_status_code_is(code1, code2, secs, world.fusion)
 
 #@step(r'I wait until the fusion is ready less than (\d+)')
 def the_fusion_is_finished_in_less_than(step, secs):

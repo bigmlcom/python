@@ -24,7 +24,7 @@ from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
-from .read_resource_step import wait_until_status_code_is
+from .read_resource_steps import wait_until_status_code_is
 
 
 def i_create_a_projection(step, data=None):

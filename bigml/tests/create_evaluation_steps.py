@@ -88,8 +88,8 @@ def i_create_an_evaluation_fusion(step):
 
 #@step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.evaluation)
-
+    world.evaluation = wait_until_status_code_is(
+        code1, code2, secs, world.evaluation)
 
 #@step(r'I wait until the evaluation is ready less than (\d+)')
 def the_evaluation_is_finished_in_less_than(step, secs):

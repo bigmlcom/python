@@ -76,4 +76,5 @@ def i_update_a_script(step, param, param_value):
 
 #@step(r'I wait until the script is ready less than (\d+)')
 def the_script_is_finished(step, secs):
-    wait_until_status_code_is(FINISHED, FAULTY, secs, world.script)
+    world.script = wait_until_status_code_is(
+        FINISHED, FAULTY, secs, world.script)

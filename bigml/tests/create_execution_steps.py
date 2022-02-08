@@ -87,7 +87,8 @@ def i_update_an_execution(step, param, param_value):
 
 #@step(r'I wait until the execution status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_execution_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.execution)
+    world.execution = wait_until_status_code_is(
+        code1, code2, secs, world.execution)
 
 
 #@step(r'I wait until the script is ready less than (\d+)')

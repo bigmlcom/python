@@ -46,7 +46,8 @@ def i_create_a_batch_projection(step):
 
 #@step(r'I wait until the batch projection status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_projection_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.batch_projection)
+    world.batch_projection = wait_until_status_code_is(
+        code1, code2, secs, world.batch_projection)
 
 
 #@step(r'I wait until the batch projection is ready less than (\d+)')

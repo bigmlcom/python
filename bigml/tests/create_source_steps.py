@@ -167,12 +167,12 @@ def i_upload_a_file_async(step, file):
 
 #@step(r'I wait until the source has been created less than (\d+) secs')
 def the_source_has_been_created_async(step, secs):
-    wait_until_status_code_is(code1, code2, secs, world.source)
+    world.source = wait_until_status_code_is(code1, code2, secs, world.source)
 
 
 #@step(r'I wait until the source status code is either (\d) or (\d) less than (\d+)')
 def wait_until_source_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.source)
+    world.source = wait_until_status_code_is(code1, code2, secs, world.source)
 
 
 #@step(r'I wait until the source is ready less than (\d+)')

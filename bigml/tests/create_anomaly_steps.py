@@ -121,7 +121,8 @@ def i_create_an_anomaly_from_dataset_list(step):
 
 #@step(r'I wait until the anomaly detector status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_anomaly_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.anomaly)
+    world.anomaly = wait_until_status_code_is(
+        code1, code2, secs, world.anomaly)
 
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')

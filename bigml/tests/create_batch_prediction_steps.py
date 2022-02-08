@@ -60,17 +60,20 @@ def i_create_a_batch_prediction_ensemble(step, params=None):
 
 #@step(r'I wait until the batch prediction status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.batch_prediction)
+    world.batch_prediction = wait_until_status_code_is(
+        code1, code2, secs, world.batch_prediction)
 
 
 #@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.batch_centroid)
+    world.batch_centroid = wait_until_status_code_is(
+        code1, code2, secs, world.batch_centroid)
 
 
 #@step(r'I wait until the batch anomaly score status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.batch_anomaly_score)
+    world.batch_anomlay_score = wait_until_status_code_is(
+        code1, code2, secs, world.batch_anomaly_score)
 
 
 #@step(r'I wait until the batch prediction is ready less than (\d+)')

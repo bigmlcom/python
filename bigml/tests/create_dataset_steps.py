@@ -63,7 +63,8 @@ def i_create_a_dataset_with(step, data="{}"):
 
 #@step(r'I wait until the dataset status code is either (\d) or (\d) less than (\d+)')
 def wait_until_dataset_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.dataset)
+    world.dataset = wait_until_status_code_is(
+        code1, code2, secs, world.dataset)
 
 
 #@step(r'I wait until the dataset is ready less than (\d+)')

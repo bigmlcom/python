@@ -54,7 +54,8 @@ def the_projection_is(step, projection):
 
 
 def wait_until_projection_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.projection)
+    world.projection = wait_until_status_code_is(
+        code1, code2, secs, world.projection)
 
 def the_projection_is_finished_in_less_than(step, secs):
     wait_until_projection_status_code_is(step, FINISHED, FAULTY, secs)

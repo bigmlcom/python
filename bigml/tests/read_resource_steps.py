@@ -47,7 +47,7 @@ def wait_until_status_code_is(code1, code2, secs, resource_info):
     if status['code'] == int(code2):
         world.errors.append(resource_info)
     eq_(status['code'], int(code1))
-    resource_info = i_get_the_resource(resource_info)
+    return i_get_the_resource(resource_info)
 
 
 #@step(r'I get the resource "(.*)"')

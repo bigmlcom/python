@@ -58,7 +58,8 @@ def i_create_a_time_series_with_params(step, data="{}"):
 
 #@step(r'I wait until the time series is ready less than (\d+)')
 def the_time_series_is_finished_in_less_than(step, secs):
-    wait_until_status_code_is(FINISHED, FAULTY, secs, world.time_series)
+    world.time_series = wait_until_status_code_is(
+        FINISHED, FAULTY, secs, world.time_series)
 
 
 #@step(r'I create a local TimeSeries$')

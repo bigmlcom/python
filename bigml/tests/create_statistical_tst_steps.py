@@ -59,7 +59,8 @@ def i_update_tst_name(step, name):
 
 #@step(r'I wait until the statistical test status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_tst_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.statistical_test)
+    world.statistical_test = wait_until_status_code_is(
+        code1, code2, secs, world.statistical_test)
 
 
 #@step(r'I wait until the statistical test is ready less than (\d+)')

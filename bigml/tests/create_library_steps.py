@@ -61,7 +61,8 @@ def i_update_a_library(step, param, param_value):
 
 #@step(r'I wait until the library status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_library_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.library)
+    world.library = wait_until_status_code_is(
+        code1, code2, secs, world.library)
 
 
 #@step(r'I wait until the library is ready less than (\d+)')

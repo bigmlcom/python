@@ -71,7 +71,8 @@ def i_create_a_cluster_with_options(step, options):
 
 #@step(r'I wait until the cluster status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_cluster_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.cluster)
+    world.cluster = wait_until_status_code_is(
+        code1, code2, secs, world.cluster)
 
 #@step(r'I wait until the cluster is ready less than (\d+)')
 def the_cluster_is_finished_in_less_than(step, secs):

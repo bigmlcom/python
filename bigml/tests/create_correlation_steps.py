@@ -58,7 +58,8 @@ def i_update_correlation_name(step, name):
 
 #@step(r'I wait until the correlation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_correlation_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.correlation)
+    world.correlation = wait_until_status_code_is(
+        code1, code2, secs, world.correlation)
 
 
 #@step(r'I wait until the correlation is ready less than (\d+)')

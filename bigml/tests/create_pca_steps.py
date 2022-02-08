@@ -74,7 +74,7 @@ def i_update_pca_name(step, name):
 
 #@step(r'I wait until the PCA status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_pca_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.pca)
+    world.pca = wait_until_status_code_is(code1, code2, secs, world.pca)
 
 
 #@step(r'I wait until the PCA is ready less than (\d+)')

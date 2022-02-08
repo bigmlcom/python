@@ -217,7 +217,8 @@ def i_create_a_logistic_model_with_objective_and_parms(step, objective=None, par
 
 #@step(r'I wait until the logistic regression model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
-   wait_until_status_code_is(code1, code2, secs, world.logistic_regression)
+    world.logistic_regression = wait_until_status_code_is(
+        code1, code2, secs, world.logistic_regression)
 
 #@step(r'I wait until the logistic regression model is ready less than (\d+)')
 def the_logistic_model_is_finished_in_less_than(step, secs):
@@ -273,7 +274,7 @@ def i_create_a_deepnet_with_objective_and_params(step, objective=None, parms=Non
 
 #@step(r'I wait until the deepnet model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
-   wait_until_status_code_is(code1, code2, secs, world.deepnet)
+   world.deepnet = wait_until_status_code_is(code1, code2, secs, world.deepnet)
 
 #@step(r'I wait until the deepnet model is ready less than (\d+)')
 def the_deepnet_is_finished_in_less_than(step, secs):
@@ -325,7 +326,7 @@ def i_create_an_optiml_with_objective_and_params(step, objective=None, parms=Non
 
 #@step(r'I wait until the optiml status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_optiml_status_code_is(step, code1, code2, secs):
-   wait_until_status_code_is(code1, code2, secs, world.optiml)
+    world.optiml = wait_until_status_code_is(code1, code2, secs, world.optiml)
 
 #@step(r'I wait until the optiml is ready less than (\d+)')
 def the_optiml_is_finished_in_less_than(step, secs):
@@ -393,7 +394,7 @@ def i_create_a_fusion_with_objective_and_params(step, objective, parms=None):
 
 #@step(r'I wait until the fusion status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_fusion_status_code_is(step, code1, code2, secs):
-   wait_until_status_code_is(code1, code2, secs, world.fusion)
+    world.fusion = wait_until_status_code_is(code1, code2, secs, world.fusion)
 
 #@step(r'I wait until the fusion is ready less than (\d+)')
 def the_fusion_is_finished_in_less_than(step, secs):

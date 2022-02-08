@@ -44,7 +44,6 @@ def i_create_configuration(step, configurations):
 def i_update_configuration(step, changes):
     resource = world.api.update_configuration(
         world.configuration["resource"], changes)
-    print(resource)
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
@@ -53,7 +52,8 @@ def i_update_configuration(step, changes):
 
 #@step(r'I wait until the configuration status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_configuration_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.configuration)
+    world.configuration = wait_until_status_code_is(
+        code1, code2, secs, world.configuration)
 
 
 #@step(r'I wait until the configuration is ready less than (\d+)')

@@ -89,7 +89,8 @@ def i_update_association_name(step, name):
 
 #@step(r'I wait until the association status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_association_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.association)
+    world.association = wait_until_status_code_is(
+        code1, code2, secs, world.association)
 
 
 #@step(r'I wait until the association is ready less than (\d+)')

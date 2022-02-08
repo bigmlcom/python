@@ -59,4 +59,5 @@ def i_update_sample_name(step, name):
 
 #@step(r'I wait until the sample is ready less than (\d+)')
 def the_sample_is_finished_in_less_than(step, secs):
-    wait_until_status_code_is(FINISHED, FAULTY, secs, world.sample)
+    world.sample = wait_until_status_code_is(
+        FINISHED, FAULTY, secs, world.sample)

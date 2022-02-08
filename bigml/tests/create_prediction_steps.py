@@ -173,7 +173,8 @@ def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
 
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.prediction)
+    world.prediction = wait_until_status_code_is(
+        code1, code2, secs, world.prediction)
 
 def the_prediction_is_finished_in_less_than(step, secs):
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)

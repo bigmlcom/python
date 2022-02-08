@@ -78,7 +78,8 @@ def i_update_topic_model_name(step, name):
 
 #@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_topic_model_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.topic_model)
+    world.topic_model = wait_until_status_code_is(
+        code1, code2, secs, world.topic_model)
 
 
 #@step(r'I wait until the topic model is ready less than (\d+)')

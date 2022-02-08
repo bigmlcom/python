@@ -59,7 +59,8 @@ def i_create_an_ensemble(step, number_of_models=2, tlp=1):
 #@step(r'I wait until the ensemble status code is either (\d) or (-\d)
 # less than (\d+)')
 def wait_until_ensemble_status_code_is(step, code1, code2, secs):
-    wait_until_status_code_is(code1, code2, secs, world.ensemble)
+    world.ensemble = wait_until_status_code_is(
+        code1, code2, secs, world.ensemble)
 
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')

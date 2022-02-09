@@ -27,7 +27,7 @@ from bigml.api import FINISHED
 from bigml.api import FAULTY
 from bigml.api import get_status
 
-from .read_resurce_steps import wait_until_status_code_is
+from .read_resource_steps import wait_until_status_code_is
 
 
 #@step(r'the statistical test name is "(.*)"')

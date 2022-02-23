@@ -286,9 +286,10 @@ def logged_wait(start, delta, count, res_description, progress=0, status=None):
     if status is not None:
         progress = status.get("progress", 0)
         status_code = status.get("code")
-    progress = progress if progress > 0.8 else 0 # dumping when almost finished
+    progress_dumping = progress if progress > 0.8 \
+        else 0 # dumping when almost finished
     wait_time = min(get_exponential_wait(
-        ((1.0 - progress) * delta / 100.0) + 0.01, count), delta)
+        ((1.0 - progress_dumping) * delta / 100.0) + 0.5, count), delta)
     message = ""
     if status is not None:
         message =" (status: %s, progress: %s)" % (

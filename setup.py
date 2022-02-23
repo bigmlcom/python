@@ -39,7 +39,7 @@ long_description = '\n\n'.join(file_contents)
 
 INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.4.3", "requests",
                     "requests-toolbelt", "numpy", "scipy", "msgpack",
-                    "pybind11", "tensorflow==2.4", "bigml-sensenet==0.4.6"]
+                    "pybind11", "tensorflow==2.5.3", "bigml-sensenet==0.4.6"]
 
 setuptools.setup(
     name="bigml",

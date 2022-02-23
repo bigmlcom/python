@@ -33,7 +33,7 @@ from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES, \
     TINY_RESOURCE, ALL_FIELDS
 from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
 from bigml.util import get_exponential_wait
-from nose.tools import assert_less
+from nose.tools import assert_less, eq_
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -98,6 +98,12 @@ def show_doc(self, examples=None):
             "\n                |".join(["|".join([str(item)
                                                   for item in example]) for
                                         example in examples]))
+
+
+def float_round(value, precision=5):
+    if isinstance(value, float):
+        return round(value, precision)
+    return value
 
 
 class World(object):
@@ -202,7 +208,6 @@ class World(object):
         for resource in world.errors:
             print(json.dumps(resource["status"], indent=4))
 
-
     def store_resources(self):
         """Stores the created objects
 
@@ -230,6 +235,15 @@ class World(object):
         """Retrieving all resource info for local handling"""
         return self.api.get_resource(
             resource_id, query_string=ALL_FIELDS)
+
+    def eq_(*args, **kwargs):
+        if "precision" in kwargs:
+            precision = kwargs["precision"]
+            del kwargs["precision"]
+            new_args = list(args)[1:]
+            for index, arg in enumerate(new_args):
+                new_args[index] = float_round(arg, precision)
+        return eq_(*new_args, **kwargs)
 
 
 world = World()
@@ -275,7 +289,6 @@ def teardown_class():
     world.local_ensemble = None
     world.local_model = None
     world.local_deepnet = None
-
 
 
 def logged_wait(start, delta, count, res_description, progress=0, status=None):

@@ -40,7 +40,7 @@ def i_check_association_name(step, name):
 
 #@step(r'I create an association from a dataset$')
 def i_create_an_association_from_dataset(step, shared=None):
-    if shared is None or world.shared.get(association, {}).get("shared") is None:
+    if shared is None or world.shared.get("association", {}).get("shared") is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_association(dataset, {'name': 'new association'})
         world.status = resource['code']

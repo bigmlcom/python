@@ -340,7 +340,7 @@ def the_local_prediction_is(step, prediction, precision=4):
             if isinstance(prediction, str):
                 prediction = float(prediction)
             eq_(round(local_prediction, precision),
-                round(floatprediction, precision))
+                round(float(prediction), precision))
 
 #@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):

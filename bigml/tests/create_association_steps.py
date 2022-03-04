@@ -103,7 +103,7 @@ def the_association_is_finished_in_less_than(step, secs, shared=None):
                 world.shared["association"] = {}
             world.shared["association"][shared] = world.association
     else:
-        world.association = world.shared[shared]["association"]
+        world.association = world.shared["association"][shared]
         print("Reusing %s" % world.association["resource"])
 
 #@step(r'I create a local association')

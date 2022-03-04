@@ -74,6 +74,7 @@ def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
             world.shared["ensemble"][shared] = world.ensemble
     else:
         world.ensemble = world.shared["ensemble"][shared]
+        world.ensemble_id = world.ensemble["resource"]
         print("Reusing %s" % world.ensemble["resource"])
 
 

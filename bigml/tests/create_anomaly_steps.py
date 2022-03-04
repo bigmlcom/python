@@ -47,8 +47,8 @@ def i_check_anomaly_dataset_and_datasets_ids(step):
 
 
 #@step(r'I create an anomaly detector$')
-def i_create_an_anomaly(step):
-    i_create_an_anomaly_from_dataset(step)
+def i_create_an_anomaly(step, shared=None):
+    i_create_an_anomaly_from_dataset(step, shared=shared)
 
 
 #@step(r'I clone anomaly')
@@ -68,14 +68,15 @@ def the_cloned_anomaly_is(step, anomaly):
 
 
 #@step(r'I create an anomaly detector from a dataset$')
-def i_create_an_anomaly_from_dataset(step):
-    dataset = world.dataset.get('resource')
-    resource = world.api.create_anomaly(dataset, {'seed': 'BigML'})
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.anomaly = resource['object']
-    world.anomalies.append(resource['resource'])
+def i_create_an_anomaly_from_dataset(step, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("anomaly") is None:
+        dataset = world.dataset.get('resource')
+        resource = world.api.create_anomaly(dataset, {'seed': 'BigML'})
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.anomaly = resource['object']
+        world.anomalies.append(resource['resource'])
 
 
 #@step(r'I create an anomaly detector with (\d+) anomalies from a dataset$')
@@ -126,8 +127,13 @@ def wait_until_anomaly_status_code_is(step, code1, code2, secs):
 
 
 #@step(r'I wait until the anomaly detector is ready less than (\d+)')
-def the_anomaly_is_finished_in_less_than(step, secs):
-    wait_until_anomaly_status_code_is(step, FINISHED, FAULTY, secs)
+def the_anomaly_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("anomaly") is None:
+        wait_until_anomaly_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            world.shared[shared]["anomaly"] = world.anomaly
+    else:
+        world.anomaly = world.shared[shared]["anomaly"]
 
 
 #@step(r'I create a dataset with only the anomalies')

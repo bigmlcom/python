@@ -19,6 +19,7 @@
 
 """
 import os
+import re
 import shutil
 import time
 import pkg_resources
@@ -99,6 +100,11 @@ def show_doc(self, examples=None):
                                                   for item in example]) for
                                         example in examples]))
 
+def show_method(self, method, example):
+    """Prints the test class and method of the current test"""
+    class_name = re.sub(".*'(.*)'.*", "\\1", str(self.__class__))
+    print("\nTesting %s %s with:\n" % (class_name, method), example)
+
 
 def float_round(value, precision=5):
     if isinstance(value, float):
@@ -132,6 +138,7 @@ class World(object):
         self.print_connection_info()
         self.delta = int(os.environ.get('BIGML_DELTA', '1'))
         self.errors = []
+        self.shared = {}
 
     def print_connection_info(self):
         self.USERNAME = os.environ.get('BIGML_USERNAME')

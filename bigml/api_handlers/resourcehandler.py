@@ -885,9 +885,11 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                 filename = os.path.join( \
                     file_dir, resource_id.replace("/", "_"))
             if resource_type in COMPOSED_RESOURCES:
-                if resource.startswith("shared") and "sharing_key" in resource_info["object"]:
-                    kwargs.update({"shared_api_key": resource_info["object"]["sharing_key"],
-                                   "shared_username": self.username})
+                if resource.startswith("shared") and "sharing_key" \
+                        in resource_info["object"]:
+                    kwargs.update(
+                        {"shared_api_key": resource_info["object"]["sharing_key"],
+                         "shared_username": self.username})
                 for component_id in resource_info["object"]["models"]:
                     # for weighted fusions we need to retrieve the component
                     # ID

@@ -18,7 +18,9 @@
 """ Uploading source with structured args
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from bigml.api_handlers.resourcehandler import get_id
 
@@ -40,57 +42,55 @@ class TestUploadSource(object):
         """
 
             Scenario: Successfully uploading source:
-                Given I create a data source uploading a "<data>" file with args "<args>"
-                And I wait until the source is ready less than <time_1> secs
-                Then the source exists and has args "<args>"
-
-                Examples:
-                | data             | time_1  | args |
-                | ../data/iris.csv | 30      | {"tags": ["my tag", "my second tag"]}
-                | ../data/iris.csv | 30      | {"name": "Testing unicode names: áé"}]}
-
+                Given I create a data source uploading a "<data>" file with args "<source_conf>"
+                And I wait until the source is ready less than <source_wait> secs
+                Then the source exists and has args "<source_conf>"
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "source_conf"]
         examples = [
             ['data/iris.csv', '30', '{"tags": ["my tag", "my second tag"]}'],
             ['data/iris.csv', '30', '{"name": "Testing unicode names: áé"}']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file_with_args(self, example[0], example[2])
-            source_create.the_source_is_finished(self, example[1])
-            source_create.source_has_args(self, example[2])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file_with_args(
+                self, example["data"], example["source_conf"])
+            source_create.the_source_is_finished(self, example["source_wait"])
+            source_create.source_has_args(self, example["source_conf"])
 
     def test_scenario2(self):
         """
 
             Scenario: Successfully creating composite source:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 Then I create a composite from the last two sources
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 Then the composite exists and has the previous two sources
-
-                Examples:
-                | data             | time_1  |
-                | ../data/iris.csv | 30      |
-
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait"]
         examples = [
             ['data/iris.csv', '30']]
         for example in examples:
-            print("\nTesting with:\n", example)
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
             sources = []
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
             sources.append(get_id(world.source["resource"]))
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
+            source_create.i_upload_a_file(
+                self, example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"])
             sources.append(get_id(world.source["resource"]))
             source_create.i_create_composite(self, sources)
-            source_create.the_source_is_finished(self, example[1])
+            source_create.the_source_is_finished(self, example["source_wait"])
             for source in sources:
                 world.sources.remove("source/%s" % source)
             source_create.the_composite_contains(self, sources)
@@ -110,14 +110,19 @@ class TestUploadSource(object):
                 | ../data/iris.csv | 30      |
 
         """
-        print(self.test_scenario3.__doc__)
+        show_doc(self.test_scenario3)
+        headers = ["data", "source_wait"]
         examples = [
             ['data/iris.csv', '30']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
             source = world.source["resource"]
             source_create.clone_source(self, source)
-            source_create.the_source_is_finished(self, example[1])
+            source_create.the_source_is_finished(
+                self, example["source_wait"])
             source_create.the_cloned_source_origin_is(self, source)

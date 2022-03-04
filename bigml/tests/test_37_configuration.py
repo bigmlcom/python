@@ -18,7 +18,9 @@
 """ Creating configuration
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_configuration_steps as config_create
 
 class TestConfiguration(object):
@@ -40,11 +42,13 @@ class TestConfiguration(object):
             Scenario: Successfully creating configuration:
                 Given I create a configuration from "<configurations>" info
                 And I update the configuration name to "<configuration_name>"
-                When I wait until the configuration is ready less than <time_1> secs
+                When I wait until the configuration is ready less than <configuration_wait> secs
                 Then the configuration name is "<configuration_name>"
                 And the configuration contents are "<configurations>"
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["configurations", "configuration_wait",
+                   "configuration_name"]
         examples = [
             [{
                 "dataset": {
@@ -52,9 +56,15 @@ class TestConfiguration(object):
                 }
             }, '10', {"name": 'my new configuration name'}]]
         for example in examples:
-            print("\nTesting with:\n", example)
-            config_create.i_create_configuration(self, example[0])
-            config_create.i_update_configuration(self, example[2])
-            config_create.the_configuration_is_finished_in_less_than(self, example[1])
-            config_create.i_check_configuration_name(self, example[2])
-            config_create.i_check_configuration_conf(self, example[0])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            config_create.i_create_configuration(
+                self, example["configurations"])
+            config_create.i_update_configuration(
+                self, example["configuration_name"])
+            config_create.the_configuration_is_finished_in_less_than(
+                self, example["configuration_wait"])
+            config_create.i_check_configuration_name(
+                self, example["configuration_name"])
+            config_create.i_check_configuration_conf(
+                self, example["configurations"])

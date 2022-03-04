@@ -18,7 +18,9 @@
 """ Creating sample dataset
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_sample_steps as sample_create
@@ -41,65 +43,65 @@ class TestSampleDataset(object):
         """
             Scenario: Successfully creating a sample from a dataset:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a sample from a dataset
-                And I wait until the sample is ready less than <time_3> secs
+                And I wait until the sample is ready less than <sample_wait> secs
                 And I update the sample name to "<sample_name>"
-                When I wait until the sample is ready less than <time_4> secs
+                When I wait until the sample is ready less than <sample_wait> secs
                 Then the sample name is "<sample_name>"
-
-                Examples:
-                | data                | time_1  | time_2 | time_3 | time_4 | sample_name |
-                | ../data/iris.csv | 10      | 10     | 10     | 10 | my new sample name |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "sample_wait",
+                   "sample_name"]
         examples = [
-            ['data/iris.csv', '10', '10', '10', '10', 'my new sample name']]
+            ['data/iris.csv', '10', '10', '10', 'my new sample name']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(self, example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
             dataset_create.the_dataset_is_finished_in_less_than(
-                self, example[2])
+                self, example["dataset_wait"], shared=example["data"])
             sample_create.i_create_a_sample_from_dataset(self)
-            sample_create.the_sample_is_finished_in_less_than(self, example[3])
-            sample_create.i_update_sample_name(self, example[5])
-            sample_create.the_sample_is_finished_in_less_than(self, example[4])
-            sample_create.i_check_sample_name(self, example[5])
+            sample_create.the_sample_is_finished_in_less_than(
+                self, example["sample_wait"])
+            sample_create.i_update_sample_name(self, example["sample_name"])
+            sample_create.the_sample_is_finished_in_less_than(
+                self, example["sample_wait"])
+            sample_create.i_check_sample_name(self, example["sample_name"])
 
     def test_scenario2(self):
         """
 
             Scenario: Successfully cloning dataset:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I clone the last dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 Then the new dataset is as the origin dataset
-
-                Examples:
-                | data             | time_1  | time_2
-                | ../data/iris.csv | 30      |30
-
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait"]
         examples = [
             ['data/iris.csv', '30', '30']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(self, example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
             source = world.source["resource"]
             source_create.clone_source(self, source)
-            source_create.the_source_is_finished(self, example[1])
+            source_create.the_source_is_finished(self, example["source_wait"])
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(
-                self, example[2])
+                self, example["dataset_wait"])
             dataset = world.dataset["resource"]
             dataset_create.clone_dataset(self, dataset)
             dataset_create.the_cloned_dataset_is(self, dataset)

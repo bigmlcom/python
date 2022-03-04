@@ -18,7 +18,9 @@
 """ Creating Multimodel batch predictions
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -42,45 +44,46 @@ class TestMultimodelBatchPrediction(object):
         """
             Scenario: Successfully creating a batch prediction from a multi model:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
+                And I wait until the model is ready less than <model_wait> secs
                 And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
+                And I wait until the model is ready less than <model_wait> secs
                 And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
-                And I retrieve a list of remote models tagged with "<tag>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I retrieve a list of remote models tagged with "<tags>"
                 And I create a local multi model
-                When I create a batch prediction for "<data_input>" and save it in "<path>"
+                When I create a batch prediction for "<input_data>" and save it in "<path>"
                 And I combine the votes in "<path>"
                 Then the plurality combined predictions are "<predictions>"
                 And the confidence weighted predictions are "<predictions>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | params                         |  tag  |  data_input    | path | predictions  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  [{"petal width": 0.5}, {"petal length": 6, "petal width": 2}, {"petal length": 4, "petal width": 1.5}]  | ./tmp | ["Iris-setosa", "Iris-virginica", "Iris-versicolor"] |
-
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "tags", "tag", "input_data", "path", "predictions"]
         examples = [
             ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}', 'mytag', '[{"petal width": 0.5}, {"petal length": 6, "petal width": 2}, {"petal length": 4, "petal width": 1.5}]', './tmp', '["Iris-setosa", "Iris-virginica", "Iris-versicolor"]']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            compare_pred.i_retrieve_a_list_of_remote_models(self, example[5])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(self, example["model_wait"])
+            compare_pred.i_retrieve_a_list_of_remote_models(self, example["tag"])
             compare_pred.i_create_a_local_multi_model(self)
-            compare_pred.i_create_a_batch_prediction(self, example[6], example[7])
-            compare_pred.i_combine_the_votes(self, example[7])
-            compare_pred.the_plurality_combined_prediction(self, example[8])
-            compare_pred.the_confidence_weighted_prediction(self, example[8])
+            compare_pred.i_create_a_batch_prediction(self, example["input_data"], example["path"])
+            compare_pred.i_combine_the_votes(self, example["path"])
+            compare_pred.the_plurality_combined_prediction(self, example["predictions"])
+            compare_pred.the_confidence_weighted_prediction(self, example["predictions"])

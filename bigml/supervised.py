@@ -41,6 +41,7 @@ model.predict({"petal length": 3, "petal width": 1,
 """
 
 import json
+import os
 
 
 from bigml.api import get_resource_id, get_resource_type, \
@@ -71,6 +72,7 @@ def extract_id(model, api):
     # the string can be a path to a JSON file
     if isinstance(model, str):
         try:
+            path = os.path.dirname(os.path.abspath(model))
             with open(model) as model_file:
                 model = json.load(model_file)
                 resource_id = get_resource_id(model)
@@ -78,6 +80,7 @@ def extract_id(model, api):
                     raise ValueError("The JSON file does not seem"
                                      " to contain a valid BigML resource"
                                      " representation.")
+                api.storage = path
         except IOError:
             # if it is not a path, it can be a model id
             resource_id = get_resource_id(model)
@@ -111,7 +114,7 @@ class SupervisedModel(BaseModel):
     def __init__(self, model, api=None, cache_get=None):
 
         self.api = get_api_connection(api)
-        resource_id, model = extract_id(model, api)
+        resource_id, model = extract_id(model, self.api)
         resource_type = get_resource_type(resource_id)
         kwargs = {"api": self.api, "cache_get": cache_get}
         local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)

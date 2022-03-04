@@ -18,7 +18,9 @@
 """ Creating local ensemble predictions
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -44,199 +46,258 @@ class TestEnsemblePrediction(object):
         """
             Scenario: Successfully creating a local prediction from an Ensemble:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create an ensemble of <number_of_models> models and <tlp> tlp
-                And I wait until the ensemble is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create an ensemble of <number_of_models> models
+                And I wait until the ensemble is ready less than <model_wait> secs
                 And I create a local Ensemble
-                When I create a local ensemble prediction with confidence for "<data_input>"
+                When I create a local ensemble prediction with confidence for "<input_data>"
                 Then the local prediction is "<prediction>"
                 And the local prediction's confidence is "<confidence>"
                 And the local probabilities are "<probabilities>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  | confidence
-                | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687 | [0.3403, 0.4150, 0.2447]
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "number_of_models", "input_data",
+                   "prediction", "confidence", "probabilities"]
         examples = [
-            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415', '["0.3403", "0.4150", "0.2447"]' ]]
+            ['data/iris.csv', '10', '10', '50', '5',
+             '{"petal width": 0.5}', 'Iris-versicolor', '0.415',
+             '["0.3403", "0.4150", "0.2447"]' ]]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            ensemble_create.i_create_an_ensemble(self, example[4], example[5])
-            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            ensemble_shared = "%s_%s" % (example["data"],
+                example["number_of_models"])
+            ensemble_create.i_create_an_ensemble(
+                self, example["number_of_models"], shared=ensemble_shared)
+            ensemble_create.the_ensemble_is_finished_in_less_than(
+                self, example["model_wait"], shared=ensemble_shared)
             ensemble_create.create_local_ensemble(self)
-            prediction_create.create_local_ensemble_prediction_with_confidence(self, example[6])
-            compare_pred.the_local_prediction_is(self, example[7])
-            compare_pred.the_local_prediction_confidence_is(self, example[8])
-            compare_pred.the_local_probabilities_are(self, example[9])
+            prediction_create.create_local_ensemble_prediction_with_confidence(
+                self, example["input_data"])
+            compare_pred.the_local_prediction_is(self, example["prediction"])
+            compare_pred.the_local_prediction_confidence_is(
+                self, example["confidence"])
+            compare_pred.the_local_probabilities_are(
+                self, example["probabilities"])
 
     def test_scenario2(self):
         """
 
             Scenario: Successfully obtaining field importance from an Ensemble:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a model with "<parms1>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<parms2>"
-                And I wait until the model is ready less than <time_4> secs
-                And I create a model with "<parms3>"
-                And I wait until the model is ready less than <time_5> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create a model with "<model_conf1>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<model_conf2>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<model_conf3>"
+                And I wait until the model is ready less than <model_wait> secs
                 When I create a local Ensemble with the last <number_of_models> models
                 Then the field importance text is <field_importance>
-
-                Examples:
-                | data             | time_1  | time_2 |parms1 | time_3 |parms2 | time_4 |parms3| time_5 |number_of_models |field_importance
-                | ../data/iris.csv | 10      | 10     |{"input_fields": ["000000", "000001","000003", "000004"]} |20      |{"input_fields": ["000000", "000001","000002", "000004"]} | 20     |{"input_fields": ["000000", "000001","000002", "000003", "000004"]} | 20   | 3 |[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "model_conf1", "model_conf2", "model_conf3",
+                   "number_of_models", "field_importance"]
         examples = [
-            ['data/iris.csv', '10', '10', '{"input_fields": ["000000", "000001","000003", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000003", "000004"]}', '20', '3', '[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]']]
+            ['data/iris.csv', '10', '10', '20',
+             '{"input_fields": ["000000", "000001","000003", "000004"]}',
+             '{"input_fields": ["000000", "000001","000002", "000004"]}',
+             '{"input_fields": ["000000", "000001","000002", "000003",'
+             ' "000004"]}', '3',
+             '[["000002", 0.5269933333333333], ["000003", 0.38936],'
+             ' ["000000", 0.04662333333333333],'
+             '["000001", 0.037026666666666666]]']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[3])
-            model_create.the_model_is_finished_in_less_than(self, example[4])
-            model_create.i_create_a_model_with(self, example[5])
-            model_create.the_model_is_finished_in_less_than(self, example[6])
-            model_create.i_create_a_model_with(self, example[7])
-            model_create.the_model_is_finished_in_less_than(self, example[8])
-            ensemble_create.create_local_ensemble_with_list(self, example[9])
-            ensemble_create.field_importance_print(self, example[10])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model_with(self, example["model_conf1"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["model_conf2"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["model_conf3"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            ensemble_create.create_local_ensemble_with_list(
+                self, example["number_of_models"])
+            ensemble_create.field_importance_print(
+                self, example["field_importance"])
 
     def test_scenario3(self):
         """
 
             Scenario: Successfully creating a local prediction from an Ensemble adding confidence:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create an ensemble of <number_of_models> models and <tlp> tlp
-                And I wait until the ensemble is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create an ensemble of <number_of_models> models
+                And I wait until the ensemble is ready less than <model_wait> secs
                 And I create a local Ensemble
-                When I create a local ensemble prediction for "<data_input>" in JSON adding confidence
+                When I create a local ensemble prediction for "<input_data>" in JSON adding confidence
                 Then the local prediction is "<prediction>"
                 And the local prediction's confidence is "<confidence>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  | confidence
-                | ../data/iris.csv | 10      | 10     | 50     | 5                | 1     | {"petal width": 0.5} | Iris-versicolor | 0.3687
         """
-        print(self.test_scenario3.__doc__)
+        show_doc(self.test_scenario3)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "number_of_models", "input_data", "prediction",
+                   "confidence"]
         examples = [
-            ['data/iris.csv', '10', '10', '50', '5', '1', '{"petal width": 0.5}', 'Iris-versicolor', '0.415']]
+            ['data/iris.csv', '10', '10', '50', '5',
+             '{"petal width": 0.5}', 'Iris-versicolor', '0.415']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            ensemble_create.i_create_an_ensemble(self, example[4], example[5])
-            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            ensemble_shared = "%s_%s" % (example["data"],
+                example["number_of_models"])
+            ensemble_create.i_create_an_ensemble(
+                self, example["number_of_models"], shared=ensemble_shared)
+            ensemble_create.the_ensemble_is_finished_in_less_than(
+                self, example["model_wait"], shared=ensemble_shared)
             ensemble_create.create_local_ensemble(self)
-            prediction_create.create_local_ensemble_prediction_add_confidence(self, example[6])
-            compare_pred.the_local_prediction_is(self, example[7])
-            compare_pred.the_local_prediction_confidence_is(self, example[8])
+            prediction_create.create_local_ensemble_prediction_add_confidence(
+                self, example["input_data"])
+            compare_pred.the_local_prediction_is(self, example["prediction"])
+            compare_pred.the_local_prediction_confidence_is(
+                self, example["confidence"])
 
     def test_scenario4(self):
         """
             Scenario: Successfully obtaining field importance from an Ensemble created from local models:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a model with "<parms1>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<parms2>"
-                And I wait until the model is ready less than <time_4> secs
-                And I create a model with "<parms3>"
-                And I wait until the model is ready less than <time_5> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create a model with "<model_conf1>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<model_conf2>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<model_conf3>"
+                And I wait until the model is ready less than <model_wait> secs
                 When I create a local Ensemble with the last <number_of_models> local models
                 Then the field importance text is <field_importance>
-
-                Examples:
-                | data             | time_1  | time_2 |parms1 | time_3 |parms2 | time_4 |parms3| time_5 |number_of_models |field_importance
-                | ../data/iris.csv | 10      | 10     |{"input_fields": ["000000", "000001","000003", "000004"]} |20      |{"input_fields": ["000000", "000001","000002", "000004"]} | 20     |{"input_fields": ["000000", "000001","000002", "000003", "000004"]} | 20   | 3 |[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]
         """
-        print(self.test_scenario4.__doc__)
+        show_doc(self.test_scenario4)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "model_conf1", "model_conf2", "model_conf3",
+                   "number_of_models", "field_importance"]
         examples = [
-            ['data/iris.csv', '10', '10', '{"input_fields": ["000000", "000001","000003", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000004"]}', '20', '{"input_fields": ["000000", "000001","000002", "000003", "000004"]}', '20', '3', '[["000002", 0.5269933333333333], ["000003", 0.38936], ["000000", 0.04662333333333333], ["000001", 0.037026666666666666]]']]
+            ['data/iris.csv', '10', '10', '30',
+             '{"input_fields": ["000000", "000001","000003", "000004"]}',
+             '{"input_fields": ["000000", "000001","000002", "000004"]}',
+             '{"input_fields": ["000000", "000001","000002", "000003",'
+             ' "000004"]}', '3',
+             '[["000002", 0.5269933333333333], ["000003", 0.38936],'
+             ' ["000000", 0.04662333333333333], '
+             '["000001", 0.037026666666666666]]']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[3])
-            model_create.the_model_is_finished_in_less_than(self, example[4])
-            model_create.i_create_a_model_with(self, example[5])
-            model_create.the_model_is_finished_in_less_than(self, example[6])
-            model_create.i_create_a_model_with(self, example[7])
-            model_create.the_model_is_finished_in_less_than(self, example[8])
-            ensemble_create.create_local_ensemble_with_list_of_local_models(self, example[9])
-            ensemble_create.field_importance_print(self, example[10])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model_with(self, example["model_conf1"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["model_conf2"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["model_conf3"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            ensemble_create.create_local_ensemble_with_list_of_local_models(
+                self, example["number_of_models"])
+            ensemble_create.field_importance_print(
+                self, example["field_importance"])
 
     def test_scenario5(self):
         """
             Scenario: Successfully creating a local prediction from an Ensemble:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create an ensemble of <number_of_models> models and <tlp> tlp
-                And I wait until the ensemble is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create an ensemble of <number_of_models> models
+                And I wait until the ensemble is ready less than <model_wait> secs
                 And I create a local Ensemble
-                When I create a local ensemble prediction using median with confidence for "<data_input>"
+                When I create a local ensemble prediction using median with confidence for "<input_data>"
                 Then the local prediction is "<prediction>"
-
-                Examples:
-                | data                | time_1  | time_2 | time_3 | number_of_models | tlp   |  data_input    |prediction  |
-                | ../data/grades.csv | 10      | 10     | 50     | 2                | 1     | {}             | 67.5 |
         """
-        print(self.test_scenario5.__doc__)
+        show_doc(self.test_scenario5)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "number_of_models", "input_data", "prediction"]
         examples = [
-            ['data/grades.csv', '30', '30', '50', '2', '1', '{}', 69.0934]]
+            ['data/grades.csv', '30', '30', '50', '2', '{}', 69.0934]]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            ensemble_create.i_create_an_ensemble(self, example[4], example[5])
-            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            ensemble_shared = "%s_%s" % (example["data"],
+                example["number_of_models"])
+            ensemble_create.i_create_an_ensemble(
+                self, example["number_of_models"], shared=ensemble_shared)
+            ensemble_create.the_ensemble_is_finished_in_less_than(
+                self, example["model_wait"], shared=ensemble_shared)
             ensemble_create.create_local_ensemble(self)
-            prediction_create.create_local_ensemble_prediction_using_median_with_confidence(self, example[6])
-            compare_pred.the_local_prediction_is(self, example[7])
+            prediction_create.create_local_ensemble_prediction_using_median_with_confidence(
+                self, example["input_data"])
+            compare_pred.the_local_prediction_is(self, example["prediction"])
 
     def test_scenario6(self):
         """
            Scenario: Successfully comparing predictions with raw date input:
                Given I create a data source uploading a "<data>" file
-               And I wait until the source is ready less than <time_1> secs
+               And I wait until the source is ready less than <source_wait> secs
                And I create a dataset
-               And I wait until the dataset is ready less than <time_2> secs
+               And I wait until the dataset is ready less than <dataset_wait> secs
                And I create an ensemble
-               And I wait until the ensemble is ready less than <time_3> secs
+               And I wait until the ensemble is ready less than <model_wait> secs
                And I create a local ensemble
-               When I create a prediction for "<data_input>"
-               Then the prediction for "<objective>" is "<prediction>"
-               And I create a local prediction for "<data_input>"
+               When I create a prediction for "<input_data>"
+               Then the prediction for "<objective_id>" is "<prediction>"
+               And I create a local prediction for "<input_data>"
                Then the local prediction is "<prediction>"
-               Examples:
-               |data|time_1|time_2|time_3|data_input|objective|prediction|
         """
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "input_data", "objective_id", "prediction"]
         examples = [
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
@@ -262,42 +323,27 @@ class TestEnsemblePrediction(object):
             ['data/dates2.csv', 10, 10, 50,
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
              '000002', -0.05469]]
-        print(self.test_scenario6.__doc__)
+        show_doc(self.test_scenario6)
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            ensemble_create.i_create_an_ensemble(self)
-            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(self,
+                 example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            ensemble_shared = "%s_%s" % (example["data"],
+                example.get("number_of_models", 2))
+            ensemble_create.i_create_an_ensemble(self, shared=ensemble_shared)
+            ensemble_create.the_ensemble_is_finished_in_less_than(
+                self, example["model_wait"], shared=ensemble_shared)
             ensemble_create.create_local_ensemble(self)
-            prediction_create.i_create_an_ensemble_prediction(self, example[4])
-            prediction_create.the_prediction_is(self, example[5], example[6])
-            prediction_create.create_local_ensemble_prediction_using_median_with_confidence(self, example[4])
-            compare_pred.the_local_prediction_is(self, example[6])
-
-
-    def test_scenario7(self):
-        """
-            Scenario: Successfully creating a local prediction from an Ensemble created from file storage:
-                Given I create a local Ensemble from path "<path>"
-                When I create a local ensemble prediction with confidence for "<data_input>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And the local probabilities are "<probabilities>"
-
-                Examples:
-                | path             |  data_input    |prediction  | confidence | probabilities
-        """
-        print(self.test_scenario7.__doc__)
-        examples = [
-            ['bigml/tests/my_no_root_ensemble/ensemble.json', '{"petal width": 0.5}',
-             'Iris-setosa', '0.3533', '["0.3533", "0.31", "0.33666"]' ]]
-        for example in examples:
-            print("\nTesting with:\n", example)
-            ensemble_create.create_local_ensemble(self, path=example[0])
-            prediction_create.create_local_ensemble_prediction_with_confidence(self, example[1])
-            compare_pred.the_local_prediction_is(self, example[2])
-            compare_pred.the_local_prediction_confidence_is(self, example[3])
-            compare_pred.the_local_probabilities_are(self, example[4])
+            prediction_create.i_create_an_ensemble_prediction(
+                self, example["input_data"])
+            prediction_create.the_prediction_is(
+                self, example["objective_id"], example["prediction"])
+            prediction_create.create_local_ensemble_prediction_using_median_with_confidence(
+                self, example["input_data"])
+            compare_pred.the_local_prediction_is(self, example["prediction"])

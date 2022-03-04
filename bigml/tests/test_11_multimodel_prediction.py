@@ -18,7 +18,9 @@
 """ Creating multimodel predictions
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -44,83 +46,101 @@ class TestMultimodelPrediction(object):
         """
             Scenario: Successfully creating a prediction from a multi model:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
                 And I retrieve a list of remote models tagged with "<tag>"
                 And I create a local multi model
-                When I create a local prediction for "<data_input>"
-                Then the prediction for "<objective>" is "<prediction>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | params                         |  tag  |  data_input    | prediction  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  {"petal width": 0.5}     | Iris-setosa |
+                When I create a local prediction for "<input_data>"
+                Then the prediction for "<objective_id>" is "<prediction>"
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "tags", "tag", "input_data", "prediction"]
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}', 'mytag', '{"petal width": 0.5}', 'Iris-setosa']]
+            ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}',
+             'mytag', '{"petal width": 0.5}', 'Iris-setosa']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            compare_pred.i_retrieve_a_list_of_remote_models(self, example[5])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(self, example["source_wait"],
+                shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            compare_pred.i_retrieve_a_list_of_remote_models(
+                self, example["tag"])
             compare_pred.i_create_a_local_multi_model(self)
-            compare_pred.i_create_a_local_prediction(self, example[6])
-            compare_pred.the_local_prediction_is(self, example[7])
+            compare_pred.i_create_a_local_prediction(
+                self, example["input_data"])
+            compare_pred.the_local_prediction_is(self, example["prediction"])
 
     def test_scenario2(self):
         """
 
             Scenario: Successfully creating a local batch prediction from a multi model:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
+                And I create a model with "<tags>"
+                And I wait until the model is ready less than <model_wait> secs
                 And I retrieve a list of remote models tagged with "<tag>"
                 And I create a local multi model
-                When I create a batch multimodel prediction for "<data_inputs>"
+                When I create a batch multimodel prediction for "<input_data>"
                 Then the predictions are "<predictions>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | params             |  tag  |  data_inputs                                | predictions  |
-                | ../data/iris.csv | 10      | 10     | 10     | {"tags":["mytag"]} | mytag |  [{"petal width": 0.5}, {"petal length": 6, "petal width": 2}] | ["Iris-setosa", "Iris-virginica"] |
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "tags", "tag", "input_data", "predictions"]
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}', 'mytag', '[{"petal width": 0.5}, {"petal length": 6, "petal width": 2}]', '["Iris-setosa", "Iris-virginica"]']]
+            ['data/iris.csv', '10', '10', '10', '{"tags":["mytag"]}',
+             'mytag', '[{"petal width": 0.5}, {"petal length": 6, '
+             '"petal width": 2}]', '["Iris-setosa", "Iris-virginica"]']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            model_create.i_create_a_model_with(self, example[4])
-            model_create.the_model_is_finished_in_less_than(self, example[3])
-            compare_pred.i_retrieve_a_list_of_remote_models(self, example[5])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            model_create.i_create_a_model_with(self, example["tags"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            compare_pred.i_retrieve_a_list_of_remote_models(
+                self, example["tag"])
             compare_pred.i_create_a_local_multi_model(self)
-            compare_pred.i_create_a_batch_prediction_from_a_multi_model(self, example[6])
-            compare_pred.the_batch_mm_predictions_are(self, example[7])
+            compare_pred.i_create_a_batch_prediction_from_a_multi_model(
+                self, example["input_data"])
+            compare_pred.the_batch_mm_predictions_are(
+                self, example["predictions"])

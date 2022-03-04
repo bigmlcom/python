@@ -18,7 +18,9 @@
 """ Creating public model predictions
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -58,19 +60,30 @@ class TestPublicModelPrediction(object):
                 | data                | time_1  | time_2 | time_3 | data_input    | objective | prediction  |
                 | ../data/iris.csv | 10      | 10     | 10     | {"petal width": 0.5} | 000004    | Iris-setosa |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "input_data", "objective_id", "prediction"]
         examples = [
-            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}', '000004', 'Iris-setosa']]
+            ['data/iris.csv', '10', '10', '10', '{"petal width": 0.5}',
+             '000004', 'Iris-setosa']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
             model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
             model_create.make_the_model_public(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"])
             model_create.model_from_public_url(self)
-            prediction_create.i_create_a_prediction(self, example[4])
-            prediction_create.the_prediction_is(self, example[5], example[6])
+            prediction_create.i_create_a_prediction(
+                self, example["input_data"])
+            prediction_create.the_prediction_is(
+                self, example["objective_id"], example["prediction"])

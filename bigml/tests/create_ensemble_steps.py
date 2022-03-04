@@ -37,24 +37,25 @@ NO_MISSING_SPLITS = {'missing_splits': False}
 ENSEMBLE_SAMPLE = {'seed': 'BigML',
                    'ensemble_sample': {"rate": 0.7, "seed": 'BigML'}}
 
-#@step(r'I create an ensemble of (\d+) models and (\d+) tlp$')
-def i_create_an_ensemble(step, number_of_models=2, tlp=1):
-    dataset = world.dataset.get('resource')
-    try:
-        number_of_models = int(number_of_models)
-        # tlp is no longer used
-        args = {'number_of_models': number_of_models}
-    except:
-        args = {}
-    args.update(NO_MISSING_SPLITS)
-    args.update(ENSEMBLE_SAMPLE)
-    resource = world.api.create_ensemble(dataset, args=args)
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.ensemble = resource['object']
-    world.ensemble_id = resource['resource']
-    world.ensembles.append(resource['resource'])
+#@step(r'I create an ensemble of (\d+) models$')
+def i_create_an_ensemble(step, number_of_models=2, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("ensemble") is None:
+        dataset = world.dataset.get('resource')
+        try:
+            number_of_models = int(number_of_models)
+            # tlp is no longer used
+            args = {'number_of_models': number_of_models}
+        except:
+            args = {}
+        args.update(NO_MISSING_SPLITS)
+        args.update(ENSEMBLE_SAMPLE)
+        resource = world.api.create_ensemble(dataset, args=args)
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.ensemble = resource['object']
+        world.ensemble_id = resource['resource']
+        world.ensembles.append(resource['resource'])
 
 #@step(r'I wait until the ensemble status code is either (\d) or (-\d)
 # less than (\d+)')
@@ -64,8 +65,15 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
 
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')
-def the_ensemble_is_finished_in_less_than(step, secs):
-    wait_until_ensemble_status_code_is(step, FINISHED, FAULTY, secs)
+def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("ensemble") is None:
+        wait_until_ensemble_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            if shared not in world.shared:
+                world.shared[shared] = {}
+            world.shared[shared]["ensemble"] = world.ensemble
+    else:
+        world.ensemble = world.shared[shared]["ensemble"]
 
 
 #@step(r'I create a local Ensemble$')

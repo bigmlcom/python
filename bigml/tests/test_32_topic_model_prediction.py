@@ -18,7 +18,9 @@
 """ Creating a local Topic distribution from Topic Model
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_lda_steps as topic_create
@@ -95,12 +97,9 @@ class TestTopicModel(object):
                 Given I have a block of text and an LDA model
                 And I use the model to predict the topic distribution
                 Then the value of the distribution matches the expected distribution
-
-                Examples:
-                | model | text            | expected_distribution  |
-                | {...} | "hello, world!" | [0.5, 0.3, 0.2]        |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["model", "text", "expected_distribution"]
         examples = [
             # This example is a replication of a test in bigmlcom/streaming-lda
             [
@@ -118,38 +117,45 @@ class TestTopicModel(object):
         ]
 
         for ex in examples:
-            print("\nTesting with:\n", ex[1])
-            lda_predict.i_make_a_prediction(self, ex[0], ex[1], ex[2])
+            ex = dict(zip(headers, ex))
+            show_method(self, sys._getframe().f_code.co_name, ex)
+            lda_predict.i_make_a_prediction(
+                self, ex["model"], ex["text"], ex["expected_distribution"])
 
     def test_scenario2(self):
         """
             Scenario 2: Successfully creating Topic Model from a dataset:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create topic model from a dataset
-                And I wait until the topic model is ready less than <time_3> secs
+                And I wait until the topic model is ready less than <model_wait> secs
                 And I update the topic model name to "<topic_model_name>"
-                When I wait until the topic_model is ready less than <time_4> secs
+                When I wait until the topic_model is ready less than <model_wait> secs
                 Then the topic model name is "<topic_model_name>"
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | time_4 | topic_model_name | params
-                | ../data/spam.csv | 100      | 100     | 100     | 100 | my new topic model name | '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}'
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "topic_model_name", "source_conf"]
         examples = [
-            ['data/spam.csv', '100', '100', '100', '100', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
+            ['data/spam.csv', '100', '100', '100', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            source_create.i_update_source_with(self, example[6])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"])
+            source_create.the_source_is_finished(self, example["source_wait"])
+            source_create.i_update_source_with(self, example["source_conf"])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
             topic_create.i_create_a_topic_model(self)
-            topic_create.the_topic_model_is_finished_in_less_than(self, example[3])
-            topic_create.i_update_topic_model_name(self, example[5])
-            topic_create.the_topic_model_is_finished_in_less_than(self, example[4])
-            topic_create.i_check_topic_model_name(self, example[5])
+            topic_create.the_topic_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            topic_create.i_update_topic_model_name(
+                self, example["topic_model_name"])
+            topic_create.the_topic_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            topic_create.i_check_topic_model_name(
+                self, example["topic_model_name"])

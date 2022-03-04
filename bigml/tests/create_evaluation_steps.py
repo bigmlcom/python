@@ -28,7 +28,7 @@ from bigml.api import get_status
 from .read_resource_steps import wait_until_status_code_is
 
 #@step(r'I create an evaluation for the model with the dataset$')
-def i_create_an_evaluation(step):
+def i_create_an_evaluation(step, shared=None):
     dataset = world.dataset.get('resource')
     model = world.model.get('resource')
     resource = world.api.create_evaluation(model, dataset)

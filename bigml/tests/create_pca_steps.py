@@ -37,14 +37,15 @@ def i_check_pca_name(step, name):
     eq_(name, pca_name)
 
 #@step(r'I create a PCA from a dataset$')
-def i_create_a_pca_from_dataset(step):
-    dataset = world.dataset.get('resource')
-    resource = world.api.create_pca(dataset, {'name': 'new PCA'})
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.pca = resource['object']
-    world.pcas.append(resource['resource'])
+def i_create_a_pca_from_dataset(step, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("pca") is None:
+        dataset = world.dataset.get('resource')
+        resource = world.api.create_pca(dataset, {'name': 'new PCA'})
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.pca = resource['object']
+        world.pcas.append(resource['resource'])
 
 
 #@step(r'I create a PCA from a dataset$')
@@ -58,8 +59,8 @@ def i_create_a_pca_with_params(step, params):
     world.pca = resource['object']
     world.pcas.append(resource['resource'])
 
-def i_create_a_pca(step):
-    i_create_a_pca_from_dataset(step)
+def i_create_a_pca(step, shared=None):
+    i_create_a_pca_from_dataset(step, shared=shared)
 
 
 #@step(r'I update the PCA name to "(.*)"$')
@@ -78,8 +79,15 @@ def wait_until_pca_status_code_is(step, code1, code2, secs):
 
 
 #@step(r'I wait until the PCA is ready less than (\d+)')
-def the_pca_is_finished_in_less_than(step, secs):
-    wait_until_pca_status_code_is(step, FINISHED, FAULTY, secs)
+def the_pca_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("pca") is None:
+        wait_until_pca_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            if shared not in world.shared:
+                world.shared[shared] = {}
+            world.shared[shared]["pca"] = world.pca
+    else:
+        world.pca = world.shared[shared]["pca"]
 
 
 #@step(r'I clone pca')

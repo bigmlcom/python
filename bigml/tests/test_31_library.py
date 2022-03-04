@@ -18,7 +18,9 @@
 """ Creating and updating scripts
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_library_steps as library_create
 
 class TestLibrary(object):
@@ -43,18 +45,21 @@ class TestLibrary(object):
                 And I update the library with "<param>", "<param_value>"
                 And I wait until the library is ready less than <time_2> secs
                 Then the library code is "<source_code>" and the value of "<param>" is "<param_value>"
-
-                Examples:
-                | source_code                      | time_1  | time_2  | param | param_value
-                | (define (mu x) (+ x 1))          | 10      | 10      | name  | my library
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["source_code", "library_wait", "param", "param_value"]
         examples = [
-            ['(define (mu x) (+ x 1))', '10', '10', 'name', 'my library']]
+            ['(define (mu x) (+ x 1))', '10', 'name', 'my library']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            library_create.i_create_a_library(self, example[0])
-            library_create.the_library_is_finished(self, example[1])
-            library_create.i_update_a_library(self, example[3], example[4])
-            library_create.the_library_is_finished(self, example[2])
-            library_create.the_library_code_and_attributes(self, example[0], example[3], example[4])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            library_create.i_create_a_library(self, example["source_code"])
+            library_create.the_library_is_finished(
+                self, example["library_wait"])
+            library_create.i_update_a_library(
+                self, example["param"], example["param_value"])
+            library_create.the_library_is_finished(
+                self, example["library_wait"])
+            library_create.the_library_code_and_attributes(
+                self, example["source_code"], example["param"],
+                example["param_value"])

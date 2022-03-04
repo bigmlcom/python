@@ -18,8 +18,10 @@
 """ Testing local prediction
 
 """
-from .world import world, setup_module, teardown_module
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import compare_predictions_steps as prediction_compare
+from . import create_ensemble_steps as ensemble_create
+from . import create_prediction_steps as prediction_create
 
 
 class TestLocalPrediction(object):
@@ -38,24 +40,115 @@ class TestLocalPrediction(object):
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a prediction from a local model in a json file:
+            Scenario 1: Successfully creating a prediction from a local model in a json file:
                 Given I create a local model from a "<model>" file
                 When I create a local prediction for "<data_input>" with confidence
                 Then the local prediction is "<prediction>"
                 And the local prediction's confidence is "<confidence>"
-
-                Examples:
-                | model                | data_input    |  prediction  | confidence
-                | ../data/iris_model.json | {"petal length": 0.5} | Iris-setosa | 0.90594
-
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["file_path", "input_data", "prediction", "confidence"]
         examples = [
-            ['data/iris_model.json', '{"petal length": 0.5}', 'Iris-setosa', '0.90594'],
-            ['data/iris_model.json', '{"petal length": "0.5"}', 'Iris-setosa', '0.90594']]
+            ['data/iris_model.json', '{"petal length": 0.5}', 'Iris-setosa',
+             '0.90594'],
+            ['data/iris_model.json', '{"petal length": "0.5"}', 'Iris-setosa',
+             '0.90594']]
         for example in examples:
+            example = dict(zip(headers, example))
             print("\nTesting with:\n", example)
-            prediction_compare.i_create_a_local_model_from_file(self, example[0])
-            prediction_compare.i_create_a_local_prediction_with_confidence(self, example[1])
-            prediction_compare.the_local_prediction_is(self, example[2])
-            prediction_compare.the_local_prediction_confidence_is(self, example[3])
+            prediction_compare.i_create_a_local_model_from_file(
+                self, example["file_path"])
+            prediction_compare.i_create_a_local_prediction_with_confidence(
+                self, example["input_data"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
+            prediction_compare.the_local_prediction_confidence_is(
+                self, example["confidence"])
+
+    def test_scenario2(self):
+        """
+            Scenario 2: Successfully creating a prediction from a local model in a json file:
+                Given I create a local model using SupervisedModel from a "<model>" file
+                When I create a local prediction for "<data_input>" with confidence
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+        """
+        show_doc(self.test_scenario2)
+        headers = ["file_path", "input_data", "prediction", "confidence"]
+        examples = [
+            ['data/iris_model.json', '{"petal length": 0.5}', 'Iris-setosa',
+             '0.90594'],
+            ['data/iris_model.json', '{"petal length": "0.5"}', 'Iris-setosa',
+             '0.90594']]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            prediction_compare.i_create_a_local_supervised_model_from_file(
+                self, example["file_path"])
+            prediction_compare.i_create_a_local_prediction_with_confidence(
+                self, example["input_data"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
+            prediction_compare.the_local_prediction_confidence_is(
+                self, example["confidence"])
+
+
+    def test_scenario3(self):
+        """
+            Scenario 3: Successfully creating a local prediction from an Ensemble created from file storage:
+                Given I create a local Ensemble from path "<path>"
+                When I create a local ensemble prediction with confidence for "<data_input>"
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+                And the local probabilities are "<probabilities>"
+        """
+        show_doc(self.test_scenario3)
+        headers = ["file_path", "input_data", "prediction", "confidence",
+                   "probabilities"]
+        examples = [
+            ['bigml/tests/my_no_root_ensemble/ensemble.json',
+             '{"petal width": 0.5}', 'Iris-setosa', '0.3533',
+             '["0.3533", "0.31", "0.33666"]' ]]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            ensemble_create.create_local_ensemble(
+                self, path=example["file_path"])
+            prediction_create.create_local_ensemble_prediction_with_confidence(
+                self, example["input_data"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
+            prediction_compare.the_local_prediction_confidence_is(
+                self, example["confidence"])
+            prediction_compare.the_local_probabilities_are(
+                self, example["probabilities"])
+
+    def test_scenario4(self):
+        """
+            Scenario 4: Successfully creating a local prediction from an Ensemble created from file storage:
+                Given I create a local SupervisedModel from path "<path>"
+                When I create a local ensemble prediction with confidence for "<data_input>"
+                Then the local prediction is "<prediction>"
+                And the local prediction's confidence is "<confidence>"
+                And the local probabilities are "<probabilities>"
+        """
+        show_doc(self.test_scenario4)
+        headers = ["file_path", "input_data", "prediction", "confidence",
+                   "probabilities"]
+        examples = [
+            ['bigml/tests/my_no_root_ensemble/ensemble.json',
+             '{"petal width": 0.5}', 'Iris-setosa', '0.3533',
+             '["0.3533", "0.31", "0.33666"]' ]]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            prediction_compare.i_create_a_local_supervised_model_from_file(
+                self, example["file_path"])
+            prediction_compare.i_create_a_local_prediction_with_confidence(
+                self, example["input_data"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
+            prediction_compare.the_local_prediction_confidence_is(
+                self, example["confidence"])
+            prediction_compare.the_local_probabilities_are(
+                self, example["probabilities"])

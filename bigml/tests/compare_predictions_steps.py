@@ -33,6 +33,7 @@ from bigml.linear import LinearRegression
 from bigml.supervised import SupervisedModel
 from bigml.fusion import Fusion
 from bigml.pca import PCA
+from bigml.supervised import SupervisedModel
 
 
 from .create_prediction_steps import check_prediction
@@ -66,6 +67,11 @@ def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
 #@step(r'I create a local model from a "(.*)" file$')
 def i_create_a_local_model_from_file(step, model_file):
     world.local_model = Model(res_filename(model_file))
+
+
+#@step(r'I create a local supervised model from a "(.*)" file$')
+def i_create_a_local_supervised_model_from_file(step, model_file):
+    world.local_model = SupervisedModel(res_filename(model_file))
 
 
 #@step(r'I create a local model$')

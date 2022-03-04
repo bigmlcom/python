@@ -39,14 +39,15 @@ def i_check_association_name(step, name):
     eq_(name, association_name)
 
 #@step(r'I create an association from a dataset$')
-def i_create_an_association_from_dataset(step):
-    dataset = world.dataset.get('resource')
-    resource = world.api.create_association(dataset, {'name': 'new association'})
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.association = resource['object']
-    world.associations.append(resource['resource'])
+def i_create_an_association_from_dataset(step, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("association") is None:
+        dataset = world.dataset.get('resource')
+        resource = world.api.create_association(dataset, {'name': 'new association'})
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.association = resource['object']
+        world.associations.append(resource['resource'])
 
 
 #@step(r'I create an association from a dataset with params (.*)$')
@@ -94,9 +95,15 @@ def wait_until_association_status_code_is(step, code1, code2, secs):
 
 
 #@step(r'I wait until the association is ready less than (\d+)')
-def the_association_is_finished_in_less_than(step, secs):
-    wait_until_association_status_code_is(step, FINISHED, FAULTY, secs)
-
+def the_association_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("association") is None:
+        wait_until_association_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            if shared not in world.shared:
+                world.shared[shared] = {}
+            world.shared[shared]["association"] = world.association
+    else:
+        world.association = world.shared[shared]["association"]
 
 #@step(r'I create a local association')
 def i_create_a_local_association(step):

@@ -32,17 +32,18 @@ from bigml.cluster import Cluster
 
 
 #@step(r'I create a cluster$')
-def i_create_a_cluster(step):
-    dataset = world.dataset.get('resource')
-    resource = world.api.create_cluster(
-        dataset, {'seed': 'BigML',
-                  'cluster_seed': 'BigML',
-                  'k': 8})
-    world.status = resource['code']
-    eq_(world.status, HTTP_CREATED)
-    world.location = resource['location']
-    world.cluster = resource['object']
-    world.clusters.append(resource['resource'])
+def i_create_a_cluster(step, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("cluster") is None:
+        dataset = world.dataset.get('resource')
+        resource = world.api.create_cluster(
+            dataset, {'seed': 'BigML',
+                      'cluster_seed': 'BigML',
+                      'k': 8})
+        world.status = resource['code']
+        eq_(world.status, HTTP_CREATED)
+        world.location = resource['location']
+        world.cluster = resource['object']
+        world.clusters.append(resource['resource'])
 
 #@step(r'I create a cluster from a dataset list$')
 def i_create_a_cluster_from_dataset_list(step):
@@ -74,9 +75,16 @@ def wait_until_cluster_status_code_is(step, code1, code2, secs):
     world.cluster = wait_until_status_code_is(
         code1, code2, secs, world.cluster)
 
+
 #@step(r'I wait until the cluster is ready less than (\d+)')
-def the_cluster_is_finished_in_less_than(step, secs):
-    wait_until_cluster_status_code_is(step, FINISHED, FAULTY, secs)
+def the_cluster_is_finished_in_less_than(step, secs, shared=None):
+    if shared is None or world.shared.get(shared, {}).get("cluster") is None:
+        wait_until_cluster_status_code_is(step, FINISHED, FAULTY, secs)
+        if shared is not None:
+            world.shared[shared]["cluster"] = world.cluster
+    else:
+        world.cluster = world.shared[shared]["cluster"]
+
 
 #@step(r'I make the cluster shared')
 def make_the_cluster_shared(step):

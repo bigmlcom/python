@@ -18,7 +18,9 @@
 """ Testing Fields object properties
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import fields_steps
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
@@ -42,51 +44,56 @@ class TestFields(object):
         """
             Scenario: Successfully creating a Fields object:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a Fields object from the source with objective column "<objective_column>"
                 Then the object id is "<objective_id>"
-
-                Examples:
-                | data                | time_1  | objective_column | objective_id |
-                | ../data/iris.csv | 10      | 0 | 000000 |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "objective_column", "objective_id"]
         examples = [
             ['data/iris.csv', '10', '0', '000000']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            fields_steps.create_fields(self, example[2])
-            fields_steps.check_objective(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            fields_steps.create_fields(self, example["objective_column"])
+            fields_steps.check_objective(self, example["objective_id"])
 
     def test_scenario2(self):
         """
             Scenario: Successfully creating a Fields object and a summary fields file:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a Fields object from the dataset with objective column "<objective_column>"
                 And I export a summary fields file "<summary_file>"
                 Then I check that the file "<summary_file>" is like "<expected_file>"
-
-                Examples:
-                | data                | time_1  | objective_column | summary_file| expected_file | time_2
-                | ../data/iris.csv | 10      | 0 | fields_summary.csv | data/fields/fields_summary.csv | 10
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait", "objective_column",
+                   "summary_file", "expected_file"]
         examples = [
-            ['data/iris.csv', '10', '0', 'fields_summary.csv', 'data/fields/fields_summary.csv', '10']]
+            ['data/iris.csv', '10', '10', '0', 'fields_summary.csv',
+             'data/fields/fields_summary.csv']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[5])
-            fields_steps.create_fields_from_dataset(self, example[2])
-            fields_steps.generate_summary(self, example[3])
-            fields_steps.check_summary_like_expected(self, example[3], example[4])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            fields_steps.create_fields_from_dataset(
+                self, example["objective_column"])
+            fields_steps.generate_summary(self, example["summary_file"])
+            fields_steps.check_summary_like_expected(
+                self, example["summary_file"], example["expected_file"])
 
     def test_scenario3(self):
         """
@@ -102,25 +109,34 @@ class TestFields(object):
                 And I update the dataset with the file "<summary_file>"
                 Then I check the new field structure has field "<field_id>" as "<optype>"
                 And I check the source has field "<field_id>" as "<optype>"
-
-                Examples:
-                | data                | time_1  | objective_column | summary_file| field_id | optype | time_2
-                | ../data/iris.csv | 10      | 0 | fields_summary_modified.csv | 000000 | categorical | 10
         """
-        print(self.test_scenario3.__doc__)
+        show_doc(self.test_scenario3)
+        headers = ["data", "source_wait", "dataset_wait", "objective_column",
+                   "summary_file", "field_id", "optype"]
         examples = [
-            ['data/iris.csv', '10', '0', 'data/fields/fields_summary_modified.csv', '000000', 'categorical', '10']]
+            ['data/iris.csv', '10', '10', '0',
+             'data/fields/fields_summary_modified.csv', '000000',
+             'categorical']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[6])
-            fields_steps.create_fields_from_dataset(self, example[2])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            fields_steps.create_fields_from_dataset(
+                self, example["objective_column"])
             source_create.clone_source(self, world.source["resource"])
-            source_create.the_source_is_finished(self, example[1])
-            fields_steps.import_summary_file(self, example[3])
-            fields_steps.update_with_summary_file(self, world.source, example[3])
-            fields_steps.update_with_summary_file(self, world.dataset, example[3])
-            fields_steps.check_field_type(self, example[4], example[5])
-            fields_steps.check_resource_field_type(self, world.source, example[4], example[5])
+            source_create.the_source_is_finished(self, example["source_wait"])
+            fields_steps.import_summary_file(self, example["summary_file"])
+            fields_steps.update_with_summary_file(
+                self, world.source, example["summary_file"])
+            fields_steps.update_with_summary_file(
+                self, world.dataset, example["summary_file"])
+            fields_steps.check_field_type(
+                self, example["field_id"], example["optype"])
+            fields_steps.check_resource_field_type(
+                self, world.source, example["field_id"], example["optype"])

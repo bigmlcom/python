@@ -24,6 +24,7 @@ is used for local predictions.
 """
 import logging
 import re
+import copy
 
 from bigml_chronos import chronos
 
@@ -208,12 +209,12 @@ class ModelFields():
                  missing_tokens=None, categories=False,
                  numerics=False):
         if isinstance(fields, dict):
+            tmp_fields = copy.deepcopy(fields)
             try:
                 self.objective_id = objective_id
-                self.uniquify_varnames(fields)
-                self.inverted_fields = invert_dictionary(fields)
-                self.fields = {}
-                self.fields.update(fields)
+                self.uniquify_varnames(tmp_fields)
+                self.inverted_fields = invert_dictionary(tmp_fields)
+                self.fields = tmp_fields
                 if not (hasattr(self, "input_fields") and self.input_fields):
                     self.input_fields = [field_id for field_id, field in \
                         sorted(list(self.fields.items()),
@@ -255,7 +256,6 @@ class ModelFields():
                         'optype'] == NUMERIC \
                         or (hasattr(self, "boosting") and self.boosting and \
                         self.boosting.get("objective_class") is None)
-
             except KeyError:
                 raise Exception("Wrong field structure.")
 

@@ -36,7 +36,7 @@ from .read_resource_steps import wait_until_status_code_is
 
 #@step(r'I create a data source uploading a "(.*)" file$')
 def i_upload_a_file(step, file, shared=None):
-    if shared is None or step.shared.get(shared, {}).get("source") is None:
+    if shared is None or world.shared.get(shared, {}).get("source") is None:
         resource = world.api.create_source(res_filename(file), \
             {'project': world.project_id})
         # update status
@@ -177,14 +177,14 @@ def wait_until_source_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the source is ready less than (\d+)')
 def the_source_is_finished(step, secs, shared=None):
-    if shared is None or step.shared.get(shared, {}).get("source") is None:
+    if shared is None or world.shared.get(shared, {}).get("source") is None:
         wait_until_source_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if step.shared.get(shared) is None:
-                step.shared[shared] = {}
-            step.shared[shared]["source"] = world.source
+            if world.shared.get(shared) is None:
+                world.shared[shared] = {}
+            world.shared[shared]["source"] = world.source
     else:
-        world.source = step.shared[shared]["source"]
+        world.source = world.shared[shared]["source"]
 
 #@step(r'I update the source with params "(.*)"')
 def i_update_source_with(step, data="{}"):

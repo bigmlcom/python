@@ -18,7 +18,9 @@
 """ Creating public dataset
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 
@@ -40,28 +42,30 @@ class TestPublicDataset(object):
         """
             Scenario: Successfully creating and reading a public dataset:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I make the dataset public
-                And I wait until the dataset is ready less than <time_3> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 When I get the dataset status using the dataset's public url
                 Then the dataset's status is FINISHED
-
-                Examples:
-                | data                | time_1  | time_2 | time_3 |
-                | ../data/iris.csv | 10      | 10     | 10     |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait"]
         examples = [
-            ['data/iris.csv', '10', '10', '10']]
+            ['data/iris.csv', '10', '10']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file_from_stdin(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file_from_stdin(
+                self, example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
             dataset_create.make_the_dataset_public(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[3])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
             dataset_create.build_local_dataset_from_public_url(self)
             dataset_create.dataset_status_finished(self)

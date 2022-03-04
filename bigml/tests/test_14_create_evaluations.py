@@ -18,7 +18,9 @@
 """ Creating evaluation
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -43,105 +45,133 @@ class TestEvaluation(object):
         """
             Scenario1: Successfully creating an evaluation:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a model
-                And I wait until the model is ready less than <time_3> secs
+                And I wait until the model is ready less than <model_wait> secs
                 When I create an evaluation for the model with the dataset
-                And I wait until the evaluation is ready less than <time_4> secs
-                Then the measured "<measure>" is <value>
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
-                | ../data/iris.csv | 30      | 30     | 30     | 30     | average_phi   | 1      |
+                And I wait until the evaluation is ready less than <evaluation_time> secs
+                Then the measured "<metric>" is <value>
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "evaluation_wait", "metric", "value"]
         examples = [
             ['data/iris.csv', '50', '50', '50', '50', 'average_phi', '1']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_model(self)
-            model_create.the_model_is_finished_in_less_than(self, example[3])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_model(self, shared=example["data"])
+            model_create.the_model_is_finished_in_less_than(
+                self, example["model_wait"], shared=example["data"])
             evaluation_create.i_create_an_evaluation(self)
-            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[4])
-            evaluation_create.the_measured_measure_is_value(self, example[5], example[6])
+            evaluation_create.the_evaluation_is_finished_in_less_than(
+                self, example["evaluation_wait"])
+            evaluation_create.the_measured_measure_is_value(
+                self, example["metric"], example["value"])
 
     def test_scenario2(self):
         """
 
             Scenario2: Successfully creating an evaluation for an ensemble:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create an ensemble of <number_of_models> models and <tlp> tlp
-                And I wait until the ensemble is ready less than <time_3> secs
-                When I create an evaluation for the ensemble with the dataset and "<params>"
-                And I wait until the evaluation is ready less than <time_4> secs
-                Then the measured "<measure>" is <value>
-
-                Examples:
-                | data             | time_1  | time_2 | number_of_models | tlp | time_3 | time_4 | measure       | value  | params
-                | ../data/iris.csv | 30      | 30     | 5                | 1   | 50     | 30     | average_phi   | 0.98029   | {"combiner": 0}
-
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create an ensemble of <number_of_models> models
+                And I wait until the ensemble is ready less than <model_wait> secs
+                When I create an evaluation for the ensemble with the dataset and "evaluation_conf"
+                And I wait until the evaluation is ready less than <evaluation_wait> secs
+                Then the measured "<metric>" is <value>
         """
-        print(self.test_scenario2.__doc__)
+        show_doc(self.test_scenario2)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "evaluation_wait", "number_of_models",
+                   "metric", "value", "evaluation_conf"]
         examples = [
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 0}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"combiner": 1}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"combiner": 2}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.98029', {"operating_kind": "votes"}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.97064', {"operating_kind": "probability"}],
-            ['data/iris.csv', '50', '50', '5', '1', '80', '80', 'average_phi', '0.95061', {"operating_kind": "confidence"}]]
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.98029', {"combiner": 0}],
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.95061', {"combiner": 1}],
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.98029', {"combiner": 2}],
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.98029', {"operating_kind": "votes"}],
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.97064', {"operating_kind": "probability"}],
+            ['data/iris.csv', '50', '50', '80', '80', '5', 'average_phi',
+             '0.95061', {"operating_kind": "confidence"}]]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            ensemble_create.i_create_an_ensemble(self, example[3], example[4])
-            ensemble_create.the_ensemble_is_finished_in_less_than(self, example[5])
-            evaluation_create.i_create_an_evaluation_ensemble(self, example[9])
-            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[6])
-            evaluation_create.the_measured_measure_is_value(self, example[7], example[8])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            ensemble_shared = "%s_%s" % (example["data"],
+                example["number_of_models"])
+            ensemble_create.i_create_an_ensemble(
+                self, example["number_of_models"], shared=ensemble_shared)
+            ensemble_create.the_ensemble_is_finished_in_less_than(
+                self, example["model_wait"], shared=ensemble_shared)
+            evaluation_create.i_create_an_evaluation_ensemble(
+                self, example["evaluation_conf"])
+            evaluation_create.the_evaluation_is_finished_in_less_than(
+                self, example["evaluation_wait"])
+            evaluation_create.the_measured_measure_is_value(
+                self, example["metric"], example["value"])
 
     def test_scenario3(self):
         """
 
             Scenario3: Successfully creating an evaluation for a logistic regression:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a logistic regression
-                And I wait until the logistic regression is ready less than <time_3> secs
+                And I wait until the logistic regression is ready less than <model_wait> secs
                 When I create an evaluation for the logistic regression with the dataset
-                And I wait until the evaluation is ready less than <time_4> secs
-                Then the measured "<measure>" is <value>
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
-                | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.94107   |
+                And I wait until the evaluation is ready less than <evaluation_wait> secs
+                Then the measured "<metric>" is <value>
         """
-        print(self.test_scenario3.__doc__)
+        show_doc(self.test_scenario3)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "evaluation_wait", "metric", "value"]
         examples = [
-            ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.89054']]
+            ['data/iris.csv', '50', '50', '800', '80', 'average_phi',
+             '0.89054']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_logistic_model(self)
-            model_create.the_logistic_model_is_finished_in_less_than(self, example[3])
-            evaluation_create.i_create_an_evaluation_logistic(self)
-            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[4])
-            evaluation_create.the_measured_measure_is_value(self, example[5], example[6])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_logistic_model(
+                self, shared=example["data"])
+            model_create.the_logistic_model_is_finished_in_less_than(
+                self, example["model_wait"], shared=example["data"])
+            evaluation_create.i_create_an_evaluation_logistic(
+                self)
+            evaluation_create.the_evaluation_is_finished_in_less_than(
+                self, example["evaluation_wait"])
+            evaluation_create.the_measured_measure_is_value(
+                self, example["metric"], example["value"])
 
     def test_scenario4(self):
         """
@@ -156,22 +186,29 @@ class TestEvaluation(object):
                 When I create an evaluation for the deepnet with the dataset
                 And I wait until the evaluation is ready less than <time_4> secs
                 Then the measured "<measure>" is <value>
-
-                Examples:
-                | data             | time_1  | time_2 | time_3 | time_4 | measure       | value  |
-                | ../data/iris.csv | 30      | 30     | 50     | 30     | average_phi   | 0.97007   |
         """
-        print(self.test_scenario4.__doc__)
+        show_doc(self.test_scenario4)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "evaluation_wait", "metric", "value"]
         examples = [
-            ['data/iris.csv', '50', '50', '800', '80', 'average_phi', '0.97007']]
+            ['data/iris.csv', '50', '50', '800', '80', 'average_phi',
+             '0.97007']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            model_create.i_create_a_deepnet(self)
-            model_create.the_deepnet_is_finished_in_less_than(self, example[3])
-            evaluation_create.i_create_an_evaluation_deepnet(self)
-            evaluation_create.the_evaluation_is_finished_in_less_than(self, example[4])
-            evaluation_create.the_measured_measure_is_value(self, example[5], example[6])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_deepnet(self, shared=example["data"])
+            model_create.the_deepnet_is_finished_in_less_than(
+                self, example["model_wait"], shared=example["data"])
+            evaluation_create.i_create_an_evaluation_deepnet(
+                self)
+            evaluation_create.the_evaluation_is_finished_in_less_than(
+                self, example["evaluation_wait"])
+            evaluation_create.the_measured_measure_is_value(
+                self, example["metric"], example["value"])

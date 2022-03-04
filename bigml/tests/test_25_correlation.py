@@ -18,7 +18,9 @@
 """ Creating correlation
 
 """
-from .world import world, setup_module, teardown_module
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_correlation_steps as correlation_create
@@ -41,30 +43,36 @@ class TestCorrelation(object):
         """
             Scenario: Successfully creating a correlation from a dataset:
                 Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
+                And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
+                And I wait until the dataset is ready less than <dataset_wait> secs
                 And I create a correlation from a dataset
-                And I wait until the correlation is ready less than <time_3> secs
+                And I wait until the correlation is ready less than <model_wait> secs
                 And I update the correlation name to "<correlation_name>"
-                When I wait until the correlation is ready less than <time_4> secs
+                When I wait until the correlation is ready less than <model_wait> secs
                 Then the correlation name is "<correlation_name>"
-
-                Examples:
-                | data                | time_1  | time_2 | time_3 | time_4 | correlation_name |
-                | ../data/iris.csv | 10      | 10     | 20     | 20 | my new correlation name |
         """
-        print(self.test_scenario1.__doc__)
+        show_doc(self.test_scenario1)
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "correlation_name"]
         examples = [
-            ['data/iris.csv', '10', '10', '20', '20', 'my new correlation name']]
+            ['data/iris.csv', '10', '10', '20', 'my new correlation name']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
             correlation_create.i_create_a_correlation_from_dataset(self)
-            correlation_create.the_correlation_is_finished_in_less_than(self, example[3])
-            correlation_create.i_update_correlation_name(self, example[5])
-            correlation_create.the_correlation_is_finished_in_less_than(self, example[4])
-            correlation_create.i_check_correlation_name(self, example[5])
+            correlation_create.the_correlation_is_finished_in_less_than(
+                self, example["model_wait"])
+            correlation_create.i_update_correlation_name(
+                self, example["correlation_name"])
+            correlation_create.the_correlation_is_finished_in_less_than(
+                self, example["model_wait"])
+            correlation_create.i_check_correlation_name(
+                self, example["correlation_name"])

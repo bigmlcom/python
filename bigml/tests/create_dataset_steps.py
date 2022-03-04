@@ -31,7 +31,7 @@ from .read_resource_steps import wait_until_status_code_is
 
 #@step(r'I create a dataset$')
 def i_create_a_dataset(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("dataset") is None:
+    if shared is None or world.shared.get("dataset", {}).get(shared) is None:
         resource = world.api.create_dataset(world.source['resource'])
         world.status = resource['code']
         eq_(world.status, HTTP_CREATED)
@@ -69,12 +69,15 @@ def wait_until_dataset_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the dataset is ready less than (\d+)')
 def the_dataset_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("dataset") is None:
+    if shared is None or world.shared.get("dataset", {}).get(shared) is None:
         wait_until_dataset_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            world.shared[shared]["dataset"]= world.dataset
+            if "dataset" not in world.shared:
+                world.shared["dataset"] = {}
+            world.shared["dataset"][shared]= world.dataset
     else:
-        world.dataset = world.shared[shared]["dataset"]
+        world.dataset = world.shared["dataset"][shared]
+        print("Reusing %s" % world.dataset["resource"])
 
 #@step(r'I make the dataset public')
 def make_the_dataset_public(step):

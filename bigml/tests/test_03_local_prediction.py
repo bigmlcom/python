@@ -18,6 +18,8 @@
 """ Testing local prediction
 
 """
+import sys
+
 from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import compare_predictions_steps as prediction_compare
 from . import create_ensemble_steps as ensemble_create
@@ -55,7 +57,7 @@ class TestLocalPrediction(object):
              '0.90594']]
         for example in examples:
             example = dict(zip(headers, example))
-            print("\nTesting with:\n", example)
+            show_method(self, sys._getframe().f_code.co_name, example)
             prediction_compare.i_create_a_local_model_from_file(
                 self, example["file_path"])
             prediction_compare.i_create_a_local_prediction_with_confidence(

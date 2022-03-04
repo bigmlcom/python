@@ -112,6 +112,15 @@ def float_round(value, precision=5):
     return value
 
 
+def flatten_shared(shared_dict):
+    """Returns the list of IDs stored in the world.shared structure """
+    ids_list = []
+    for _, value in world.shared.items():
+        for _, resource in value.items():
+            ids_list.append(resource["resource"])
+    return ids_list
+
+
 class World(object):
 
     def __init__(self):
@@ -180,36 +189,39 @@ class World(object):
             setattr(self, RENAMED_RESOURCES.get(resource_type,
                                                 resource_type), None)
 
+    def _delete_resources(self, object_list, resource_type):
+        """Deletes resources grouped by type"""
+        if object_list:
+            print("Deleting %s %s" % (len(object_list),
+                                      plural(resource_type)))
+            kwargs = {}
+            if resource_type == "composite":
+                resource_type = "source"
+                kwargs = {"query_string": "delete_all=true"}
+            delete_method = self.api.deleters[resource_type]
+            for obj_id in object_list:
+                counter = 0
+                print("Deleting %s" % obj_id)
+                result = delete_method(obj_id, **kwargs)
+                while (result['code'] not in [HTTP_NO_CONTENT,
+                                              HTTP_NOT_FOUND] and
+                       counter < MAX_RETRIES):
+                    print("Delete failed for %s. Retrying" % obj_id)
+                    time.sleep(3 * self.delta)
+                    counter += 1
+                    result = delete_method(obj_id, **kwargs)
+                if counter == MAX_RETRIES:
+                    print ("Retries to delete the created resources are"
+                           " exhausted. Failed to delete.")
+
     def delete_resources(self):
-        """Deletes the created objects
-
-        """
-
+        """Deletes the created objects"""
+        keepers = flatten_shared(self.shared)
         for resource_type in RESOURCE_TYPES:
             object_list = getattr(self, plural(resource_type))
             object_list.reverse()
-            if object_list:
-                print("Deleting %s %s" % (len(object_list),
-                                          plural(resource_type)))
-                kwargs = {}
-                if resource_type == "composite":
-                    resource_type = "source"
-                    kwargs = {"query_string": "delete_all=true"}
-                delete_method = self.api.deleters[resource_type]
-                for obj_id in object_list:
-                    counter = 0
-                    print("Deleting %s" % obj_id)
-                    result = delete_method(obj_id, **kwargs)
-                    while (result['code'] not in [HTTP_NO_CONTENT,
-                                                  HTTP_NOT_FOUND] and
-                           counter < MAX_RETRIES):
-                        print("Delete failed for %s. Retrying" % obj_id)
-                        time.sleep(3 * self.delta)
-                        counter += 1
-                        result = delete_method(obj_id, **kwargs)
-                    if counter == MAX_RETRIES:
-                        print ("Retries to delete the created resources are"
-                               " exhausted. Failed to delete.")
+            object_list = [obj for obj in object_list if obj not in keepers]
+            self._delete_resources(object_list, resource_type)
         if world.errors:
             print("Failed resources: \n\n")
         for resource in world.errors:
@@ -263,8 +275,12 @@ def setup_module():
 
     """
     if world.project_id is None:
-        world.project_id = world.api.create_project( \
-            {"name": world.test_project_name})['resource']
+        if "project" not in world.shared:
+            world.shared["project"] = {}
+        world.shared["project"]["common"] = world.api.create_project( \
+            {"name": world.test_project_name})
+        world.project_id = world.shared["project"]["common"]['resource']
+        print("Creating common project: ", world.project_id)
     world.clear()
 
 def teardown_module():
@@ -272,6 +288,10 @@ def teardown_module():
 
     """
     print("Teardown module ---------------------------")
+    teardown_fn(force=False)
+
+
+def teardown_fn(force=False):
     if not world.debug and not world.short_debug:
         if os.path.exists('./tmp'):
             shutil.rmtree('./tmp')
@@ -279,11 +299,10 @@ def teardown_module():
         world.delete_resources()
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
-        for resource_type, value in list(project_stats.items()):
-            if value['count'] != 0:
-                print("WARNING: Increment in %s: %s" % (resource_type, value))
-        world.api.delete_project(world.project_id)
-        world.project_id = None
+        if force:
+            world.api.delete_project(world.project_id)
+            del world.shared["project"]
+            world.project_id = None
     else:
         world.store_resources()
 

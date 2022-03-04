@@ -43,7 +43,7 @@ NO_MISSING_SPLITS = {'missing_splits': False}
 
 #@step(r'I create a model$')
 def i_create_a_model(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("model") is None:
+    if shared is None or world.shared.get("model", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_model(dataset, args=NO_MISSING_SPLITS)
         world.status = resource['code']
@@ -92,14 +92,15 @@ def wait_until_model_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the model is ready less than (\d+)')
 def the_model_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("model") is None:
+    if shared is None or world.shared.get("model", {}).get(shared) is None:
         wait_until_model_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
-            world.shared[shared]["model"] = world.model
+            if "model" not in world.shared:
+                world.shared["model"] = {}
+            world.shared["model"][shared] = world.model
     else:
-        world.model = world.shared[shared]["model"]
+        world.model = world.shared["model"][shared]
+        print("Reusing %s" % world.model["resource"])
 
 
 #@step(r'I create a model with "(.*)"')
@@ -191,7 +192,7 @@ def is_associated_to_centroid_id(step, centroid_id):
 
 #@step(r'I create a logistic regression model$')
 def i_create_a_logistic_model(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("logistic") is None:
+    if shared is None or world.shared.get("logistic", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_logistic_regression(dataset)
         world.status = resource['code']
@@ -225,18 +226,19 @@ def wait_until_logistic_model_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the logistic regression model is ready less than (\d+)')
 def the_logistic_model_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("logistic") is None:
+    if shared is None or world.shared.get("logistic", {}).get(shared) is None:
         wait_until_logistic_model_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
-            world.shared[shared]["logistic"] = world.logistic_regression
+            if "logistic" not in world.shared:
+                world.shared["logistic"] = {}
+            world.shared["logistic"][shared] = world.logistic_regression
     else:
-        world.logistic_regression = world.shared[shared]["logistic"]
+        world.logistic_regression = world.shared["logistic"][shared]
+        print("Reusing %s" % world.logistic_regression["resource"])
 
 #@step(r'I create a deepnet model$')
 def i_create_a_deepnet(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("deepnet") is None:
+    if shared is None or world.shared.get("deepnet", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_deepnet(dataset)
         world.status = resource['code']
@@ -258,7 +260,7 @@ def i_create_a_quick_deepnet(step):
 #@step(r'I create a non-suggested deepnet model$')
 def i_create_a_no_suggest_deepnet(step, shared=None):
     if shared is None or \
-            world.shared.get(shared, {}).get("deepnet") is None:
+            world.shared.get("deepnet", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_deepnet(dataset, {"suggest_structure": False,
                                                       "max_iterations": 100,
@@ -291,14 +293,15 @@ def wait_until_deepnet_model_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the deepnet model is ready less than (\d+)')
 def the_deepnet_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("deepnet") is None:
+    if shared is None or world.shared.get("deepnet", {}).get(shared) is None:
         wait_until_deepnet_model_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
-            world.shared[shared]["deepnet"] = world.deepnet
+            if "deepnete" not in world.shared:
+                world.shared["deepnet"] = {}
+            world.shared["deepnet"][shared] = world.deepnet
     else:
-        world.deepnet = world.shared[shared]["deepnet"]
+        world.deepnet = world.shared["deepnet"][shared]
+        print("Reusing %s" % world.deepnet["resource"])
 
 
 #@step(r'I export the "(.*)" model to file "(.*)"$')

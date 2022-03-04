@@ -39,7 +39,7 @@ def i_check_linear_name(step, name):
 #@step(r'I create a Linear Regression from a dataset$')
 def i_create_a_linear_regression_from_dataset(step, shared=None):
     if shared is None or \
-            world.shared.get(shared, {}).get("linear_regression") is None:
+            world.shared.get("linear_regression", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_linear_regression(
             dataset, {'name': 'new linear regression'})
@@ -97,16 +97,15 @@ def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
 #@step(r'I wait until the linear is ready less than (\d+)')
 def the_linear_regression_is_finished_in_less_than(step, secs, shared=None):
     if shared is None or \
-            world.shared.get(shared, {}).get("linear_regression") is None:
+            world.shared.get("linear_regression", {}).get(shared) is None:
         wait_until_linear_regression_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
             if shared not in world.shared:
                 world.shared[shared] = {}
-            world.shared[shared]["linear_regression"] = world.linear_regression
+            world.shared["linear_regression"][shared] = world.linear_regression
     else:
-        world.linear_regression = world.shared[shared]["linear_regression"]
-
-
+        world.linear_regression = world.shared["linear_regression"][shared]
+        print("Reusing %s" % world.linear_regression["resource"])
 
 
 #@step(r'I clone linear regression')

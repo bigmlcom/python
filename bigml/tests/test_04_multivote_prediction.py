@@ -18,7 +18,9 @@
 """ Testing MultiVote predictions
 
 """
-from .world import world, setup_module, teardown_module, show_doc
+import sys
+
+from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import compute_multivote_prediction_steps as multivote_prediction
 
 

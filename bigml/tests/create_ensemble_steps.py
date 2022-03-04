@@ -39,7 +39,7 @@ ENSEMBLE_SAMPLE = {'seed': 'BigML',
 
 #@step(r'I create an ensemble of (\d+) models$')
 def i_create_an_ensemble(step, number_of_models=2, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("ensemble") is None:
+    if shared is None or world.shared.get("ensemble", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         try:
             number_of_models = int(number_of_models)
@@ -66,14 +66,15 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')
 def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("ensemble") is None:
+    if shared is None or world.shared.get("ensemble", {}).get(sharedd) is None:
         wait_until_ensemble_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
-            world.shared[shared]["ensemble"] = world.ensemble
+            if "ensemble" not in world.shared:
+                world.shared["ensemble"] = {}
+            world.shared["ensemble"][shared] = world.ensemble
     else:
-        world.ensemble = world.shared[shared]["ensemble"]
+        world.ensemble = world.shared["ensemble"][shared]
+        print("Reusing %s" % world.ensemble["resource"])
 
 
 #@step(r'I create a local Ensemble$')

@@ -18,6 +18,8 @@
 """ Testing prediction creation
 
 """
+import sys
+
 from .world import world, setup_module, teardown_module, show_doc, show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create

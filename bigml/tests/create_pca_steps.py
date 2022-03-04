@@ -38,7 +38,7 @@ def i_check_pca_name(step, name):
 
 #@step(r'I create a PCA from a dataset$')
 def i_create_a_pca_from_dataset(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("pca") is None:
+    if shared is None or world.shared.get("pca", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_pca(dataset, {'name': 'new PCA'})
         world.status = resource['code']
@@ -80,14 +80,15 @@ def wait_until_pca_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the PCA is ready less than (\d+)')
 def the_pca_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("pca") is None:
+    if shared is None or world.shared.get("pca", {}).get(shared) is None:
         wait_until_pca_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
-            world.shared[shared]["pca"] = world.pca
+            if "pca" not in world.shared:
+                world.shared["pca"] = {}
+            world.shared["pca"][shared] = world.pca
     else:
-        world.pca = world.shared[shared]["pca"]
+        world.pca = world.shared["pca"][shared]
+        print("Reusing %s" % world.pca["resource"])
 
 
 #@step(r'I clone pca')

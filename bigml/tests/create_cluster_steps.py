@@ -33,7 +33,7 @@ from bigml.cluster import Cluster
 
 #@step(r'I create a cluster$')
 def i_create_a_cluster(step, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("cluster") is None:
+    if shared is None or world.shared.get("cluster", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_cluster(
             dataset, {'seed': 'BigML',
@@ -78,12 +78,15 @@ def wait_until_cluster_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the cluster is ready less than (\d+)')
 def the_cluster_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get(shared, {}).get("cluster") is None:
+    if shared is None or world.shared.get("cluster", {}).get(shared) is None:
         wait_until_cluster_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            world.shared[shared]["cluster"] = world.cluster
+            if "cluster" not in world.shared:
+                world.shared["cluster"] = {}
+            world.shared["cluster"][shared] = world.cluster
     else:
-        world.cluster = world.shared[shared]["cluster"]
+        world.cluster = world.shared["cluster"][shared]
+        print("Reusing %s" % world.cluster["resource"])
 
 
 #@step(r'I make the cluster shared')

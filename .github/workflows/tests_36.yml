@@ -32,8 +32,8 @@ jobs:
         pip install pystemmer==2.0.0
         pip install .
 
-    - name: Run tests *36*
+    - name: Run tests *36 99*
       run: |
-        export TESTS=$(for t in "36"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "36" "99"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

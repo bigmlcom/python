@@ -66,7 +66,7 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')
 def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get("ensemble", {}).get(sharedd) is None:
+    if shared is None or world.shared.get("ensemble", {}).get(shared) is None:
         wait_until_ensemble_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
             if "ensemble" not in world.shared:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright 2019-2021 BigML
+# Copyright 2019-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -100,8 +100,8 @@ def the_linear_regression_is_finished_in_less_than(step, secs, shared=None):
             world.shared.get("linear_regression", {}).get(shared) is None:
         wait_until_linear_regression_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
-            if shared not in world.shared:
-                world.shared[shared] = {}
+            if "linear_regression" not in world.shared:
+                world.shared["linear_regression"] = {}
             world.shared["linear_regression"][shared] = world.linear_regression
     else:
         world.linear_regression = world.shared["linear_regression"][shared]

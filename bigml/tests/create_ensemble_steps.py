@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012-2021 BigML
+# Copyright 2012-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -66,7 +66,7 @@ def wait_until_ensemble_status_code_is(step, code1, code2, secs):
 
 #@step(r'I wait until the ensemble is ready less than (\d+)')
 def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
-    if shared is None or world.shared.get("ensemble", {}).get(sharedd) is None:
+    if shared is None or world.shared.get("ensemble", {}).get(shared) is None:
         wait_until_ensemble_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
             if "ensemble" not in world.shared:
@@ -74,6 +74,7 @@ def the_ensemble_is_finished_in_less_than(step, secs, shared=None):
             world.shared["ensemble"][shared] = world.ensemble
     else:
         world.ensemble = world.shared["ensemble"][shared]
+        world.ensemble_id = world.ensemble["resource"]
         print("Reusing %s" % world.ensemble["resource"])
 
 

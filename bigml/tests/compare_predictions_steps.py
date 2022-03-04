@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012-2021 BigML
+# Copyright 2012-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -340,7 +340,7 @@ def the_local_prediction_is(step, prediction, precision=4):
             if isinstance(prediction, str):
                 prediction = float(prediction)
             eq_(round(local_prediction, precision),
-                round(floatprediction, precision))
+                round(float(prediction), precision))
 
 #@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):

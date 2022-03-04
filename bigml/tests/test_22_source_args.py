@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2015-2021 BigML
+# Copyright 2015-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -80,9 +80,9 @@ class TestUploadSource(object):
             show_method(self, sys._getframe().f_code.co_name, example)
             sources = []
             source_create.i_upload_a_file(
-                self, example["data"], shared=example["data"])
+                self, example["data"])
             source_create.the_source_is_finished(
-                self, example["source_wait"], shared=example["data"])
+                self, example["source_wait"])
             sources.append(get_id(world.source["resource"]))
             source_create.i_upload_a_file(
                 self, example["data"])

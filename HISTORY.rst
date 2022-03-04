@@ -3,6 +3,13 @@
 History
 -------
 
+7.0.1 (2022-03-04)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing local Supervised Model to accept stored models as input.
+- Improving tests to minimize resource creation.
+- Updating dependencies versions.
+
 7.0.0 (2021-08-03)
 ~~~~~~~~~~~~~~~~~~
 

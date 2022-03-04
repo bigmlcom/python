@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2021-2022 BigML
+# Copyright 2018-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,17 +14,29 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Declared exceptions.
+
+""" Creating external connectors
 
 """
 
-class ResourceException(Exception):
-    """Base class to any exception that arises from a bad structured resource
-
-    """
-    pass
+from .world import world, teardown_fn, setup_module
 
 
-class NoRootDecisionTree(ResourceException):
-    """The decision tree structure has no "root" attribute """
-    pass
+class TestCleaningProject(object):
+
+    def setup(self):
+        """
+            Debug information
+        """
+        print("\nFinal cleaning\n")
+
+    def test_final(step):
+        """Final empty test """
+        assert True
+
+    def teardown(self):
+        """
+            Debug information
+        """
+        teardown_fn(force=True)
+        print("\nEnd of tests.")

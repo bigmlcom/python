@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014-2021 BigML
+# Copyright 2014-2022 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -40,7 +40,7 @@ def i_check_association_name(step, name):
 
 #@step(r'I create an association from a dataset$')
 def i_create_an_association_from_dataset(step, shared=None):
-    if shared is None or world.shared.get(association, {}).get("shared") is None:
+    if shared is None or world.shared.get("association", {}).get("shared") is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_association(dataset, {'name': 'new association'})
         world.status = resource['code']
@@ -103,7 +103,7 @@ def the_association_is_finished_in_less_than(step, secs, shared=None):
                 world.shared["association"] = {}
             world.shared["association"][shared] = world.association
     else:
-        world.association = world.shared[shared]["association"]
+        world.association = world.shared["association"][shared]
         print("Reusing %s" % world.association["resource"])
 
 #@step(r'I create a local association')

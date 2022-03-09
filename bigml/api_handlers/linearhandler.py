@@ -60,7 +60,8 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         return self._create(self.linear_regression_url, body)
 
     def get_linear_regression(self, linear_regression, query_string='',
-                              shared_username=None, shared_api_key=None):
+                              shared_username=None, shared_api_key=None,
+                              ref_key=None):
         """Retrieves a linear regression.
 
            The model parameter should be a string containing the
@@ -79,7 +80,8 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
         return self.get_resource(linear_regression,
                                  query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key)
+                                 shared_api_key=shared_api_key,
+                                 ref_key=ref_key)
 
     def linear_regression_is_ready(self, linear_regression, **kwargs):
         """Checks whether a linear regressioin's status is FINISHED.

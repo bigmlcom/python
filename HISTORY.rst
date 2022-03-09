@@ -3,6 +3,12 @@
 History
 -------
 
+7.1.0 (2022-03-10)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the ability to predict locally from shared composed resources, like
+  Ensembles and Fusions.
+
 7.0.1 (2022-03-04)
 ~~~~~~~~~~~~~~~~~~
 

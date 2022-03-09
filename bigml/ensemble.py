@@ -138,6 +138,7 @@ class Ensemble(ModelFields):
         query_string = ONLY_MODEL
         no_check_fields = False
         self.input_fields = []
+        ref_key = None
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -155,6 +156,8 @@ class Ensemble(ModelFields):
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
+            ref_key = self.resource_id.replace("shared/", "") if \
+                self.resource_id.startswith("shared/") else None
             if not check_local_but_fields(ensemble):
                 # avoid checking fields because of old ensembles
                 ensemble = retrieve_resource(self.api, self.resource_id,
@@ -200,7 +203,8 @@ class Ensemble(ModelFields):
                         self.api,
                         model_id,
                         query_string=query_string,
-                        no_check_fields=no_check_fields)
+                        no_check_fields=no_check_fields,
+                        ref_key=ref_key)
                               for model_id in self.models_splits[0]]
             model = models[0]
 
@@ -223,7 +227,8 @@ class Ensemble(ModelFields):
                         self.api,
                         self.models_splits[0][0],
                         query_string=query_string,
-                        no_check_fields=no_check_fields)
+                        no_check_fields=no_check_fields,
+                        ref_key=ref_key)
 
                 models = [model]
 

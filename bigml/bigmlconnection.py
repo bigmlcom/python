@@ -412,7 +412,8 @@ class BigMLConnection():
                           location, resource, error)
 
     def _get(self, url, query_string='',
-             shared_username=None, shared_api_key=None, organization=None):
+             shared_username=None, shared_api_key=None, organization=None,
+             ref_key=None):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -442,6 +443,8 @@ class BigMLConnection():
             kwargs.update({"shared_auth": auth})
 
         url = self._add_credentials(url, **kwargs) + query_string
+        if ref_key is not None:
+            url = "%sref_key=%s" % (url, ref_key)
         if GAE_ENABLED:
             try:
                 req_options = {

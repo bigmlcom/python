@@ -437,7 +437,8 @@ def exception_on_error(resource):
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
                    retries=None, raise_on_error=False,
-                   max_elapsed_estimate=float('inf'), api=None, debug=False):
+                   max_elapsed_estimate=float('inf'), api=None, debug=False,
+                   ref_key=None):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, the
@@ -461,6 +462,8 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     if debug:
         print("Checking resource: %s" % resource_id)
     kwargs = {'query_string': query_string}
+    if ref_key is not None:
+        kwargs.update({"ref_key": ref_key})
 
     if get_method is None and hasattr(api, 'get_resource'):
         get_method = api.get_resource
@@ -885,20 +888,21 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                 filename = os.path.join( \
                     file_dir, resource_id.replace("/", "_"))
             if resource_type in COMPOSED_RESOURCES:
-                if resource.startswith("shared") and "sharing_key" \
-                        in resource_info["object"]:
+                # inner models in composed resources need the shared reference
+                # to be downloaded
+                if resource.startswith("shared"):
                     kwargs.update(
-                        {"shared_api_key": resource_info["object"]["sharing_key"],
-                         "shared_username": self.username})
+                        {"ref_key": resource_id.replace("shared/", "")})
                 for component_id in resource_info["object"]["models"]:
                     # for weighted fusions we need to retrieve the component
                     # ID
                     if isinstance(component_id, dict):
                         component_id = component_id['id']
+                    filename = os.path.join(os.path.dirname(filename),
+                                            component_id.replace("/", "_"))
                     self.export( \
                         component_id,
-                        filename=os.path.join(os.path.dirname(filename),
-                                              component_id.replace("/", "_")),
+                        filename=filename,
                         pmml=pmml,
                         **kwargs)
             if kwargs.get("query_string") and \

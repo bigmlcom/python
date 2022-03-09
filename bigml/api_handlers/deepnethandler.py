@@ -60,7 +60,8 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
         return self._create(self.deepnet_url, body)
 
     def get_deepnet(self, deepnet, query_string='',
-                    shared_username=None, shared_api_key=None):
+                    shared_username=None, shared_api_key=None,
+                    ref_key=None):
         """Retrieves a deepnet.
 
            The model parameter should be a string containing the
@@ -79,7 +80,8 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
         return self.get_resource(deepnet,
                                  query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key)
+                                 shared_api_key=shared_api_key,
+                                 ref_key=ref_key)
 
     def deepnet_is_ready(self, deepnet, **kwargs):
         """Checks whether a deepnet's status is FINISHED.

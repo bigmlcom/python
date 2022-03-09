@@ -635,7 +635,7 @@ class BigML(ExternalConnectorHandlerMixin,
             return self._create_remote_source(download_url, args=args)
 
     def retrieve_resource(self, resource_id, query_string=None,
-                          check_local_fn=None, retries=None):
+                          check_local_fn=None, retries=None, ref_key=None):
         """ Retrieves resource info either from the local repo or
             from the remote server
 
@@ -665,7 +665,7 @@ class BigML(ExternalConnectorHandlerMixin,
                              " and BIGML_API_KEY."  % resource_id)
 
         resource = check_resource(resource_id, query_string=query_string,
-                                  api=self, retries=retries)
+                                  api=self, retries=retries, ref_key=ref_key)
         return resource
 
 

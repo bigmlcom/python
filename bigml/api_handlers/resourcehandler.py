@@ -898,11 +898,12 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                     # ID
                     if isinstance(component_id, dict):
                         component_id = component_id['id']
-                    filename = os.path.join(os.path.dirname(filename),
-                                            component_id.replace("/", "_"))
+                    component_filename = os.path.join(
+                        os.path.dirname(filename),
+                        component_id.replace("/", "_"))
                     self.export( \
                         component_id,
-                        filename=filename,
+                        filename=component_filename,
                         pmml=pmml,
                         **kwargs)
             if kwargs.get("query_string") and \

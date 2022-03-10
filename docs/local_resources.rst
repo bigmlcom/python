@@ -1948,7 +1948,7 @@ Local predictions with shared models
 BigML's resources are private to the owner of the account where they were
 created. However, owners can decide to share their resources with other
 BigML users by creating
-`Secret links <https://support.bigml.com/hc/en-us/articles/206616179-Can-I-share-my-model-with-other-users->_`
+`Secret links <https://support.bigml.com/hc/en-us/articles/206616179-Can-I-share-my-model-with-other-users->`_
 to them. The users that receive the link, will be able to inspect the
 resource and can also download them. This is specially important in the case
 of models, as they will be able to generate local predictions from them.
@@ -1969,7 +1969,7 @@ You could use that in local predictions by instantiating the corresponding
     local_ensemble = Ensemble("shared/ensemble/qbXem5XoEiVKcq8MPmwjHnXunFj")
 
 And the new ``local_ensemble`` would be ready to predict using the ``.predict``
-method, as discussed in the `Local Ensembles <#Local-Ensembles>_` section.
+method, as discussed in the `Local Ensembles <#Local-Ensembles>`_ section.
 
 
 Local caching

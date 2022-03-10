@@ -60,8 +60,7 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
         return self._create(self.logistic_regression_url, body)
 
     def get_logistic_regression(self, logistic_regression, query_string='',
-                                shared_username=None, shared_api_key=None,
-                                ref_key=None):
+                                shared_username=None, shared_api_key=None):
         """Retrieves a logistic regression.
 
            The model parameter should be a string containing the
@@ -80,8 +79,7 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
         return self.get_resource(logistic_regression,
                                  query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key,
-                                 ref_key=ref_key)
+                                 shared_api_key=shared_api_key)
 
     def logistic_regression_is_ready(self, logistic_regression, **kwargs):
         """Checks whether a logistic regressioin's status is FINISHED.

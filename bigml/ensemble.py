@@ -44,6 +44,7 @@ import json
 import os
 
 from functools import cmp_to_key
+from copy import deepcopy
 
 from bigml.exceptions import NoRootDecisionTree
 from bigml.api import get_ensemble_id, get_model_id, get_api_connection
@@ -138,7 +139,8 @@ class Ensemble(ModelFields):
         query_string = ONLY_MODEL
         no_check_fields = False
         self.input_fields = []
-        ref_key = None
+        child_api = self.api
+
         if isinstance(ensemble, list):
             if all([isinstance(model, Model) for model in ensemble]):
                 models = ensemble
@@ -156,8 +158,17 @@ class Ensemble(ModelFields):
         else:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
-            ref_key = self.resource_id.replace("shared/", "") if \
+            shared_ref = self.resource_id.replace("shared/", "") if \
                 self.resource_id.startswith("shared/") else None
+            if shared_ref is not None:
+                child_api = deepcopy(self.api)
+                child_api.shared_ref = shared_ref
+            elif hasattr(self.api, "shared_ref") and \
+                    self.api.shared_ref is not None:
+                child_api = deepcopy(self.api)
+                # adding the resource ID to the sharing chain
+                child_api.shared_ref += ",%s" % self.resource_id
+
             if not check_local_but_fields(ensemble):
                 # avoid checking fields because of old ensembles
                 ensemble = retrieve_resource(self.api, self.resource_id,
@@ -200,11 +211,10 @@ class Ensemble(ModelFields):
                                         (cache_get.__name__, str(exc)))
                 else:
                     models = [retrieve_resource( \
-                        self.api,
+                        child_api,
                         model_id,
                         query_string=query_string,
-                        no_check_fields=no_check_fields,
-                        ref_key=ref_key)
+                        no_check_fields=no_check_fields)
                               for model_id in self.models_splits[0]]
             model = models[0]
 
@@ -224,11 +234,10 @@ class Ensemble(ModelFields):
                                         (cache_get.__name__, str(exc)))
                 else:
                     model = retrieve_resource( \
-                        self.api,
+                        child_api,
                         self.models_splits[0][0],
                         query_string=query_string,
-                        no_check_fields=no_check_fields,
-                        ref_key=ref_key)
+                        no_check_fields=no_check_fields)
 
                 models = [model]
 

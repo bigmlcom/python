@@ -166,7 +166,8 @@ class BigMLConnection():
     """
     def __init__(self, username=None, api_key=None,
                  debug=False, set_locale=False, storage=None, domain=None,
-                 project=None, organization=None, short_debug=False):
+                 project=None, organization=None, short_debug=False,
+                 shared_key=None):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the
@@ -413,7 +414,7 @@ class BigMLConnection():
 
     def _get(self, url, query_string='',
              shared_username=None, shared_api_key=None, organization=None,
-             ref_key=None):
+             shared_ref=None):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -443,8 +444,8 @@ class BigMLConnection():
             kwargs.update({"shared_auth": auth})
 
         url = self._add_credentials(url, **kwargs) + query_string
-        if ref_key is not None:
-            url = "%sref_key=%s" % (url, ref_key)
+        if shared_ref is not None:
+            url = "%sshared_ref=%s" % (url, shared_ref)
         if GAE_ENABLED:
             try:
                 req_options = {

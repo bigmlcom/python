@@ -437,8 +437,7 @@ def exception_on_error(resource):
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
                    retries=None, raise_on_error=False,
-                   max_elapsed_estimate=float('inf'), api=None, debug=False,
-                   ref_key=None):
+                   max_elapsed_estimate=float('inf'), api=None, debug=False):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, the
@@ -462,10 +461,8 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     if debug:
         print("Checking resource: %s" % resource_id)
     kwargs = {'query_string': query_string}
-    if ref_key is not None:
-        kwargs.update({"ref_key": ref_key})
-
-    if get_method is None and hasattr(api, 'get_resource'):
+    if hasattr(api, 'shared_ref') or (get_method is None and
+            hasattr(api, 'get_resource')):
         get_method = api.get_resource
     elif get_method is None:
         raise ValueError("You must supply either the get_method or the api"
@@ -561,6 +558,10 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
         if resource_type is None:
             raise ValueError("A resource id or structure is needed.")
         resource_id = get_resource_id(resource)
+
+        # adding the shared_ref if the API connection object has one
+        if hasattr(self, "shared_ref"):
+            kwargs.update({"shared_ref": self.shared_ref})
 
         if resource_id:
             return self._get("%s%s" % (self.url, resource_id), **kwargs)
@@ -892,10 +893,12 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                 # to be downloaded
                 if resource.startswith("shared"):
                     kwargs.update(
-                        {"ref_key": resource_id.replace("shared/", "")})
+                        {"shared_ref": resource_id.replace("shared/", "")})
+                elif "shared_ref" in kwargs and not resource.startswith("shared"):
+                    kwargs["shared_ref"] = "%s,%s" % (kwargs["shared_ref"],
+                                                      resource_id)
                 for component_id in resource_info["object"]["models"]:
-                    # for weighted fusions we need to retrieve the component
-                    # ID
+                    # for weighted fusions we need to retrieve the component ID
                     if isinstance(component_id, dict):
                         component_id = component_id['id']
                     component_filename = os.path.join(

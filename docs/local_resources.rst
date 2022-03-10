@@ -1764,7 +1764,7 @@ performance for large ensembles:
     local_ensemble = Ensemble(local_models)
 
 Local Ensemble caching
----------------------
+----------------------
 
 Ensembles can become quite large objects and demand large memory resources.
 If your usual scenario is using many of them
@@ -1925,7 +1925,7 @@ Local Supervised Model
 
 There's a general class that will allow you to predict using any supervised
 model resource, regardless of its particular type (model, ensemble,
-logistic regression or deepnet).
+logistic regression, linear regression or deepnet).
 
 The ``SupervisedModel`` object will retrieve the resource information and
 instantiate the corresponding local object, so that you can use its
@@ -1941,6 +1941,36 @@ instantiate the corresponding local object, so that you can use its
     input_data = {"petal length": 3, "petal width": 1}
     logistic_regression_prediction = local_supervised_1.predict(input_data)
     model_prediction = local_supervised_2.predict(input_data)
+
+Local predictions with shared models
+------------------------------------
+
+BigML's resources are private to the owner of the account where they were
+created. However, owners can decide to share their resources with other
+BigML users by creating
+`Secret links <https://support.bigml.com/hc/en-us/articles/206616179-Can-I-share-my-model-with-other-users->_`
+to them. The users that receive the link, will be able to inspect the
+resource and can also download them. This is specially important in the case
+of models, as they will be able to generate local predictions from them.
+
+The ``Secret link`` URLs leading to shared resources end in a shared ID
+(starting with the string ``shared/`` followed by the type of resource and
+the particular sharing key). In order to use them locally, use this
+string as first argument for the local model constructor. For instance, let's
+say that someone shares with you the link to a shared ensemble
+``https://bigml.com/shared/ensemble/qbXem5XoEiVKcq8MPmwjHnXunFj``.
+
+You could use that in local predictions by instantiating the corresponding
+``Ensemble`` object.
+
+.. code-block:: python
+
+    from bigml.ensemble import Ensemble
+    local_ensemble = Ensemble("shared/ensemble/qbXem5XoEiVKcq8MPmwjHnXunFj")
+
+And the new ``local_ensemble`` would be ready to predict using the ``.predict``
+method, as discussed in the `Local Ensembles <#Local-Ensembles>_` section.
+
 
 Local caching
 -------------

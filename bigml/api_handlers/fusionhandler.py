@@ -60,8 +60,7 @@ class FusionHandlerMixin(ResourceHandlerMixin):
         return self._create(self.fusion_url, body)
 
     def get_fusion(self, fusion, query_string='',
-                   shared_username=None, shared_api_key=None,
-                   ref_key=None):
+                   shared_username=None, shared_api_key=None):
         """Retrieves a fusion.
 
            The model parameter should be a string containing the
@@ -80,8 +79,7 @@ class FusionHandlerMixin(ResourceHandlerMixin):
         return self.get_resource(fusion,
                                  query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key,
-                                 ref_key=ref_key)
+                                 shared_api_key=shared_api_key)
 
     def fusion_is_ready(self, fusion, **kwargs):
         """Checks whether a fusion's status is FINISHED.

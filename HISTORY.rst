@@ -3,6 +3,11 @@
 History
 -------
 
+7.1.1 (2022-03-11)
+~~~~~~~~~~~~~~~~~~
+
+- Improving local predictions for shared fusions and documenting.
+
 7.1.0 (2022-03-10)
 ~~~~~~~~~~~~~~~~~~
 

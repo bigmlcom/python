@@ -59,8 +59,7 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
         return self._create(self.ensemble_url, body)
 
     def get_ensemble(self, ensemble, query_string='',
-                     shared_username=None, shared_api_key=None,
-                     ref_key=None):
+                     shared_username=None, shared_api_key=None):
         """Retrieves an ensemble.
 
            The ensemble parameter should be a string containing the
@@ -74,8 +73,7 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
                             message="An ensemble id is needed.")
         return self.get_resource(ensemble, query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key,
-                                 ref_key=ref_key)
+                                 shared_api_key=shared_api_key)
 
     def ensemble_is_ready(self, ensemble):
         """Checks whether a ensemble's status is FINISHED.

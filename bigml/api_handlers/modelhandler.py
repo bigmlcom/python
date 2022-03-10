@@ -107,8 +107,7 @@ class ModelHandlerMixin(ResourceHandlerMixin):
         return self._create(self.model_url, body)
 
     def get_model(self, model, query_string='',
-                  shared_username=None, shared_api_key=None,
-                  ref_key=None):
+                  shared_username=None, shared_api_key=None):
         """Retrieves a model.
 
            The model parameter should be a string containing the
@@ -120,14 +119,15 @@ class ModelHandlerMixin(ResourceHandlerMixin):
 
            If this is a shared model, the username and sharing api key must
            also be provided.
+           If it's a model inside an ensemble or fusion, the shared_ref is
+           needed.
         """
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
         return self.get_resource(model,
                                  query_string=query_string,
                                  shared_username=shared_username,
-                                 shared_api_key=shared_api_key,
-                                 ref_key=ref_key)
+                                 shared_api_key=shared_api_key)
 
     def model_is_ready(self, model, **kwargs):
         """Checks whether a model's status is FINISHED.

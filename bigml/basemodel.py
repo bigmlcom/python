@@ -49,7 +49,7 @@ EXCLUDE_FIELDS = 'exclude=fields;'
 
 
 def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
-                      no_check_fields=False, retries=None, ref_key=None):
+                      no_check_fields=False, retries=None):
     """ Retrieves resource info either from a local repo or
         from the remote server
 
@@ -59,8 +59,7 @@ def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,
         else check_local_info
     return api.retrieve_resource(resource_id, query_string=query_string,
                                  check_local_fn=check_local_fn,
-                                 retries=retries,
-                                 ref_key=ref_key)
+                                 retries=retries)
 
 
 def extract_objective(objective_field):

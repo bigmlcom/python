@@ -43,6 +43,7 @@ import json
 import os
 
 from functools import cmp_to_key
+from copy import deepcopy
 
 from bigml.api import BigML, get_fusion_id, get_resource_type, \
     get_api_connection
@@ -150,7 +151,8 @@ class Fusion(ModelFields):
         self.api = get_api_connection(api)
 
         self.resource_id, fusion = get_resource_dict( \
-            fusion, "fusion", api=self.api)
+            fusion,
+            "fusion", api=self.api)
 
         if 'object' in fusion:
             fusion = fusion.get('object', {})
@@ -174,11 +176,21 @@ class Fusion(ModelFields):
 
         # Downloading the model information to cache it
         if self.api.storage is not None or cache_get is not None:
+            # adding shared_ref to the API info when donwloading children
+            api = self.api
+            if self.resource_id.startswith("shared"):
+                api = deepcopy(api)
+                api.shared_ref = self.resource_id.replace("shared/", "")
+            elif hasattr(api, "shared_ref") and \
+                        api.shared_ref is not None:
+                    api = deepcopy(api)
+                    # adding the resource ID to the sharing chain
+                    api.shared_ref += ",%s" % self.resource_id
             for model_id in self.model_ids:
                 if get_resource_type(model_id) == "fusion":
-                    Fusion(model_id, api=self.api, cache_get=cache_get)
+                    Fusion(model_id, api=api, cache_get=cache_get)
                 else:
-                    SupervisedModel(model_id, api=self.api,
+                    SupervisedModel(model_id, api=api,
                                     cache_get=cache_get)
 
         if max_models is None:

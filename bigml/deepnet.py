@@ -203,7 +203,7 @@ class Deepnet(ModelFields):
                 # missing or not in the input data
                 if self.missing_numerics \
                         and self.fields[field_id][\
-                        "summary"]["missing_count"] > 0:
+                        "summary"].get("missing_count", 0) > 0:
                     if field_id in input_data:
                         columns.extend([input_data[field_id], 0.0])
                     else:

@@ -3,6 +3,11 @@
 History
 -------
 
+7.1.2 (2022-03-17)
+~~~~~~~~~~~~~~~~~~
+
+- Fixing local deepnet predictions if no missing_count info is found.
+
 7.1.1 (2022-03-11)
 ~~~~~~~~~~~~~~~~~~
 

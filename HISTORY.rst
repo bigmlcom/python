@@ -3,6 +3,12 @@
 History
 -------
 
+7.2.0 (2022-04-14)
+~~~~~~~~~~~~~~~~~~
+
+- Upgrading sensenet library and giving fallback for local deepnet predictions
+  on OS not supported by tensorflow.
+
 7.1.2 (2022-03-17)
 ~~~~~~~~~~~~~~~~~~
 

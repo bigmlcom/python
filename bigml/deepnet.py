@@ -41,6 +41,7 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 """
 import logging
 import os
+import sys
 
 from functools import cmp_to_key
 
@@ -48,8 +49,11 @@ from functools import cmp_to_key
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
-import tensorflow as tf
-tf.autograph.set_verbosity(0)
+try:
+    import tensorflow as tf
+    tf.autograph.set_verbosity(0)
+except ModuleNotFoundError:
+    pass
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
@@ -69,6 +73,8 @@ LOGGER = logging.getLogger('BigML')
 
 MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
+
+IMAGE = "image"
 
 def moments(amap):
     """Extracts mean and stdev
@@ -163,8 +169,16 @@ class Deepnet(ModelFields):
                         "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
-
-                self.deepnet = create_model(deepnet)
+                if 'tensorflow' in sys.modules:
+                    self.deepnet = create_model(deepnet)
+                else:
+                    # for OS with no tensorflow modules
+                    self.deepnet = None
+                    for _, field in self.fields.items():
+                        if field["optype"] == IMAGE:
+                            raise ValueError("This deepnet cannot be predicted"
+                                             " as some required libraries are "
+                                             "not available for this OS.")
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:
@@ -271,10 +285,17 @@ class Deepnet(ModelFields):
         # Computes text and categorical field expansion
         unique_terms = self.get_unique_terms(norm_input_data)
         input_array = self.fill_array(norm_input_data, unique_terms)
-        prediction = list(self.deepnet(input_array)[0])
-        # prediction is now a numpy array of probabilities for classification
-        # and a numpy array with the value for regressions
-        prediction = self.to_prediction(prediction)
+        if self.deepnet is not None:
+            prediction = list(self.deepnet(input_array)[0])
+            # prediction is now a numpy array of probabilities for classification
+            # and a numpy array with the value for regressions
+            prediction = self.to_prediction(prediction)
+        else:
+            # no tensorflow
+            if self.networks:
+                prediction = self.predict_list(input_array)
+            else:
+                prediction = self.predict_single(input_array)
         if full:
             if not isinstance(prediction, dict):
                 prediction = {"prediction": prediction}
@@ -284,6 +305,31 @@ class Deepnet(ModelFields):
                 prediction = prediction["prediction"]
 
         return prediction
+
+    def predict_single(self, input_array):
+        """Makes a prediction with a single network
+        """
+        if self.network['trees'] is not None:
+            input_array = pp.tree_transform(input_array, self.network['trees'])
+
+        return self.to_prediction(self.model_predict(input_array,
+                                                     self.network))
+
+    def predict_list(self, input_array):
+        """Makes predictions with a list of networks
+        """
+        if self.network['trees'] is not None:
+            input_array_trees = pp.tree_transform(input_array,
+                                                  self.network['trees'])
+        youts = []
+        for model in self.networks:
+            if model['trees']:
+                youts.append(self.model_predict(input_array_trees, model))
+            else:
+                youts.append(self.model_predict(input_array, model))
+
+        return self.to_prediction(net.sum_and_normalize(youts,
+                                                        self.regression))
 
     def model_predict(self, input_array, model):
         """Prediction with one model

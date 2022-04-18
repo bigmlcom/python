@@ -36,6 +36,13 @@ try:
 except ImportError:
     import json
 
+try:
+    from pandas import DataFrame
+    from io import StringIO
+    pandas_support = True
+except ImportError:
+    pandas_support = False
+
 import mimetypes
 import requests
 
@@ -288,6 +295,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         """Creates a new source.
 
            The source can be a local file path or a URL.
+           We also accept a pandas DataFrame as first argument
            TODO: add async load and progress bar in Python 3
 
         """
@@ -295,6 +303,9 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         if path is None:
             raise Exception('A local path or a valid URL must be provided.')
 
+        if pandas_support and isinstance(path, DataFrame):
+            buffer = StringIO(path.to_csv(index=False))
+            return self._create_local_source(file_name=buffer, args=args)
         if is_url(path):
             return self._create_remote_source(path, args=args)
         if isinstance(path, list):

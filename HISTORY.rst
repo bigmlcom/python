@@ -8,6 +8,7 @@ History
 
 - Upgrading sensenet library and giving fallback for local deepnet predictions
   on OS not supported by tensorflow.
+- Adding support for pandas' DataFrame when creating sources.
 
 7.1.2 (2022-03-17)
 ~~~~~~~~~~~~~~~~~~

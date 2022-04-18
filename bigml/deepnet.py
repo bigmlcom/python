@@ -49,11 +49,13 @@ from functools import cmp_to_key
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
+laminar_version = False
+
 try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
 except ModuleNotFoundError:
-    pass
+    laminar_version = True
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
@@ -65,9 +67,10 @@ from bigml.model import parse_operating_point, sort_categories
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
-
-from sensenet.models.wrappers import create_model
-
+try:
+    from sensenet.models.wrappers import create_model
+except ModuleNotFoundError:
+    laminar_version = True
 
 LOGGER = logging.getLogger('BigML')
 
@@ -169,16 +172,16 @@ class Deepnet(ModelFields):
                         "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
-                if 'tensorflow' in sys.modules:
-                    self.deepnet = create_model(deepnet)
-                else:
-                    # for OS with no tensorflow modules
+                if laminar_version:
                     self.deepnet = None
                     for _, field in self.fields.items():
                         if field["optype"] == IMAGE:
                             raise ValueError("This deepnet cannot be predicted"
                                              " as some required libraries are "
                                              "not available for this OS.")
+                else:
+                    self.deepnet = create_model(deepnet)
+
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:
@@ -209,7 +212,10 @@ class Deepnet(ModelFields):
                 category = unique_terms.get(field_id)
                 if category is not None:
                     category = category[0][0]
-                columns.append(category)
+                if laminar_version:
+                    columns.append([category])
+                else:
+                    columns.append(category)
             else:
                 # when missing_numerics is True and the field had missings
                 # in the training data, then we add a new "is missing?" element
@@ -224,6 +230,8 @@ class Deepnet(ModelFields):
                         columns.extend([0.0, 1.0])
                 else:
                     columns.append(input_data.get(field_id))
+        if laminar_version:
+            return pp.preprocess(columns, self.preprocess)
         return columns
 
     def predict(self, input_data, operating_point=None, operating_kind=None,
@@ -349,7 +357,11 @@ class Deepnet(ModelFields):
 
         """
         if self.regression:
-            return float(y_out[0])
+            if not laminar_version:
+                y_out = y_out[0]
+            return float(y_out)
+        if laminar_version:
+            y_out = y_out[0]
         prediction = sorted(enumerate(y_out), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
                       "probability": round(prediction[1], PRECISION),

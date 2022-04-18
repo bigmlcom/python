@@ -45,8 +45,7 @@ def images_dependencies():
         (is_windows and
          bool(os.environ.get("BIGML_IMAGES_SUPPORT", "0"))):
         return ["bigml-sensenet==0.6.1"]
-    else:
-        return ["numpy"]
+    return ["numpy"]
 
 # Concatenate files into the long description
 file_contents = []

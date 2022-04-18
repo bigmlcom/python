@@ -505,4 +505,4 @@ class ModelFields():
 
         """
         self_vars = vars(self)
-        dumps(self_vars)
+        return dumps(self_vars)

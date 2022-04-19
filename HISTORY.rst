@@ -3,6 +3,12 @@
 History
 -------
 
+7.2.2 (2022-04-20)
+~~~~~~~~~~~~~~~~~~
+
+- Enabling dump from SupervisedModel class.
+
+
 7.2.1 (2022-04-19)
 ~~~~~~~~~~~~~~~~~~
 

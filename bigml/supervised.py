@@ -134,3 +134,11 @@ class SupervisedModel(BaseModel):
         except TypeError:
             del new_kwargs["missing_strategy"]
             return self.local_model.predict_probability(*args, **new_kwargs)
+
+    def dump(self, **kwargs):
+        """Delegate to local model"""
+        self.local_model.dump(**kwargs)
+
+    def dumps(self):
+        """Delegate to local model"""
+        return self.local_model.dumps()

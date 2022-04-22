@@ -101,10 +101,29 @@ def create_local_ensemble_predictor(step, directory):
         ensemble = json.load(file_handler)
     world.local_ensemble = EnsemblePredictor(ensemble, module_dir)
 
+#@step(r'Given I load the full ensemble information from "(.*?)"$')
+def load_full_ensemble(step, directory):
+    module_dir = directory
+    model_list = []
+    directory = res_filename(directory)
+    with open(os.path.join(directory, "ensemble.json")) as file_handler:
+        ensemble = json.load(file_handler)
+        model_list.append(ensemble)
+    for model_id in ensemble["object"]["models"]:
+        with open(os.path.join(directory, model_id.replace("/", "_"))) \
+                as file_handler:
+            model = json.load(file_handler)
+            model_list.append(model)
+    return model_list
+
 #@step(r'I create a local Ensemble with the last (\d+) models$')
 def create_local_ensemble_with_list(step, number_of_models):
     world.local_ensemble = Ensemble(world.models[-int(number_of_models):],
                                     world.api)
+
+#@step(r'I create a local ensemble from the ensemble +  models list$')
+def create_local_ensemble_from_list(step, model_list):
+    world.local_ensemble = Ensemble(model_list)
 
 #@step(r'I create a local Ensemble with the last (\d+) local models$')
 def create_local_ensemble_with_list_of_local_models(step, number_of_models):

@@ -830,3 +830,29 @@ class TestComparePrediction(object):
                 self, example["input_data"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
+
+    def test_scenario14(self):
+        """
+            Scenario: Successfully comparing predictions for ensembles:
+                Given I load the full ensemble information from "<directory>"
+                And I create a local ensemble from the ensemble +  models list
+                And I create a local prediction for "<input_data>"
+                Then the local prediction is "<prediction>"
+
+
+        """
+        headers = ["directory", "input_data", "prediction"]
+        examples = [
+            ['bigml/tests/mlflow_ensemble', '{"plasma glucose": 240}', 'true']]
+        show_doc(self.test_scenario14)
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            model_list = ensemble_create.load_full_ensemble(
+                self, example["directory"])
+            ensemble_create.create_local_ensemble_from_list(
+                self, model_list)
+            prediction_compare.i_create_a_local_ensemble_prediction(
+                self, example["input_data"])
+            prediction_compare.the_local_ensemble_prediction_is(
+                self, example["prediction"])

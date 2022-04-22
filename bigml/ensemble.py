@@ -47,7 +47,8 @@ from functools import cmp_to_key
 from copy import deepcopy
 
 from bigml.exceptions import NoRootDecisionTree
-from bigml.api import get_ensemble_id, get_model_id, get_api_connection
+from bigml.api import get_ensemble_id, get_model_id, get_api_connection, \
+    get_resource_id
 from bigml.model import Model, parse_operating_point, sort_categories
 from bigml.generators.model import print_distribution
 from bigml.basemodel import retrieve_resource, ONLY_MODEL, EXCLUDE_FIELDS
@@ -84,8 +85,8 @@ class Ensemble(ModelFields):
        that can be used to generate predictions locally.
        The expected arguments are:
 
-       ensemble: ensemble object or id, list of model objects or
-                 ids or list of local model objects (see Model)
+       ensemble: ensemble object or id, list of ensemble model objects or
+                 ids or list of ensemble obj and local model objects (see Model)
        api: connection object. If None, a new connection object is
             instantiated.
        max_models: integer that limits the number of models instantiated and
@@ -141,9 +142,24 @@ class Ensemble(ModelFields):
         self.input_fields = []
         child_api = self.api
 
-        if isinstance(ensemble, list):
-            if all([isinstance(model, Model) for model in ensemble]):
-                models = ensemble
+
+        models = []
+        if isinstance(ensemble, list) and get_ensemble_id(ensemble[0]) and \
+                isinstance(ensemble[0], dict):
+            number_of_models = len(ensemble) - 1
+            model_list = ensemble
+            ensemble = model_list[0]
+            if len(ensemble["object"]["models"]) == number_of_models:
+                model_list = model_list[1:]
+            else:
+                raise ValueError("The provided list of models does not match"
+                                 " the ensemble list of models.")
+            try:
+                models = [Model(model) for model in model_list]
+            except Exception:
+                models = model_list
+        if models:
+            if all([isinstance(model, Model) for model in models]):
                 self.model_ids = [local_model.resource_id for local_model in
                                   models]
             else:
@@ -154,8 +170,7 @@ class Ensemble(ModelFields):
                     raise ValueError('Failed to verify the list of models.'
                                      ' Check your model id values: %s' %
                                      str(exc))
-
-        else:
+        if ensemble:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
             shared_ref = self.resource_id.replace("shared/", "") if \
@@ -176,10 +191,11 @@ class Ensemble(ModelFields):
 
             if ensemble['object'].get('type') == BOOSTING:
                 self.boosting = ensemble['object'].get('boosting')
-            models = ensemble['object']['models']
             self.distributions = ensemble['object'].get('distributions', [])
             self.importance = ensemble['object'].get('importance', [])
-            self.model_ids = models
+            self.model_ids = ensemble['object']['models']
+            if not models:
+                models = self.model_ids
             # new ensembles have the fields structure
             if ensemble['object'].get('ensemble'):
                 self.fields = ensemble['object'].get( \

@@ -45,7 +45,7 @@ import os
 
 
 from bigml.api import get_resource_id, get_resource_type, \
-    get_api_connection
+    get_api_connection, get_ensemble_id
 from bigml.basemodel import BaseModel
 from bigml.model import Model
 from bigml.ensemble import Ensemble
@@ -65,6 +65,7 @@ COMPONENT_CLASSES = {
 def extract_id(model, api):
     """Extract the resource id from:
         - a resource ID string
+        - a list of resources (ensemble +  models)
         - a resource structure
         - the name of the file that contains a resource structure
 
@@ -95,6 +96,11 @@ def extract_id(model, api):
         except ValueError:
             raise ValueError("Failed to interpret %s."
                              " JSON file expected.")
+    if isinstance(model, list):
+        resource_id = get_ensemble_id(model[0])
+        if resource_id is None:
+            raise ValueError("The first argument does not contain a valid"
+                             " supervised model structure.")
     else:
         resource_id = get_resource_id(model)
         if resource_id is None:

@@ -219,15 +219,17 @@ class BigMLConnection():
             try:
                 username = os.environ['BIGML_USERNAME']
             except KeyError:
-                raise AttributeError("Cannot find BIGML_USERNAME in"
-                                     " your environment")
+                if storage is None:
+                    raise AttributeError("Cannot find BIGML_USERNAME in"
+                                         " your environment")
 
         if api_key is None:
             try:
                 api_key = os.environ['BIGML_API_KEY']
             except KeyError:
-                raise AttributeError("Cannot find BIGML_API_KEY in"
-                                     " your environment")
+                if storage is None:
+                    raise AttributeError("Cannot find BIGML_API_KEY in"
+                                         " your environment")
 
         self.username = username
         self.auth = "?username=%s;api_key=%s;" % (username, api_key)

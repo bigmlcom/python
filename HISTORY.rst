@@ -3,6 +3,14 @@
 History
 -------
 
+7.3.0 (2022-04-22)
+~~~~~~~~~~~~~~~~~~
+
+- Improving local ensembles to be generated from list of ensemble plus
+  models info.
+- Allowing BigML connection class to retrieve models from storage without
+  any credentials.
+
 7.2.2 (2022-04-20)
 ~~~~~~~~~~~~~~~~~~
 

@@ -144,32 +144,42 @@ class Ensemble(ModelFields):
 
 
         models = []
-        if isinstance(ensemble, list) and get_ensemble_id(ensemble[0]) and \
-                isinstance(ensemble[0], dict):
-            number_of_models = len(ensemble) - 1
-            model_list = ensemble
-            ensemble = model_list[0]
-            if len(ensemble["object"]["models"]) == number_of_models:
-                model_list = model_list[1:]
-            else:
-                raise ValueError("The provided list of models does not match"
-                                 " the ensemble list of models.")
+        if isinstance(ensemble, list):
             try:
-                models = [Model(model) for model in model_list]
-            except Exception:
-                models = model_list
-        if models:
-            if all([isinstance(model, Model) for model in models]):
-                self.model_ids = [local_model.resource_id for local_model in
-                                  models]
-            else:
-                try:
-                    models = [get_model_id(model) for model in ensemble]
-                    self.model_ids = models
-                except ValueError as exc:
-                    raise ValueError('Failed to verify the list of models.'
-                                     ' Check your model id values: %s' %
-                                     str(exc))
+                if isinstance(ensemble[0], dict) and \
+                        get_ensemble_id(ensemble[0]):
+                    number_of_models = len(ensemble) - 1
+                    model_list = ensemble
+                    ensemble = model_list[0]
+                    if len(ensemble["object"]["models"]) == number_of_models:
+                        model_list = model_list[1:]
+                    else:
+                        raise ValueError("The provided list of models does not"
+                                         " match the ensemble list of models.")
+                    try:
+                        models = [Model(model) for model in model_list]
+                    except Exception:
+                        models = model_list
+                else:
+                    # only list of models (old ensembles)
+                    models = ensemble
+                    ensemble=None
+            except ValueError:
+                # only list of models (old ensembles)
+                models = ensemble
+                ensemble = None
+            if models:
+                if all([isinstance(model, Model) for model in models]):
+                    self.model_ids = [local_model.resource_id for local_model in
+                                      models]
+                else:
+                    try:
+                        models = [get_model_id(model) for model in models]
+                        self.model_ids = models
+                    except ValueError as exc:
+                        raise ValueError('Failed to verify the list of models.'
+                                         ' Check your model id values: %s' %
+                                         str(exc))
         if ensemble:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)

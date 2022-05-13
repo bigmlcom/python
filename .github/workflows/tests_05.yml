@@ -29,8 +29,8 @@ jobs:
     - run: |
         pip install .[topics]
 
-    - name: Run tests *05 45 40 99*
+    - name: Run tests *01 05 40 99*
       run: |
-        export TESTS=$(for t in "05" "45" "40" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
+        export TESTS=$(for t in "01" "05" "40" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

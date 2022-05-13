@@ -62,22 +62,45 @@ The basic third-party dependencies are the
 `unidecode <http://pypi.python.org/pypi/Unidecode/#downloads>`_,
 `requests-toolbelt <https://pypi.python.org/pypi/requests-toolbelt>`_,
 `bigml-chronos <https://pypi.org/project/bigml-chronos>`_,
+`msgpack <https://pypi.org/project/msgpack>`_,
 `numpy <http://www.numpy.org/>`_ and
 `scipy <http://www.scipy.org/>`_ libraries. These
-libraries are automatically installed during the setup. Support for Google
-App Engine has been added as of version 3.0.0, using the `urlfetch` package
-instead of `requests`.
+libraries are automatically installed during the basic setup.
+Support for Google App Engine has been added as of version 3.0.0,
+using the `urlfetch` package instead of `requests`.
 
 The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
 libraries is ``simplejson`` is not found.
 
-Also in order to use local `Topic Model` predictions, you will need to install
-`pystemmer <https://pypi.python.org/pypi/PyStemmer>`_. Using the `pip install`
-command for this library can produce an error if your system lacks the
-correct developer tools to compile it. In Windows, the error message
-will include a link pointing to the needed Visual Studio version and in
-OSX you'll need to install the Xcode developer tools.
+The bindings provide support to use the ``BigML`` platform to create, update,
+get and delete resources, but also to produce local predictions using the
+models created in ``BigML``. Most of them will be actionable with the basic
+installation, but some additional dependencies are needed
+to use local ``Topic Models`` to produce ``Topic Distributions``. These can
+be installed using:
+
+```bash
+    pip install bigml[topics]
+```
+
+The bindings also support local predictions for models generated from images.
+To use these models, an additional set of libraries needs to be installed
+using:
+
+```bash
+    pip install bigml[images]
+```
+The external libraries used in this case exist for the majority of recent
+Operative System versions. Still, some of them might need especific
+compiler versions or dlls, so their installation may require an additional
+setup effort.
+
+The full set of libraries can be installed using
+
+```bash
+    pip install bigml[full]
+```
 
 Installation
 ------------

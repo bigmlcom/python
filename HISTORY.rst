@@ -3,6 +3,12 @@
 History
 -------
 
+7.4.0 (2022-05-13)
+~~~~~~~~~~~~~~~~~~
+
+- Adding extras to setup, to allow a basic installation and extra dependencies
+  handling for topics and images.
+
 7.3.0 (2022-04-22)
 ~~~~~~~~~~~~~~~~~~
 

@@ -28,9 +28,7 @@ jobs:
     - name: Install packages
       uses: actions/checkout@v2
     - run: |
-        pip install cython
-        pip install pystemmer==2.0.0
-        pip install .
+        pip install .[full]
 
     - name: Run tests *01 02 03 04 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 41 38 99*
       run: |

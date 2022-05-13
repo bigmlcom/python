@@ -31,21 +31,8 @@ version_py_path = os.path.join(project_path, 'bigml', 'version.py')
 version = re.search("__version__ = '([^']+)'",
                     open(version_py_path).read()).group(1)
 
-# Windows systems might not contain the dlls needed for image prediction.
-# The image predictions modules are not installed by default
-def images_dependencies():
-    """Not supporting images by default in Windows unless the
-    BIGML_IMAGES_SUPPORT environment variable forces us to
-    while supporting it for the rest of operating systems unless the same
-    variable says otherwise.
-    """
-    is_windows = platform.system() == "Windows"
-    if  (not is_windows and
-         bool(int(os.environ.get("BIGML_IMAGES_SUPPORT", "1")))) or \
-        (is_windows and
-         bool(int(os.environ.get("BIGML_IMAGES_SUPPORT", "0")))):
-        return ["bigml-sensenet==0.6.1"]
-    return ["numpy"]
+TOPIC_MODELING_DEPENDENCIES = ["cython", "pystemmer==2.0.1"]
+IMAGES_DEPENDENCIES = ["bigml-sensenet==0.6.1"]
 
 # Concatenate files into the long description
 file_contents = []
@@ -53,9 +40,6 @@ for file_name in ('README.rst', 'HISTORY.rst'):
     path = os.path.join(os.path.dirname(__file__), file_name)
     file_contents.append(open(path).read())
 long_description = '\n\n'.join(file_contents)
-
-INSTALL_REQUIRES = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-                    "requests-toolbelt", "msgpack", "scipy", "pybind11"]
 
 setuptools.setup(
     name="bigml",
@@ -68,7 +52,11 @@ setuptools.setup(
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['nose'],
-    install_requires = INSTALL_REQUIRES + images_dependencies(),
+    install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
+        "requests-toolbelt", "msgpack", "scipy", "numpy"],
+    extras_require={"images": IMAGES_DEPENDENCIES,
+                    "topics": TOPIC_MODELING_DEPENDENCIES,
+                    "full": IMAGES_DEPENDENCIES + TOPIC_MODELING_DEPENDENCIES},
     packages = ['bigml', 'bigml.tests', 'bigml.laminar',
                 'bigml.tests.my_ensemble',
                 'bigml.api_handlers', 'bigml.predicate_utils',

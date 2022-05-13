@@ -53,7 +53,7 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['nose'],
     install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-        "requests-toolbelt", "msgpack", "scipy", "numpy"],
+        "requests-toolbelt", "msgpack", "numpy<1.22,>=1.21", "scipy"],
     extras_require={"images": IMAGES_DEPENDENCIES,
                     "topics": TOPIC_MODELING_DEPENDENCIES,
                     "full": IMAGES_DEPENDENCIES + TOPIC_MODELING_DEPENDENCIES},

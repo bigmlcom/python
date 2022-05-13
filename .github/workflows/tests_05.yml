@@ -27,7 +27,7 @@ jobs:
     - name: Install packages
       uses: actions/checkout@v2
     - run: |
-        pip install .[full]
+        pip install .[topics]
 
     - name: Run tests *05 45 40 99*
       run: |

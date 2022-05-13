@@ -28,10 +28,10 @@ jobs:
     - name: Install packages
       uses: actions/checkout@v2
     - run: |
-        pip install .[full]
+        pip install .
 
-    - name: Run tests *23 37 33 35 99*
+    - name: Run tests *23 37 35 99*
       run: |
-        export TESTS=$(for t in "23" "37" "33" "35" "99"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "23" "37" "35" "99"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

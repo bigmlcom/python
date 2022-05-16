@@ -53,7 +53,6 @@ def check_signature(request, secret):
     payload = dict_to_msg(json.loads(request.body))
     sig_header = request.META['HTTP_X_BIGML_SIGNATURE'].replace('sha1=', '')
     computed_sig = compute_signature(payload, secret)
-    print(computed_sig, sig_header)
     if sig_header == computed_sig:
         return True
     return False

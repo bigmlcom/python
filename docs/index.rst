@@ -404,8 +404,30 @@ call is not followed by the ``api.ok`` method. Predictions are so quick to be
 generated that, unlike the
 rest of resouces, will be generated synchronously as a finished object.
 
-The example assumes that your objective field (the one you want to predict)
-is the last field in the dataset. If that's not he case, you can explicitly
+Alternatively to the ``api.ok`` method, BigML offers
+`webhooks <https://bigml.com/api/requests?id=webhooks>`_ that can be set
+when creating a resource and will call the url of you choice when the
+finished or failed event is reached. A secret can be included in the call to
+verify the webhook call authenticity, and a
+
+.. code-block:: python
+    bigml.webhooks.check_signature(request, signature)
+
+function is offered to that end. As an example, this snippet creates a source
+and sets a webhook to call ``https://my_webhook.com/endpoint`` when finished:
+
+.. code-block:: python
+    from bigml.api import BigML
+    api = BigML()
+    # using a webhook with a secret
+    api.create_source("https://static.bigml.com/csv/iris.csv",
+            {"webhook": {"url": "https://my_webhook.com/endpoint",
+                     "secret": "mysecret"}})
+
+
+The ``iris`` prediction example assumed that your objective
+field (the one you want to predict) is the last field in the dataset.
+If that's not he case, you can explicitly
 set the name of this field in the creation call using the ``objective_field``
 argument:
 

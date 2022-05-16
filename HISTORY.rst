@@ -3,6 +3,12 @@
 History
 -------
 
+7.4.1 (2022-05-16)
+~~~~~~~~~~~~~~~~~~
+
+- Adding support for webhooks hashing check.
+
+
 7.4.0 (2022-05-13)
 ~~~~~~~~~~~~~~~~~~
 

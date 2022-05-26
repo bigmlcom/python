@@ -359,23 +359,28 @@ class BigML(ExternalConnectorHandlerMixin,
         that is found in input_data
 
         """
-        fields = self.get_fields(model_info)
-        image_fields = [field_pair for field_pair in fields.items()
-            if field_pair[1]["optype"] == "image"]
         new_input_data = {}
         new_input_data.update(input_data)
-        for image_field, value in image_fields:
-            if image_field in input_data:
-                key = image_field
-                filename = input_data[key]
-            elif value["name"] in input_data:
-                key = value["name"]
-                filename = input_data[key]
-            source = self.create_source(filename)
-            source = self.check_resource(source,
-                                         query_string=TINY_RESOURCE,
-                                         raise_on_error=True)
-            new_input_data[key] = source["resource"]
+
+        try:
+            fields = self.get_fields(model_info)
+            image_fields = [field_pair for field_pair in fields.items()
+                if field_pair[1]["optype"] == "image"]
+            for image_field, value in image_fields:
+                if image_field in input_data:
+                    key = image_field
+                    filename = input_data[key]
+                elif value["name"] in input_data:
+                    key = value["name"]
+                    filename = input_data[key]
+                source = self.create_source(filename)
+                source = self.check_resource(source,
+                                             query_string=TINY_RESOURCE,
+                                             raise_on_error=True)
+                new_input_data[key] = source["resource"]
+        except Exception:
+            # Predict server predictions will not be able to prepare those
+            pass
         return new_input_data
 
     def create(self, resource_type, *args, **kwargs):
@@ -453,20 +458,23 @@ class BigML(ExternalConnectorHandlerMixin,
 
         """
         info = "Connecting to:\n"
-        info += "    %s\n" % self.general_domain
-        if self.general_protocol != BIGML_PROTOCOL:
-            info += "    using %s protocol\n" % self.general_protocol
+        info += "    %s%s\n" % (self.domain.general_domain,
+                                self.domain.api_version)
+        if self.domain.general_protocol != BIGML_PROTOCOL:
+            info += "    using %s protocol\n" % self.domain.general_protocol
         info += "    SSL verification %s\n" % (
-            "on" if self.verify else "off")
+            "on" if self.domain.verify else "off")
         short = "(shortened)" if self.short_debug else ""
         if self.debug:
             info += "    Debug on %s\n" % short
-        if self.general_domain != self.prediction_domain:
-            info += "    %s (predictions only)\n" % self.prediction_domain
-            if self.prediction_protocol != BIGML_PROTOCOL:
-                info += "    using %s protocol\n" % self.prediction_protocol
+        if self.domain.general_domain != self.domain.prediction_domain:
+            info += "    %s (predictions only)\n" % \
+                self.domain.prediction_domain
+            if self.domain.prediction_protocol != BIGML_PROTOCOL:
+                info += "    using %s protocol\n" % \
+                    self.domain.prediction_protocol
             info += "    SSL verification %s\n" % (
-                "on" if self.verify_prediction else "off")
+                "on" if self.domain.verify_prediction else "off")
 
         if self.project or self.organization:
             info += "    Scope info: %s\n" % \

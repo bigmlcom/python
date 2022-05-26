@@ -7,6 +7,8 @@ History
 ~~~~~~~~~~~~~~~~~~
 
 - Improved webhooks hashing check.
+- Adapting connection to allow API version setting, needed for compatibility
+  with the Predict Server syntax.
 
 7.4.1 (2022-05-16)
 ~~~~~~~~~~~~~~~~~~

@@ -22,9 +22,13 @@ import os
 # Default domain and protocol
 DEFAULT_DOMAIN = 'bigml.io'
 DEFAULT_PROTOCOL = 'https'
+DEFAULT_API_VERSION = 'andromeda'
 
 # Base Domain
 BIGML_DOMAIN = os.environ.get('BIGML_DOMAIN', DEFAULT_DOMAIN)
+
+# Default API version
+BIGML_API_VERSION = os.environ.get('BIGML_API_VERSION', DEFAULT_API_VERSION)
 
 # Protocol for main server
 BIGML_PROTOCOL = os.environ.get('BIGML_PROTOCOL',
@@ -73,7 +77,7 @@ class Domain():
 
     def __init__(self, domain=None, prediction_domain=None,
                  prediction_protocol=None, protocol=None, verify=None,
-                 prediction_verify=None):
+                 prediction_verify=None, api_version=None):
         """Domain object constructor.
 
             @param: domain string Domain name
@@ -87,16 +91,20 @@ class Domain():
             @param: prediction_verify boolean Sets on/off the SSL verification
                     for the prediction server (when different from the general
                     SSL verification)
-
+            @param: api_version string Name of the API version
         """
         # Base domain for remote resources
-        self.general_domain = domain or BIGML_DOMAIN
-        self.general_protocol = protocol or BIGML_PROTOCOL
+        self.general_domain = domain if domain is not None else BIGML_DOMAIN
+        self.general_protocol = protocol if protocol is not None else \
+            BIGML_PROTOCOL
+        self.api_version = api_version if api_version is not None else \
+            BIGML_API_VERSION
         # Usually, predictions are served from the same domain
         if prediction_domain is None:
             if domain is not None:
                 self.prediction_domain = domain
-                self.prediction_protocol = protocol or BIGML_PROTOCOL
+                self.prediction_protocol = protocol if protocol is not None \
+                    else BIGML_PROTOCOL
             else:
                 self.prediction_domain = BIGML_PREDICTION_DOMAIN
                 self.prediction_protocol = BIGML_PREDICTION_PROTOCOL
@@ -104,7 +112,8 @@ class Domain():
         # for instance in high-availability prediction servers
         else:
             self.prediction_domain = prediction_domain
-            self.prediction_protocol = prediction_protocol or \
+            self.prediction_protocol = prediction_protocol if \
+                prediction_protocol is not None else \
                 BIGML_PREDICTION_PROTOCOL
 
         # Check SSL when comming from `bigml.io` subdomains or when forced

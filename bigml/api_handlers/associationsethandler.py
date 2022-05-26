@@ -89,7 +89,8 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
             "association": association_id})
 
         body = json.dumps(create_args)
-        return self._create(self.association_set_url, body, verify=self.verify)
+        return self._create(self.association_set_url, body,
+            verify=self.domain.verify_prediction)
 
     def get_association_set(self, association_set, query_string=''):
         """Retrieves an association set.

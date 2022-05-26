@@ -100,7 +100,7 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.prediction_url, body,
-                            verify=self.verify_prediction)
+                            verify=self.domain.verify_prediction)
 
     def get_prediction(self, prediction, query_string=''):
         """Retrieves a prediction.

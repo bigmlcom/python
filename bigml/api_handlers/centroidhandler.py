@@ -89,7 +89,7 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.centroid_url, body,
-                            verify=self.verify)
+                            verify=self.domain.verify_prediction)
 
     def get_centroid(self, centroid, query_string=''):
         """Retrieves a centroid.

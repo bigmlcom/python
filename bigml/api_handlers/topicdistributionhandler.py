@@ -90,7 +90,7 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.topic_distribution_url, body,
-                            verify=self.verify_prediction)
+                            verify=self.domain.verify_prediction)
 
     def get_topic_distribution(self, topic_distribution, query_string=''):
         """Retrieves a topic distribution.

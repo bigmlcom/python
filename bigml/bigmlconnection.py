@@ -55,7 +55,7 @@ LOGGER.addHandler(CONSOLE)
 
 
 # Base URL
-BIGML_URL = '%s://%s/andromeda/'
+BIGML_URL = '%s://%s/%s'
 
 DOWNLOAD_DIR = '/download'
 
@@ -241,12 +241,7 @@ class BigMLConnection():
             self.organization = organization
         self.debug = debug
         self.short_debug = short_debug
-        self.general_domain = None
-        self.general_protocol = None
-        self.prediction_domain = None
-        self.prediction_protocol = None
-        self.verify = None
-        self.verify_prediction = None
+        self.domain = None
         self.url = None
         self.prediction_base_url = None
 
@@ -254,7 +249,7 @@ class BigMLConnection():
 
         # if verify is not set, we capture warnings to avoid `requests` library
         # warnings: InsecurePlatformWarning
-        logging.captureWarnings(not self.verify)
+        logging.captureWarnings(not self.domain.verify)
         if set_locale:
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)
@@ -278,15 +273,14 @@ class BigMLConnection():
         elif not isinstance(domain, Domain):
             raise ValueError("The domain must be set using a Domain object.")
         # Setting the general and prediction domain options
-        self.general_domain = domain.general_domain
-        self.general_protocol = domain.general_protocol
-        self.prediction_domain = domain.prediction_domain
-        self.prediction_protocol = domain.prediction_protocol
-        self.verify = domain.verify
-        self.verify_prediction = domain.verify_prediction
-        self.url = BIGML_URL % (BIGML_PROTOCOL, self.general_domain)
+        self.domain = domain
+        api_version = "%s/" % self.domain.api_version if \
+            self.domain.api_version != "" else ""
+        self.url = BIGML_URL % (self.domain.general_protocol,
+                                self.domain.general_domain,
+                                api_version)
         self.prediction_base_url = BIGML_URL % (
-            self.prediction_protocol, self.prediction_domain)
+            self.domain.prediction_protocol, self.domain.prediction_domain, "")
 
 
     def _add_credentials(self, url, organization=False, shared_auth=None):
@@ -354,7 +348,7 @@ class BigMLConnection():
         # downloaded.
         code = HTTP_ACCEPTED
         if verify is None:
-            verify = self.verify
+            verify = self.domain.verify
 
         url = self._add_credentials(url, organization=organization)
         body = self._add_project(body, not organization)
@@ -454,7 +448,7 @@ class BigMLConnection():
                     'url': url,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -466,7 +460,7 @@ class BigMLConnection():
         else:
             try:
                 response = requests.get(url, headers=ACCEPT_JSON,
-                                        verify=self.verify)
+                                        verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -538,7 +532,7 @@ class BigMLConnection():
                     'url': url,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -553,7 +547,7 @@ class BigMLConnection():
         else:
             try:
                 response = requests.get(url, headers=ACCEPT_JSON,
-                                        verify=self.verify)
+                                        verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -622,7 +616,7 @@ class BigMLConnection():
                     'method': urlfetch.PUT,
                     'headers': SEND_JSON,
                     'payload': body,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -635,7 +629,7 @@ class BigMLConnection():
             try:
                 response = requests.put(url,
                                         headers=SEND_JSON,
-                                        data=body, verify=self.verify)
+                                        data=body, verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -686,7 +680,7 @@ class BigMLConnection():
                 req_options = {
                     'url': url,
                     'method': urlfetch.DELETE,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -698,7 +692,7 @@ class BigMLConnection():
                     'error': error}
         else:
             try:
-                response = requests.delete(url, verify=self.verify)
+                response = requests.delete(url, verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -749,7 +743,7 @@ class BigMLConnection():
                 req_options = {
                     'url': self._add_credentials(url),
                     'method': urlfetch.GET,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -759,7 +753,8 @@ class BigMLConnection():
         else:
             try:
                 response = requests.get(self._add_credentials(url),
-                                        verify=self.verify, stream=True)
+                                        verify=self.domain.verify,
+                                        stream=True)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -867,7 +862,7 @@ class BigMLConnection():
                     'url': url,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -880,7 +875,7 @@ class BigMLConnection():
         else:
             try:
                 response = requests.get(url, headers=ACCEPT_JSON,
-                                        verify=self.verify)
+                                        verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -935,10 +930,10 @@ class BigMLConnection():
                     error += ": %s" % extra
             if code == HTTP_NOT_FOUND and method == 'get':
                 alternate_message = ''
-                if self.general_domain != DEFAULT_DOMAIN:
+                if self.domain.general_domain != DEFAULT_DOMAIN:
                     alternate_message = (
                         '- The %s was not created in %s.\n' % (
-                            resource_type, self.general_domain))
+                            resource_type, self.domain.general_domain))
                 error += (
                     '\nCouldn\'t find a %s matching the given'
                     ' id in %s. The most probable causes are:\n\n%s'
@@ -947,14 +942,15 @@ class BigMLConnection():
                     ' or was not created in %s.\n'
                     '\nDouble-check your %s and'
                     ' credentials info and retry.' % (
-                        resource_type, self.general_domain,
+                        resource_type, self.domain.general_domain,
                         alternate_message, resource_type,
-                        resource_type, self.general_domain, resource_type))
+                        resource_type, self.domain.general_domain,
+                        resource_type))
                 return error
             if code == HTTP_UNAUTHORIZED:
                 error += ('\nDouble-check your credentials and the general'
                           ' domain your account is registered with (currently'
-                          ' using %s), please.' % self.general_domain)
+                          ' using %s), please.' % self.domain.general_domain)
                 return error
             if code == HTTP_BAD_REQUEST:
                 error += '\nDouble-check the arguments for the call, please.'

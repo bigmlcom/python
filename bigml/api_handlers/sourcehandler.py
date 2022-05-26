@@ -192,7 +192,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                     'headers': SEND_JSON,
                     'data': create_args,
                     'files': {name: file_handler},
-                    'validate_certificate': self.verify
+                    'validate_certificate': self.domain.verify
                 }
                 response = urlfetch.fetch(**req_options)
             except urlfetch.Error as exception:
@@ -210,7 +210,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 response = requests.post( \
                     url,
                     headers={'Content-Type': multipart.content_type},
-                    data=multipart, verify=self.verify)
+                    data=multipart, verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:

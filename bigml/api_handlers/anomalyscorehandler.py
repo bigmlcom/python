@@ -89,7 +89,7 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.anomaly_score_url, body,
-                            verify=self.verify)
+                            verify=self.domain.verify_prediction)
 
     def get_anomaly_score(self, anomaly_score, query_string=''):
         """Retrieves an anomaly score.

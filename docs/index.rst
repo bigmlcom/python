@@ -859,6 +859,8 @@ other than the general public ``bigml.io`` domain:
 
 - ``BIGML_DOMAIN``: The domain of the BigML API endpoints
 - ``BIGML_PROTOCOL``: ``http``/``https`` protocol
+- ``BIGML_API_VERSION``: `andromeda`` version name (empty string if using
+    PredictServer)
 - ``BIGML_SSL_VERIFY``: (``0``/``1``) to set SSL verification
 
 If you are using a Predict Server (or a different API url only for predictions)

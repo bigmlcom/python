@@ -93,7 +93,7 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.projection_url, body,
-                            verify=self.verify)
+                            verify=self.domain.verify_prediction)
 
     def get_projection(self, projection, query_string=''):
         """Retrieves a projection.

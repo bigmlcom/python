@@ -75,7 +75,7 @@ class ForecastHandlerMixin(ResourceHandlerMixin):
 
         body = json.dumps(create_args)
         return self._create(self.forecast_url, body,
-                            verify=self.verify_prediction)
+                            verify=self.domain.verify_prediction)
 
     def get_forecast(self, forecast, query_string=''):
         """Retrieves a forecast.

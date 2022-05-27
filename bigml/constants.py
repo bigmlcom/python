@@ -324,4 +324,5 @@ EXTERNAL_CONNECTION_ATTRS = { \
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
 
-IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']
+IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'tiff', 'tif', 'bmp',
+                    'webp', 'cur', 'ico', 'pcx', 'psd', 'psb']

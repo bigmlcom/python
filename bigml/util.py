@@ -627,13 +627,14 @@ def filter_by_extension(file_list, extension_list):
     """Returns the files that match the given extensions
 
     """
-    return [filename for filename in file_list if \
-        os.path.splitext(filename)[1].lower() in extension_list]
+    return [filename for filename in file_list if
+        os.path.splitext(filename)[1].replace(".", "").lower()
+        in extension_list]
 
 
 def infer_field_type(field, value):
-    """Returns a dictionary containing the name and optype of the field
-    as inferred from the corresponding value
+    """Returns a dictionary containing the name and optype of the objective
+    field as inferred from the corresponding value
     """
     if isinstance(value, str):
         optype = "categorical"
@@ -642,3 +643,9 @@ def infer_field_type(field, value):
     else:
         optype = "numeric"
     return {"name": field, "optype": optype}
+
+
+def is_image(filename):
+    """Checking whether the file is an image based on its extension """
+    return os.path.splitext(filename)[1].replace(".", "").lower() \
+        in c.IMAGE_EXTENSIONS

@@ -40,7 +40,7 @@ import json
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
 from bigml.constants import STORAGE, ALL_FIELDS, TINY_RESOURCE
-from bigml.util import is_in_progress
+from bigml.util import is_in_progress, is_image
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.sourcehandler import SourceHandlerMixin
 from bigml.api_handlers.datasethandler import DatasetHandlerMixin
@@ -379,8 +379,16 @@ class BigML(ExternalConnectorHandlerMixin,
                                              raise_on_error=True)
                 new_input_data[key] = source["resource"]
         except Exception:
-            # Predict server predictions will not be able to prepare those
-            pass
+            # Predict Server does not return the fields info, so we infer
+            for field, value in input_data.items():
+                if isinstance(value, str) and os.path.isfile(value) and \
+                        is_image(value):
+                    source = self.create_source(value)
+                    source = self.check_resource(source,
+                                                 query_string=TINY_RESOURCE,
+                                                 raise_on_error=True)
+                    new_input_data[field] = source["resource"]
+
         return new_input_data
 
     def create(self, resource_type, *args, **kwargs):

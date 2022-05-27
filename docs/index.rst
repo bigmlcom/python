@@ -117,7 +117,7 @@ Support for local Topic Distributions (Topic Models' predictions)
 and local predictions for datasets that include Images will only be
 available as extras, because the libraries used for that are not
 usually available in all Operative Systems. If you need to support those,
-please check the `Installation Extras <#installation-extras> section`_.
+please check the `Installation Extras <#installation-extras>`_ section.
 
 Installation Extras
 -------------------

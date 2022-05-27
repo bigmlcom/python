@@ -80,17 +80,18 @@ installation, but some additional dependencies are needed
 to use local ``Topic Models`` to produce ``Topic Distributions``. These can
 be installed using:
 
-```bash
+.. code-block:: bash
+
     pip install bigml[topics]
-```
 
 The bindings also support local predictions for models generated from images.
 To use these models, an additional set of libraries needs to be installed
 using:
 
-```bash
+.. code-block:: bash
+
     pip install bigml[images]
-```
+
 The external libraries used in this case exist for the majority of recent
 Operative System versions. Still, some of them might need especific
 compiler versions or dlls, so their installation may require an additional
@@ -98,19 +99,50 @@ setup effort.
 
 The full set of libraries can be installed using
 
-```bash
+.. code-block:: bash
+
     pip install bigml[full]
-```
 
 Installation
 ------------
 
 To install the latest stable release with
-`pip <http://www.pip-installer.org/>`_
+`pip <http://www.pip-installer.org/>`_, please use:
 
 .. code-block:: bash
 
     $ pip install bigml
+
+Support for local Topic Distributions (Topic Models' predictions)
+and local predictions for datasets that include Images will only be
+available as extras, because the libraries used for that are not
+usually available in all Operative Systems. If you need to support those,
+please check the `Installation Extras <#installation-extras> section`_.
+
+Installation Extras
+-------------------
+
+Local Topic Distributions support can be installed using:
+
+.. code-block:: bash
+
+    pip install bigml[topics]
+
+Images local predictions support can be installed using:
+
+.. code-block:: bash
+
+    pip install bigml[images]
+
+The full set of features can be installed using:
+
+.. code-block:: bash
+
+    pip install bigml[full]
+
+
+WARNING: Mind that installing these extras can require some extra work, as
+explained in the `Requirements <#requirements>`_ section.
 
 You can also install the development version of the bindings directly
 from the Git repository

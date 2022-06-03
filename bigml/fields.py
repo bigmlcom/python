@@ -55,6 +55,8 @@ from bigml.constants import (
 from bigml.io import UnicodeReader, UnicodeWriter
 
 LIST_LIMIT = 10
+REGIONS = "regions"
+REGIONS_ATTR = "labels"
 SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
                    "field description", "field type", "preferred",
                    "missing count", "errors", "contents summary",
@@ -119,14 +121,24 @@ def attribute_summary(attribute_value, item_type, limit=None):
     """
     if attribute_value is None:
         return None
-    items = ["%s (%s)" % (item, instances) for
-             item, instances in attribute_value]
+    if item_type != REGIONS_ATTR:
+        items = ["%s (%s)" % (item, instances) for
+                 item, instances in attribute_value]
+        items_length = len(items)
+        if limit is None or limit > items_length:
+            limit = items_length
+        return "%s %s: %s" % (items_length, type_singular(item_type,
+                                                          items_length == 1),
+                              ", ".join(items[0: limit]))
+    items = ["%s (%s)" % (attr.get("label"), attr.get("count")) for
+             attr in attribute_value]
     items_length = len(items)
     if limit is None or limit > items_length:
         limit = items_length
     return "%s %s: %s" % (items_length, type_singular(item_type,
                                                       items_length == 1),
                           ", ".join(items[0: limit]))
+
 
 def type_singular(item_type, singular=False):
     """Singularizes item types if needed
@@ -135,6 +147,24 @@ def type_singular(item_type, singular=False):
     if singular:
         return ITEM_SINGULAR.get(item_type, item_type[:-1])
     return item_type
+
+
+def numeric_example(numeric_summary):
+    """Generates a random numeric example in the gaussian defined by
+    mean and sigma in the numeric_summary
+
+    """
+    try:
+        mean = numeric_summary.get("mean")
+        sigma = numeric_summary.get("standard_deviation")
+        minimum = numeric_summary.get("minimum")
+        maximum = numeric_summary.get("maximum")
+        value = -1
+        while value < minimum or value > maximum:
+            value = random.gauss(mean, sigma)
+        return value
+    except TypeError:
+        return None
 
 
 class Fields():
@@ -477,6 +507,11 @@ class Fields():
                     field_summary.append( \
                         attribute_summary(categories, "categorìes",
                                           limit=LIST_LIMIT))
+                elif field['optype'] == REGIONS:
+                    labels_info = field_summary_value.get("labels")
+                    field_summary.append( \
+                        attribute_summary(labels_info, "labels",
+                                          limit=LIST_LIMIT))
                 elif field['optype'] == "text":
                     terms = field_summary_value.get("tag_cloud")
                     field_summary.append( \
@@ -609,12 +644,7 @@ class Fields():
                     if missings and random.randint(0, 5) > 3:
                         value = None
                     else:
-                        try:
-                            mean = field["summary"]["mean"]
-                            sigma = field["summary"]["standard_deviation"]
-                            value = random.gauss(mean, sigma)
-                        except TypeError:
-                            value = None
+                        value = numeric_example(field["summary"])
                 if optype == "categorical":
                     if missings and random.randint(0, 5) > 3:
                         value = None
@@ -636,6 +666,25 @@ class Fields():
                         items_number = len(field["summary"]["items"])
                         index = random.randint(0, items_number - 1)
                         value = field["summary"]["items"][index][0]
+                if optype == REGIONS:
+                    if missings and random.randint(0, 5) > 3:
+                        value = None
+                    else:
+                        labels_number = len(field["summary"]["labels"])
+                        index = random.randint(0, labels_number - 1)
+                        field_summary = field["summary"]["labels"][index]
+                        label = field_summary["label"]
+                        xmin = numeric_example(field_summary["xmin"])
+                        xmax = numeric_example(field_summary["xmax"])
+                        ymin = numeric_example(field_summary["ymin"])
+                        ymax = numeric_example(field_summary["ymax"])
+                        if None in [xmin, xmax, ymin, ymax] or xmax < xmin or \
+                                ymax < ymin or xmin < 0 or xmax < 0 or \
+                                ymin < 0 or ymax < 0:
+                            value = []
+                        else:
+                            value = [[label, xmin, xmax, ymin, ymax]]
+
                 if value is not None:
                     training_data.update({field["name"]: value})
         return training_data

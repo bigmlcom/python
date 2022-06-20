@@ -86,14 +86,35 @@ class LogisticRegression(ModelFields):
     Uses a BigML remote logistic regression model to build a local version
     that can be used to generate predictions locally.
 
+
     """
 
-    def __init__(self, logistic_regression, api=None, cache_get=None):
+    def __init__(self, logistic_regression, api=None, cache_get=None,
+                 operation_settings=None):
+        """
+       :param logistic_regression: logistic_regression object or id, list of
+                                   ensemble model objects or ids or list of
+                                   ensemble obj and local model objects
+                                   (see Model)
+       :param api: connection object. If None, a new connection object is
+                   instantiated.
+       :param max_models: integer that limits the number of models instantiated
+                          and held in memory at the same time while predicting.
+                          If None, no limit is set and all the ensemble models
+                          are instantiated and held in memory permanently.
+       :param cache_get: user-provided function that should return the JSON
+                         information describing the model or the corresponding
+                         LogisticRegression object. Can be used to read these
+                         objects from a cache storage.
+       :param operation_settings: Dict object that contains operating options
+        """
 
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_logistic_regression_id( \
                 logistic_regression), cache_get)
+            self.operation_settings = self._add_operation_settings(
+                operation_settings)
             return
 
         self.resource_id = None
@@ -176,7 +197,8 @@ class LogisticRegression(ModelFields):
                 ModelFields.__init__(
                     self, fields,
                     objective_id=objective_id, categories=True,
-                    numerics=True, missing_tokens=missing_tokens)
+                    numerics=True, missing_tokens=missing_tokens,
+                    operating_settings=operating_settings)
                 self.field_codings = logistic_regression_info.get( \
                   'field_codings', {})
                 self.format_field_codings()
@@ -328,6 +350,11 @@ class LogisticRegression(ModelFields):
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
+        if operating_point is None and operation_settings is not None:
+            operating_point = operation_settings.get("operating_point")
+        if operating_kind is None and operation_settings is not None:
+            operating_kind = operation_settings.get("operating_kind")
+
         if operating_point:
             return self.predict_operating( \
                 norm_input_data, operating_point=operating_point)

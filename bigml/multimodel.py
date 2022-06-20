@@ -103,7 +103,7 @@ class MultiModel():
     """
 
     def __init__(self, models, api=None, fields=None, class_names=None,
-                 cache_get=None):
+                 cache_get=None, operation_settings=None):
 
         self.models = []
         self.class_names = class_names
@@ -115,14 +115,18 @@ class MultiModel():
                 for model in models:
                     # some models have no root info and should not be added
                     try:
-                        self.models.append(Model(model, api=api, fields=fields,
-                                                 cache_get=cache_get))
+                        self.models.append(Model(
+                            model, api=api, fields=fields,
+                            cache_get=cache_get,
+                            operation_settings=operation_settings))
                     except NoRootDecisionTree:
                         pass
         else:
             try:
-                self.models.append(Model(models, api=api, fields=fields,
-                                         cache_get=cache_get))
+                self.models.append(Model(
+                    models, api=api, fields=fields,
+                    cache_get=cache_get,
+                    operation_settings=operation_settings))
             except NoRootDecisionTree:
                 pass
 

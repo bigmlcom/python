@@ -51,11 +51,10 @@ from bigml.util import DEFAULT_LOCALE
 from bigml.api_handlers.resourcehandler import get_resource_type, get_fields
 from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, SUPERVISED_PATHS, FUSION_PATH,
-    RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS)
+    RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS, REGIONS)
 from bigml.io import UnicodeReader, UnicodeWriter
 
 LIST_LIMIT = 10
-REGIONS = "regions"
 REGIONS_ATTR = "labels"
 SUMMARY_HEADERS = ["field column", "field ID", "field name", "field label",
                    "field description", "field type", "preferred",

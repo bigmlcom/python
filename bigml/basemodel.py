@@ -191,10 +191,12 @@ class BaseModel(ModelFields):
         fields: fields dict (used in ensembles where fields info can be shared)
         checked: boolean that avoids rechecking the model structure when it
                  has already been checked previously in a derived class
+        operation_settings: operation thresholds for the classification model
 
     """
 
-    def __init__(self, model, api=None, fields=None, checked=True):
+    def __init__(self, model, api=None, fields=None, checked=True,
+                 operation_settings=None):
 
         check_fn = check_local_but_fields if fields is not None else \
             check_local_info
@@ -248,8 +250,10 @@ class BaseModel(ModelFields):
                 missing_tokens = model['model'].get('missing_tokens')
 
                 ModelFields.__init__(
-                    self, fields, objective_id=extract_objective(objective_field),
-                    missing_tokens=missing_tokens)
+                    self, fields, objective_id=extract_objective(
+                        objective_field),
+                        missing_tokens=missing_tokens,
+                        operation_settings=operation_settings)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)

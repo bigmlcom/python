@@ -30,10 +30,9 @@ from bigml_chronos import chronos
 
 from bigml.util import invert_dictionary, dump, dumps, DEFAULT_LOCALE
 from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT, \
-    ENSEMBLE_PATH
+    ENSEMBLE_PATH, DEFAULT_OPERATION_SETTINGS
 from bigml.api_handlers.resourcehandler import get_resource_type
 from bigml.predicate import TM_FULL_TERM, TM_ALL
-
 
 
 LOGGER = logging.getLogger('BigML')
@@ -207,7 +206,7 @@ class ModelFields():
 
     def __init__(self, fields, objective_id=None, data_locale=None,
                  missing_tokens=None, categories=False,
-                 numerics=False):
+                 numerics=False, operation_settings=None):
         if isinstance(fields, dict):
             tmp_fields = copy.deepcopy(fields)
             try:
@@ -256,8 +255,22 @@ class ModelFields():
                         'optype'] == NUMERIC \
                         or (hasattr(self, "boosting") and self.boosting and \
                         self.boosting.get("objective_class") is None)
+                self.operation_settings = self._add_operation_settings(
+                    operation_settings)
             except KeyError:
                 raise Exception("Wrong field structure.")
+
+    def _add_operation_settings(self, operation_settings):
+        """Checks and adds the user-given operation settings """
+        if operation_settings is None:
+            return None
+        if self.regression:
+            raise ValueError("No operating settings are allowed"
+                             " for regressions")
+        return {setting: operation_settings[setting] for
+            setting in operation_settings.keys() if setting in
+            DEFAULT_OPERATION_SETTINGS
+        }
 
     def add_terms(self, categories=False, numerics=False):
         """Adds the terms information of text and items fields

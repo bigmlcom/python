@@ -64,6 +64,8 @@ from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
+from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
+    DEFAULT_OPERATION_SETTINGS
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
@@ -105,17 +107,30 @@ class Deepnet(ModelFields):
 
     """
 
-    def __init__(self, deepnet, api=None, cache_get=None):
+    def __init__(self, deepnet, api=None, cache_get=None,
+                 operation_settings=None):
         """The Deepnet constructor can be given as first argument:
             - a deepnet structure
             - a deepnet id
             - a path to a JSON file containing a deepnet structure
 
+        :param deepnet: The deepnet info or reference
+        :param api: Connection object that will be used to download the deepnet
+                    info if not locally available
+        :param cache_get: Get function that handles memory-cached objects
+        :param operation_settings: Dict object that contains operating options
+
+        The operation_settings will depend on the type of ML problem:
+         - regressions: no operation_settings allowed
+         - classifications: operating_point, operating_kind
+         - regions: bounding_box_threshold, iou_threshold and max_objects
         """
 
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_deepnet_id(deepnet), cache_get)
+            self.operation_settings = self._add_operation_settings(
+                operation_settings)
             return
 
         self.resource_id = None
@@ -150,7 +165,9 @@ class Deepnet(ModelFields):
 
                 self.regression = \
                     self.fields[self.objective_id]['optype'] == NUMERIC
-                if not self.regression:
+                self.regions = \
+                    self.fields[self.objective_id]['optype'] == REGIONS
+                if not self.regression and not self.regions:
                     # order matters
                     self.objective_categories = self.categories[
                         self.objective_id]
@@ -158,6 +175,8 @@ class Deepnet(ModelFields):
 
                 self.missing_numerics = deepnet_info.get('missing_numerics',
                                                          False)
+                self.operation_settings = self._add_operation_settings(
+                    operation_settings)
                 if 'network' in deepnet_info:
                     network = deepnet_info['network']
                     self.network = network
@@ -173,6 +192,12 @@ class Deepnet(ModelFields):
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
                 if laminar_version:
+                    if self.regions:
+                        raise ValueError("Failed to find the extra libraries"
+                                         " that are compulsory for predicting "
+                                         "regions. Please, install them by"
+                                         "running \n"
+                                         "pip install bigml[images]")
                     self.deepnet = None
                     for _, field in self.fields.items():
                         if field["optype"] == IMAGE:
@@ -180,7 +205,8 @@ class Deepnet(ModelFields):
                                              " as some required libraries are "
                                              "not available for this OS.")
                 else:
-                    self.deepnet = create_model(deepnet)
+                    self.deepnet = create_model(deepnet,
+                        settings=operation_settings)
 
             else:
                 raise Exception("The deepnet isn't finished yet")
@@ -188,6 +214,20 @@ class Deepnet(ModelFields):
             raise Exception("Cannot create the Deepnet instance. Could not"
                             " find the 'deepnet' key in the resource:\n\n%s" %
                             deepnet)
+
+    def _add_operation_settings(self, operation_settings):
+        """Checks and adds the user-given operation settings """
+        if operation_settings is None:
+            return None
+        if self.regression:
+            raise ValueError("No operating settings are allowed"
+                             " for regressions")
+        allowed_settings = REGIONS_OPERATION_SETTINGS if \
+            self.regions else DEFAULT_OPERATION_SETTINGS
+        return {setting: operation_settings[setting] for
+            setting in operation_settings.keys() if setting in
+            allowed_settings
+        }
 
     def fill_array(self, input_data, unique_terms):
         """ Filling the input array for the network with the data in the
@@ -266,6 +306,18 @@ class Deepnet(ModelFields):
 
         # Checks and cleans input_data leaving the fields used in the model
         unused_fields = []
+
+        if self.regions:
+            if operation_settings is not None and any(
+                    [setting in REGIONS_OPERATION_SETTINGS for setting
+                     in operation_settings])):
+                kwargs = {}
+                for setting in REGIONS_OPERATION_SETTINGS:
+                    if setting in operation_settings:
+                        kwargs.update(setting: operation_settings[setting])
+            # Only a single image file is allowed as input
+            return {"prediction": self.deepnet(input_data, **kwargs)}
+
         norm_input_data = self.filter_input_data( \
             input_data, add_unused_fields=full)
         if full:
@@ -277,6 +329,11 @@ class Deepnet(ModelFields):
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
+        if operating_point is None and operation_settings is not None:
+            operating_point = operation_settings.get("operating_point")
+        if operating_kind is None and operation_settings is not None:
+            operating_kind = operation_settings.get("operating_kind")
+
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
@@ -375,7 +432,8 @@ class Deepnet(ModelFields):
     def predict_probability(self, input_data, compact=False):
         """Predicts a probability for each possible output class,
         based on input values.  The input fields must be a dictionary
-        keyed by field name or field ID.
+        keyed by field name or field ID. This method is not available for
+        regions objectives
 
         :param input_data: Input data to be predicted
         :param compact: If False, prediction is returned as a list of maps, one
@@ -384,6 +442,9 @@ class Deepnet(ModelFields):
                         respectively.  If True, returns a list of probabilities
                         ordered by the sorted order of the class names.
         """
+        if self.regions:
+            raise ValueError("The .predict_probability method cannot be used"
+                             " to predict regions.")
         if self.regression:
             prediction = self.predict(input_data, full=not compact)
             if compact:

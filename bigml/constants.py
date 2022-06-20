@@ -326,3 +326,8 @@ PROPORTIONAL = 1
 
 IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'tiff', 'tif', 'bmp',
                     'webp', 'cur', 'ico', 'pcx', 'psd', 'psb']
+
+REGIONS = "regions"
+REGIONS_OPERATION_SETTINGS = [
+    "bounding_box_threshold", "iou_threshold", "max_objects"]
+DEFAULT_OPERATION_SETTINGS = ["operating_point", "operating_kind"]

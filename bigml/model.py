@@ -315,11 +315,22 @@ class Model(BaseModel):
 
     """
 
-    def __init__(self, model, api=None, fields=None, cache_get=None):
+    def __init__(self, model, api=None, fields=None, cache_get=None,
+                 operation_settings=None):
         """The Model constructor can be given as first argument:
             - a model structure
             - a model id
             - a path to a JSON file containing a model structure
+
+        :param model: The model info or reference
+        :param api: Connection object that will be used to download the deepnet
+                    info if not locally available
+        :param cache_get: Get function that handles memory-cached objects
+        :param operation_settings: Dict object that contains operating options
+
+        The operation_settings will depend on the type of ML problem:
+         - regressions: no operation_settings allowed
+         - classifications: operating_point, operating_kind
 
         """
 
@@ -354,7 +365,8 @@ class Model(BaseModel):
 
                 self.default_numeric_value = model.get('default_numeric_value')
                 self.input_fields = model["input_fields"]
-                BaseModel.__init__(self, model, api=api, fields=fields)
+                BaseModel.__init__(self, model, api=api, fields=fields,
+                    operation_settings=operation_settings)
 
                 try:
                     root = model['model']['root']
@@ -675,6 +687,11 @@ class Model(BaseModel):
 
         # Strips affixes for numeric values and casts to the final field type
         cast(norm_input_data, self.fields)
+
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+        if operating_kind is None and self.operation_settings is not None:
+            operating_kind = self.operation_settings.get("operating_kind")
 
         full_prediction = self._predict( \
             norm_input_data, missing_strategy=missing_strategy,

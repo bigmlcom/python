@@ -85,22 +85,27 @@ class Ensemble(ModelFields):
        that can be used to generate predictions locally.
        The expected arguments are:
 
-       ensemble: ensemble object or id, list of ensemble model objects or
-                 ids or list of ensemble obj and local model objects (see Model)
-       api: connection object. If None, a new connection object is
-            instantiated.
-       max_models: integer that limits the number of models instantiated and
-                   held in memory at the same time while predicting. If None,
-                   no limit is set and all the ensemble models are
-                   instantiated and held in memory permanently.
-       cache_get: user-provided function that should return the JSON
-                  information describing the model or the corresponding
-                  Model object. Can be used to read these objects from a
-                  cache storage.
     """
 
-    def __init__(self, ensemble, api=None, max_models=None, cache_get=None):
+    def __init__(self, ensemble, api=None, max_models=None, cache_get=None,
+                 operation_settings=None):
+        """
+        :param ensemble: ensemble object or id, list of ensemble model
+                        objects or ids or list of ensemble obj and local model
+                        objects (see Model)
+        :param api: connection object. If None, a new connection object is
+                    instantiated.
+        :param max_models: integer that limits the number of models instantiated
+                           and held in memory at the same time while predicting.
+                           If None, no limit is set and all the ensemble models
+                           are instantiated and held in memory permanently.
+        :param cache_get: user-provided function that should return the JSON
+                          information describing the model or the corresponding
+                          Ensemble object. Can be used to read these objects
+                          from a cache storage.
+        :param operation_settings: Dict object that contains operating options
 
+        """
         self.model_splits = []
         self.multi_model = None
         self.api = get_api_connection(api)
@@ -111,21 +116,26 @@ class Ensemble(ModelFields):
             # using a cache to store the model attributes
             self.__dict__ = load(get_ensemble_id(ensemble), cache_get)
             self.api = get_api_connection(api)
+            self.operation_settings = self._add_operation_settings(
+                operation_settings)
             if len(self.models_splits) == 1:
                 # retrieve the models from a cache get function
                 try:
-                    models = [Model(model_id, cache_get=cache_get)
+                    models = [Model(model_id, cache_get=cache_get,
+                                    operation_settings=operation_settings)
                               for model_id
                               in self.models_splits[0]]
                 except Exception as exc:
                     raise Exception('Error while calling the user-given'
                                     ' function %s: %s' %
                                     (cache_get.__name__, str(exc)))
-                self.multi_model = MultiModel(models,
-                                              self.api,
-                                              fields=self.fields,
-                                              class_names=self.class_names,
-                                              cache_get=cache_get)
+                self.multi_model = MultiModel(
+                    models,
+                    self.api,
+                    fields=self.fields,
+                    class_names=self.class_names,
+                    cache_get=cache_get,
+                    operation_settings=operation_settings)
             return
 
         self.resource_id = None
@@ -157,7 +167,9 @@ class Ensemble(ModelFields):
                         raise ValueError("The provided list of models does not"
                                          " match the ensemble list of models.")
                     try:
-                        models = [Model(model) for model in model_list]
+                        models = [Model(
+                            model, operation_settings=operation_settings)
+                            for model in model_list]
                     except Exception:
                         models = model_list
                 else:
@@ -227,7 +239,8 @@ class Ensemble(ModelFields):
                 if use_cache(cache_get):
                     # retrieve the models from a cache get function
                     try:
-                        models = [Model(model_id, cache_get=cache_get)
+                        models = [Model(model_id, cache_get=cache_get,
+                            operation_settings=operation_settings)
                                   for model_id
                                   in self.models_splits[0]]
                         self.cache_get = cache_get
@@ -252,7 +265,8 @@ class Ensemble(ModelFields):
                     # retrieve the models from a cache get function
                     try:
                         model = Model(self.models_splits[0][0],
-                                      cache_get=cache_get)
+                                      cache_get=cache_get,
+                                      operation_settings=operation_settings)
                         self.cache_get = cache_get
                     except Exception as exc:
                         raise Exception('Error while calling the user-given'
@@ -315,10 +329,12 @@ class Ensemble(ModelFields):
             objective_id=self.objective_id)
 
         if len(self.models_splits) == 1:
-            self.multi_model = MultiModel(models,
-                                          self.api,
-                                          fields=self.fields,
-                                          class_names=self.class_names)
+            self.multi_model = MultiModel(
+                models,
+                self.api,
+                fields=self.fields,
+                class_names=self.class_names,
+                operation_settings=operation_settings)
             for index, model in enumerate(self.multi_model.models):
                 self.multi_model.models[index].term_forms = self.term_forms
 
@@ -749,6 +765,10 @@ class Ensemble(ModelFields):
         if median and method is None:
             # predictions with median are only available with old combiners
             method = PLURALITY_CODE
+        if operating_point is None and operation_settings is not None:
+            operating_point = operation_settings.get("operating_point")
+        if operating_kind is None and operation_settings is not None:
+            operating_kind = operation_settings.get("operating_kind")
 
         if method is None and operating_point is None and \
             operating_kind is None and not median:

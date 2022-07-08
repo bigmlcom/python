@@ -3,6 +3,11 @@
 History
 -------
 
+7.5.0 (2022-07-09)
+~~~~~~~~~~~~~~~~~~
+
+- Adding the new capabilities the last API release: object detection.
+
 7.4.2 (2022-05-26)
 ~~~~~~~~~~~~~~~~~~
 

@@ -198,7 +198,7 @@ class LogisticRegression(ModelFields):
                     self, fields,
                     objective_id=objective_id, categories=True,
                     numerics=True, missing_tokens=missing_tokens,
-                    operating_settings=operating_settings)
+                    operation_settings=operation_settings)
                 self.field_codings = logistic_regression_info.get( \
                   'field_codings', {})
                 self.format_field_codings()
@@ -350,10 +350,10 @@ class LogisticRegression(ModelFields):
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
-        if operating_point is None and operation_settings is not None:
-            operating_point = operation_settings.get("operating_point")
-        if operating_kind is None and operation_settings is not None:
-            operating_kind = operation_settings.get("operating_kind")
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+        if operating_kind is None and self.operation_settings is not None:
+            operating_kind = self.operation_settings.get("operating_kind")
 
         if operating_point:
             return self.predict_operating( \

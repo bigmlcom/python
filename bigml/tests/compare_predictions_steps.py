@@ -303,9 +303,14 @@ def the_local_prediction_confidence_is(step, confidence):
 
 
 #@step(r'the highest local prediction\'s confidence for "(.*)" is "(.*)"')
-def the_highest_local_prediction_confidence_is(step, input_data, confidence):
+def the_highest_local_prediction_confidence_is(
+    step, input_data, confidence, missing_strategy=None):
     input_data = json.loads(input_data)
-    local_confidence = world.local_model.predict_confidence(input_data)
+    kwargs = {}
+    if missing_strategy is not None:
+        kwargs.update({"missing_strategy": missing_strategy})
+    local_confidence = world.local_model.predict_confidence(input_data,
+                                                            **kwargs)
     if isinstance(local_confidence, dict):
         local_confidence = round(float(local_confidence["confidence"]), 4)
     else:
@@ -370,9 +375,9 @@ def the_local_probability_is(step, probability):
     local_probability = world.local_prediction["probability"]
 
 def eq_local_and_remote_probability(step):
-    local_probability = str(round(world.local_prediction["probability"], 4))
-    remote_probability = str(round(world.prediction["probability"], 4))
-    eq_(local_probability, remote_probability)
+    local_probability = str(round(world.local_prediction["probability"], 3))
+    remote_probability = str(round(world.prediction["probability"], 3))
+    assert_almost_equal(local_probability, remote_probability)
 
 #@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):

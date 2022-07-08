@@ -20,7 +20,8 @@
 """
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import compare_predictions_steps as prediction_compare
 from . import create_ensemble_steps as ensemble_create
 from . import create_prediction_steps as prediction_create
@@ -38,6 +39,7 @@ class TestLocalPrediction(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):

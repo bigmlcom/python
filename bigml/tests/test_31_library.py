@@ -20,7 +20,8 @@
 """
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import create_library_steps as library_create
 
 class TestLibrary(object):
@@ -35,6 +36,7 @@ class TestLibrary(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):

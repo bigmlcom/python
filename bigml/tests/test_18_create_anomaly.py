@@ -20,7 +20,8 @@
 """
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_anomaly_steps as anomaly_create
@@ -33,14 +34,13 @@ class TestAnomaly(object):
             Debug information
         """
         print("\n-------------------\nTests in: %s\n" % __name__)
-        world.dataset_ids = []
 
     def teardown(self):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-        world.dataset_ids = []
 
     def test_scenario1(self):
         """

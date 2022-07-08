@@ -977,6 +977,16 @@ example of it would be:
     prediction = local_deepnet.predict(inputData,
                                        operating_point=operating_point)
 
+**Note**: Local predictions for deepnets built on images datasets can differ
+slightly from the predictions obtained by using BigML's API create prediction
+call. When uploaded to BigML, images are standardized to a particular
+resolution and compressed using the JPEG algorithm while local predictions
+maintain the original image information. That can cause minor variations in
+regression predictions or the probability associated to classification
+predictions. If anything, the local value will always be slightly
+more accurate.
+
+
 Local Fusion
 ------------
 

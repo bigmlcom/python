@@ -328,6 +328,8 @@ IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'tiff', 'tif', 'bmp',
                     'webp', 'cur', 'ico', 'pcx', 'psd', 'psb']
 
 REGIONS = "regions"
+REGION_SCORE_ALIAS = "region_score_threshold"
+REGION_SCORE_THRESHOLD = "bounding_box_threshold"
 REGIONS_OPERATION_SETTINGS = [
-    "bounding_box_threshold", "iou_threshold", "max_objects"]
+    REGION_SCORE_ALIAS, "iou_threshold", "max_objects"]
 DEFAULT_OPERATION_SETTINGS = ["operating_point", "operating_kind"]

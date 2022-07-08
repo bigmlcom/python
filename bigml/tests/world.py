@@ -311,10 +311,18 @@ def teardown_class():
     """Operations to be performed after each class
 
     """
+    delet_local()
+
+
+def delete_local():
+    """Delete loca objects and lists of ids
+
+    """
     world.dataset_ids = []
     world.local_ensemble = None
     world.local_model = None
     world.local_deepnet = None
+
 
 
 def logged_wait(start, delta, count, res_description, progress=0, status=None):

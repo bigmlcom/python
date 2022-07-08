@@ -21,7 +21,8 @@
 import json
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -43,6 +44,7 @@ class TestComparePrediction(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):
@@ -70,7 +72,7 @@ class TestComparePrediction(object):
              'Iris-versicolor', '{}'],
             ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004',
              'Iris-versicolor', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.65609,
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.6558,
              '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1)
@@ -727,7 +729,7 @@ class TestComparePrediction(object):
                    "input_data", "objective_id", "model_conf", "image_fields"]
         examples = [
             ['data/images/metadata.json', '500', '500', '600',
-             '{"image_id": "data/fruits1e.png", "label":"f1"}',
+             '{"image_id": "data/fruits1e.jpg", "label":"f1"}',
              '100003', {"objective_field": "100003",
                         "number_of_hidden_layers": 1,
                         "suggest_structure": False,
@@ -765,4 +767,4 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(
                 self, example["objective_id"],
                 world.local_prediction["prediction"])
-            prediction_compare.eq_local_and_remote_probability(self)
+            prediction_compare.almost_eq_local_and_remote_probability(self)

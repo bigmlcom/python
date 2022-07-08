@@ -112,7 +112,7 @@ def i_create_a_proportional_prediction(step, data=None):
     world.predictions.append(resource['resource'])
 
 
-def check_prediction(got, expected, precision=5):
+def check_prediction(got, expected, precision=4):
     if not isinstance(got, str):
         assert_almost_equals(got, float(expected), precision)
     else:

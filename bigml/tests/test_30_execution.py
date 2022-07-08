@@ -20,7 +20,8 @@
 """
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import create_script_steps as script_create
 from . import create_execution_steps as execution_create
 
@@ -36,6 +37,7 @@ class TestExecution(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):

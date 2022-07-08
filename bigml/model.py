@@ -188,11 +188,18 @@ def sort_categories(a, b, categories_list):
     return 0
 
 
-def parse_operating_point(operating_point, operating_kinds, class_names):
+def parse_operating_point(operating_point, operating_kinds, class_names,
+    operation_settings):
     """Checks the operating point contents and extracts the three defined
     variables
 
     """
+    # When operating_point is used, we need the probabilities
+    # of all possible classes to decide, so se use
+    # the `predict_probability` method
+    if operating_point is None and operation_settings is not None:
+        operating_point = operation_settings.get("operating_point")
+
     if "kind" not in operating_point:
         raise ValueError("Failed to find the kind of operating point.")
     if operating_point["kind"] not in operating_kinds:
@@ -568,7 +575,8 @@ class Model(BaseModel):
         """
 
         kind, threshold, positive_class = parse_operating_point( \
-            operating_point, OPERATING_POINT_KINDS, self.class_names)
+            operating_point, OPERATING_POINT_KINDS, self.class_names,
+            self.operation_settings)
         if kind == "probability":
             predictions = self.predict_probability(input_data,
                                                    missing_strategy, False)

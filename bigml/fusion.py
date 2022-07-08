@@ -130,12 +130,14 @@ class Fusion(ModelFields):
                   cache storage.
     """
 
-    def __init__(self, fusion, api=None, max_models=None, cache_get=None):
+    def __init__(self, fusion, api=None, max_models=None, cache_get=None,
+                 operation_settings=None):
 
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_fusion_id(fusion), cache_get)
             self.api = get_api_connection(api)
+            self.operation_settings = operation_settings
             return
 
         self.resource_id = None
@@ -188,10 +190,12 @@ class Fusion(ModelFields):
                     api.shared_ref += ",%s" % self.resource_id
             for model_id in self.model_ids:
                 if get_resource_type(model_id) == "fusion":
-                    Fusion(model_id, api=api, cache_get=cache_get)
+                    Fusion(model_id, api=api, cache_get=cache_get,
+                           operation_settings=operation_settings)
                 else:
                     SupervisedModel(model_id, api=api,
-                                    cache_get=cache_get)
+                                    cache_get=cache_get,
+                                    operation_settings=operation_settings)
 
         if max_models is None:
             self.models_splits = [self.model_ids]
@@ -435,6 +439,9 @@ class Fusion(ModelFields):
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+
         if operating_point:
             if self.regression:
                 raise ValueError("The operating_point argument can only be"
@@ -467,10 +474,14 @@ class Fusion(ModelFields):
         """Computes the prediction based on a user-given operating point.
 
         """
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+
         # only probability is allowed as operating kind
         operating_point.update({"kind": "probability"})
         kind, threshold, positive_class = parse_operating_point( \
-            operating_point, OPERATING_POINT_KINDS, self.class_names)
+            operating_point, OPERATING_POINT_KINDS, self.class_names,
+            self.operation_settings)
         predictions = self.predict_probability(input_data,
                                                missing_strategy, False)
 

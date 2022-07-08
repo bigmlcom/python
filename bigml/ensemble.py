@@ -619,7 +619,8 @@ class Ensemble(ModelFields):
 
         """
         kind, threshold, positive_class = parse_operating_point( \
-            operating_point, OPERATING_POINT_KINDS, self.class_names)
+            operating_point, OPERATING_POINT_KINDS,
+            self.class_names, self.operation_settings)
 
         try:
             predict_method = None
@@ -765,10 +766,10 @@ class Ensemble(ModelFields):
         if median and method is None:
             # predictions with median are only available with old combiners
             method = PLURALITY_CODE
-        if operating_point is None and operation_settings is not None:
-            operating_point = operation_settings.get("operating_point")
-        if operating_kind is None and operation_settings is not None:
-            operating_kind = operation_settings.get("operating_kind")
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+        if operating_kind is None and self.operation_settings is not None:
+            operating_kind = self.operation_settings.get("operating_kind")
 
         if method is None and operating_point is None and \
             operating_kind is None and not median:

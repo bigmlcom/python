@@ -65,7 +65,7 @@ from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
-    DEFAULT_OPERATION_SETTINGS
+    DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
@@ -205,8 +205,12 @@ class Deepnet(ModelFields):
                                              " as some required libraries are "
                                              "not available for this OS.")
                 else:
+                    settings = self.operation_settings if self.regions else \
+                        None
+                    if self.regions:
+                        settings.update({"iou_threshold": 0.2})
                     self.deepnet = create_model(deepnet,
-                        settings=operation_settings)
+                        settings=settings)
 
             else:
                 raise Exception("The deepnet isn't finished yet")
@@ -224,10 +228,15 @@ class Deepnet(ModelFields):
                              " for regressions")
         allowed_settings = REGIONS_OPERATION_SETTINGS if \
             self.regions else DEFAULT_OPERATION_SETTINGS
-        return {setting: operation_settings[setting] for
+        settings = {setting: operation_settings[setting] for
             setting in operation_settings.keys() if setting in
             allowed_settings
         }
+        if REGION_SCORE_ALIAS in settings:
+            settings[REGION_SCORE_THRESHOLD] = settings[
+                REGION_SCORE_ALIAS]
+            del settings[REGION_SCORE_ALIAS]
+        return settings
 
     def fill_array(self, input_data, unique_terms):
         """ Filling the input array for the network with the data in the
@@ -308,15 +317,8 @@ class Deepnet(ModelFields):
         unused_fields = []
 
         if self.regions:
-            if operation_settings is not None and any(
-                    [setting in REGIONS_OPERATION_SETTINGS for setting
-                     in operation_settings])):
-                kwargs = {}
-                for setting in REGIONS_OPERATION_SETTINGS:
-                    if setting in operation_settings:
-                        kwargs.update(setting: operation_settings[setting])
             # Only a single image file is allowed as input
-            return {"prediction": self.deepnet(input_data, **kwargs)}
+            return {"prediction": self.deepnet(input_data)}
 
         norm_input_data = self.filter_input_data( \
             input_data, add_unused_fields=full)
@@ -329,10 +331,10 @@ class Deepnet(ModelFields):
         # When operating_point is used, we need the probabilities
         # of all possible classes to decide, so se use
         # the `predict_probability` method
-        if operating_point is None and operation_settings is not None:
-            operating_point = operation_settings.get("operating_point")
-        if operating_kind is None and operation_settings is not None:
-            operating_kind = operation_settings.get("operating_kind")
+        if operating_point is None and self.operation_settings is not None:
+            operating_point = self.operation_settings.get("operating_point")
+        if operating_kind is None and self.operation_settings is not None:
+            operating_kind = self.operation_settings.get("operating_kind")
 
         if operating_point:
             if self.regression:
@@ -491,7 +493,8 @@ class Deepnet(ModelFields):
         """
 
         kind, threshold, positive_class = parse_operating_point( \
-            operating_point, ["probability"], self.class_names)
+            operating_point, ["probability"], self.class_names,
+            self.operation_settings)
         predictions = self.predict_probability(input_data, False)
         position = self.class_names.index(positive_class)
         if predictions[position][kind] > threshold:

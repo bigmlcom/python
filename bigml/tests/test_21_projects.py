@@ -18,7 +18,7 @@
 """ Testing projects REST api calls
 
 """
-from .world import world, setup_module, teardown_module
+from .world import world, setup_module, teardown_module, delete_local
 from . import create_project_steps as create
 from . import delete_project_steps as delete
 
@@ -35,6 +35,7 @@ class Test_projects(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):

@@ -20,7 +20,8 @@
 """
 import sys
 
-from .world import world, setup_module, teardown_module, show_doc, show_method
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method, delete_local
 from . import create_model_steps as model_create
 from . import create_linear_steps as linear_create
 from . import create_source_steps as source_create
@@ -45,6 +46,7 @@ class TestLocalFromFile(object):
         """
             Debug information
         """
+        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
 
     def test_scenario1(self):

@@ -98,6 +98,7 @@ def the_model_is_finished_in_less_than(step, secs, shared=None):
             if "model" not in world.shared:
                 world.shared["model"] = {}
             world.shared["model"][shared] = world.model
+        print("New %s" % world.model["resource"])
     else:
         world.model = world.shared["model"][shared]
         print("Reusing %s" % world.model["resource"])

@@ -70,10 +70,7 @@ using:
 
     pip install bigml[images]
 
-The external libraries used in this case exist for the majority of recent
-Operative System versions. Still, some of them might need especific
-compiler versions or dlls, so their installation may require an additional
-setup effort.
+The external libraries used in this case exist for the majority of recent Operating System versions. Still, some of them might need specific compiler versions of dlls, so their installation may require an additional setup effort.
 
 The full set of libraries can be installed using
 

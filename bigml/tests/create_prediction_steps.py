@@ -118,11 +118,11 @@ def check_prediction(got, expected, precision=4):
     else:
         eq_(got, expected)
 
-def the_prediction_is(step, objective, prediction, precision=5):
+def the_prediction_is(step, objective, prediction, precision=4):
     check_prediction(world.prediction['prediction'][objective], prediction,
                      precision=precision)
 
-def the_median_prediction_is(step, objective, prediction, precision=5):
+def the_median_prediction_is(step, objective, prediction, precision=4):
     check_prediction(world.prediction['prediction_path'][
         'objective_summary']['median'], prediction, precision=precision)
 

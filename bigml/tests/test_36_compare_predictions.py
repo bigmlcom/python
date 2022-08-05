@@ -72,7 +72,7 @@ class TestComparePrediction(object):
              'Iris-versicolor', '{}'],
             ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004',
              'Iris-versicolor', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.6558,
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.6560,
              '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1)
@@ -767,4 +767,4 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(
                 self, example["objective_id"],
                 world.local_prediction["prediction"])
-            prediction_compare.almost_eq_local_and_remote_probability(self)
+            prediction_compare.eq_local_and_remote_probability(self)

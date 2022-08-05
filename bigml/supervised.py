@@ -123,8 +123,9 @@ class SupervisedModel(BaseModel):
         self.api = get_api_connection(api)
         resource_id, model = extract_id(model, self.api)
         resource_type = get_resource_type(resource_id)
-        kwargs = {"api": self.api, "cache_get": cache_get,
-                  "operation_settings": operation_settings}
+        kwargs = {"api": self.api, "cache_get": cache_get}
+        if resource_type != "linearregression":
+            kwargs.update({"operation_settings": operation_settings})
         local_model = COMPONENT_CLASSES[resource_type](model, **kwargs)
         self.__class__.__bases__ = local_model.__class__.__bases__
         for attr, value in list(local_model.__dict__.items()):

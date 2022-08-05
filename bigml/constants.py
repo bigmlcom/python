@@ -333,3 +333,4 @@ REGION_SCORE_THRESHOLD = "bounding_box_threshold"
 REGIONS_OPERATION_SETTINGS = [
     REGION_SCORE_ALIAS, "iou_threshold", "max_objects"]
 DEFAULT_OPERATION_SETTINGS = ["operating_point", "operating_kind"]
+DECIMALS = 5

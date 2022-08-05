@@ -54,6 +54,7 @@ laminar_version = False
 try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
+    from PIL import Image
 except ModuleNotFoundError:
     laminar_version = True
 
@@ -65,7 +66,8 @@ from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
-    DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD
+    DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD, \
+    DECIMALS
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
@@ -80,6 +82,8 @@ MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
 
 IMAGE = "image"
+REMOTE_SETTINGS = {"iou_threshold": 0.2}
+
 
 def moments(amap):
     """Extracts mean and stdev
@@ -97,6 +101,25 @@ def expand_terms(terms_list, input_terms):
         index = terms_list.index(term)
         terms_occurrences[index] = occurrences
     return terms_occurrences
+
+
+def to_relative_coordinates(image, regions_list):
+    """Transforms predictions with regions having absolute pixels regions
+    to the relative format used remotely and rounds to the same precision.
+    """
+
+    if regions_list:
+        image_obj = Image.open(image)
+        width, height = image_obj.size
+        for index, region in enumerate(regions_list):
+            [xmin, ymin, xmax, ymax] = region["box"]
+            region["box"] = [round(xmin / width, DECIMALS),
+                             round(ymin / height, DECIMALS),
+                             round(xmax / width, DECIMALS),
+                             round(ymax / height, DECIMALS)]
+            region["score"] = round(region["score"], DECIMALS)
+            regions_list[index] = region
+    return regions_list
 
 
 class Deepnet(ModelFields):
@@ -208,7 +231,7 @@ class Deepnet(ModelFields):
                     settings = self.operation_settings if self.regions else \
                         None
                     if self.regions:
-                        settings.update({"iou_threshold": 0.2})
+                        settings.update(REMOTE_SETTINGS)
                     self.deepnet = create_model(deepnet,
                         settings=settings)
 
@@ -317,8 +340,12 @@ class Deepnet(ModelFields):
         unused_fields = []
 
         if self.regions:
-            # Only a single image file is allowed as input
-            return {"prediction": self.deepnet(input_data)}
+            # Only a single image file is allowed as input.
+            # Sensenet predictions are using absolute coordinates, so we need
+            # to change it to relative and set the decimal precision
+            prediction = to_relative_coordinates(input_data,
+                                                 self.deepnet(input_data))
+            return {"prediction": prediction}
 
         norm_input_data = self.filter_input_data( \
             input_data, add_unused_fields=full)

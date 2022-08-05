@@ -94,11 +94,12 @@ class TestComparePrediction(object):
             prediction_create.i_create_a_deepnet_prediction(
                 self, example["input_data"])
             prediction_create.the_prediction_is(
-                self, example["objective_id"], example["prediction"])
+                self, example["objective_id"], example["prediction"],
+                precision=3)
             prediction_compare.i_create_a_local_deepnet_prediction(
                 self, example["input_data"])
             prediction_compare.the_local_prediction_is(
-                self, example["prediction"])
+                self, example["prediction"], precision=3)
 
     def test_scenario2(self):
         """

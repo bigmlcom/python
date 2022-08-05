@@ -156,3 +156,28 @@ class TestLocalPrediction(object):
                 self, example["confidence"])
             prediction_compare.the_local_probabilities_are(
                 self, example["probabilities"])
+
+    def test_scenario5(self):
+        """
+            Scenario 5: Successfully creating a prediction from a local images deepnet in a json file:
+                Given I create a local deepnet from a "<deepnet>" file
+                When I create a local prediction for "<data_input>"
+                Then the local prediction is "<prediction>"
+        """
+        show_doc(self.test_scenario5)
+        headers = ["file_path", "input_data", "operation_settings",
+                   "prediction"]
+        examples = [
+            ['data/imgs_deepnet.zip', "data/images/cats/pexels-pixabay-33358.jpg",
+             {"region_score_threshold": 0.7},
+             '{"prediction": [{"box": [0.68164, 0.30469, 0.79688, 0.36979], "label": "eye", "score": 0.79633}, {"box": [0.38086, 0.27865, 0.50391, 0.36068], "label": "eye", "score": 0.74563}]}']]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            prediction_compare.i_create_a_local_deepnet_from_zip_file(
+                self, example["file_path"],
+                operation_settings=example["operation_settings"])
+            prediction_compare.i_create_a_local_regions_prediction(
+                self, example["input_data"])
+            prediction_compare.the_local_regions_prediction_is(
+                self, example["prediction"])

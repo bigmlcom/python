@@ -18,6 +18,7 @@
 import json
 import os
 
+from zipfile import ZipFile
 from nose.tools import eq_, assert_almost_equal, assert_is_not_none
 from .world import world, res_filename
 from bigml.model import Model, cast_prediction
@@ -37,6 +38,11 @@ from bigml.supervised import SupervisedModel
 
 
 from .create_prediction_steps import check_prediction
+
+def extract_zip(input_zip):
+    input_zip=ZipFile(input_zip)
+    return {name: input_zip.read(name) for name in input_zip.namelist()}
+
 
 #@step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
@@ -68,6 +74,13 @@ def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
 def i_create_a_local_model_from_file(step, model_file):
     world.local_model = Model(res_filename(model_file))
 
+#@step(r'I create a local deepnet from a "(.*)" file$')
+def i_create_a_local_deepnet_from_zip_file(step, deepnet_file,
+                                           operation_settings=None):
+    zipped_files = extract_zip(res_filename(deepnet_file))
+    deepnet = json.loads(list(zipped_files.values())[0])
+    world.local_model = Deepnet(deepnet,
+                                operation_settings=operation_settings)
 
 #@step(r'I create a local supervised model from a "(.*)" file$')
 def i_create_a_local_supervised_model_from_file(step, model_file):
@@ -116,6 +129,12 @@ def i_create_a_local_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data, full=True)
 
+#@step(r'I create a local images prediction for "(.*)"$')
+def i_create_a_local_regions_prediction(step, image_file=None):
+    if image_file is None:
+        return None
+    data = res_filename(image_file)
+    world.local_prediction = world.local_model.predict(data, full=True)
 
 #@step(r'I create a local prediction for "(.*)" in operating point "(.*)"$')
 def i_create_a_local_prediction_op(step, data=None, operating_point=None):
@@ -346,6 +365,13 @@ def the_local_prediction_is(step, prediction, precision=4):
                 prediction = float(prediction)
             eq_(round(local_prediction, precision),
                 round(float(prediction), precision))
+
+
+#@step(r'the local regions prediction is "(.*)"')
+def the_local_regions_prediction_is(step, prediction):
+    prediction = json.loads(prediction)
+    eq_(prediction, world.local_prediction)
+
 
 #@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):

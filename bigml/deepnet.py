@@ -140,11 +140,11 @@ def remote_preprocess(image_file):
         if width > height:
             ratio = height / width
             image = image.resize((TOP_SIZE , int(ratio * TOP_SIZE)),
-                                 Image.ANTIALIAS)
+                                 Image.BICUBIC)
         else:
             ratio = width / height
             image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
-                                 Image.ANTIALIAS)
+                                  Image.BICUBIC)
     with tempfile.NamedTemporaryFile() as temp_fp:
         tmp_file_name = os.path.join(TEMP_DIR, "%s.jpg" % temp_fp.name)
         # compressing to 90%

@@ -974,8 +974,61 @@ example of it would be:
     operating_point = {"kind": "probability",
                        "positive_class": "True",
                        "threshold": 0.8};
-    prediction = local_deepnet.predict(inputData,
+    prediction = local_deepnet.predict(input_data,
                                        operating_point=operating_point)
+
+
+Local Deepnets for images supervised learning and object detection
+------------------------------------------------------------------
+
+Deepnets include Convolutional Neural Networks, so they can
+be used to do classification, regression and object detection based on
+images. For image classification and regression, the local Deepnets will just
+need some image as input data when doing predictions. The image file should
+be provided in input data as the contents to the corresponding image field.
+
+.. code-block:: python
+
+    input_data = {"000002": "my_image.jpg"}
+    prediction = local_deepnet.predict(input_data)
+
+For object detection, as predictions are only based on one image, the input
+to be provided is the plain image file itself.
+
+.. code-block:: python
+
+    prediction = local_deepnet.predict("my_image.jpg")
+
+Also, object detection Deepnets allow some parameters to be set
+at creation time. They slightly modify the operation of the ``Deepnet``, so
+they are provided as ``operation_settings``.
+
+.. code-block:: python
+
+    from bigml.deepnet import Deepnet
+    local_deepnet = Deepnet("deepnet/62a85964128d1c55610003cd",
+                            operation_settings={"region_score_threshold": 0.6})
+    prediction = local_deepnet.predict("my_image.jpg")
+
+The operation settings allowed are ``region_score_threshold``, that will set
+the minimum accepted score in the predictions and ``max_objects`` which will
+limit the number of regions returned.
+The prediction will contain a list of dictionaries that contain the
+label, score and box description of the found regions. Each box object is
+an array that contains the ``xmin``, ``ymin``, ``xmax`` and ``ymax``
+coordinates:
+
+.. code-block:: python
+
+    {'prediction': [{'box': [0.67742, 0.30469, 0.79472, 0.37109],
+                     'label': 'eye',
+                     'score': 0.83528},
+                    {'box': [0.3783, 0.27734, 0.50147, 0.35938],
+                     'label': 'eye',
+                     'score': 0.79117},
+                    {'box': [0.67742, 0.77344, 0.739, 0.81445],
+                     'label': 'eye',
+                     'score': 0.45094}]}
 
 **Note**: Local predictions for deepnets built on images datasets can differ
 slightly from the predictions obtained by using BigML's API create prediction
@@ -983,8 +1036,19 @@ call. When uploaded to BigML, images are standardized to a particular
 resolution and compressed using the JPEG algorithm while local predictions
 maintain the original image information. That can cause minor variations in
 regression predictions or the probability associated to classification
-predictions. If anything, the local value will always be slightly
-more accurate.
+predictions. Also object detection predictions can differ slightly, specially
+if low region_threshold_scores are used.
+
+If anything, the local value will always be slightly more accurate, but if you
+need to find results as close as possible to the ones produced in remote
+predictions, you can use the ``remote_preprocess`` function in the ``deepnet``
+module.
+
+.. code-block:: python
+    from bigml.deepnet import Deepnet, remote_preprocess
+
+    ld = Deepnet("deepnet/62a85964128d1c55610003cd")
+    ld.predict(remote_preprocess("./data/images/cats/pexels-pixabay-33358.jpg"))
 
 
 Local Fusion

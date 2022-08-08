@@ -25,6 +25,7 @@ is used for local predictions.
 import logging
 import re
 import copy
+import os
 
 from bigml_chronos import chronos
 
@@ -33,6 +34,18 @@ from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT, \
     ENSEMBLE_PATH, DEFAULT_OPERATION_SETTINGS
 from bigml.api_handlers.resourcehandler import get_resource_type
 from bigml.predicate import TM_FULL_TERM, TM_ALL
+
+# avoiding tensorflow info logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+
+try:
+    import tensorflow as tf
+    tf.autograph.set_verbosity(0)
+    from sensenet.models.wrappers import create_image_feature_extractor
+    image_ready = True
+except ModuleNotFoundError:
+    image_ready = False
 
 
 LOGGER = logging.getLogger('BigML')
@@ -156,6 +169,23 @@ def get_datetime_subfields(fields):
     return subfields
 
 
+def get_cnn_subfields(fields):
+    """ From a dictionary of fields, returns another dictionary
+    with the subfields from each pretrained_cnn field
+
+    """
+    subfields = {}
+    for fid, finfo in list(fields.items()):
+        if finfo.get('provenance', False) == 'pretrained_cnn':
+            parent_id = finfo["parent_ids"][0]
+            subfield = {fid: finfo["datatype"]}
+            if parent_id in list(subfields.keys()):
+                subfields[parent_id].update(subfield)
+            else:
+                subfields[parent_id] = subfield
+    return subfields
+
+
 def expand_date(date, subfields, timeformats):
     """ Retrieves all the values of the subfields from
     a given date
@@ -222,12 +252,15 @@ class ModelFields():
                         field_id != self.objective_id]
                 self.model_fields = {}
                 self.datetime_parents = []
+                self.pretrained_cnns = {}
                 self.model_fields.update({field_id: field for field_id, field \
                     in self.fields.items() if field_id in self.input_fields \
                     and self.fields[field_id].get("preferred", True)})
                 # if any of the model fields is a generated datetime field
                 # we need to add the parent datetime field
                 self.model_fields = self.add_datetime_parents()
+                if image_ready:
+                    self.model_fields = self.add_pretrained_cnns()
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -385,6 +418,47 @@ class ModelFields():
                 del input_data[f_id]
         return input_data
 
+    def add_pretrained_cnns(self):
+        """Adding the fields information for the fields that generate other
+        pretrained cnns fields used in the model
+        """
+        subfields = get_cnn_subfields(self.fields)
+        for f_id in list(subfields.keys()):
+            self.model_fields[f_id] = self.fields[f_id]
+            try:
+                cnn_name = self.fields[f_id].get("image_analysis", {}).get(
+                    "extracted_features")[0][1]
+            except:
+                cnn_name = None
+            if cnn_name and f_id not in self.pretrained_cnns:
+                self.pretrained_cnns.update(
+                    {f_id: create_image_feature_extractor(cnn_name, None)})
+        return self.model_fields
+
+    def expand_cnn_fields(self, input_data):
+        """Returns the values for all the subfields
+        from all the cnn fields in input_data
+
+        """
+        expanded = {}
+        subfields = get_cnn_subfields(self.fields)
+        for f_id, extractor in self.pretrained_cnns.items():
+            if f_id in input_data:
+                keys = self.fields[f_id]["child_ids"]
+                new_inputs = dict(
+                    zip(keys, list(extractor(input_data[f_id]))[0]))
+                expanded.update(new_inputs)
+        return expanded
+
+    def remove_parent_cnns(self, input_data):
+        """Removes the parents of cnn fields
+
+        """
+        for f_id in self.pretrained_cnns.keys():
+            if f_id in input_data:
+                del input_data[f_id]
+        return input_data
+
     def fill_numeric_defaults(self, input_data):
         """Fills the value set as default for numeric missing fields if user
         created the model with the default_numeric_value option
@@ -430,13 +504,23 @@ class ModelFields():
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
+            # expand date-time
             datetime_fields = self.expand_datetime_fields(new_input)
             new_input = add_expanded_dates(new_input, datetime_fields)
             new_input = self.remove_parent_datetimes(new_input)
+            # expand pretrained-cnn
+            if image_ready:
+                cnn_fields = self.expand_cnn_fields(new_input)
+                new_input.update(cnn_fields)
+                new_input = self.remove_parent_cnns(new_input)
             # we fill the input with the chosen default, if selected
             new_input = self.fill_numeric_defaults(new_input)
-            result = (new_input, unused_fields) if add_unused_fields else \
-                new_input
+            final_input = {}
+            for key in new_input.keys():
+                if key in self.model_fields:
+                    final_input.update({key: new_input[key]})
+            result = (final_input, unused_fields) if add_unused_fields else \
+                final_input
             return result
         LOGGER.error("Failed to read input data in the expected"
                      " {field:value} format.")

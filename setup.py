@@ -32,7 +32,7 @@ version = re.search("__version__ = '([^']+)'",
                     open(version_py_path).read()).group(1)
 
 TOPIC_MODELING_DEPENDENCIES = ["cython", "pystemmer==2.0.1"]
-IMAGES_DEPENDENCIES = ["bigml-sensenet==0.6.2"]
+IMAGES_DEPENDENCIES = ["bigml-sensenet==0.6.3"]
 
 # Concatenate files into the long description
 file_contents = []

@@ -42,6 +42,7 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 import logging
 import os
 import sys
+import tempfile
 
 from functools import cmp_to_key
 
@@ -83,6 +84,8 @@ STANDARD_DEVIATION = "stdev"
 
 IMAGE = "image"
 REMOTE_SETTINGS = {"iou_threshold": 0.2}
+TEMP_DIR = "/tmp"
+TOP_SIZE = 512
 
 
 def moments(amap):
@@ -103,13 +106,13 @@ def expand_terms(terms_list, input_terms):
     return terms_occurrences
 
 
-def to_relative_coordinates(image, regions_list):
+def to_relative_coordinates(image_file, regions_list):
     """Transforms predictions with regions having absolute pixels regions
     to the relative format used remotely and rounds to the same precision.
     """
 
     if regions_list:
-        image_obj = Image.open(image)
+        image_obj = Image.open(image_file)
         width, height = image_obj.size
         for index, region in enumerate(regions_list):
             [xmin, ymin, xmax, ymax] = region["box"]
@@ -120,6 +123,33 @@ def to_relative_coordinates(image, regions_list):
             region["score"] = round(region["score"], DECIMALS)
             regions_list[index] = region
     return regions_list
+
+
+def remote_preprocess(image_file):
+    """Emulating the preprocessing of images done in the backend to
+    get closer results in local predictions
+    """
+    # converting to jpg
+    image = Image.open(image_file)
+    if not (image_file.lower().endswith(".jpg") or
+            image_file.lower().endswith(".jpeg")):
+        image = image.convert('RGB')
+    # resizing to TOP_SIZE
+    width, height = image.size
+    if width > TOP_SIZE or height > TOP_SIZE:
+        if width > height:
+            ratio = height / width
+            image = image.resize((TOP_SIZE , int(ratio * TOP_SIZE)),
+                                 Image.ANTIALIAS)
+        else:
+            ratio = width / height
+            image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
+                                 Image.ANTIALIAS)
+    with tempfile.NamedTemporaryFile() as temp_fp:
+        tmp_file_name = os.path.join(TEMP_DIR, "%s.jpg" % temp_fp.name)
+        # compressing to 90%
+        image.save(tmp_file_name, quality=90)
+    return tmp_file_name
 
 
 class Deepnet(ModelFields):

@@ -3,6 +3,12 @@
 History
 -------
 
+7.5.1 (2022-08-08)
+~~~~~~~~~~~~~~~~~~
+
+- Adding utility to reproduce the backend images preprocess in local
+  deepnets.
+
 7.5.0 (2022-07-09)
 ~~~~~~~~~~~~~~~~~~
 

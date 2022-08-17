@@ -20,7 +20,7 @@
 
 from PIL import Image
 
-from bigml.constants import TEMP_DIR, TOP_IMAGE_SIZE as TOP_SIZE
+from bigml.constants import TEMP_DIR, TOP_IMAGE_SIZE as TOP_SIZE, DECIMALS
 
 
 def resize_to(image, top_size=TOP_SIZE):

@@ -403,7 +403,7 @@ class ImageFeaturizer(Featurizer):
         else:
             parent_type = self.fields[parent_id]["optype"]
             expand_fn_list = get_image_extractors(self, parent_id) \
-                if parent_type == IMAGE else [extract_date]
+                if parent_type == IMAGE else [expand_date]
             self.out_fields[parent_id] = self.fields[parent_id]
             self.subfields[parent_id] = subfield
             self.generators.update({parent_id: expand_fn_list})

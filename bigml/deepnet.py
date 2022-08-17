@@ -145,7 +145,7 @@ def remote_preprocess(image_file):
             ratio = width / height
             image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
                                   Image.BICUBIC)
-    with tempfile.NamedTemporaryFile() as temp_fp:
+    with tempfile.NamedTemporaryFile(delete=False) as temp_fp:
         tmp_file_name = os.path.join(TEMP_DIR, "%s.jpg" % temp_fp.name)
         # compressing to 90%
         image.save(tmp_file_name, quality=90)

@@ -25,6 +25,7 @@ from .world import world, setup_module, teardown_module, show_doc, \
     show_method, delete_local
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
+from . import create_anomaly_steps as anomaly_create
 from . import create_model_steps as model_create
 from . import create_ensemble_steps as ensemble_create
 from . import create_linear_steps as linear_create
@@ -711,7 +712,7 @@ class TestComparePrediction(object):
     def test_scenario13(self):
         """
             Scenario: Successfully comparing remote and local predictions
-                      with raw date input for deepnets with images:
+                      with raw input for deepnets with images:
                 Given I create an annotated images data source uploading a "<data>" file
                 And I wait until the source is ready less than <source_wait> secs
                 And I create a dataset
@@ -769,3 +770,58 @@ class TestComparePrediction(object):
                 self, example["objective_id"],
                 world.local_prediction["prediction"])
             prediction_compare.eq_local_and_remote_probability(self)
+
+    def test_scenario14(self):
+        """
+            Scenario: Successfully comparing remote and local anomaly scores
+                      with raw input for dataset with images:
+                Given I create an annotated images data source uploading a "<data>" file and <extracted_features>
+
+                And I wait until the source is ready less than <source_wait> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create an anomaly detector
+                And I wait until the anomaly is ready
+                less than <anomaly_wait> secs
+                And I create a local anomaly
+                When I create an anomaly score for "<input_data>"
+                Then the anomaly score is "<score>"
+                And I create a local anomaly score for "<input_data>"
+                Then the local anomaly score is "<score>"
+        """
+        headers = ["data", "extracted_features", "source_wait", "dataset_wait",
+                   "anomaly_wait", "input_data", "score"]
+        examples = [
+            ['data/images/fruits_hist.zip',
+             ["dimensions", "average_pixels", "level_histogram",
+              "histogram_of_gradients", ["wavelet_subbands", 5],
+              ["pretrained_cnn", "mobilenetv2"]],
+              '500', '500', '600',
+             '{"image_id": "data/fruits1e.jpg"}', 0.39902]]
+        show_doc(self.test_scenario14)
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file_with_args(
+                self,
+                example["data"],
+                args=json.dumps({"image_analysis": {
+                    "enabled": True,
+                    "extracted_features": example["extracted_features"]}}))
+            source_create.the_source_is_finished(
+                self, example["source_wait"])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
+            anomaly_create.i_create_an_anomaly(self)
+            anomaly_create.the_anomaly_is_finished_in_less_than(
+                self, example["anomaly_wait"])
+            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_create.i_create_an_anomaly_score(
+                self, example["input_data"])
+            prediction_compare.i_create_a_local_anomaly_score(
+                self, example["input_data"])
+            prediction_create.the_anomaly_score_is(
+                self, world.anomaly_score["score"])
+            prediction_create.the_anomaly_score_is(
+                self, example["score"])

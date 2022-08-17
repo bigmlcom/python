@@ -227,25 +227,25 @@ class BaseModel(ModelFields):
             if 'code' in status and status['code'] == FINISHED:
                 if (fields is None and ('model_fields' in model['model'] or
                                         'fields' in model['model'])):
-                    fields = model['model'].get('model_fields',
-                                                model['model'].get('fields',
-                                                                   []))
-                    # model_fields doesn't contain the datetime fields
-                    fields.update(datetime_fields(model['model'].get('fields',
-                                                                     {})))
+                    # models might use less fields that provided
+                    model_fields = model['model'].get('model_fields')
+                    fields = model['model'].get('fields', {})
                     # pagination or exclusion might cause a field not to
                     # be in available fields dict
-                    if not all(key in model['model']['fields']
-                               for key in list(fields.keys())):
-                        raise Exception("Some fields are missing"
-                                        " to generate a local model."
-                                        " Please, provide a model with"
-                                        " the complete list of fields.")
-                    for field in fields:
-                        field_info = model['model']['fields'][field]
-                        if 'summary' in field_info:
-                            fields[field]['summary'] = field_info['summary']
-                        fields[field]['name'] = field_info['name']
+                    if model_fields:
+                        if not all(key in fields
+                                   for key in list(model_fields.keys())):
+                            raise Exception("Some fields are missing"
+                                            " to generate a local model."
+                                            " Please, provide a model with"
+                                            " the complete list of fields.")
+                        for field in model_fields:
+                            field_info = fields[field]
+                            if 'summary' in field_info:
+                                model_fields[field]['summary'] = field_info[
+                                    'summary']
+                                model_fields[field]['name'] = field_info[
+                                    'name']
                 objective_field = model['objective_fields']
                 missing_tokens = model['model'].get('missing_tokens')
 
@@ -253,7 +253,8 @@ class BaseModel(ModelFields):
                     self, fields, objective_id=extract_objective(
                         objective_field),
                         missing_tokens=missing_tokens,
-                        operation_settings=operation_settings)
+                        operation_settings=operation_settings,
+                        model_fields=model_fields)
                 self.description = model['description']
                 self.field_importance = model['model'].get('importance',
                                                            None)

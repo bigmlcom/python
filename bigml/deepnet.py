@@ -55,7 +55,6 @@ laminar_version = False
 try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
-    from PIL import Image
 except ModuleNotFoundError:
     laminar_version = True
 
@@ -68,12 +67,14 @@ from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
     DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD, \
-    DECIMALS
+    DECIMALS, IMAGE
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
 try:
     from sensenet.models.wrappers import create_model
+    from bigml.images.utils import to_relative_coordinates, remote_preprocess
+    from bigml.constants import IOU_REMOTE_SETTINGS
 except ModuleNotFoundError:
     laminar_version = True
 
@@ -81,11 +82,6 @@ LOGGER = logging.getLogger('BigML')
 
 MEAN = "mean"
 STANDARD_DEVIATION = "stdev"
-
-IMAGE = "image"
-REMOTE_SETTINGS = {"iou_threshold": 0.2}
-TEMP_DIR = "/tmp"
-TOP_SIZE = 512
 
 
 def moments(amap):
@@ -104,52 +100,6 @@ def expand_terms(terms_list, input_terms):
         index = terms_list.index(term)
         terms_occurrences[index] = occurrences
     return terms_occurrences
-
-
-def to_relative_coordinates(image_file, regions_list):
-    """Transforms predictions with regions having absolute pixels regions
-    to the relative format used remotely and rounds to the same precision.
-    """
-
-    if regions_list:
-        image_obj = Image.open(image_file)
-        width, height = image_obj.size
-        for index, region in enumerate(regions_list):
-            [xmin, ymin, xmax, ymax] = region["box"]
-            region["box"] = [round(xmin / width, DECIMALS),
-                             round(ymin / height, DECIMALS),
-                             round(xmax / width, DECIMALS),
-                             round(ymax / height, DECIMALS)]
-            region["score"] = round(region["score"], DECIMALS)
-            regions_list[index] = region
-    return regions_list
-
-
-def remote_preprocess(image_file):
-    """Emulating the preprocessing of images done in the backend to
-    get closer results in local predictions
-    """
-    # converting to jpg
-    image = Image.open(image_file)
-    if not (image_file.lower().endswith(".jpg") or
-            image_file.lower().endswith(".jpeg")):
-        image = image.convert('RGB')
-    # resizing to TOP_SIZE
-    width, height = image.size
-    if width > TOP_SIZE or height > TOP_SIZE:
-        if width > height:
-            ratio = height / width
-            image = image.resize((TOP_SIZE , int(ratio * TOP_SIZE)),
-                                 Image.BICUBIC)
-        else:
-            ratio = width / height
-            image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
-                                  Image.BICUBIC)
-    with tempfile.NamedTemporaryFile(delete=False) as temp_fp:
-        tmp_file_name = os.path.join(TEMP_DIR, "%s.jpg" % temp_fp.name)
-        # compressing to 90%
-        image.save(tmp_file_name, quality=90)
-    return tmp_file_name
 
 
 class Deepnet(ModelFields):
@@ -261,7 +211,7 @@ class Deepnet(ModelFields):
                     settings = self.operation_settings if self.regions else \
                         None
                     if self.regions:
-                        settings.update(REMOTE_SETTINGS)
+                        settings.update(IOU_REMOTE_SETTINGS)
                     self.deepnet = create_model(deepnet,
                         settings=settings)
 

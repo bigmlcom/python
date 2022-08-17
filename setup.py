@@ -60,7 +60,8 @@ setuptools.setup(
     packages = ['bigml', 'bigml.tests', 'bigml.laminar',
                 'bigml.tests.my_ensemble',
                 'bigml.api_handlers', 'bigml.predicate_utils',
-                'bigml.generators', 'bigml.predict_utils'],
+                'bigml.generators', 'bigml.predict_utils',
+                'bigml.images'],
     package_data={'bigml':['generators/static/*']},
     classifiers=[
         'Development Status :: 4 - Beta',

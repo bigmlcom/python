@@ -334,3 +334,9 @@ REGIONS_OPERATION_SETTINGS = [
     REGION_SCORE_ALIAS, "iou_threshold", "max_objects"]
 DEFAULT_OPERATION_SETTINGS = ["operating_point", "operating_kind"]
 DECIMALS = 5
+
+IMAGE = "image"
+DATETIME = "datetime"
+IOU_REMOTE_SETTINGS = {"iou_threshold": 0.2}
+TEMP_DIR = "/tmp"
+TOP_IMAGE_SIZE = 512

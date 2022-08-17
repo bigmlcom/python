@@ -466,8 +466,8 @@ class BigML(ExternalConnectorHandlerMixin,
 
         """
         info = "Connecting to:\n"
-        info += "    %s%s\n" % (self.domain.general_domain,
-                                self.domain.api_version)
+        info += "    %s (%s)\n" % (self.domain.general_domain,
+                                   self.domain.api_version)
         if self.domain.general_protocol != BIGML_PROTOCOL:
             info += "    using %s protocol\n" % self.domain.general_protocol
         info += "    SSL verification %s\n" % (

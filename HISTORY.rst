@@ -3,10 +3,10 @@
 History
 -------
 
-7.6.0 (2022-08-09)
+7.6.0 (2022-08-18)
 ~~~~~~~~~~~~~~~~~~
 
-- Adding pretrained-cnn feature expansion to image fields in local predictors.
+- Adding feature expansion to image fields in local predictors.
 
 7.5.1 (2022-08-08)
 ~~~~~~~~~~~~~~~~~~

@@ -27,13 +27,13 @@ import re
 import copy
 import os
 
-from bigml_chronos import chronos
 
 from bigml.util import invert_dictionary, dump, dumps, DEFAULT_LOCALE
 from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT, \
     ENSEMBLE_PATH, DEFAULT_OPERATION_SETTINGS
 from bigml.api_handlers.resourcehandler import get_resource_type
 from bigml.predicate import TM_FULL_TERM, TM_ALL
+from bigml.featurizer import Featurizer
 
 # avoiding tensorflow info logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -42,18 +42,13 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
-    from sensenet.models.wrappers import create_image_feature_extractor
+    from bigml.images.featurizers import ImageFeaturizer as Featurizer
     image_ready = True
-except ModuleNotFoundError:
+except:
     image_ready = False
 
 
 LOGGER = logging.getLogger('BigML')
-
-DATE_FNS = {
-    "day-of-month": lambda x: x.day,
-    "day-of-week": lambda x: x.weekday() + 1,
-    "millisecond": lambda x: x.microsecond / 1000}
 
 NUMERIC = "numeric"
 
@@ -152,82 +147,6 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     return list(terms_set.items())
 
 
-def get_datetime_subfields(fields):
-    """ From a dictionary of fields, returns another dictionary
-    with the subfields from each datetime field
-
-    """
-    subfields = {}
-    for fid, finfo in list(fields.items()):
-        if finfo.get('parent_optype', False) == 'datetime':
-            parent_id = finfo["parent_ids"][0]
-            subfield = {fid: finfo["datatype"]}
-            if parent_id in list(subfields.keys()):
-                subfields[parent_id].update(subfield)
-            else:
-                subfields[parent_id] = subfield
-    return subfields
-
-
-def get_cnn_subfields(fields):
-    """ From a dictionary of fields, returns another dictionary
-    with the subfields from each pretrained_cnn field
-
-    """
-    subfields = {}
-    for fid, finfo in list(fields.items()):
-        if finfo.get('provenance', False) == 'pretrained_cnn':
-            parent_id = finfo["parent_ids"][0]
-            subfield = {fid: finfo["datatype"]}
-            if parent_id in list(subfields.keys()):
-                subfields[parent_id].update(subfield)
-            else:
-                subfields[parent_id] = subfield
-    return subfields
-
-
-def expand_date(date, subfields, timeformats):
-    """ Retrieves all the values of the subfields from
-    a given date
-
-    """
-    expanded = {}
-    try:
-        parsed_date = chronos.parse(date, format_names=timeformats)
-    except ValueError:
-        return {}
-    for fid, ftype in list(subfields.items()):
-        date_fn = DATE_FNS.get(ftype)
-        if date_fn is not None:
-            expanded.update({fid: date_fn(parsed_date)})
-        else:
-            expanded.update({fid: getattr(parsed_date, ftype)})
-    return expanded
-
-
-def get_datetime_formats(fields):
-    """From a dictionary of fields, return another dictionary
-    with the time formats form each datetime field
-
-    """
-    timeformats = {}
-    for f_id, finfo in list(fields.items()):
-        if finfo.get('optype', False) == 'datetime':
-            timeformats[f_id] = finfo.get('time_formats', {})
-    return timeformats
-
-
-def add_expanded_dates(input_data, datetime_fields):
-    """Add the expanded dates in date_fields to the input_data
-    provided by the user (only if the user didn't specify it)
-
-    """
-    for index, value in list(datetime_fields.items()):
-        if index not in input_data:
-            input_data[index] = value
-    return input_data
-
-
 class ModelFields():
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
@@ -236,7 +155,7 @@ class ModelFields():
 
     def __init__(self, fields, objective_id=None, data_locale=None,
                  missing_tokens=None, categories=False,
-                 numerics=False, operation_settings=None):
+                 numerics=False, operation_settings=None, model_fields=None):
         if isinstance(fields, dict):
             tmp_fields = copy.deepcopy(fields)
             try:
@@ -250,17 +169,9 @@ class ModelFields():
                                key=lambda x: x[1].get("column_number")) \
                         if not self.objective_id or \
                         field_id != self.objective_id]
-                self.model_fields = {}
-                self.datetime_parents = []
-                self.pretrained_cnns = {}
-                self.model_fields.update({field_id: field for field_id, field \
-                    in self.fields.items() if field_id in self.input_fields \
-                    and self.fields[field_id].get("preferred", True)})
-                # if any of the model fields is a generated datetime field
-                # we need to add the parent datetime field
-                self.model_fields = self.add_datetime_parents()
-                if image_ready:
-                    self.model_fields = self.add_pretrained_cnns()
+                self.featurizer = Featurizer(self.fields, self.input_fields,
+                                             out_fields=model_fields)
+                self.model_fields = self.featurizer.out_fields
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -407,54 +318,13 @@ class ModelFields():
         for f_id in list(subfields.keys()):
             self.model_fields[f_id] = self.fields[f_id]
             self.datetime_parents.append(f_id)
-        return self.model_fields
+        return self.out_fields
 
     def remove_parent_datetimes(self, input_data):
         """Removes the parents of datetime fields
 
         """
         for f_id in self.datetime_parents:
-            if f_id in input_data:
-                del input_data[f_id]
-        return input_data
-
-    def add_pretrained_cnns(self):
-        """Adding the fields information for the fields that generate other
-        pretrained cnns fields used in the model
-        """
-        subfields = get_cnn_subfields(self.fields)
-        for f_id in list(subfields.keys()):
-            self.model_fields[f_id] = self.fields[f_id]
-            try:
-                cnn_name = self.fields[f_id].get("image_analysis", {}).get(
-                    "extracted_features")[0][1]
-            except:
-                cnn_name = None
-            if cnn_name and f_id not in self.pretrained_cnns:
-                self.pretrained_cnns.update(
-                    {f_id: create_image_feature_extractor(cnn_name, None)})
-        return self.model_fields
-
-    def expand_cnn_fields(self, input_data):
-        """Returns the values for all the subfields
-        from all the cnn fields in input_data
-
-        """
-        expanded = {}
-        subfields = get_cnn_subfields(self.fields)
-        for f_id, extractor in self.pretrained_cnns.items():
-            if f_id in input_data:
-                keys = self.fields[f_id]["child_ids"]
-                new_inputs = dict(
-                    zip(keys, list(extractor(input_data[f_id]))[0]))
-                expanded.update(new_inputs)
-        return expanded
-
-    def remove_parent_cnns(self, input_data):
-        """Removes the parents of cnn fields
-
-        """
-        for f_id in self.pretrained_cnns.keys():
             if f_id in input_data:
                 del input_data[f_id]
         return input_data
@@ -504,15 +374,8 @@ class ModelFields():
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
-            # expand date-time
-            datetime_fields = self.expand_datetime_fields(new_input)
-            new_input = add_expanded_dates(new_input, datetime_fields)
-            new_input = self.remove_parent_datetimes(new_input)
-            # expand pretrained-cnn
-            if image_ready:
-                cnn_fields = self.expand_cnn_fields(new_input)
-                new_input.update(cnn_fields)
-                new_input = self.remove_parent_cnns(new_input)
+            # feature generation (datetime and image features)
+            new_input = self.featurizer.extend_input(new_input)
             # we fill the input with the chosen default, if selected
             new_input = self.fill_numeric_defaults(new_input)
             final_input = {}

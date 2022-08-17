@@ -443,7 +443,7 @@ class ImageFeaturizer(Featurizer):
                     expanded.update(expand_image(self, f_id, input_data[f_id]))
                 else:
                     expanded.update(
-                        self.generator[f_id][0](self, f_id, input_data[f_id]))
+                        self.generators[f_id][0](self, f_id, input_data[f_id]))
             else:
                 expanded[f_id] = value
         return expanded

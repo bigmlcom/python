@@ -98,8 +98,12 @@ def list_fields(model, out=sys.stdout):
         model.fields[model.objective_id]['optype'])))
     out.flush()
 
+    if hasattr(model, "model_fields"):
+        fields = model.model_fields
+    else:
+        fields = model.fields
     for field in [(val['name'], val['optype']) for key, val in
-                  sort_fields(model.fields)
+                  sort_fields(fields)
                   if key != model.objective_id]:
         out.write(utf8('[%-32s : %s]\n' % (field[0], field[1])))
         out.flush()

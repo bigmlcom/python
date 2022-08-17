@@ -225,6 +225,7 @@ class BaseModel(ModelFields):
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
+                model_fields = None
                 if (fields is None and ('model_fields' in model['model'] or
                                         'fields' in model['model'])):
                     # models might use less fields that provided

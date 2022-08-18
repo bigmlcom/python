@@ -22,6 +22,7 @@ It is used for local predictions.
 
 """
 from bigml_chronos import chronos
+from bigml.constants import DATETIME
 
 
 DATE_FNS = {
@@ -74,25 +75,23 @@ class Featurizer:
             and self.fields[field_id].get("preferred", True)})
 
         # computing the subfields generated from parsing datetimes
-        subfields = {}
         for fid, finfo in list(self.out_fields.items()):
 
             # datetime subfields
-            if finfo.get('parent_optype', False) == 'datetime':
+            if finfo.get('parent_optype', False) == DATETIME:
                 parent_id = finfo["parent_ids"][0]
                 subfield = {fid: finfo["datatype"]}
-                if parent_id in list(subfields.keys()):
-                    subfields[parent_id].update(subfield)
+                if parent_id in list(self.subfields.keys()):
+                    self.subfields[parent_id].update(subfield)
                 else:
                     self.out_fields[parent_id] = self.fields[parent_id]
-                    subfields[parent_id] = subfield
+                    self.subfields[parent_id] = subfield
                     self.generators.update({parent_id: expand_date})
             elif finfo.get('provenance', False) in IMAGE_PROVENANCE:
                 raise ValueError("This model uses image-derived fields. "
                                  "Please, use the pip install bigml[images] "
                                  "option to install the libraries required "
                                  "for local predictions in this case.")
-        self.subfields = subfields
 
         return self.out_fields
 

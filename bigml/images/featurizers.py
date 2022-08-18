@@ -420,15 +420,11 @@ class ImageFeaturizer(Featurizer):
             and self.fields[field_id].get("preferred", True)})
 
         # computing the generated subfields
-        subfields = {}
-
         for fid, finfo in list(self.out_fields.items()):
             if finfo.get('parent_optype', False) == 'datetime' or \
                 finfo.get('provenance', False) in IMAGE_PROVENANCE:
                 # datetime and image subfields
                 self._add_subfield(fid, finfo)
-
-        self.subfields = subfields
 
         return self.out_fields
 

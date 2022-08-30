@@ -3,6 +3,11 @@
 History
 -------
 
+7.7.0 (2022-08-30)
+~~~~~~~~~~~~~~~~~~
+
+- Adding local Dataset class to handle Flatline transformations.
+
 7.6.0 (2022-08-18)
 ~~~~~~~~~~~~~~~~~~
 

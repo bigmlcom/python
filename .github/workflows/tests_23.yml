@@ -30,8 +30,8 @@ jobs:
     - run: |
         pip install .[full]
 
-    - name: Run tests *23 03 37 35 47 99*
+    - name: Run tests *23 03 37 35 47 48 99*
       run: |
-        export TESTS=$(for t in "23" "03" "37" "35" "47" "99"; do ls bigml/tests/*$t*;done|paste -sd ",")
+        export TESTS=$(for t in "23" "03" "37" "35" "47" "48" "99"; do ls bigml/tests/*$t*;done|paste -sd ",")
         echo $TESTS
         python setup.py nosetests --nocapture --tests=$TESTS

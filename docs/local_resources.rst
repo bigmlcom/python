@@ -136,6 +136,81 @@ and even for a resource inside a project:
                     'filename': 'my_dir/my_dataset.json')
 
 
+Local Datasets
+--------------
+
+You can instantiate a local version of a dataset so that you can reproduce
+its transformations to generate new fields using Flatline expressions.
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    local_dataset = Dataset('dataset/502fdbff15526876610003215')
+
+This will retrieve the remote dataset information, using an implicitly built
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
+details on how to set your credentials) and return a Dataset object
+that will be stored in the ``./storage`` directory. If you want to use a
+specific connection object for the remote retrieval or a different storage
+directory, you can set it as second parameter:
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    from bigml.api import BigML
+
+    local_dataset = Dataset('dataset/502fdbff15526876610003215',
+                            api=BigML(my_username,
+                                      my_api_key,
+                                      storage="my_storage"))
+
+or even use the remote dataset information previously retrieved to build the
+local dataset object:
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    from bigml.api import BigML
+    api = BigML()
+    dataset = api.get_dataset('dataset/502fdbff15526876610003215',
+                              query_string='limit=-1')
+
+    local_dataset = Dataset(dataset)
+
+As you can see, the ``query_string`` used to retrieve the model is
+``limit=-1``, which avoids the pagination of fields that is used by default and
+includes them all at once. These details are already taken care of in the
+two previous examples, where the dataset ID is used as argument.
+
+You can also build a local dataset from a model previously retrieved and stored
+in a JSON file:
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    local_dataset = Dataset('./my_dataset.json')
+
+If the dataset was created using a ``new_fields`` attribute, which stores
+the  ``Flatline`` expressions used to define new output fields, the
+``Dataset`` object will store these expressions. The information can be used
+to reproduce the process on new inputs. Of course, the fields in the input
+data to be transformed are expected to match the fields structure of the
+dataset that was used as origin to create the present one.
+
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    local_dataset = Dataset('./my_dataset.json')
+    # The dataset in my_dataset.json was created from a dataset whose fields
+    # are ``foo`` and ``baz`` and it added a new field ``qux`` whose value
+    # is computed by dividing ``baz`` by 2
+    input_data_list = [{"foo": "bar", "baz": 32}]
+    output_data_list = local_dataset.transform(input_data)
+    # that should produce [{"foo": "bar", "baz": 32, "qux": 16}]
+
+
 Local Models
 ------------
 

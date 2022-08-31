@@ -24,14 +24,15 @@ is used for local predictions.
 import logging
 import sys
 import json
+import os
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_model_id, ID_GETTERS, \
     get_api_connection
 from bigml.util import utf8
 from bigml.util import DEFAULT_LOCALE
-from bigml.modelfields import ModelFields, check_model_structure, \
-    check_model_fields
+from bigml.modelfields import ModelFields, check_resource_structure, \
+    check_resource_fields
 from bigml.api_handlers.resourcehandler import resource_is_ready
 
 LOGGER = logging.getLogger('BigML')
@@ -85,28 +86,28 @@ def print_importance(instance, out=sys.stdout):
         count += 1
 
 
-def check_local_but_fields(model):
-    """Whether the information in `model` is enough to use it locally
+def check_local_but_fields(resource):
+    """Whether the information in `resource` is enough to use it locally
        except for the fields section
 
     """
     try:
-
-        return resource_is_ready(model) and \
-            check_model_structure(model)
+        return resource_is_ready(resource) and \
+            check_resource_structure(resource)
     except Exception:
         return False
 
 
-def check_local_info(model):
+def check_local_info(resource):
     """Whether the information in `model` is enough to use it locally
 
     """
     try:
-        return check_local_but_fields(model) and \
-            check_model_fields(model)
+        return check_local_but_fields(resource) and \
+            check_resource_fields(resource)
     except Exception:
         return False
+
 
 def get_resource_dict(resource, resource_type, api=None,
                       no_check_fields=False):
@@ -124,6 +125,7 @@ def get_resource_dict(resource, resource_type, api=None,
     # the string can be a path to a JSON file
     if isinstance(resource, str):
         try:
+            resource_path = resource
             with open(resource) as resource_file:
                 resource = json.load(resource_file)
                 resource_id = get_id(resource)
@@ -131,6 +133,10 @@ def get_resource_dict(resource, resource_type, api=None,
                     raise ValueError("The JSON file does not seem"
                                      " to contain a valid BigML %s"
                                      " representation." % resource_type)
+                # keeping the path to the main file as storage folder for
+                # related files
+                storage = os.path.dirname(resource_path)
+                api.storage = storage
         except IOError:
             # if it is not a path, it can be a model id
             resource_id = get_id(resource)
@@ -152,9 +158,9 @@ def get_resource_dict(resource, resource_type, api=None,
     check_fn = check_local_but_fields if no_check_fields else \
         check_local_info
 
-    if isinstance(resource, dict) and not check_fn( \
+    if isinstance(resource, dict) and not check_fn(
             resource):
-        # if the fields used by the model are not
+        # if the fields used by the resource are not
         # available, use only ID to retrieve it again
         resource = get_id(resource)
         resource_id = resource

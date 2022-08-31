@@ -295,7 +295,8 @@ FIELDS_PARENT = { \
     "pca": "pca",
     "fusion": "fusion",
     "timeseries": "timeseries",
-    "statisticaltest": "statistical_tests"}
+    "statisticaltest": "statistical_tests",
+    "dataset": None}
 ALL_FIELDS = "limit=-1"
 SPECIFIC_EXCLUDES = { \
     "model": ["root"],

@@ -105,7 +105,8 @@ def get_fields(resource):
     if resource_type in c.RESOURCES_WITH_FIELDS:
         resource = resource.get('object', resource)
         # fields structure
-        if resource_type in list(c.FIELDS_PARENT.keys()):
+        if resource_type in list(c.FIELDS_PARENT.keys()) and \
+                c.FIELDS_PARENT[resource_type] is not None:
             fields = resource[c.FIELDS_PARENT[resource_type]].get('fields', {})
         else:
             fields = resource.get('fields', {})

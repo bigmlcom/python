@@ -75,26 +75,27 @@ def parse_items(text, regexp):
     return [term.strip() for term in pattern.split(text)]
 
 
-def check_model_fields(model):
-    """Checks the model structure to see whether it contains the required
+def check_resource_fields(resource):
+    """Checks the resource structure to see whether it contains the required
     fields information
 
     """
-    inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
-    if check_model_structure(model, inner_key):
-        model = model.get('object', model)
-        fields = model.get("fields", model.get(inner_key, {}).get('fields'))
-        input_fields = model.get("input_fields")
+    inner_key = FIELDS_PARENT.get(get_resource_type(resource), 'model')
+    if check_resource_structure(resource, inner_key):
+        resource = resource.get('object', resource)
+        fields = resource.get("fields",
+            resource.get(inner_key, {}).get('fields'))
+        input_fields = resource.get("input_fields")
         # models only need model_fields to work. The rest of resources will
         # need all fields to work
-        model_fields = list(model.get(inner_key, {}).get( \
+        model_fields = list(resource.get(inner_key, {}).get( \
             'model_fields', {}).keys())
         # fusions don't have input fields
         if input_fields is None and inner_key != "fusion":
             return False
         if not model_fields:
-            fields_meta = model.get('fields_meta', \
-                model.get(inner_key, {}).get('fields_meta', {}))
+            fields_meta = resource.get('fields_meta', \
+                resource.get(inner_key, {}).get('fields_meta', {}))
             try:
                 return fields_meta['count'] == fields_meta['total']
             except KeyError:
@@ -109,13 +110,18 @@ def check_model_fields(model):
     return False
 
 
-def check_model_structure(model, inner_key=None):
-    """Checks the model structure to see if it contains all the
+def check_resource_structure(resource, inner_key=None):
+    """Checks the resource structure to see if it contains all the
     main expected keys
 
     """
     if inner_key is None:
-        inner_key = FIELDS_PARENT.get(get_resource_type(model), 'model')
+        inner_key = FIELDS_PARENT.get(get_resource_type(resource), 'model')
+    # for datasets, only checking the resource ID
+    if inner_key is None:
+        return (isinstance(resource, dict) and 'resource' in resource and
+            resource['resource'] is not None)
+    # for the rest of models
     return (isinstance(model, dict) and 'resource' in model and
             model['resource'] is not None and
             (('object' in model and inner_key in model['object']) or

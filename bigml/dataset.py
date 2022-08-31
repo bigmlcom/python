@@ -102,7 +102,8 @@ class Dataset:
         """Adds a new transformation where the new fields provided are
         defined
         """
-        origin_dataset = self.api.get_dataset(origin_dataset)
+        _, origin_dataset = get_resource_dict(
+            origin_dataset, "dataset", api=self.api)
         self.origin_dataset = Dataset(origin_dataset)
         self.in_fields = self.origin_dataset.out_fields
         if new_fields:

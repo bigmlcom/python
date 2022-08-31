@@ -122,10 +122,10 @@ def check_resource_structure(resource, inner_key=None):
         return (isinstance(resource, dict) and 'resource' in resource and
             resource['resource'] is not None)
     # for the rest of models
-    return (isinstance(model, dict) and 'resource' in model and
-            model['resource'] is not None and
-            (('object' in model and inner_key in model['object']) or
-             inner_key in model))
+    return (isinstance(resource, dict) and 'resource' in resource and
+            resource['resource'] is not None and
+            (('object' in resource and inner_key in resource['object']) or
+             inner_key in resource))
 
 
 def get_unique_terms(terms, term_forms, tag_cloud):

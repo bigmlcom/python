@@ -166,6 +166,32 @@ def numeric_example(numeric_summary):
         return None
 
 
+def sorted_headers(fields):
+    """Listing the names of the fields as ordered in the original dataset.
+    The `fields` parameter is a Fields object.
+    """
+    header_names = []
+    header_ids = []
+    for column in fields.fields_columns:
+        header_names.append(fields.fields[
+            fields.fields_by_column_number[column]]["name"])
+        header_ids.append(fields.fields_by_column_number[column])
+
+    return header_names, header_ids
+
+
+def get_new_fields(output_fields):
+    """Extracts the sexpr and names of the output fields in a dataset
+    generated from a new_fields transformation.
+    """
+    new_fields = []
+    for output_field in output_fields:
+        sexp = output_field.get("generator")
+        names = output_field.get("names")
+        new_fields.append({"field": sexp, "names": names})
+    return new_fields
+
+
 class Fields():
     """A class to deal with BigML auto-generated ids.
 

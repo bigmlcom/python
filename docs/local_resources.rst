@@ -178,25 +178,29 @@ local dataset object:
 
     local_dataset = Dataset(dataset)
 
-As you can see, the ``query_string`` used to retrieve the model is
+As you can see, the ``query_string`` used to retrieve the dataset is
 ``limit=-1``, which avoids the pagination of fields that is used by default and
 includes them all at once. These details are already taken care of in the
 two previous examples, where the dataset ID is used as argument.
 
-You can also build a local dataset from a model previously retrieved and stored
-in a JSON file:
+You can also build a local dataset from a dataset previously retrieved and
+stored in a JSON file:
 
 .. code-block:: python
 
     from bigml.dataset import Dataset
     local_dataset = Dataset('./my_dataset.json')
 
-If the dataset was created using a ``new_fields`` attribute, which stores
-the  ``Flatline`` expressions used to define new output fields, the
-``Dataset`` object will store these expressions. The information can be used
-to reproduce the process on new inputs. Of course, the fields in the input
-data to be transformed are expected to match the fields structure of the
-dataset that was used as origin to create the present one.
+Adding new properties to an existing dataset is achieved by
+defining some expressions based on the fields
+of a previously existing origin dataset. The expressions are written using
+the ``Flatline`` language. These transformations are
+stored in a ``new_fields`` attribute and the
+``Dataset`` object will store them, if available.
+That information can be used to reproduce the same transformations
+using new inputs. Of course, the fields in the input data to be transformed
+are expected to match the fields structure of the dataset that was
+used as origin to create the present one.
 
 
 .. code-block:: python
@@ -204,11 +208,36 @@ dataset that was used as origin to create the present one.
     from bigml.dataset import Dataset
     local_dataset = Dataset('./my_dataset.json')
     # The dataset in my_dataset.json was created from a dataset whose fields
-    # are ``foo`` and ``baz`` and it added a new field ``qux`` whose value
-    # is computed by dividing ``baz`` by 2
+    # were ``foo`` and ``baz``. The transformation that generated the new
+    # dataset added a new field ``qux`` whose value is ``baz`` divided by 2
     input_data_list = [{"foo": "bar", "baz": 32}]
-    output_data_list = local_dataset.transform(input_data)
-    # that should produce [{"foo": "bar", "baz": 32, "qux": 16}]
+    output_data_list = local_dataset.transform(input_data_list)
+    # output_data_list: [{"foo": "bar", "baz": 32, "qux": 16}]
+
+The ``Dataset`` object offers a method to download a sample of the rows
+that can be found in the dataset.
+
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    local_dataset = Dataset('dataset/502fdbff15526876610003215')
+    rows = local_dataset.get_sample(rows_number=50)
+
+The result will be a list of lists, which are the row values sorted as
+described in the fields structure of the dataset. Of course,
+this operation cannot be performed locally. BigML's API will be
+called behind the scene to create a ``Sample`` object and retrieve the
+corresponding rows. Similarly, you can use the ``get_input_sample``
+method to get a sample of rows of the origin dataset (if available in BigML).
+
+.. code-block:: python
+
+    from bigml.dataset import Dataset
+    local_dataset = Dataset('dataset/502fdbff15526876610003215')
+    rows = local_dataset.get_input_sample(rows_number=50)
+    # these rows will represent the values available in the dataset
+    # that was used as origin to create dataset/502fdbff15526876610003215
 
 
 Local Models

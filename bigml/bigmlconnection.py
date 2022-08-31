@@ -920,6 +920,9 @@ class BigMLConnection():
             elif ('code' in resource
                   and 'status' in resource):
                 error_info = resource
+            resource_id = resource.get("resource")
+        else:
+            resource_id = resource
         if error_info is not None and 'code' in error_info:
             code = error_info['code']
             if ('status' in error_info and
@@ -936,13 +939,13 @@ class BigMLConnection():
                             resource_type, self.domain.general_domain))
                 error += (
                     '\nCouldn\'t find a %s matching the given'
-                    ' id in %s. The most probable causes are:\n\n%s'
+                    ' id (%s) in %s. The most probable causes are:\n\n%s'
                     '- A typo in the %s\'s id.\n'
                     '- The %s id cannot be accessed with your credentials'
                     ' or was not created in %s.\n'
                     '\nDouble-check your %s and'
                     ' credentials info and retry.' % (
-                        resource_type, self.domain.general_domain,
+                        resource_type, resource_id, self.domain.general_domain,
                         alternate_message, resource_type,
                         resource_type, self.domain.general_domain,
                         resource_type))

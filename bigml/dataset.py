@@ -21,38 +21,12 @@ Class to store Dataset transformations based on the Dataset API response
 
 import copy
 
-from bigml.fields import Fields
+from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
 from bigml.basemodel import get_resource_dict
 from bigml.util import DEFAULT_LOCALE, use_cache, cast
 from bigml.constants import FINISHED
 from bigml.flatline import Flatline
-
-
-def sorted_headers(fields):
-    """Listing the names of the fields as ordered in the original dataset.
-    The `fields` parameter is a Fields object
-    """
-    header_names = []
-    header_ids = []
-    for column in fields.fields_columns:
-        header_names.append(fields.fields[
-            fields.fields_by_column_number[column]]["name"])
-        header_ids.append(fields.fields_by_column_number[column])
-
-    return header_names, header_ids
-
-
-def get_new_fields(output_fields):
-    """Extracts the sexpr and names of the output fields in a dataset
-    generated from a new_fields transformation
-    """
-    new_fields = []
-    for output_field in output_fields:
-        sexp = output_field.get("generator")
-        names = output_field.get("names")
-        new_fields.append({"field": sexp, "names": names})
-    return new_fields
 
 
 class Dataset:
@@ -119,10 +93,9 @@ class Dataset:
         return []
 
     def get_inputs_sample(self, rows_number=32):
-        """Gets a sample of data representing the orign dataset """
+        """Gets a sample of data representing the origin dataset """
         if self.origin_dataset is None:
-            raise ValueError("Only datasets that are generated from "
-                             "other datasets can use this method.")
+            return []
         return self.origin_dataset.get_sample(rows_number=rows_number)
 
     def _input_array(self, input_data):

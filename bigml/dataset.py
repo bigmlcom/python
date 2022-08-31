@@ -47,6 +47,7 @@ class Dataset:
         self.description = None
         self.locale = None
         self.api = get_api_connection(api)
+        self.cache_get = cache_get
         self.transformations = None
 
         # retrieving dataset information from
@@ -78,7 +79,8 @@ class Dataset:
         """
         _, origin_dataset = get_resource_dict(
             origin_dataset, "dataset", api=self.api)
-        self.origin_dataset = Dataset(origin_dataset)
+        self.origin_dataset = Dataset(origin_dataset, api=self.api,
+                                      cache_get=self.cache_get)
         self.in_fields = self.origin_dataset.out_fields
         if new_fields:
             self.transformations = new_fields

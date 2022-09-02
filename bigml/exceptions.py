@@ -28,3 +28,9 @@ class ResourceException(Exception):
 class NoRootDecisionTree(ResourceException):
     """The decision tree structure has no "root" attribute """
     pass
+
+
+
+class FaultyResourceError(Exception):
+    """Exception to be raised when retrieving a Faulty resource """
+    pass

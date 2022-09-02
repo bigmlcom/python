@@ -410,7 +410,7 @@ class BigMLConnection():
 
     def _get(self, url, query_string='',
              shared_username=None, shared_api_key=None, organization=None,
-             shared_ref=None):
+             shared_ref=None, resource_id=None):
         """Retrieves a remote resource.
 
         Uses HTTP GET to retrieve a BigML `url`.
@@ -424,7 +424,6 @@ class BigMLConnection():
 
         """
         code = HTTP_INTERNAL_SERVER_ERROR
-        resource_id = None
         location = url
         resource = None
         error = {
@@ -583,7 +582,7 @@ class BigMLConnection():
             'objects': resources,
             'error': error}
 
-    def _update(self, url, body, organization=None):
+    def _update(self, url, body, organization=None, resource_id=None):
         """Updates a remote resource.
 
         Uses PUT to update a BigML resource. Only the new fields that
@@ -599,7 +598,6 @@ class BigMLConnection():
 
         """
         code = HTTP_INTERNAL_SERVER_ERROR
-        resource_id = None
         location = url
         resource = None
         error = {
@@ -659,7 +657,8 @@ class BigMLConnection():
         return maybe_save(resource_id, self.storage, code,
                           location, resource, error)
 
-    def _delete(self, url, query_string='', organization=None):
+    def _delete(self, url, query_string='', organization=None,
+                resource_id=None):
         """Permanently deletes a remote resource.
 
         If the request is successful the status `code` will be HTTP_NO_CONTENT
@@ -689,6 +688,7 @@ class BigMLConnection():
                 error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
+                    'resource': resource_id,
                     'error': error}
         else:
             try:
@@ -700,6 +700,7 @@ class BigMLConnection():
                 error["status"]["type"] = c.TRANSIENT
                 return {
                     'code': code,
+                    'resource': resource_id,
                     'error': error}
         try:
             code = response.status_code
@@ -721,6 +722,7 @@ class BigMLConnection():
 
         return {
             'code': code,
+            'resource': resource_id,
             'error': error}
 
     def _download(self, url, filename=None, wait_time=10, retries=10,

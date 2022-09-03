@@ -262,7 +262,8 @@ class LogisticRegression(ModelFields):
         """
 
         kind, threshold, positive_class = parse_operating_point( \
-            operating_point, ["probability"], self.class_names)
+            operating_point, ["probability"], 
+            self.class_names, self.operation_settings)
         predictions = self.predict_probability(input_data, False)
         position = self.class_names.index(positive_class)
         if predictions[position][kind] > threshold:

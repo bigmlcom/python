@@ -8,7 +8,11 @@ When retrieved individually, resources are returned as a dictionary
 identical to the one you get when you create a new resource. However,
 the status code will be ``bigml.api.HTTP_OK`` if the resource can be
 retrieved without problems, or one of the HTTP standard error codes
-otherwise.
+otherwise. To know more about the errors that can happen when retrieving
+a resource and what to expect if a resource is not correctly created, please
+refer to the
+`Waiting for Resources <creating_resources.html#waiting_for_resources>`_
+section.
 
 To retrieve an existing resource, you just need to use the corresponding
 ``get_[resouce type]`` method. There's a query string argument

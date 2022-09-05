@@ -4,8 +4,8 @@
 Local Resources
 ===============
 
-All the resources in BigML can be downloaded and used locally with no
-connection whatsoever to BigML's servers. This is specially important
+All the resources in BigML can be downloaded and used afterwards locally, with
+no connection whatsoever to BigML's servers. This is specially important
 for all Supervised and Unsupervised models, that can be used to generate
 predictions in any programmable device. The next sections describe how to
 do that for each type of resource, but as a general rule, resources can be
@@ -73,14 +73,16 @@ the local predictions. The classes can be instantiated using:
     from bigml.logistic import LogisticRegression
     local_logistic_regression = LogisticRegression('./my_logistic.json')
 
-Internally, these classes need a connection object (``api = BigML()``) to:
+Internally, these classes need a connection object
+(``api = BigML(storage="./storage")``) to:
 
-- Know the local storage in your file system.
+- Set the local storage in your file system.
 - Download the JSON of the resource if the information provided is not the
   full finished resource content.
 
 Users can provide the connection as a second argument when instantiating the
-class:
+class, but if they do and want the resource to be available locally, the
+connection object must be created with an ``storage`` setting:
 
 .. code-block:: python
 

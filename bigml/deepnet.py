@@ -198,7 +198,7 @@ class Deepnet(ModelFields):
                     if self.regions:
                         raise ValueError("Failed to find the extra libraries"
                                          " that are compulsory for predicting "
-                                         "regions. Please, install them by"
+                                         "regions. Please, install them by "
                                          "running \n"
                                          "pip install bigml[images]")
                     self.deepnet = None

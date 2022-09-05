@@ -9,8 +9,8 @@ keys:
 
 -  **code**: If the request is successful you will get a
    ``bigml.api.HTTP_CREATED`` (201) status code. In asynchronous file uploading
-   ``api.create_source`` calls, it will contain ``bigml.api.HTTP_ACCEPTED`` (202)
-   status code. Otherwise, it will be
+   ``api.create_source`` calls, it will contain ``bigml.api.HTTP_ACCEPTED``
+   (202) status code. Otherwise, it will be
    one of the standard HTTP error codes `detailed in the
    documentation <https://bigml.com/api/status_codes>`_.
 -  **resource**: The identifier of the new resource.
@@ -20,19 +20,30 @@ keys:
    will contain an additional code and a description of the error. In
    this case, **location**, and **resource** will be ``None``.
 
+Resource creation is an asynchronous process, so the API will return a
+response probably before the resource is totally processed and you'll need to
+repeatedly call the API to see the evolution of the resource, reflected
+in it's status (see the `Statuses <#statuses>`_ section).
+The bindings provide methods to help you do that. Please check the `waiting
+for resources <#waiting_for_resources>`_ section to learn more about them.
+
 Statuses
 ~~~~~~~~
 
-Please, bear in mind that resource creation is almost always
-asynchronous (**predictions** are the only exception). Therefore, when
-you create a new source, a new dataset or a new model, even if you
-receive an immediate response from the BigML servers, the full creation
+Resource creation is almost always asynchronous (with few exceptions,
+like **projects**, **predictions**, and similar prediction-like results for
+Unsupervised Models like **anomaly scores**, **centroids**, etc.)
+Therefore, when you create a new source, a new dataset or a new model, even
+if you receive an immediate response from the BigML servers, the full creation
 of the resource can take from a few seconds to a few days, depending on
 the size of the resource and BigML's load. A resource is not fully
-created until its status is ``bigml.api.FINISHED``. See the
-`documentation on status
-codes <https://bigml.com/api/status_codes>`_ for the listing of
-potential states and their semantics. So depending on your application
+created until its status is ``bigml.api.FINISHED``, or ``bigml.api.FAULTY`` if
+some error occurs (like the one you would get when trying to upload an empty
+file, a .ppt or a .doc). See the `documentation on status
+codes <https://bigml.com/api/status_codes>`_ for the complete listing of
+potential states and their semantics.
+
+Depending on your application
 you might need to import the following constants:
 
 .. code-block:: python
@@ -63,17 +74,152 @@ the object that contains your resource:
 In this code, ``api.create_source`` will probably return a non-finished
 ``source`` object. Then, ``api.ok`` will query its status and update the
 contents of the ``source`` variable with the retrieved information until it
-reaches a ``bigml.api.FINISHED`` or ``bigml.api.FAILED`` status.
+reaches a ``bigml.api.FINISHED`` or ``bigml.api.FAULTY`` status.
 
-HTTP transient conditions can affect the ``api.ok`` method, as it needs to
-connect to the BigML servers to retrieve the resource information. Using the
-``error_retries`` parameter, you can set the  number of times that the
-retrieval will be tried before failing.
+
+Waiting for Resources
+---------------------
+
+As explained in the ``Create Resources`` section, the time needed to create
+a completely finished resource can vary depending on many factors: the size
+of the data to be used, the type of fields and the platform load, for
+instance. In BigML, the API will answer to any creation request shortly
+after receiving the creation call that starts the process.
+Resources in BigML are any-time, meaning that the result contains partial but
+correct information at any point of its evolution, so getting the information
+of a resource which is still in progress can be useful. However, usually
+you'll want to wait till the process ends to retrieve and use the resource.
+The ``api.ok`` method is the mechanism provided for that, as:
+
+- It waits efficiently between API calls. The sleep time is modified to
+  be adapted to the resoruce process as given in its status.
+- It adapts the parameters of the API call to minimize the amount of
+  information downloaded in each iteration while waiting for completion.
+- It modifies the contents of the variable passed as argument to store there
+  the value of the resource returned by the API when it reaches the
+  finished or faulty state.
+- It allows error handling and retries.
+
+Most of the time, no errors  happen and a correctly finished resource is
+generated. In this case, and following the example in the previous section,
+the ``api.ok(source)`` method would return ``True`` and the variable
+``source`` contents would be like:
 
 .. code-block:: python
 
-    dataset = api.get_dataset("dataset/5e4ee08e440ca13244102dbd")
-    api.ok(dataset, error_retries=5)
+    {"code": 200,
+     "resource": "source/5e4ee08e440ca1324410ccbd",
+     "location": "https://bigml.io/andromeda/source/5e4ee08e440ca1324410ccbd",
+     "error": None,
+     "object": {"code": 200, "fields": {...},
+                ...
+                "status": {"code": 5,
+                           "elapsed": 854,
+                           "message": "The source has been created",
+                           "progress": 1}}
+    }
+
+Where the ``object`` attribute of the dictionary would contain the response
+of the last ``get`` call to the API.
+
+Nonetheless, two kinds of problem can arise when using ``api.ok``,
+and both will cause the method to return ``False``. Firstly,
+the HTTP connection that it needs to reach the API might fail. Than will
+prevent the resource information retrieval and will be reflected in the
+``code`` and ``error`` first-level attributes of the ``source`` new contents.
+
+.. code-block:: python
+
+    {"code": 500,
+     "resource": "source/5e4ee08e440ca1324410ccbd",
+     "location": "https://bigml.io/andromeda/source/5e4ee08e440ca1324410ccbd",
+     "error": {"status":
+               {"code": 500,
+                "message": "The resource couldn't be retrieved",
+                "type": "transient"}},
+     "object": {"code": 201, "fields": {...},
+                ...
+                "status": {"code": 1,
+                           "elapsed": 15,
+                           "message": "The request has been queued and will be processed soon",
+                           "progress": 0}}
+    }
+
+and as the call could not reach the API, the ``object`` attribute will not
+be modified.
+
+In this case, the cause was a transient error, and we can decide that transient
+error calls should be retried a certain amount of times. Just
+set an ``error_retries`` argument: e.g. ``api.ok(source, error_retries=10)``.
+
+The second kind of error appears when the API can be correctly reached and
+it returns a faulty resource. There's also a variety of reasons for a resource
+to end in a ``bigml.api.FAULTY`` state, but an example would be trying to
+create a source by uploading an empty file, or some kind of non-supported
+file, like an .ipnb file. The API will accept the create task, and add the
+new resource ID. Afterwards, it will realize that the uploaded contents are not
+correct, so the ``api.ok`` call with get a resource in a faulty status. Let's
+see what happens when trying to upload a zip file that does not contain images
+or a CSV-like file.
+
+.. code-block:: python
+
+    {"code": 200,
+     "resource": "source/5e4ee08e440ca1324410ccbd",
+     "location": "https://bigml.io/andromeda/source/5e4ee08e440ca1324410ccbd",
+     "error": None,
+     "object": {"code": 500, "fields": {...},
+                ...
+                "status": {"code": -1,
+                           "elapsed": 225,
+                           "error": -2020,
+                           "message": "Spreadsheet not parseable (please try to export to CSV): Encoding: application/zip",
+                           "progress": 0}}
+    }
+
+In this case, according to the outer ``code`` and ``error``
+attributes (associated to HTTP failures) everything went smoothly, which is
+correct because the ``api.ok`` method was able to connect to the API.
+However, the ``object`` attribute (that contains the API response)
+will show in the inner ``code`` attribute that describes the error and the
+``status`` information will also contain a message describing the cause
+of that error. As this particular error is not transient, no retrying will
+be done even if the ``error_retries`` argument is set.
+
+Based on what we've seen, a safe way to check if we have been able to create
+completely a resource in BigML would be checking the return value of the
+``api.ok`` method.
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    api = BigML()
+    source = api.create_source('my_file.csv') # creates a source object
+    if api.ok(source):
+        # code that uses the finished source contents
+        show_fields(source)
+    else:
+        # code that handles the error
+        handle_error(source)
+
+An alternative that can also be used to check for errors is using the
+``raise_on_error`` argument of the ``api.ok`` method, that will cause an
+error to be raised in both the HTTP problem or faulty resource scenarios.
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    from bigml.exceptions import FaultyResourceError
+    api = BigML()
+    source = api.create_source('my_file.csv') # creates a source object
+    try:
+        api.ok(source)
+    except FaultyResourceError:
+        # code that handles the faulty resource error
+        handle_faulty_error(source)
+    except Exception:
+        # code that handles the HTTP connection errors
+        handle_http_error(source)
 
 The ``api.ok`` method is repeatedly calling the API but it sleeps for some
 time between calls. The sleeping time is set by using an exponential function
@@ -405,14 +551,14 @@ This is an example of the expected structure of the annotations file:
 
 .. code-block:: json
 
-	{"description": "Fruit images to test colour distributions",
-	 "images_file": "./fruits_hist.zip",
-	 "new_fields": [{"name": "new_label", "optype": "categorical"}],
-	 "source_id": null,
-	 "annotations": [
-		{"file": "f1/fruits1f.png", "new_label": "True"},
-		{"file": "f1/fruits1.png", "new_label": "False"},
-		{"file": "f2/fruits2e.png", "new_label": "False"}]}
+    {"description": "Fruit images to test colour distributions",
+     "images_file": "./fruits_hist.zip",
+     "new_fields": [{"name": "new_label", "optype": "categorical"}],
+     "source_id": null,
+     "annotations": [
+        {"file": "f1/fruits1f.png", "new_label": "True"},
+        {"file": "f1/fruits1.png", "new_label": "False"},
+        {"file": "f2/fruits2e.png", "new_label": "False"}]}
 
 The ``images_file`` attribute should contain the path to zip-compressed
 images file and the "annotations" attribute the corresponding
@@ -424,11 +570,11 @@ can point to that file in the ``annotations`` attribute:
 
 .. code-block:: json
 
-	{"description": "Fruit images to test colour distributions",
-	 "images_file": "./fruits_hist.zip",
-	 "new_fields": [{"name": "new_label", "optype": "categorical"}],
-	 "source_id": null,
-	 "annotations": "./annotations_detail.json"}
+    {"description": "Fruit images to test colour distributions",
+     "images_file": "./fruits_hist.zip",
+     "new_fields": [{"name": "new_label", "optype": "categorical"}],
+     "source_id": null,
+     "annotations": "./annotations_detail.json"}
 
 The created source will contain the fields associated to the
 uploaded images, plus an additional field named ``new_label`` with the

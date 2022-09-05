@@ -208,10 +208,11 @@ class Deepnet(ModelFields):
                                              " as some required libraries are "
                                              "not available for this OS.")
                 else:
-                    settings = self.operation_settings if self.regions else \
-                        None
                     if self.regions:
+                        settings = self.operation_settings or {}
                         settings.update(IOU_REMOTE_SETTINGS)
+                    else:
+                        settings = None
                     self.deepnet = create_model(deepnet,
                         settings=settings)
 

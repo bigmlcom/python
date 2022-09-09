@@ -129,6 +129,7 @@ class Dataset:
         for transformation in self.transformations:
             expr = transformation.get("field")
             names = transformation.get("names", [])
+            out_headers.extend(names)
             # evaluating first to raise an alert if the expression is failing
             check = Flatline.interpreter.evaluate_sexp(
                 expr, fields, True).valueOf()
@@ -142,7 +143,6 @@ class Dataset:
                 except IndexError:
                     new_input_arrays.append([])
                 new_input_arrays[index].extend(new_input[index])
-                out_headers.extend(names)
         for index, input_array in enumerate(new_input_arrays):
             try:
                 out_arrays[index]
@@ -158,8 +158,14 @@ class Dataset:
         dictionary, but it can contain a list of them if needed for window
         functions.
         """
+        if self.transformations is None:
+            return input_data_list
         rows = [self._input_array(input_data) for input_data in
             input_data_list]
         out_headers, out_arrays = self._transform(rows)
-        return [dict(zip(out_headers, row)) for row
+        results = [dict(zip(out_headers, row)) for row
             in out_arrays]
+        for index, result in enumerate(results):
+            results[index] = {key: value for key, value in result.items()
+                              if value is not None}
+        return results

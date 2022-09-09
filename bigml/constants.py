@@ -325,6 +325,10 @@ EXTERNAL_CONNECTION_ATTRS = { \
 LAST_PREDICTION = 0
 PROPORTIONAL = 1
 
+# output options in batch predictions
+OUT_NEW_FIELDS = "output_fields"
+OUT_NEW_HEADERS = "output_headers"
+
 IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'tiff', 'tif', 'bmp',
                     'webp', 'cur', 'ico', 'pcx', 'psd', 'psb']
 

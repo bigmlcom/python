@@ -139,6 +139,7 @@ class Ensemble(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.objective_id = None
         self.distributions = None
         self.distribution = None
@@ -195,6 +196,7 @@ class Ensemble(ModelFields):
         if ensemble:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
+            self.dataset_id = ensemble.get('object', {}).get('dataset')
             shared_ref = self.resource_id.replace("shared/", "") if \
                 self.resource_id.startswith("shared/") else None
             if shared_ref is not None:

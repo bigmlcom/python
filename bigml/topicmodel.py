@@ -50,6 +50,7 @@ from bigml.api import get_status, get_api_connection, get_topic_model_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.util import use_cache, load, dump, dumps
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
 
 
 LOGGER = logging.getLogger('BigML')
@@ -97,6 +98,7 @@ class TopicModel(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.seed = None
         self.case_sensitive = False
         self.bigrams = False
@@ -112,7 +114,7 @@ class TopicModel(ModelFields):
 
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']
-
+            self.dataset_id = topic_model.get('dataset')
         if 'topic_model' in topic_model \
                 and isinstance(topic_model['topic_model'], dict):
             status = get_status(topic_model)
@@ -375,6 +377,40 @@ class TopicModel(ModelFields):
 
         return [(sample_counts[k] + self.alpha) / normalizer
                 for k in range(self.ntopics)]
+
+    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+        """Creates a batch prediction for a list of inputs using the local
+        supervised model. Allows to define some output settings to
+        decide the fields to be added to the input_data (prediction,
+        probability, etc.) and the name that we want to assign to these new
+        fields. The outputs argument accepts a dictionary with keys
+        "output_fields", to contain a list of the prediction properties to add
+        (["prediction", "probability"] by default) and "output_headers", to
+        contain a list of the headers to be used when adding them (identical
+        to "output_fields" list, by default).
+        """
+        if outputs is None:
+            outputs = {}
+        if outputs.get(OUT_NEW_FIELDS) is None:
+            new_fields = [topic["name"] for topic in self.topics]
+        if outputs.get(OUT_NEW_HEADERS):
+            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+            if len(new_fields) > len(new_headers):
+                new_headers.expand(new_fields[len(new_headers):])
+            else:
+                new_headers[0: len(new_fields)]
+        else:
+            new_headers = new_fields
+        for index, input_data in enumerate(input_data_list):
+            prediction = self.distribution(input_data, **kwargs)
+            prediction_dict = {}
+            for topic_distribution in prediction:
+                prediction_dict.update({topic_distribution["name"]:
+                    topic_distribution["probability"]})
+            for ikey, key in enumerate(new_fields):
+                input_data_list[index][new_headers[ikey]] = prediction_dict[
+                    key]
+        return input_data_list
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

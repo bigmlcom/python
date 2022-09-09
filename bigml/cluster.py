@@ -55,7 +55,7 @@ from bigml.generators.model import print_distribution
 from bigml.predicate import TM_TOKENS, TM_FULL_TERM
 from bigml.modelfields import ModelFields
 from bigml.io import UnicodeWriter
-
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
 
 
 LOGGER = logging.getLogger('BigML')
@@ -67,6 +67,8 @@ INTERCENTROID_MEASURES = [('Minimum', min),
                           ('Mean', lambda x: sum(x)/float(len(x))),
                           ('Maximum', max)]
 GLOBAL_CLUSTER_LABEL = 'Global'
+
+DFT_OUTPUTS = ["centroid_name", "distance"]
 
 
 def parse_terms(text, case_sensitive=True):
@@ -157,6 +159,7 @@ class Cluster(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.cluster_global = None
         self.total_ss = None
         self.within_ss = None
@@ -182,6 +185,7 @@ class Cluster(ModelFields):
 
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
+            self.dataset_id = cluster.get('dataset')
 
         if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
@@ -630,6 +634,35 @@ class Cluster(ModelFields):
                 for measure, result in self.centroids_distance(centroid):
                     out.write("%s%s: %s\n" % (INDENT * 2, measure, result))
                 out.write("\n")
+
+    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+        """Creates a batch centroid for a list of inputs using the local
+        cluster model. Allows to define some output settings to
+        decide the fields to be added to the input_data (centroid_name,
+        distance, etc.) and the name that we want to assign to these new
+        fields. The outputs argument accepts a dictionary with keys
+        "output_fields", to contain a list of the prediction properties to add
+        (["centroid_name", "distance"] by default) and "output_headers", to
+        contain a list of the headers to be used when adding them (identical
+        to "output_fields" list, by default).
+        """
+        if outputs is None:
+            outputs = {}
+        if outputs.get(OUT_NEW_FIELDS) is None:
+            new_fields = DFT_OUTPUTS
+        if outputs.get(OUT_NEW_HEADERS):
+            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+            if len(new_fields) > len(new_headers):
+                new_headers.expand(new_fields[len(new_headers):])
+            else:
+                new_headers[0: len(new_fields)]
+        else:
+            new_headers = new_fields
+        for input_data in input_data_list:
+            prediction = self.centroid(input_data, **kwargs)
+            for index, key in enumerate(new_fields):
+                input_data[new_headers[index]] = prediction[key]
+        return input_data_list
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

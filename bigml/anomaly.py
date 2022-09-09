@@ -52,10 +52,13 @@ from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields, NUMERIC
 from bigml.util import cast, use_cache, load
+from bigml.constants import OUT_NEW_HEADERS
 
 
 DEPTH_FACTOR = 0.5772156649
 PREDICATES_OFFSET = 3
+
+DFT_OUTPUTS = ["score"]
 
 
 def get_repeat_depth(population):
@@ -192,6 +195,7 @@ class Anomaly(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.sample_size = None
         self.input_fields = None
         self.default_numeric_value = None
@@ -206,6 +210,7 @@ class Anomaly(ModelFields):
 
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']
+            self.dataset_id = anomaly.get('dataset')
             self.sample_size = anomaly.get('sample_size')
             self.input_fields = anomaly.get('input_fields')
             self.default_numeric_value = anomaly.get('default_numeric_value')
@@ -325,3 +330,26 @@ class Anomaly(ModelFields):
                     else field['summary'].get(self.default_numeric_value)
                 input_data[field_id] = default_value
         return input_data
+
+    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+        """Creates a batch anomaly score for a list of inputs using the local
+        anomaly detector. Allows to define some output settings to decide the
+        name of the header used for the score in the result. To homogeneize
+        the behaviour of supervised batch_predict method, the outputs argument
+        accepts a dictionary with keys: "output_fields" and "output_headers".
+        In this case, output_fields is ignored, as only the score can be
+        obtained from the anomaly_score method, and only "output_headers" is
+        considered to allow changing the header associated to that new field.
+        """
+        if outputs is None:
+            outputs = {}
+        if outputs.get(OUT_NEW_HEADERS):
+            new_headers = outputs.get(OUT_NEW_HEADERS, DFT_OUTPUTS)
+        else:
+            new_headers = DFT_OUTPUTS
+
+        for input_data in input_data_list:
+            prediction = {"score": self.anomaly_score(input_data, **kwargs)}
+            for index, key in enumerate(DFT_OUTPUTS):
+                input_data[new_headers[index]] = prediction[key]
+        return input_data_list

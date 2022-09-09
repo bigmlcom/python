@@ -111,6 +111,7 @@ class LinearRegression(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.input_fields = []
         self.term_forms = {}
         self.tag_clouds = {}
@@ -134,6 +135,7 @@ class LinearRegression(ModelFields):
         if 'object' in linear_regression and \
             isinstance(linear_regression['object'], dict):
             linear_regression = linear_regression['object']
+            self.dataset_id = linear_regression.get('dataset')
         try:
             self.input_fields = linear_regression.get("input_fields", [])
             self.default_numeric_value = linear_regression.get( \

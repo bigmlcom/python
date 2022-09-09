@@ -52,6 +52,7 @@ from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
 
 
 COMPONENT_CLASSES = {
@@ -60,6 +61,8 @@ COMPONENT_CLASSES = {
     "logisticregression": LogisticRegression,
     "deepnet": Deepnet,
     "linearregression": LinearRegression}
+
+DFT_OUTPUTS = ["prediction", "probability"]
 
 
 def extract_id(model, api):
@@ -86,13 +89,14 @@ def extract_id(model, api):
             # if it is not a path, it can be a model id
             resource_id = get_resource_id(model)
             if resource_id is None:
-                if model.find('model/') > -1:
-                    raise Exception(
-                        api.error_message(model,
-                                          resource_type='model',
-                                          method='get'))
+                for resource_type in COMPONENT_CLASSES.keys():
+                    if resource.find("%s/" % resource_type) > -1:
+                        raise Exception(
+                            api.error_message(resource,
+                                              resource_type=resource_type,
+                                              method="get"))
                 raise IOError("Failed to open the expected JSON file"
-                              " at %s" % model)
+                              " at %s." % model)
         except ValueError:
             raise ValueError("Failed to interpret %s."
                              " JSON file expected.")
@@ -143,6 +147,36 @@ class SupervisedModel(BaseModel):
         except TypeError:
             del new_kwargs["missing_strategy"]
             return self.local_model.predict_probability(*args, **new_kwargs)
+
+    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+        """Creates a batch prediction for a list of inputs using the local
+        supervised model. Allows to define some output settings to
+        decide the fields to be added to the input_data (prediction,
+        probability, etc.) and the name that we want to assign to these new
+        fields. The outputs argument accepts a dictionary with keys
+        "output_fields", to contain a list of the prediction properties to add
+        (["prediction", "probability"] by default) and "output_headers", to
+        contain a list of the headers to be used when adding them (identical
+        to "output_fields" list, by default).
+        """
+        if outputs is None:
+            outputs = {}
+        if outputs.get(OUT_NEW_FIELDS) is None:
+            new_fields = DFT_OUTPUTS
+        if outputs.get(OUT_NEW_HEADERS):
+            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+            if len(new_fields) > len(new_headers):
+                new_headers.expand(new_fields[len(new_headers):])
+            else:
+                new_headers[0: len(new_fields)]
+        else:
+            new_headers = new_fields
+        for input_data in input_data_list:
+            kwargs.update({"full": True})
+            prediction = self.predict(input_data, **kwargs)
+            for index, key in enumerate(new_fields):
+                input_data[new_headers[index]] = prediction[key]
+        return input_data_list
 
     def dump(self, **kwargs):
         """Delegate to local model"""

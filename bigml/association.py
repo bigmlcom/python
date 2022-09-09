@@ -119,6 +119,7 @@ class Association(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.complement = None
         self.discretization = {}
         self.default_numeric_value = None
@@ -140,6 +141,7 @@ class Association(ModelFields):
 
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']
+            self.dataset_id = assocation.get('dataset')
 
         if 'associations' in association and \
                 isinstance(association['associations'], dict):

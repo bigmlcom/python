@@ -47,6 +47,8 @@ from bigml.api import get_status, get_api_connection, get_pca_id
 from bigml.util import cast, use_cache, load, NUMERIC
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
+
 
 try:
     from bigml.laminar.numpy_ops import dot
@@ -96,6 +98,7 @@ class PCA(ModelFields):
             return
 
         self.resource_id = None
+        self.dataset_id = None
         self.input_fields = []
         self.default_numeric_value = None
         self.term_forms = {}
@@ -117,6 +120,7 @@ class PCA(ModelFields):
         if 'object' in pca and \
             isinstance(pca['object'], dict):
             pca = pca['object']
+            self.dataset_id = pca.get('dataset')
         try:
             self.input_fields = pca.get("input_fields", [])
             self.default_numeric_value = pca.get("default_numeric_value")
@@ -313,3 +317,34 @@ class PCA(ModelFields):
                 input_array.extend(new_inputs)
 
         return input_array, missings, input_mask
+
+    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+        """Creates a batch projection for a list of inputs using the local
+        topic model. Allows to define some output settings to
+        decide the fields to be added to the input_data (prediction,
+        probability, etc.) and the name that we want to assign to these new
+        fields. The outputs argument accepts a dictionary with keys
+        "output_fields", to contain a list of the prediction properties to add
+        (all principal components by default) and "output_headers", to
+        contain a list of the headers to be used when adding them (identical
+        to "output_fields" list, by default).
+        """
+        if outputs is None:
+            outputs = {}
+        if outputs.get(OUT_NEW_FIELDS) is None:
+            new_fields = ["PC%s" % index for index in
+                          range(1, len(self.eigenvectors) + 1)]
+        if outputs.get(OUT_NEW_HEADERS):
+            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+            if len(new_fields) > len(new_headers):
+                new_headers.expand(new_fields[len(new_headers):])
+            else:
+                new_headers[0: len(new_fields)]
+        else:
+            new_headers = new_fields
+        for input_data in input_data_list:
+            kwargs.update({"full": True})
+            prediction = self.projection(input_data, **kwargs)
+            for index, key in enumerate(new_fields):
+                input_data[new_headers[index]] = prediction[key]
+        return input_data_list

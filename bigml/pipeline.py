@@ -183,6 +183,15 @@ class Pipeline:
                 self.local_resources[index].extend(dataset_chain)
                 self.local_resources[index].reverse()
 
+        new_resources = self.local_resources[0][:]
+        for index, resources in enumerate(self.local_resources):
+            if index < 1:
+                continue
+            for resource in resources:
+                if resource not in new_resources:
+                    new_resources.append(resource)
+        self.local_resources = new_resources
+
     def _get_pipeline_storage(self):
         """ Creating a separate folder inside the given storage folder to
         contain the pipeline related models based on the pipeline name.

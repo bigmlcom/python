@@ -3,6 +3,17 @@
 History
 -------
 
+8.0.0 (2022-09-13)
+------------------
+
+- Adding new local Pipeline object to encapsulate and run prediction
+  workflows.
+- Changing ``api.ok`` response to return as False when retrieving faulty
+  resources. Previously, only problems retrieving the API response cause
+  ``api.ok`` returning False.
+- Adding FaultyResource exception to inform about that type of failure when
+  using the ``raise_on_error`` flag in ``api.ok``.
+
 7.7.0 (2022-08-30)
 ~~~~~~~~~~~~~~~~~~
 

@@ -97,9 +97,8 @@ class Pipeline:
     prediction to the result.
 
     """
-    def __init__(self, resource_list, name, description=None,
-                 api=None, cache_get=None, init_settings=None,
-                 execution_settings=None):
+    def __init__(self, resource_list, name, description=None, api=None,
+                 cache_get=None, init_settings=None, execution_settings=None):
         """The pipeline needs
               - resource_list (list): a dataset/model ID or a list of them
                 to define the transformations and predictions to be added to
@@ -220,20 +219,19 @@ class Pipeline:
         """
         result = []
 
-        for index, local_resources in enumerate(self.local_resources):
-            inner_data = copy.deepcopy(input_data_list)
-            for index, local_resource in enumerate(local_resources):
-                # first dataset will never contain transformations
-                if index < 1:
-                    continue
-                if isinstance(local_resource, Dataset):
-                    inner_data = local_resource.transform(inner_data)
-                else:
-                    execution_settings = self.execution_settings.get(
-                        local_resource.resource_id, {})
-                    inner_data = local_resource.batch_predict(
-                        inner_data, **execution_settings)
-            result.append(inner_data)
+        inner_data = copy.deepcopy(input_data_list)
+        for index, local_resource in enumerate(self.local_resources):
+            # first dataset will never contain transformations
+            if index < 1:
+                continue
+            if isinstance(local_resource, Dataset):
+                inner_data = local_resource.transform(inner_data)
+            else:
+                execution_settings = self.execution_settings.get(
+                    local_resource.resource_id, {})
+                inner_data = local_resource.batch_predict(
+                    inner_data, **execution_settings)
+        result.append(inner_data)
         return result
 
     def export(self, output_directory=None):

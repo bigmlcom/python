@@ -2122,6 +2122,93 @@ instantiate the corresponding local object, so that you can use its
     logistic_regression_prediction = local_supervised_1.predict(input_data)
     model_prediction = local_supervised_2.predict(input_data)
 
+Local Pipeline
+--------------
+
+More often than not, the Machine Learning solution to a problem entails
+using data transformations and different models. In order to reproduce those
+locally and create batch predictions for a list of test input data rows, we
+can use the ``Pipeline`` class.
+
+As an example, let's think about a basic workflow where a simple feature
+engineering transformation has been applied (for instance creating the
+ratio of two fields) and then a model has been created from the new dataset.
+Also, an anomaly detector has been created from that model to check whether the
+new input data is too different from the original examples used to train it.
+If the score is low, the model is still valid, so we accept it's prediction.
+If the score is too high, the model predictions might be unaccurate, and we
+should not rely on them.
+
+When new data is received, the transformation to generate the ratio
+should be applied and after that, both the prediction and the anomaly score
+should be computed and added to the initial data. The ``Pipeline`` class
+will help us do that.
+
+Fist, we instantiate the ``Pipeline`` object by providing the models
+that we want it to use and a name for it:
+
+.. code-block:: python
+    from bigml.pipeline import Pipeline
+    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
+                               "anomaly/5143a51a37203f2cf7027551"],
+                               "my new pipeline")
+
+This code will retrieve all the datasets previous to the model and anomaly
+detector construction and will store any transformation that they contain.
+It creates a sequence starting on the first dataset that was created to
+summarize the uploaded data, adding the datasets that store transformations,
+and finally the model and anomaly detector. The ``Pipeline`` object offers
+an ``.execute`` method that can receive a list of input data or a DataFrame.
+For every row, it will execute the stored transformations and generate the
+model's prediction and the anomaly's score. All of them will be added to the
+original input data.
+
+.. code-block:: python
+    local_pipeline.execute([{"plasma glucose": 130, "bmi":3},
+                            {"age":26, "plasma glucose": 70}])
+    """That could produce a result such as
+    [{"plasma glucose": 130, "bmi":3, "prediction": "True",
+      "probability": 0.578, "score": 0.753},
+     {"age": 26, "plasma glucose": 70, "prediction": "False",
+      "probability": 0.573, "score": 0.54}]
+    """
+
+As for the rest of local resources, you can pass additional arguments to define
+the API connection info and/or a ``cache_get`` function to be used when
+resources are stored in memory caches.
+
+.. code-block:: python
+    from bigml.pipeline import Pipeline
+    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
+                               "anomaly/5143a51a37203f2cf7027551"],
+                               "my new pipeline",
+                               api=BigML("my user", "my api",
+                                         storage="my_storage"))
+
+If no API connection is passed, or if the one given has no
+``api.storage`` value, we use the default ``./storage`` directory
+followed by the name of the pipeline as storage folder for the
+JSON of the resources used in the pipeline.
+In this case, four resources will be stored: the dataset created from
+the uploaded data, the dataset generated when we added the ratio
+field, the model and the anomaly detector. The ``Pipeline`` object
+offers an ``.export`` method that can compress the entire directory to
+a ``.zip`` file whose name is the name of the ``Pipeline`` and will
+be placed in the ``output_directory`` given by the user:
+
+.. code-block:: python
+    from bigml.pipeline import Pipeline
+    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
+                               "anomaly/5143a51a37203f2cf7027551"],
+                               "my new pipeline",
+                               api=BigML("my user", "my api",
+                                         storage="my_storage"))
+    local_pipeline.export(output_directory="my_export_dir")
+
+In this example, we wil find a ``my_export_dir/my new pipeline.zip`` file
+in the current directory. The file contains a ``my new pipeline`` folder where
+the four JSONs for the two datasets and two models are stored.
+
 Local predictions with shared models
 ------------------------------------
 

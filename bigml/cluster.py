@@ -45,6 +45,11 @@ import re
 import csv
 import codecs
 
+try:
+    from pandas import DataFrame
+    pandas_ready = True
+except ImportError:
+    pandas_ready = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_cluster_id
@@ -645,6 +650,15 @@ class Cluster(ModelFields):
         (["centroid_name", "distance"] by default) and "output_headers", to
         contain a list of the headers to be used when adding them (identical
         to "output_fields" list, by default).
+
+        :param input_data_list: List of input data to be predicted
+        :type input_data_list: list or Panda's dataframe
+        :param dict outputs: properties that define the headers and fields to
+                             be added to the input data
+        :return: the list of input data plus the predicted values
+        :rtype: list or Panda's dataframe depending on the input type in
+                input_data_list
+
         """
         if outputs is None:
             outputs = {}
@@ -658,11 +672,19 @@ class Cluster(ModelFields):
                 new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
-        for input_data in input_data_list:
+        dataframe = False
+        if pandas_ready and isinstance(input_data_list, DataFrame):
+            dataframe = True
+            inner_data_list = input_data_list.to_dict('records')
+        else:
+            inner_data_list = input_data_list[:]
+        for input_data in inner_data_list:
             prediction = self.centroid(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        return input_data_list
+        if pandas_ready and dataframe:
+            return DataFrame.from_dict(inner_data_list)
+        return inner_data_list
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

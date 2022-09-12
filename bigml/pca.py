@@ -328,6 +328,14 @@ class PCA(ModelFields):
         (all principal components by default) and "output_headers", to
         contain a list of the headers to be used when adding them (identical
         to "output_fields" list, by default).
+
+        :param input_data_list: List of input data to be predicted
+        :type input_data_list: list or Panda's dataframe
+        :param dict outputs: properties that define the headers and fields to
+                             be added to the input data
+        :return: the list of input data plus the predicted values
+        :rtype: list or Panda's dataframe depending on the input type in
+                input_data_list
         """
         if outputs is None:
             outputs = {}
@@ -342,9 +350,17 @@ class PCA(ModelFields):
                 new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
-        for input_data in input_data_list:
+        dataframe = False
+        if pandas_ready and isinstance(input_data_list, DataFrame):
+            dataframe = True
+            inner_data_list = input_data_list.to_dict('records')
+        else:
+            inner_data_list = input_data_list[:]
+        for input_data in inner_data_list:
             kwargs.update({"full": True})
             prediction = self.projection(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        return input_data_list
+        if pandas_ready and dataframe:
+            return DataFrame.from_dict(inner_data_list)
+        return inner_data_list

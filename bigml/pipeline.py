@@ -23,11 +23,14 @@ etc.) that describes the input data processing.
 """
 
 import copy
+import os
+import zipfile
 
+from datetime import datetime
 
 from bigml.api import get_api_connection, get_resource_id, get_resource_type
-from bigml.util import use_cache, load
-
+from bigml.util import use_cache, load, check_dir
+from bigml.constants import STORAGE
 from bigml.dataset import Dataset
 from bigml.basemodel import BaseModel
 from bigml.supervised import SupervisedModel
@@ -55,6 +58,25 @@ def get_datasets_chain(dataset, dataset_list=None):
         return dataset_list
 
     return get_datasets_chain(dataset.origin_dataset, dataset_list)
+
+
+def get_datasets_dict(dataset, dataset_dict=None):
+    if dataset_dict is None:
+        dataset_dict = {}
+    dataset_dict.update({dataset.resource_id: dataset})
+    if dataset.origin_dataset is None:
+        return dataset_dict
+
+    return get_datasets_dict(dataset.origin_dataset, dataset_dict)
+
+
+def check_in_path(path, resource_list):
+    """Checks whether a list of resources is stored in a folder """
+    for resource_id in resource_list:
+        if not os.path.exists(os.path.join(
+                path, resource_id.replace("/", "_"))):
+            return False
+    return True
 
 
 class Pipeline:
@@ -113,8 +135,8 @@ class Pipeline:
             self.__dict__ = load(name, cache_get)
             return
 
-        self.name = None
-        self.description = None
+        self.name = name
+        self.description = description
         self.resource_list = resource_list
         if isinstance(resource_list, str):
             self.resource_list = [resource_list]
@@ -122,18 +144,20 @@ class Pipeline:
         self.init_settings = init_settings or {}
         self.execution_settings = execution_settings or {}
         self.api = get_api_connection(api)
+        self.api.storage = self._get_pipeline_storage()
         self.cache_get = cache_get
-
+        self.datasets = {}
 
         kwargs = {}
-        if api is not None:
-            kwargs["api"] = api
+        if self.api is not None:
+            kwargs["api"] = self.api
         if cache_get is not None:
             kwargs["cache_get"] = cache_get
 
-        if kwargs:
-            for resource_id, settings in self.init_settings.items():
-                self.init_settings[resource_id].update(kwargs)
+        for resource_id in self.resource_list:
+            self.init_settings[resource_id] = self.init_settings.get(
+                resource_id, {})
+            self.init_settings[resource_id].update(kwargs)
 
         for index, resource in enumerate(self.resource_list):
             resource_id = get_resource_id(resource)
@@ -150,10 +174,35 @@ class Pipeline:
             if (hasattr(local_resource, "dataset_id") and \
                     local_resource.dataset_id) or \
                     isinstance(local_resource, Dataset):
-                dataset = Dataset(local_resource.dataset_id)
+                if local_resource.dataset_id in self.datasets:
+                    dataset = self.datasets[local_resource.dataset_id]
+                else:
+                    dataset = Dataset(local_resource.dataset_id, api=self.api)
+                    self.datasets = get_datasets_dict(dataset, self.datasets)
                 dataset_chain = get_datasets_chain(dataset)
                 self.local_resources[index].extend(dataset_chain)
                 self.local_resources[index].reverse()
+
+    def _get_pipeline_storage(self):
+        """ Creating a separate folder inside the given storage folder to
+        contain the pipeline related models based on the pipeline name.
+        If the folder already exists, first we check that all the resources
+        in the resources list are already stored there. If that's not the
+        case, we rename the folder by adding a datetime suffix and create a
+        new pipeline folder to store them.
+        """
+        if self.api.storage is None:
+            self.api.storage = STORAGE
+        path = os.path.join(self.api.storage, self.name)
+        if os.path.exists(path):
+            if check_in_path(path, self.resource_list):
+                return path
+            # adding a suffix to store old pipeline version
+            bck_path = "%s_%s_bck" % (path,
+                                      str(datetime.now()).replace(" ", "_"))
+            os.rename(path, bck_path)
+        check_dir(path)
+        return path
 
     def execute(self, input_data_list):
         """Applying the Pipeline transformations and predictions on the
@@ -177,3 +226,28 @@ class Pipeline:
                         inner_data, **execution_settings)
             result.append(inner_data)
         return result
+
+    def export(self, output_directory=None):
+        """Exports all the resources needed in the pipeline to the user-given
+        output directory. The entire pipeline folder is exported and its name
+        is used as filename.
+        """
+        def zipdir(path, ziph):
+            # ziph is zipfile handle
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    ziph.write(os.path.join(root, file),
+                               os.path.relpath(os.path.join(root, file),
+                                               os.path.join(path, '..')))
+
+        if output_directory is None:
+            output_directory = os.getcwd()
+        out_filename = os.path.join(output_directory, "%s.zip" % self.name)
+        # write README file with the information that describes the Pipeline
+        readme = "Pipeline name: %s\n%s\n\nBuilt from: %s" % (
+            self.name, self.description or "", ", ".join(self.resource_list))
+        with open(os.path.join(self.api.storage, "README.txt"), "w") as \
+                readme_handler:
+            readme_handler.write(readme)
+        with zipfile.ZipFile(out_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            zipdir(self.api.storage, zipf)

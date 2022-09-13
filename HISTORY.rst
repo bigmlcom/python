@@ -13,6 +13,7 @@ History
   ``api.ok`` returning False.
 - Adding FaultyResource exception to inform about that type of failure when
   using the ``raise_on_error`` flag in ``api.ok``.
+- Fixing bug in local LogisticRegression when predicting with operating points.
 
 7.7.0 (2022-08-30)
 ~~~~~~~~~~~~~~~~~~

@@ -293,6 +293,21 @@ def i_create_a_deepnet_prediction_with_op(step, data=None,
     world.predictions.append(resource['resource'])
 
 
+def i_create_a_logistic_prediction_with_op(step, data=None,
+                                           operating_point=None):
+    if data is None:
+        data = "{}"
+    logistic_regression = world.logistic_regression['resource']
+    data = json.loads(data)
+    resource = world.api.create_prediction( \
+        logistic_regression, data, {"operating_point": operating_point})
+    world.status = resource['code']
+    eq_(world.status, HTTP_CREATED)
+    world.location = resource['location']
+    world.prediction = resource['object']
+    world.predictions.append(resource['resource'])
+
+
 def the_logistic_probability_is(step, probability):
     for [prediction, remote_probability] in world.prediction['probabilities']:
         if prediction == world.prediction['output']:

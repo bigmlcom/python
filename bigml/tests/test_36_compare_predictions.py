@@ -825,3 +825,51 @@ class TestComparePrediction(object):
                 self, world.anomaly_score["score"])
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
+
+    def test_scenario15(self):
+        """
+            Scenario: Successfully comparing predictions for logistic regressions with operating point:
+                Given I create a data source uploading a "<data>" file
+                And I wait until the source is ready less than <source_wait> secs
+                And I create a dataset
+                And I wait until the dataset is ready less than <dataset_wait> secs
+                And I create a logistic regression with objective "<objective_id>"
+                And I wait until the logistic regression is ready less than <model_wait> secs
+                And I create a local logistic regression
+                When I create a prediction with operating point "<operating_point>" for "<input_data>"
+                Then the prediction for "<objective_id>" is "<prediction>"
+                And I create a local prediction with operating point "<operating_point>" for "<input_data>"
+                Then the local prediction is "<prediction>"
+        """
+        headers = ["data", "source_wait", "dataset_wait", "model_wait",
+                   "input_data", "objective_id", "prediction", "model_conf",
+                   "operating_point"]
+        examples = [
+            ['data/iris.csv', '10', '50', '60', '{"petal width": 4}', '000004',
+             'Iris-versicolor', '{"default_numeric_value": "mean"}',
+             {"kind": "probability", "threshold": 1,
+              "positive_class": "Iris-virginica"}]]
+        show_doc(self.test_scenario3)
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, sys._getframe().f_code.co_name, example)
+            source_create.i_upload_a_file(
+                self, example["data"], shared=example["data"])
+            source_create.the_source_is_finished(
+                self, example["source_wait"], shared=example["data"])
+            dataset_create.i_create_a_dataset(self, shared=example["data"])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"], shared=example["data"])
+            model_create.i_create_a_logistic_model_with_objective_and_parms(
+                self, example["objective_id"], example["model_conf"])
+            model_create.the_logistic_model_is_finished_in_less_than(
+                self, example["model_wait"])
+            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_create.i_create_a_logistic_prediction_with_op(
+                self, example["input_data"], example["operating_point"])
+            prediction_create.the_prediction_is(
+                self, example["objective_id"], example["prediction"])
+            prediction_compare.i_create_a_local_prediction_op(
+                self, example["input_data"], example["operating_point"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])

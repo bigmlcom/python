@@ -23,7 +23,7 @@ keys:
 Resource creation is an asynchronous process, so the API will return a
 response probably before the resource is totally processed and you'll need to
 repeatedly call the API to see the evolution of the resource, reflected
-in it's status (see the `Statuses <#statuses>`_ section).
+in its status (see the `Statuses <#statuses>`_ section).
 The bindings provide methods to help you do that. Please check the `waiting
 for resources <#waiting_for_resources>`_ section to learn more about them.
 

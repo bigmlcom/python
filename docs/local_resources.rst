@@ -2135,8 +2135,8 @@ engineering transformation has been applied (for instance creating the
 ratio of two fields) and then a model has been created from the new dataset.
 Also, an anomaly detector has been created from that model to check whether the
 new input data is too different from the original examples used to train it.
-If the score is low, the model is still valid, so we accept it's prediction.
-If the score is too high, the model predictions might be unaccurate, and we
+If the score is low, the model is still valid, so we accept its prediction.
+If the score is too high, the model predictions might be inaccurate, and we
 should not rely on them.
 
 When new data is received, the transformation to generate the ratio
@@ -2158,7 +2158,7 @@ detector construction and will store any transformation that they contain.
 It creates a sequence starting on the first dataset that was created to
 summarize the uploaded data, adding the datasets that store transformations,
 and finally the model and anomaly detector. The ``Pipeline`` object offers
-an ``.execute`` method that can receive a list of input data or a DataFrame.
+a ``.execute`` method that can receive a list of input data or a DataFrame.
 For every row, it will execute the stored transformations and generate the
 model's prediction and the anomaly's score. All of them will be added to the
 original input data.

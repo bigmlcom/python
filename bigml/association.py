@@ -141,7 +141,7 @@ class Association(ModelFields):
 
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']
-            self.dataset_id = assocation.get('dataset')
+            self.dataset_id = association.get('dataset')
 
         if 'associations' in association and \
                 isinstance(association['associations'], dict):

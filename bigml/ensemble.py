@@ -196,7 +196,6 @@ class Ensemble(ModelFields):
         if ensemble:
             ensemble = self.get_ensemble_resource(ensemble)
             self.resource_id = get_ensemble_id(ensemble)
-            self.dataset_id = ensemble.get('object', {}).get('dataset')
             shared_ref = self.resource_id.replace("shared/", "") if \
                 self.resource_id.startswith("shared/") else None
             if shared_ref is not None:
@@ -213,6 +212,7 @@ class Ensemble(ModelFields):
                 ensemble = retrieve_resource(self.api, self.resource_id,
                                              no_check_fields=True)
 
+            self.dataset_id = ensemble.get('object', {}).get('dataset')
             if ensemble['object'].get('type') == BOOSTING:
                 self.boosting = ensemble['object'].get('boosting')
             self.distributions = ensemble['object'].get('distributions', [])

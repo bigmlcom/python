@@ -217,7 +217,6 @@ class Pipeline:
         list of input data.
 
         """
-        result = []
 
         inner_data = copy.deepcopy(input_data_list)
         for index, local_resource in enumerate(self.local_resources):
@@ -231,8 +230,7 @@ class Pipeline:
                     local_resource.resource_id, {})
                 inner_data = local_resource.batch_predict(
                     inner_data, **execution_settings)
-        result.append(inner_data)
-        return result
+        return inner_data
 
     def export(self, output_directory=None):
         """Exports all the resources needed in the pipeline to the user-given

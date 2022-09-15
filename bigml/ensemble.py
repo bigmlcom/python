@@ -47,8 +47,7 @@ from functools import cmp_to_key
 from copy import deepcopy
 
 from bigml.exceptions import NoRootDecisionTree
-from bigml.api import get_ensemble_id, get_model_id, get_api_connection, \
-    get_resource_id
+from bigml.api import get_ensemble_id, get_model_id, get_api_connection
 from bigml.model import Model, parse_operating_point, sort_categories
 from bigml.generators.model import print_distribution
 from bigml.basemodel import retrieve_resource, ONLY_MODEL, EXCLUDE_FIELDS
@@ -87,6 +86,7 @@ class Ensemble(ModelFields):
 
     """
 
+    #pylint: disable=locally-disabled,broad-except,access-member-before-definition
     def __init__(self, ensemble, api=None, max_models=None, cache_get=None,
                  operation_settings=None):
         """
@@ -182,7 +182,7 @@ class Ensemble(ModelFields):
                 models = ensemble
                 ensemble = None
             if models:
-                if all([isinstance(model, Model) for model in models]):
+                if all(isinstance(model, Model) for model in models):
                     self.model_ids = [local_model.resource_id for local_model in
                                       models]
                 else:
@@ -605,6 +605,7 @@ class Ensemble(ModelFields):
 
         return models
 
+    #pylint: disable=locally-disabled,invalid-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria
@@ -693,6 +694,7 @@ class Ensemble(ModelFields):
             del prediction["category"]
         return prediction
 
+    #pylint: disable=locally-disabled,protected-access
     def predict(self, input_data, method=None,
                 options=None, missing_strategy=LAST_PREDICTION,
                 operating_point=None, operating_kind=None, median=False,

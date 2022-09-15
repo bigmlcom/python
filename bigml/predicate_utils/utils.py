@@ -72,6 +72,7 @@ MISSING_OFFSET = 6
 
 PREDICATE_INFO_LENGTH = 5
 
+
 def term_matches(text, forms_list, options):
     """ Counts the number of occurences of the words in forms_list in the text
     The terms in forms_list can either be tokens or full terms. The
@@ -84,6 +85,7 @@ def term_matches(text, forms_list, options):
         return full_term_match(text, first_term, case_sensitive)
 
     return term_matches_tokens(text, forms_list, case_sensitive)
+
 
 def is_full_term(term, field):
     """Returns a boolean showing if a term is considered as a full_term
@@ -135,7 +137,7 @@ def term_matches_tokens(text, forms_list, case_sensitive):
 
 
 def item_matches(text, item, options):
-    """ Counts the number of occurences of the item in the text
+    """Counts the number of occurences of the item in the text
     The matching considers the separator or
     the separating regular expression.
     """
@@ -148,8 +150,7 @@ def item_matches(text, item, options):
 
 
 def count_items_matches(text, item, regexp):
-    """ Counts the number of occurences of the item in the text
-    """
+    """Counts the number of occurences of the item in the text."""
     expression = r'(^|%s)%s($|%s)' % (regexp, re.escape(item), regexp)
     pattern = re.compile(expression, flags=re.U)
     matches = re.findall(pattern, text)
@@ -157,6 +158,7 @@ def count_items_matches(text, item, regexp):
     return len(matches)
 
 def apply_predicates(node, input_data, fields, normalize_repeats=False):
+    """Evaluates the predicate for a particular input data."""
     shift = 1 if normalize_repeats else 0
     num_predicates = node[1 + shift]
 
@@ -215,7 +217,7 @@ def pack_predicate(predicate):
     """Compacts the predicate condition
 
     """
-    node = list()
+    node = []
     if predicate and predicate is not True:
         operation = predicate.get('operator')
         value = predicate.get('value')

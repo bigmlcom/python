@@ -85,7 +85,7 @@ def print_importance(instance, out=sys.stdout):
             round(importance, 4) * 100)))
         count += 1
 
-
+#pylint: disable=locally-disabled,broad-except
 def check_local_but_fields(resource):
     """Whether the information in `resource` is enough to use it locally
        except for the fields section
@@ -97,7 +97,7 @@ def check_local_but_fields(resource):
     except Exception:
         return False
 
-
+#pylint: disable=locally-disabled,broad-except
 def check_local_info(resource):
     """Whether the information in `model` is enough to use it locally
 

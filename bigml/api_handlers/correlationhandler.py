@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2015-2022 BigML
 #

@@ -54,7 +54,7 @@ def build_boosting_tree(node_dict, node=None, terms=None):
     outer.append(node_dict.get("g_sum"))
     outer.append(node_dict.get("h_sum"))
     outer.append(len(children))
-    children_list = list()
+    children_list = []
     for child in children:
         predicate = child.get('predicate')
         field = predicate.get("field")
@@ -72,6 +72,7 @@ def build_boosting_tree(node_dict, node=None, terms=None):
     return outer
 
 
+#pylint: disable=locally-disabled,inconsistent-return-statements
 def boosting_proportional_predict(tree, fields, input_data, path=None,
                                   missing_found=False):
     """Makes a prediction based on a number of field values considering all

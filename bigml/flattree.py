@@ -145,10 +145,13 @@ def split_condition_code(self, field, depth,
             value)
 
 
+#pylint: disable=locally-disabled,invalid-name
 class Node():
     """Structure to store the node information
 
     """
+    counter = 0
+
     def __init__(self, tree, offsets):
         predicate = get_predicate(tree)
         if isinstance(predicate, bool):
@@ -163,7 +166,9 @@ class Node():
                 setattr(self, attr, node[offsets[attr]])
         children = [] if node[offsets["children#"]] == 0 else \
             node[offsets["children"]]
-        setattr(self, "children", children)
+        self.children = children
+        self.id = Node.counter
+        Node.counter += 1
 
 
 class FlatTree():
@@ -267,13 +272,13 @@ class FlatTree():
                         terms = [term]
                         terms.extend(all_forms.get(term, []))
                         term_forms[field_id][term] = terms
-            for field in term_forms:
+            for field, term_form in term_forms.items():
                 body += """
         \"%s\": {""" % field
-                terms = sorted(term_forms[field].keys())
+                terms = sorted(term_form.keys())
                 for term in terms:
                     body += """
-            u\"%s\": %s,""" % (term, term_forms[field][term])
+            u\"%s\": %s,""" % (term, term_form[term])
                 body += """
         },"""
             body += """

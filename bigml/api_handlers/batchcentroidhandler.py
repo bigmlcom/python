@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -63,6 +64,7 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_centroid_url, body)
+        return None
 
     def get_batch_centroid(self, batch_centroid, query_string=''):
         """Retrieves a batch centroid.

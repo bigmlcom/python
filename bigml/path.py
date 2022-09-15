@@ -213,7 +213,7 @@ class Path():
                              " objects. Please check the arguments for the"
                              " constructor.")
 
-
+    #pylint: disable=locally-disabled,redefined-builtin
     def to_rules(self, fields, label='name', format=EXTENDED):
         """ Builds rules string from a list lf predicates in different formats
 
@@ -224,7 +224,6 @@ class Path():
             return self.to_brief_rules(fields, label=label)
         raise ValueError("Invalid format. The list of valid formats are 0 "
                          "(extended) or 1 (brief).")
-
 
     def to_extended_rules(self, fields, label='name'):
         """ Builds rules string in ordered and extended format

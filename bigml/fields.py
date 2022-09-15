@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=unbalanced-tuple-unpacking
 #
 # Copyright 2012-2022 BigML
 #
@@ -561,6 +562,7 @@ class Fields():
         if writer is None:
             return summary
         writer.close_writer()
+        return filename
 
     def new_fields_structure(self, csv_attributes_file=None,
                              attributes=None, out_file=None):
@@ -578,7 +580,7 @@ class Fields():
         """
         if csv_attributes_file is not None:
             reader = UnicodeReader(csv_attributes_file).open_reader()
-            attributes = [row for row in reader]
+            attributes = list(reader)
         new_fields_structure = {}
         if "field ID" in attributes[0] or "field column" in attributes[0]:
             # headers are used
@@ -595,8 +597,10 @@ class Fields():
                     try:
                         field_column = int(new_attributes.get("field column"))
                     except TypeError:
-                        raise ValueError("Field column %s not found"
-                                         " in this resource" % field_column)
+                        raise ValueError(
+                            "Field column %s not found"
+                            " in this resource" % new_attributes.get(
+                            "field_column"))
                     if not field_column in self.fields_columns:
                         raise ValueError("Field column %s not found"
                                          " in this resource" % field_column)
@@ -652,6 +656,7 @@ class Fields():
             raise IOError("Failed writing the fields structure file in"
                           " %s- Please, check your arguments." %
                           out_file)
+        return out_file
 
     def training_data_example(self, missings=False):
         """Generates an example of training data based on the contents of the
@@ -703,6 +708,7 @@ class Fields():
                         xmax = numeric_example(field_summary["xmax"])
                         ymin = numeric_example(field_summary["ymin"])
                         ymax = numeric_example(field_summary["ymax"])
+                        #pylint: disable=locally-disabled,too-many-boolean-expressions
                         if None in [xmin, xmax, ymin, ymax] or xmax < xmin or \
                                 ymax < ymin or xmin < 0 or xmax < 0 or \
                                 ymin < 0 or ymax < 0:

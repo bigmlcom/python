@@ -289,7 +289,6 @@ FIELDS_PARENT = { \
     "deepnet": "deepnet",
     "topicmodel": "topic_model",
     "association": "associations",
-    "fusion": "fusion",
     "correlation": "correlations",
     "sample": "sample",
     "pca": "pca",

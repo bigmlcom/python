@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2018-2022 BigML
 #
@@ -63,6 +64,7 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_projection_url, body)
+        return None
 
     def get_batch_projection(self, batch_projection, query_string=''):
         """Retrieves a batch projection.

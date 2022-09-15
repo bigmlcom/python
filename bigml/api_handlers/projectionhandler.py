@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2018-2022 BigML
 #
@@ -29,7 +30,7 @@ except ImportError:
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     check_resource, get_resource_id, get_resource_type
-from bigml.constants import TINY_RESOURCE, PROJECTION_PATH, PCA_PATH, \
+from bigml.constants import PROJECTION_PATH, PCA_PATH, \
     IMAGE_FIELDS_FILTER, SPECIFIC_EXCLUDES
 
 
@@ -74,7 +75,7 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
             image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
                 ",".join(SPECIFIC_EXCLUDES[resource_type])
             model_info = check_resource(pca_id,
-                                        query_string=IMAGE_FIELDS_FILTER,
+                                        query_string=image_fields_filter,
                                         wait_time=wait_time,
                                         retries=retries,
                                         raise_on_error=True,

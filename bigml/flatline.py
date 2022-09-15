@@ -18,7 +18,7 @@
 Flatline: Class that encapsulates the Flatline expressions interpreter
 """
 
-from javascript import require, globalThis
+from javascript import require
 
 
 class Flatline:
@@ -38,6 +38,7 @@ class Flatline:
     __FLATLINEJS = require('../flatline/flatline-node.js')
     interpreter = __FLATLINEJS.bigml.dixie.flatline
 
+    #pylint: disable=locally-disabled,invalid-name
     @staticmethod
     def infer_fields(row, prefix=None, offset=None):
         """Utility function generating a mock list of fields.
@@ -61,7 +62,7 @@ class Flatline:
 
         """
         result = []
-        id = 0
+        id_ = 0
         for v in row:
             t = type(v)
             optype = 'categorical'
@@ -72,36 +73,39 @@ class Flatline:
                     datatype = 'float64'
                 else:
                     datatype = 'int64'
-            id_str = '%06x' % id
+            id_str = '%06x' % id_
             if prefix:
                 length = len(prefix)
                 id_str = prefix + id_str[length:]
-            column = id
+            column = id_
             if offset:
-                column = offset + id
+                column = offset + id_
             result.append({'id': id_str,
                            'optype':optype,
                            'datatype': datatype,
                            'column_number': column})
-            id = id + 1
+            id_ = id_ + 1
         return result
 
     @staticmethod
-    def __dataset(dataset, rows):
+    def _dataset(dataset, rows):
         """The dataset argument should be a Dataset that contains the
         in_fields information
         """
-        if not isinstance(dataset, Dataset) and len(rows) > 0:
-            return {'fields': Flatline.infer_fields(rows[0])}
-        return {"fields": dataset.in_fields}
+        try:
+            return {"fields": dataset.in_fields}
+        except AttributeError:
+            if len(rows) > 0:
+                return {'fields': Flatline.infer_fields(rows[0])}
+            return None
 
     @staticmethod
-    def defined_functions(self):
+    def defined_functions():
         """A list of the names of all defined Flaline functions"""
         return Flatline.interpreter.defined_primitives
 
     @staticmethod
-    def check_lisp(self, sexp, dataset=None):
+    def check_lisp(sexp, dataset=None):
         """Checks whether the given lisp s-expression is valid.
 
         Any operations referring to a dataset's fields will use the
@@ -111,11 +115,11 @@ class Flatline:
 
         """
         r = Flatline.interpreter.evaluate_sexp(sexp, dataset)
-        r.pop(u'mapper', None)
+        r.pop('mapper', None)
         return r
 
     @staticmethod
-    def check_json(self, json_sexp, dataset=None):
+    def check_json(json_sexp, dataset=None):
         """Checks whether the given JSON s-expression is valid.
 
         Works like `check_lisp` (which see), but taking a JSON
@@ -124,21 +128,21 @@ class Flatline:
 
         """
         r = Flatline.interpreter.evaluate_js(json_sexp, dataset)
-        r.pop(u'mapper', None)
+        r.pop('mapper', None)
         return r
 
     @staticmethod
-    def lisp_to_json(self, sexp):
+    def lisp_to_json(sexp):
         """ Auxliary function transforming Lisp to Python representation."""
         return Flatline.interpreter.sexp_to_js(sexp)
 
     @staticmethod
-    def json_to_lisp(self, json_sexp):
+    def json_to_lisp(json_sexp):
         """ Auxliary function transforming Python to lisp representation."""
         return Flatline.interpreter.js_to_sexp(json_sexp)
 
     @staticmethod
-    def apply_lisp(self, sexp, rows, dataset=None):
+    def apply_lisp(sexp, rows, dataset=None):
         """Applies the given Lisp sexp to a set of input rows.
 
         Input rows are represented as a list of lists of native Python
@@ -149,11 +153,11 @@ class Flatline:
         """
         return Flatline.interpreter.eval_and_apply_sexp(
             sexp,
-            Interpreter.__dataset(dataset, rows),
+            Flatline._dataset(dataset, rows),
             rows)
 
     @staticmethod
-    def apply_json(self, json_sexp, rows, dataset=None):
+    def apply_json(json_sexp, rows, dataset=None):
         """Applies the given JSON sexp to a set of input rows.
 
         As usual, JSON sexps are represented as Python lists,
@@ -167,5 +171,5 @@ class Flatline:
         """
         return Flatline.interpreter.eval_and_apply_js(
             json_sexp,
-            Flatline.__dataset(dataset, rows),
+            Flatline._dataset(dataset, rows),
             rows)

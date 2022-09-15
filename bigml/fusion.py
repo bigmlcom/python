@@ -39,17 +39,15 @@ fusion.predict({"petal length": 3, "petal width": 1})
 
 """
 import logging
-import json
-import os
 
 from functools import cmp_to_key
 from copy import deepcopy
 
-from bigml.api import BigML, get_fusion_id, get_resource_type, \
+from bigml.api import get_fusion_id, get_resource_type, \
     get_api_connection
 from bigml.model import parse_operating_point, sort_categories
 from bigml.model import LAST_PREDICTION
-from bigml.basemodel import get_resource_dict, retrieve_resource
+from bigml.basemodel import get_resource_dict
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics, use_cache, load, \
     dump, dumps, NUMERIC
@@ -184,10 +182,10 @@ class Fusion(ModelFields):
                 api = deepcopy(api)
                 api.shared_ref = self.resource_id.replace("shared/", "")
             elif hasattr(api, "shared_ref") and \
-                        api.shared_ref is not None:
-                    api = deepcopy(api)
-                    # adding the resource ID to the sharing chain
-                    api.shared_ref += ",%s" % self.resource_id
+                    api.shared_ref is not None:
+                api = deepcopy(api)
+                # adding the resource ID to the sharing chain
+                api.shared_ref += ",%s" % self.resource_id
             for model_id in self.model_ids:
                 if get_resource_type(model_id) == "fusion":
                     Fusion(model_id, api=api, cache_get=cache_get,
@@ -226,43 +224,6 @@ class Fusion(ModelFields):
         self.distribution = distribution
         self.regression = \
             self.fields[self.objective_id].get('optype') == NUMERIC
-
-
-    def get_fusion_resource(self, fusion):
-        """Extracts the fusion resource info. The fusion argument can be
-           - a path to a local file
-           - an fusion id
-        """
-        # the string can be a path to a JSON file
-        if isinstance(fusion, str):
-            try:
-                path = os.path.dirname(os.path.abspath(fusion))
-                with open(fusion) as fusion_file:
-                    fusion = json.load(fusion_file)
-                    self.resource_id = get_fusion_id(fusion)
-                    if self.resource_id is None:
-                        raise ValueError("The JSON file does not seem"
-                                         " to contain a valid BigML fusion"
-                                         " representation.")
-                    api = BigML(storage=path)
-            except IOError:
-                # if it is not a path, it can be an fusion id
-                self.resource_id = get_fusion_id(fusion)
-                if self.resource_id is None:
-                    if fusion.find('fusion/') > -1:
-                        raise Exception(
-                            api.error_message(fusion,
-                                              resource_type='fusion',
-                                              method='get'))
-                    raise IOError("Failed to open the expected JSON file"
-                                  " at %s" % fusion)
-            except ValueError:
-                raise ValueError("Failed to interpret %s."
-                                 " JSON file expected.")
-        if not isinstance(fusion, dict):
-            fusion = retrieve_resource(api, self.resource_id,
-                                       no_check_fields=False)
-        return fusion
 
     def list_models(self):
         """Lists all the model/ids that compound the fusion.
@@ -503,6 +464,7 @@ class Fusion(ModelFields):
         del prediction["category"]
         return prediction
 
+    #pylint: disable=locally-disabled,invalid-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria

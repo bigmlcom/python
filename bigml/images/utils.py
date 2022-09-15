@@ -17,6 +17,8 @@
 """Miscellaneous utility functions for image processing
 
 """
+import os
+import tempfile
 
 from PIL import Image
 
@@ -26,14 +28,14 @@ from bigml.constants import TEMP_DIR, TOP_IMAGE_SIZE as TOP_SIZE, DECIMALS
 def resize_to(image, top_size=TOP_SIZE):
     """Resizing the image to a maximum width or height """
     width, height = image.size
-    if width > TOP_SIZE or height > TOP_SIZE:
+    if width > top_size or height > top_size:
         if width > height:
             ratio = height / width
-            image = image.resize((TOP_SIZE , int(ratio * TOP_SIZE)),
+            image = image.resize((top_size , int(ratio * top_size)),
                                  Image.BICUBIC)
         else:
             ratio = width / height
-            image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
+            image = image.resize((int(ratio * top_size), top_size),
                                   Image.BICUBIC)
     return image
 

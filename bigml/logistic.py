@@ -89,6 +89,7 @@ class LogisticRegression(ModelFields):
 
     """
 
+    #pylint: disable=locally-disabled,invalid-name
     def __init__(self, logistic_regression, api=None, cache_get=None,
                  operation_settings=None):
         """
@@ -139,6 +140,7 @@ class LogisticRegression(ModelFields):
         self.lr_normalize = None
         self.balance_fields = None
         self.regularization = None
+        self.flat_coefficients = None
         api = get_api_connection(api)
 
         old_coefficients = False
@@ -229,6 +231,7 @@ class LogisticRegression(ModelFields):
                             " in the resource:\n\n%s" %
                             logistic_regression)
 
+    #pylint: disable=locally-disabled,invalid-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria
@@ -263,8 +266,8 @@ class LogisticRegression(ModelFields):
 
         """
 
-        kind, threshold, positive_class = parse_operating_point( \
-            operating_point, ["probability"], 
+        kind, threshold, positive_class = parse_operating_point(
+            operating_point, ["probability"],
             self.class_names, self.operation_settings)
         predictions = self.predict_probability(input_data, False)
         position = self.class_names.index(positive_class)
@@ -305,6 +308,7 @@ class LogisticRegression(ModelFields):
         del prediction["category"]
         return prediction
 
+    #pylint: disable=locally-disabled,consider-using-dict-items
     def predict(self, input_data,
                 operating_point=None, operating_kind=None,
                 full=False):

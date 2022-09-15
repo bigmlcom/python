@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -23,7 +24,6 @@
 import sys
 import os
 import numbers
-import time
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -39,15 +39,16 @@ except ImportError:
 try:
     from pandas import DataFrame
     from io import StringIO
-    pandas_support = True
+    PANDAS_READY = True
 except ImportError:
-    pandas_support = False
+    PANDAS_READY = False
+
+from zipfile import ZipFile
 
 import mimetypes
 import requests
 
 from requests_toolbelt import MultipartEncoder
-from zipfile import ZipFile
 
 from bigml.util import is_url, maybe_save, filter_by_extension, \
     infer_field_type
@@ -58,7 +59,7 @@ from bigml.bigmlconnection import (
     HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
-    resource_is_ready, get_source_id, get_id, get_resource_type
+    resource_is_ready, get_source_id, get_id
 from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
 from bigml.fields import Fields
@@ -136,8 +137,8 @@ class SourceHandlerMixin(ResourceHandlerMixin):
 
         # some basic validation
         if (not isinstance(src_obj, list) or (
-                not all([isinstance(row, dict) for row in src_obj]) and
-                not all([isinstance(row, list) for row in src_obj]))):
+                not all(isinstance(row, dict) for row in src_obj) and
+                not all(isinstance(row, list) for row in src_obj))):
             raise TypeError(
                 'ERROR: inline source must be a list of dicts or a '
                 'list of lists')
@@ -172,6 +173,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 "code": code,
                 "message": "The resource couldn't be created"}}
 
+        #pylint: disable=locally-disabled,consider-using-with
         try:
             if isinstance(file_name, str):
                 name = os.path.basename(file_name)
@@ -252,8 +254,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         body = json.dumps(create_args)
         return self._create(self.source_url, body)
 
-    def _create_composite(self, sources, args=None,
-                          wait_time=3, retries=10):
+    def _create_composite(self, sources, args=None):
         """Creates a composite source from an existing `source` or list of
            sources
 
@@ -277,7 +278,6 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 pure_id = get_id(source)
                 source_id = "source/%s" % pure_id
             else:
-                resource_type = get_resource_type(source)
                 pure_id = source_id.replace("source/", "")
 
             if pure_id is not None:
@@ -303,15 +303,15 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         if path is None:
             raise Exception('A local path or a valid URL must be provided.')
 
-        if pandas_support and isinstance(path, DataFrame):
+        if PANDAS_READY and isinstance(path, DataFrame):
             buffer = StringIO(path.to_csv(index=False))
             return self._create_local_source(file_name=buffer, args=args)
         if is_url(path):
             return self._create_remote_source(path, args=args)
         if isinstance(path, list):
             try:
-                if all([get_id(item) is not None \
-                        for item in path]):
+                if all(get_id(item) is not None \
+                       for item in path):
                     # list of sources
                     return self._create_composite(path, args=args)
             except ValueError:
@@ -398,7 +398,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         if annotations_info.get("source_id") is None:
             # upload the compressed images
             source = self.create_source(zip_path, args=args)
-            if (not self.ok(source)):
+            if not self.ok(source):
                 raise IOError("A source could not be created for %s" %
                               zip_path)
             source_id = source["resource"]
@@ -501,7 +501,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
         for annotation in annotations:
             filename = annotation.get("file")
             try:
-                file_index = file_list.index(filename)
+                _ = file_list.index(filename)
             except ValueError:
                 continue
             for key in annotation.keys():
@@ -512,6 +512,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 value = annotation.get(key)
                 changes_dict[key].append((value, file_to_source[filename]))
 
+        #pylint: disable=locally-disabled,broad-except
         for field, values in changes_dict.items():
             try:
                 optype = fields.fields[fields.field_id(field)]["optype"]
@@ -577,17 +578,6 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                             message="A source id is needed.")
         source = self.get_source(source)
         return resource_is_ready(source)
-
-    def clone_source(self, source,
-                     args=None, wait_time=3, retries=10):
-        """Creates a cloned source from an existing `source`
-
-        """
-        create_args = self._set_clone_from_args(
-            source, "source", args=args, wait_time=wait_time, retries=retries)
-
-        body = json.dumps(create_args)
-        return self._create(self.source_url, body)
 
     def list_sources(self, query_string=''):
         """Lists all your remote sources.

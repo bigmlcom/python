@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=invalid-name
 #
 # Copyright 2017-2022 BigML
 #

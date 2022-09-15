@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=invalid-name,missing-function-docstring
 #
 # Copyright 2017-2022 BigML
 #
@@ -22,6 +23,7 @@ numpy.
 
 import numpy as np
 
+#pylint: disable=locally-disabled,no-name-in-module
 from scipy.special import expit
 
 from bigml.laminar.constants import LARGE_EXP, MATRIX_PARAMS, \

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2016-2022 BigML
 #
@@ -73,7 +74,7 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
             image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
                 ",".join(SPECIFIC_EXCLUDES[resource_type])
             model_info = check_resource(topic_model_id,
-                                        query_string=IMAGE_FIELDS_FILTER,
+                                        query_string=image_fields_filter,
                                         wait_time=wait_time,
                                         retries=retries,
                                         raise_on_error=True,

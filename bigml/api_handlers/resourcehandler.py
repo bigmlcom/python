@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method,unused-import
 #
 # Copyright 2014-2022 BigML
 #
@@ -420,7 +421,7 @@ def get_resource_id(resource):
             resource_re.match(resource) for _, resource_re
             in list(c.RESOURCE_RE.items())):
         return resource
-    return
+    return None
 
 
 def exception_on_error(resource, logger=None):
@@ -556,6 +557,7 @@ def http_ok(resource):
     """
     if 'code' in resource:
         return resource['code'] in [HTTP_OK, HTTP_CREATED, HTTP_ACCEPTED]
+    return False
 
 
 class ResourceHandlerMixin(metaclass=abc.ABCMeta):
@@ -566,7 +568,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
 
     """
     @abc.abstractmethod
-    def prepare_image_fields(model, input_data):
+    def prepare_image_fields(self, model_info, input_data):
         """This is an abstract method that should be implemented in the API
         final class to create sources for the image fields used in the model
 
@@ -595,6 +597,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
         if resource_id:
             kwargs.update({"resource_id": resource_id})
             return self._get("%s%s" % (self.url, resource_id), **kwargs)
+        return None
 
     def update_resource(self, resource, changes, **kwargs):
         """Updates a remote resource.
@@ -619,6 +622,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
         resource_id = get_resource_id(resource)
         if resource_id:
             return self._delete("%s%s" % (self.url, resource_id), **kwargs)
+        return None
 
     def _download_resource(self, resource, filename, retries=10):
         """Download CSV information from downloadable resources
@@ -634,6 +638,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                               filename=filename,
                               retries=retries)
 
+    #pylint: disable=locally-disabled,invalid-name
     def ok(self, resource, query_string='', wait_time=1,
            max_requests=None, raise_on_error=False, retries=None,
            error_retries=None, max_elapsed_estimate=float('inf'), debug=False):
@@ -669,11 +674,10 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                                max_requests, raise_on_error, retries,
                                error_retries - 1, max_elapsed_estimate,
                                debug)
-            else:
-                resource.update(new_resource)
-                if raise_on_error:
-                    exception_on_error(resource, logger=LOGGER)
-                return False
+            resource.update(new_resource)
+            if raise_on_error:
+                exception_on_error(resource, logger=LOGGER)
+            return False
 
         new_resource = check_resource( \
             resource,
@@ -692,6 +696,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
             if resource["error"] is not None:
                 return maybe_retrying(resource, error_retries)
 
+            #pylint: disable=locally-disabled,bare-except
             if raise_on_error:
                 exception_on_error(resource, logger=LOGGER)
             else:
@@ -700,9 +705,8 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                 except:
                     return False
             return True
-        else:
-            return maybe_retrying(resource, error_retries,
-                                  new_resource=new_resource)
+        return maybe_retrying(resource, error_retries,
+                              new_resource=new_resource)
 
     def _set_create_from_datasets_args(self, datasets, args=None,
                                        wait_time=3, retries=10, key=None):

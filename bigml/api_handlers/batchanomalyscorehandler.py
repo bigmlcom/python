@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -63,7 +64,7 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_anomaly_score_url, body)
-        return
+        return None
 
     def get_batch_anomaly_score(self, batch_anomaly_score, query_string=''):
         """Retrieves a batch anomaly score.

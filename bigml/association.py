@@ -105,7 +105,7 @@ class Association(ModelFields):
     that can be used to extract associations information.
 
     """
-
+    #pylint: disable=locally-disabled,access-member-before-definition
     def __init__(self, association, api=None, cache_get=None):
 
 
@@ -447,6 +447,7 @@ class Association(ModelFields):
         for metric in ASSOCIATION_METRICS:
             out.write("\n\nTop %s by %s:\n\n" % (
                 limit, METRIC_LITERALS[metric]))
+            #pylint: disable=locally-disabled,cell-var-from-loop
             top_rules = sorted(rules, key=lambda x: getattr(x, metric),
                                reverse=True)[0: limit * 2]
             out_rules = []

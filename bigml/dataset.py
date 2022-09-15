@@ -19,12 +19,10 @@ Class to store Dataset transformations based on the Dataset API response
 
 """
 
-import copy
-
 from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
 from bigml.basemodel import get_resource_dict
-from bigml.util import DEFAULT_LOCALE, use_cache, cast
+from bigml.util import DEFAULT_LOCALE, use_cache, cast, load
 from bigml.constants import FINISHED
 from bigml.flatline import Flatline
 
@@ -102,13 +100,10 @@ class Dataset:
 
     def _input_array(self, input_data):
         """Transform the dict-like input data into a row """
-        input_names = input_data.keys()
         new_input_data = {}
         for key, value in input_data.items():
-            headers = self.in_header_ids
             if key not in self.in_fields.fields:
                 key = self.in_fields.fields_by_name.get(key, key)
-                headers = self.in_header_names
             new_input_data.update({key: value})
         cast(new_input_data, self.in_fields.fields)
         row = []

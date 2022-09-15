@@ -73,7 +73,7 @@ def build_classification_tree(node_dict, node=None, distribution=None,
         outer.append(node_dict.get("weight"))
     children = node_dict.get("children", [])
     outer.append(len(children))
-    children_list = list()
+    children_list = []
     for child in children:
         predicate = child.get('predicate')
         field = predicate.get("field")

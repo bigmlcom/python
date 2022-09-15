@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2015-2022 BigML
 #
@@ -58,8 +59,7 @@ class ExecutionHandlerMixin(ResourceHandlerMixin):
         if args is not None:
             create_args.update(args)
 
-        if (isinstance(origin_resource, str) or
-                isinstance(origin_resource, dict)):
+        if isinstance(origin_resource, (dict, str)):
             # single script
             scripts = [origin_resource]
         else:
@@ -71,8 +71,8 @@ class ExecutionHandlerMixin(ResourceHandlerMixin):
                             " a script execution. %s found." %
                             get_resource_type(origin_resource))
 
-        if all([get_resource_type(script_id) == SCRIPT_PATH for
-                script_id in script_ids]):
+        if all(get_resource_type(script_id) == SCRIPT_PATH for
+               script_id in script_ids):
             for script in scripts:
                 check_resource(script,
                                query_string=TINY_RESOURCE,

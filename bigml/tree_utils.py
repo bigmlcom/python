@@ -174,7 +174,7 @@ def java_string(text):
     """Transforms string output for java, cs, and objective-c code
 
     """
-    text = "%s" % text
+    text = f"{text}"
     return text.replace("&quot;", "\"").replace("\"", "\\\"")
 
 
@@ -245,9 +245,9 @@ def slugify(name, reserved_keywords=None, prefix=''):
 
 def plural(text, num):
     """Pluralizer: adds "s" at the end of a string if a given number is > 1
-
     """
-    return "%s%s" % (text, "s"[num == 1:])
+    suffix = "s"[num == 1:]
+    return f"{text}{suffix}"
 
 
 def prefix_as_comment(comment_prefix, text):
@@ -330,9 +330,9 @@ def docstring_comment(model):
     """Returns the docstring describing the model.
 
     """
-    docstring = ("Predictor for %s from %s" % (
-        model.fields[model.objective_id]['name'],
-        model.resource_id))
+    name = model.fields[model.objective_id]['name']
+    resource_id = model.resource_id
+    docstring = f"Predictor for {name} from {resource_id}"
     model.description = (str( \
         model.description).strip() \
         or 'Predictive model by BigML - Machine Learning Made Easy')
@@ -347,16 +347,17 @@ def java_class_definition(model):
     field_obj = model.fields[model.objective_id]
     if not 'CamelCase' in field_obj:
         field_obj['CamelCase'] = to_camel_java(field_obj['name'], False)
+    description = model.description.replace('\n', '\n *  ')
+    field_camelcase = field_obj['CamelCase']
     output = \
-"""
+f"""
 /**
-*  %s
-*  %s
+*  {docstring}
+*  {description}
 */
-public class %s {
-""" % (docstring,
-       model.description.replace('\n', '\n *  '),
-       field_obj['CamelCase'])
+public class {field_camelcase}
+"""
+    output += "{"
     return output
 
 
@@ -369,23 +370,25 @@ def signature_name_vb(text, model):
     obj_field_for_name = to_camel_vb(text, False).replace("V_", "")
     obj_field_for_name = obj_field_for_name.title()
     header = ""
+    name = model.fields[model.objective_id]['name']
+    resource_id = model.resource_id
+    description = model.description if model.description else \
+        default_description
     if model:
-        header = """
+        header = f"""
 '
-' Predictor for %s from %s
-' %s
+' Predictor for {name} from {resource_id}
+' {description}
 '
-""" % (model.fields[model.objective_id]['name'],
-       model.resource_id,
-       model.description if model.description else default_description)
-    return ("Predict{0}".format(obj_field_for_name), header)
+"""
+    return (f"Predict{obj_field_for_name}", header)
 
 
 def localize(number):
     """Localizes `number` to show commas appropriately.
 
     """
-    return locale.format("%d", number, grouping=True)
+    return locale.format_string("%d", number, grouping=True)
 
 
 def is_url(value):
@@ -404,11 +407,12 @@ def print_distribution(distribution, out=sys.stdout):
                    [group[1] for group in distribution])
     output = ""
     for group in distribution:
-        output += "    %s: %.2f%% (%d instance%s)\n" % ( \
-            group[0],
-            round(group[1] * 1.0 / total, 4) * 100,
-            group[1],
-            "" if group[1] == 1 else "s")
+        substr1 = group[0]
+        substr2 = round(group[1] * 1.0 / total, 4) * 100
+        substr3 = group[1]
+        substr4 = "" if group[1] == 1 else "s"
+        output += (f"    {substr1}: {substr2:.2f}% ({substr3} "
+                   f"instance{substr4})\n")
     out.write(output)
     out.flush()
 
@@ -436,14 +440,14 @@ def missing_branch(children):
     """Checks if the missing values are assigned to a special branch
 
     """
-    return any([child.predicate.missing for child in children])
+    return any(child.predicate.missing for child in children)
 
 
 def none_value(children):
     """Checks if the predicate has a None value
 
     """
-    return any([child.predicate.value is None for child in children])
+    return any(child.predicate.value is None for child in children)
 
 
 def one_branch(children, input_data):

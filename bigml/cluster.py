@@ -47,9 +47,9 @@ import codecs
 
 try:
     from pandas import DataFrame
-    pandas_ready = True
+    PANDAS_READY = True
 except ImportError:
-    pandas_ready = False
+    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_cluster_id
@@ -236,8 +236,8 @@ class Cluster(ModelFields):
                 missing_tokens = cluster['clusters'].get('missing_tokens')
                 ModelFields.__init__(self, fields,
                                      missing_tokens=missing_tokens)
-                if not all([field_id in self.fields for
-                            field_id in self.scales]):
+                if not all(field_id in self.fields for
+                            field_id in self.scales):
                     raise Exception("Some fields are missing"
                                     " to generate a local cluster."
                                     " Please, provide a cluster with"
@@ -324,6 +324,7 @@ class Cluster(ModelFields):
                     unique_terms[field_id] = input_data_field
                 del input_data[field_id]
         # the same for items fields
+        #pylint: disable=locally-disabled,consider-using-dict-items
         for field_id in self.item_analysis:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')
@@ -583,6 +584,7 @@ class Cluster(ModelFields):
             return rows
         with UnicodeWriter(file_name) as writer:
             writer.writerows(rows)
+        return file_name
 
     def summarize(self, out=sys.stdout):
         """Prints a summary of the cluster info
@@ -669,11 +671,11 @@ class Cluster(ModelFields):
             if len(new_fields) > len(new_headers):
                 new_headers.expand(new_fields[len(new_headers):])
             else:
-                new_headers[0: len(new_fields)]
+                new_headers = new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
         dataframe = False
-        if pandas_ready and isinstance(input_data_list, DataFrame):
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True
             inner_data_list = input_data_list.to_dict('records')
         else:
@@ -682,7 +684,7 @@ class Cluster(ModelFields):
             prediction = self.centroid(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        if pandas_ready and dataframe:
+        if PANDAS_READY and dataframe:
             return DataFrame.from_dict(inner_data_list)
         return inner_data_list
 

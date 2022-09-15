@@ -560,13 +560,13 @@ def term_analysis_body(fields, term_analysis_predicates,
                     terms = [term]
                     terms.extend(all_forms.get(term, []))
                     term_forms[field['slug']][term] = terms
-        for field in term_forms:
+        for field, field_term_forms in term_forms.items():
             body += """
         \"%s\": {""" % field
-            terms = sorted(term_forms[field].keys())
+            terms = sorted(field_term_forms.keys())
             for term in terms:
                 body += """
-            \"%s\": %s,""" % (term, term_forms[field][term])
+            \"%s\": %s,""" % (term, field_term_forms[term])
             body += """
         },"""
         body += """
@@ -851,6 +851,7 @@ def get_prediction_distribution(model, groups=None):
     return sorted(predictions, key=lambda x: x[0])
 
 
+#pylint: disable=locally-disabled,redefined-builtin
 def summarize(model, out=sys.stdout, format=BRIEF):
     """Prints summary grouping distribution as class header and details
 

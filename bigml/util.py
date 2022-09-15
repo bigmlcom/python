@@ -130,7 +130,7 @@ def localize(number):
     """Localizes `number` to show commas appropriately.
 
     """
-    return locale.format("%d", number, grouping=True)
+    return locale.format_string("%d", number, grouping=True)
 
 
 def is_url(value):
@@ -507,6 +507,7 @@ def save_json(resource, path):
         print("The resource has an invalid JSON format")
     except IOError:
         print("Failed writing resource to %s" % path)
+    return None
 
 
 def save(content, path):
@@ -554,14 +555,14 @@ def check_no_missing_numerics(input_data, fields, weight_field=None):
                              " data must contain values for all numeric"
                              " fields to get a prediction.")
 
-
+#pylint: disable=locally-disabled,too-many-boolean-expressions
 def check_no_training_missings(input_data, fields, weight_field=None,
                                objective_id=None):
     """Checks whether some input fields are missing in the input data
     while not training data has no missings in that field
 
     """
-    for field_id, field in list(fields.items()):
+    for field_id, field in fields.items():
         if (field["optype"] != "datetime" and \
                 field_id not in input_data and \
                 field['summary']['missing_count'] == 0 and \

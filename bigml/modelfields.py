@@ -39,14 +39,13 @@ from bigml.featurizer import Featurizer
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
+#pylint: disable=locally-disabled,bare-except,ungrouped-imports
 try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
     from bigml.images.featurizers import ImageFeaturizer as Featurizer
-    image_ready = True
 except:
-    image_ready = False
-
+    pass
 
 LOGGER = logging.getLogger('BigML')
 
@@ -105,8 +104,8 @@ def check_resource_fields(resource):
         else:
             if fields is None:
                 return False
-            return all([field_id in list(fields.keys()) \
-                for field_id in model_fields])
+            return all(field_id in list(fields.keys()) \
+                for field_id in model_fields)
     return False
 
 
@@ -158,7 +157,7 @@ class ModelFields():
     or anomaly objects
 
     """
-
+    #pylint: disable=locally-disabled,no-member,access-member-before-definition
     def __init__(self, fields, objective_id=None, data_locale=None,
                  missing_tokens=None, categories=False,
                  numerics=False, operation_settings=None, model_fields=None):
@@ -302,39 +301,6 @@ class ModelFields():
             value = str(value, "utf-8")
         return None if value in self.missing_tokens else value
 
-    def expand_datetime_fields(self, input_data):
-        """Returns the values for all the subfields
-        from all the datetime fields in input_data
-
-        """
-        expanded = {}
-        timeformats = get_datetime_formats(self.fields)
-        subfields = get_datetime_subfields(self.fields)
-        for f_id, value in list(input_data.items()):
-            if f_id in subfields:
-                formats = timeformats.get(f_id, [])
-                expanded.update(expand_date(value, subfields[f_id], formats))
-        return expanded
-
-    def add_datetime_parents(self):
-        """Adding the fields information for the fields that generate other
-        datetime fields used in the model
-        """
-        subfields = get_datetime_subfields(self.fields)
-        for f_id in list(subfields.keys()):
-            self.model_fields[f_id] = self.fields[f_id]
-            self.datetime_parents.append(f_id)
-        return self.out_fields
-
-    def remove_parent_datetimes(self, input_data):
-        """Removes the parents of datetime fields
-
-        """
-        for f_id in self.datetime_parents:
-            if f_id in input_data:
-                del input_data[f_id]
-        return input_data
-
     def fill_numeric_defaults(self, input_data):
         """Fills the value set as default for numeric missing fields if user
         created the model with the default_numeric_value option
@@ -385,9 +351,9 @@ class ModelFields():
             # we fill the input with the chosen default, if selected
             new_input = self.fill_numeric_defaults(new_input)
             final_input = {}
-            for key in new_input.keys():
+            for key, value in new_input.items():
                 if key in self.model_fields:
-                    final_input.update({key: new_input[key]})
+                    final_input.update({key: value})
             result = (final_input, unused_fields) if add_unused_fields else \
                 final_input
             return result
@@ -431,6 +397,7 @@ class ModelFields():
                     unique_terms[field_id] = [(input_data_field, 1)]
                 del input_data[field_id]
         # the same for items fields
+        #pylint: disable=locally-disabled,consider-using-dict-items
         for field_id in self.item_analysis:
             if field_id in input_data:
                 input_data_field = input_data.get(field_id, '')

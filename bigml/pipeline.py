@@ -32,12 +32,10 @@ from bigml.api import get_api_connection, get_resource_id, get_resource_type
 from bigml.util import use_cache, load, check_dir
 from bigml.constants import STORAGE
 from bigml.dataset import Dataset
-from bigml.basemodel import BaseModel
 from bigml.supervised import SupervisedModel
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
 from bigml.topicmodel import TopicModel
-from bigml.association import Association
 from bigml.pca import PCA
 
 
@@ -51,6 +49,7 @@ LOCAL_CLASSES = {
 
 
 def get_datasets_chain(dataset, dataset_list=None):
+    """Builds recursively the chain of datasets leading to a dataset """
     if dataset_list is None:
         dataset_list = []
     dataset_list.append(dataset)
@@ -61,6 +60,7 @@ def get_datasets_chain(dataset, dataset_list=None):
 
 
 def get_datasets_dict(dataset, dataset_dict=None):
+    """Stores a dictionary dataset_id -> Dataset for the chain of datasets """
     if dataset_dict is None:
         dataset_dict = {}
     dataset_dict.update({dataset.resource_id: dataset})
@@ -206,8 +206,8 @@ class Pipeline:
             if check_in_path(path, self.resource_list):
                 return path
             # adding a suffix to store old pipeline version
-            bck_path = "%s_%s_bck" % (path,
-                                      str(datetime.now()).replace(" ", "_"))
+            datetime_str = str(datetime.now()).replace(" ", "_")
+            bck_path = f"{path}_{datetime_str}_bck"
             os.rename(path, bck_path)
         check_dir(path)
         return path
@@ -239,7 +239,7 @@ class Pipeline:
         """
         def zipdir(path, ziph):
             # ziph is zipfile handle
-            for root, dirs, files in os.walk(path):
+            for root, _, files in os.walk(path):
                 for file in files:
                     ziph.write(os.path.join(root, file),
                                os.path.relpath(os.path.join(root, file),
@@ -247,12 +247,15 @@ class Pipeline:
 
         if output_directory is None:
             output_directory = os.getcwd()
-        out_filename = os.path.join(output_directory, "%s.zip" % self.name)
+        out_filename = os.path.join(output_directory, f"{self.name}.zip")
         # write README file with the information that describes the Pipeline
-        readme = "Pipeline name: %s\n%s\n\nBuilt from: %s" % (
-            self.name, self.description or "", ", ".join(self.resource_list))
-        with open(os.path.join(self.api.storage, "README.txt"), "w") as \
-                readme_handler:
+        name = self.name
+        description = self.description or ""
+        resources = ", ".join(self.resource_list)
+        readme = (f"Pipeline name: {name}\n{description}\n\n"
+                  f"Built from: {resources}")
+        with open(os.path.join(self.api.storage, "README.txt"), "w",
+                  encoding="utf-8") as readme_handler:
             readme_handler.write(readme)
         with zipfile.ZipFile(out_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             zipdir(self.api.storage, zipf)

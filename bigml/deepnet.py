@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=wrong-import-position,ungrouped-imports
 #
 # Copyright 2017-2022 BigML
 #
@@ -41,22 +42,12 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 """
 import logging
 import os
-import sys
-import tempfile
 
 from functools import cmp_to_key
 
 # avoiding tensorflow info logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
-
-laminar_version = False
-
-try:
-    import tensorflow as tf
-    tf.autograph.set_verbosity(0)
-except ModuleNotFoundError:
-    laminar_version = True
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
@@ -67,16 +58,24 @@ from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
     DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD, \
-    DECIMALS, IMAGE
+    IMAGE
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
+
+try:
+    import tensorflow as tf
+    tf.autograph.set_verbosity(0)
+    LAMINAR_VERSION = False
+except ModuleNotFoundError:
+    LAMINAR_VERSION = True
+
 try:
     from sensenet.models.wrappers import create_model
-    from bigml.images.utils import to_relative_coordinates, remote_preprocess
+    from bigml.images.utils import to_relative_coordinates
     from bigml.constants import IOU_REMOTE_SETTINGS
 except ModuleNotFoundError:
-    laminar_version = True
+    LAMINAR_VERSION = True
 
 LOGGER = logging.getLogger('BigML')
 
@@ -196,7 +195,7 @@ class Deepnet(ModelFields):
                         "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
-                if laminar_version:
+                if LAMINAR_VERSION:
                     if self.regions:
                         raise ValueError("Failed to find the extra libraries"
                                          " that are compulsory for predicting "
@@ -267,7 +266,7 @@ class Deepnet(ModelFields):
                 category = unique_terms.get(field_id)
                 if category is not None:
                     category = category[0][0]
-                if laminar_version:
+                if LAMINAR_VERSION:
                     columns.append([category])
                 else:
                     columns.append(category)
@@ -285,7 +284,7 @@ class Deepnet(ModelFields):
                         columns.extend([0.0, 1.0])
                 else:
                     columns.append(input_data.get(field_id))
-        if laminar_version:
+        if LAMINAR_VERSION:
             return pp.preprocess(columns, self.preprocess)
         return columns
 
@@ -426,10 +425,10 @@ class Deepnet(ModelFields):
 
         """
         if self.regression:
-            if not laminar_version:
+            if not LAMINAR_VERSION:
                 y_out = y_out[0]
             return float(y_out)
-        if laminar_version:
+        if LAMINAR_VERSION:
             y_out = y_out[0]
         prediction = sorted(enumerate(y_out), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],
@@ -469,6 +468,7 @@ class Deepnet(ModelFields):
             return [category['probability'] for category in distribution]
         return distribution
 
+    #pylint: disable=locally-disabled,invalid-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria

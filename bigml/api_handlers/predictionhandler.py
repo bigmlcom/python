@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -30,7 +31,7 @@ from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     check_resource, get_resource_id, get_resource_type
 from bigml.constants import SUPERVISED_PATHS, IMAGE_FIELDS_FILTER, \
-    PREDICTION_PATH, FIELDS_PARENT, SPECIFIC_EXCLUDES
+    PREDICTION_PATH, SPECIFIC_EXCLUDES
 
 
 class PredictionHandlerMixin(ResourceHandlerMixin):
@@ -81,7 +82,7 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
             image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
                 ",".join(SPECIFIC_EXCLUDES[resource_type])
             model_info = check_resource(model_id,
-                                        query_string=IMAGE_FIELDS_FILTER,
+                                        query_string=image_fields_filter,
                                         wait_time=wait_time,
                                         retries=retries,
                                         raise_on_error=True,

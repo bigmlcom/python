@@ -47,9 +47,9 @@ import math
 
 try:
     from pandas import DataFrame
-    pandas_ready = True
+    PANDAS_READY = True
 except ImportError:
-    pandas_ready = False
+    PANDAS_READY = False
 
 from bigml.predicate_utils.utils import OPERATOR_CODE, PREDICATE_INFO_LENGTH
 from bigml.predicate_utils.utils import apply_predicates
@@ -66,7 +66,7 @@ PREDICATES_OFFSET = 3
 
 DFT_OUTPUTS = ["score"]
 
-
+#pylint: disable=locally-disabled,invalid-name
 def get_repeat_depth(population):
     """Computes the correction to depth used to normalize repeats
 
@@ -89,7 +89,7 @@ def build_tree(node, add_population=False):
     When the normalize_repeats flag is set to True, we need to add the
     population of the node: [weight, population, len(predicates), ...]
     """
-    outer = list()
+    outer = []
     outer.append(node.get('weight', 1))
     if add_population:
         outer.append(get_repeat_depth(node.get("population", 0)))
@@ -107,6 +107,7 @@ def build_tree(node, add_population=False):
 
 
 def build_predicates(node, encoded_node):
+    """Build the minified version of the predicate in a node"""
     predicates = node.get('predicates')
     if predicates and not (predicates is True or predicates == [True]):
         predicates = [x for x in predicates if x is not True]
@@ -364,7 +365,7 @@ class Anomaly(ModelFields):
             new_headers = DFT_OUTPUTS
 
         dataframe = False
-        if pandas_ready and isinstance(input_data_list, DataFrame):
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True
             inner_data_list = input_data_list.to_dict('records')
         else:
@@ -373,6 +374,6 @@ class Anomaly(ModelFields):
             prediction = {"score": self.anomaly_score(input_data, **kwargs)}
             for index, key in enumerate(DFT_OUTPUTS):
                 input_data[new_headers[index]] = prediction[key]
-        if pandas_ready and dataframe:
+        if PANDAS_READY and dataframe:
             return DataFrame.from_dict(inner_data_list)
         return inner_data_list

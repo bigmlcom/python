@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -65,7 +66,7 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_prediction_url, body)
-        return
+        return None
 
     def get_batch_prediction(self, batch_prediction, query_string=''):
         """Retrieves a batch prediction.

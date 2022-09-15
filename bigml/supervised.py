@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=super-init-not-called
 #
 # Copyright 2018-2022 BigML
 #
@@ -45,9 +46,9 @@ import os
 
 try:
     from pandas import DataFrame
-    pandas_ready = True
+    PANDAS_READY = True
 except ImportError:
-    pandas_ready = False
+    PANDAS_READY = False
 
 from bigml.api import get_resource_id, get_resource_type, \
     get_api_connection, get_ensemble_id
@@ -95,9 +96,9 @@ def extract_id(model, api):
             resource_id = get_resource_id(model)
             if resource_id is None:
                 for resource_type in COMPONENT_CLASSES.keys():
-                    if resource.find("%s/" % resource_type) > -1:
+                    if model.find("%s/" % resource_type) > -1:
                         raise Exception(
-                            api.error_message(resource,
+                            api.error_message(model,
                                               resource_type=resource_type,
                                               method="get"))
                 raise IOError("Failed to open the expected JSON file"
@@ -142,9 +143,11 @@ class SupervisedModel(BaseModel):
         self.local_model = local_model
 
     def predict(self, *args, **kwargs):
+        """Delegating method to local model object"""
         return self.local_model.predict(*args, **kwargs)
 
     def predict_probability(self, *args, **kwargs):
+        """Delegating method to local model object"""
         new_kwargs = {}
         new_kwargs.update(kwargs)
         try:
@@ -181,11 +184,11 @@ class SupervisedModel(BaseModel):
             if len(new_fields) > len(new_headers):
                 new_headers.expand(new_fields[len(new_headers):])
             else:
-                new_headers[0: len(new_fields)]
+                new_headers = new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
         dataframe = False
-        if pandas_ready and isinstance(input_data_list, DataFrame):
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True
             inner_data_list = input_data_list.to_dict('records')
         else:
@@ -195,10 +198,11 @@ class SupervisedModel(BaseModel):
             prediction = self.predict(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        if pandas_ready and dataframe:
+        if PANDAS_READY and dataframe:
             return DataFrame.from_dict(inner_data_list)
         return inner_data_list
 
+    #pylint: disable=locally-disabled,arguments-differ
     def dump(self, **kwargs):
         """Delegate to local model"""
         self.local_model.dump(**kwargs)

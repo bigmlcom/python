@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=dangerous-default-value
 #
 # Copyright 2012-2022 BigML
 #
@@ -207,8 +208,8 @@ class MultiVote():
            returned
         """
         if (instance.predictions and full and
-                not all([CONFIDENCE_W in prediction
-                         for prediction in instance.predictions])):
+                not all(CONFIDENCE_W in prediction
+                        for prediction in instance.predictions)):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
@@ -266,8 +267,8 @@ class MultiVote():
            predictions) is also returned
         """
         if (instance.predictions and full and
-                not all([CONFIDENCE_W in prediction
-                         for prediction in instance.predictions])):
+                not all(CONFIDENCE_W in prediction
+                        for prediction in instance.predictions)):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
@@ -321,9 +322,9 @@ class MultiVote():
         """Normalizes error to a [0, top_range] and builds probabilities
 
         """
-        if instance.predictions and not all([CONFIDENCE_W in prediction
-                                             for prediction
-                                             in instance.predictions]):
+        if instance.predictions and not all(CONFIDENCE_W in prediction
+                                            for prediction
+                                            in instance.predictions):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
@@ -369,10 +370,10 @@ class MultiVote():
         else:
             self.predictions.append(predictions)
 
-        if not all(['order' in prediction for prediction in predictions]):
+        if not all('order' in prediction for prediction in predictions):
 
-            for i in range(len(self.predictions)):
-                self.predictions[i]['order'] = i
+            for i, prediction in enumerate(self.predictions):
+                prediction['order'] = i
 
     def is_regression(self):
         """Returns True if all the predictions are numbers
@@ -381,8 +382,8 @@ class MultiVote():
         if self.boosting:
             return any(prediction.get('class') is None for
                        prediction in self.predictions)
-        return all([isinstance(prediction['prediction'], numbers.Number)
-                    for prediction in self.predictions])
+        return all(isinstance(prediction['prediction'], numbers.Number)
+                   for prediction in self.predictions)
 
     def next_order(self):
         """Return the next order to be assigned to a prediction
@@ -415,8 +416,8 @@ class MultiVote():
         # and all predictions should have the weight-related keys
         if keys is not None:
             for key in keys:
-                if not all([key in prediction for prediction
-                            in self.predictions]):
+                if not all(key in prediction for prediction
+                           in self.predictions):
                     raise Exception("Not enough data to use the selected "
                                     "prediction method. Try creating your"
                                     " model anew.")
@@ -482,8 +483,8 @@ class MultiVote():
            them and associate the sum of weights (the weight being the
            contents of the weight_label field of each prediction)
         """
-        if not all([weight_label in prediction
-                    for prediction in self.predictions]):
+        if not all(weight_label in prediction
+                   for prediction in self.predictions):
             raise Exception("Not enough data to use the selected "
                             "prediction method. Try creating your"
                             " model anew.")
@@ -572,8 +573,8 @@ class MultiVote():
             if prediction['prediction'] == combined_prediction]
         if (weight_label is not None and
                 (not isinstance(weight_label, str) or
-                 any([not CONFIDENCE_W or weight_label not in prediction
-                      for prediction in predictions]))):
+                 any(not CONFIDENCE_W or weight_label not in prediction
+                     for prediction in predictions))):
             raise ValueError("Not enough data to use the selected "
                              "prediction method. Lacks %s information." %
                              weight_label)

@@ -356,7 +356,8 @@ class EnsemblePredictor():
         """
         if not os.path.isfile(directory) and not os.path.exists(directory):
             os.makedirs(directory)
-            open(os.path.join(directory, "__init__.py"), "w").close()
+            with open(os.path.join(directory, "__init__.py"), mode='w'):
+                pass
         for model_id in self.model_ids:
             local_model = Model(model_id, api=self.api,
                                 fields=self.fields)

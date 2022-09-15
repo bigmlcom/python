@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=R1732
 #
 # Copyright (c) 2015-2022 BigML, Inc
 #

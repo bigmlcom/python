@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=invalid-name
 #
 # Copyright 2022 BigML
 #
@@ -21,10 +22,9 @@ images in BigML. They are used in Modefields to extend the original input
 data provided for local predictions.
 
 """
-
+import os
 import math
 import numpy as np
-import os
 
 
 from PIL import Image
@@ -46,14 +46,14 @@ WAVELET = "wavelet_subbands"
 def resize_to(image, top_size=TOP_SIZE):
     """Resizing the image to a maximum width or height """
     width, height = image.size
-    if width > TOP_SIZE or height > TOP_SIZE:
+    if width > top_size or height > top_size:
         if width > height:
             ratio = height / width
-            image = image.resize((TOP_SIZE , int(ratio * TOP_SIZE)),
+            image = image.resize((top_size , int(ratio * top_size)),
                                  Image.BICUBIC)
         else:
             ratio = width / height
-            image = image.resize((int(ratio * TOP_SIZE), TOP_SIZE),
+            image = image.resize((int(ratio * top_size), top_size),
                                   Image.BICUBIC)
     return image
 
@@ -107,11 +107,12 @@ def average_pixels_extractor(image_file):
 
 
 def get_bin(value, bin_width):
+    """Returns the bin where a value falls in."""
     return math.floor(value / bin_width)
 
 
 def get_luminance(image_a):
-    """Getting the Y coordinate in YUV in terms of the RGB channel info"""
+    """Getting the Y coordinate in YUV in terms of the RGB channel info."""
     r = image_a[:, :, 0]
     g = image_a[:, :, 1]
     b = image_a[:, :, 2]
@@ -121,6 +122,7 @@ def get_luminance(image_a):
     return image_l
 
 def level_histogram_extractor(image_file):
+    """Level histogram feature extractor."""
     image = Image.open(image_file)
     image = resize_to(image)
     image_a = np.array(image)
@@ -136,10 +138,11 @@ def level_histogram_extractor(image_file):
     for index, _ in enumerate(output):
         output[index] /= pixels_per_channel
 
-    return output;
+    return output
 
 
 def HOG_transform(image_a):
+    """Histogram of Gradients transformation."""
     image_l = get_luminance(image_a)
     height, width = image_l.shape
     if height > 2 and width > 2:
@@ -160,12 +163,12 @@ def HOG_transform(image_a):
                     if y_edge > 0:
                         trans_image[y][x][1] = np.pi
                     elif y_edge < 0:
-                            trans_image[y][x][1] = 0
+                        trans_image[y][x][1] = 0
                     else:
                         trans_image[y][x][1] = np.nan
                 else:
                     trans_image[y][x][1] = math.atan(
-                        y_edge / x_edge) + (np.pi / 2);
+                        y_edge / x_edge) + (np.pi / 2)
     else:
         trans_image = np.empty((height, width, 2))
         for y in range(0, height):
@@ -177,38 +180,39 @@ def HOG_transform(image_a):
 
 
 def HOG_aggregate(trans_image, grid_size):
+    """Histogram of Gradients aggregation."""
+    # Laplace correction to avoid zero norm; kind of arbitrary
+    features = np.ones(((grid_size * grid_size), HOG_BINS))
 
-        # Laplace correction to avoid zero norm; kind of arbitrary
-        features = np.ones(((grid_size * grid_size), HOG_BINS))
+    bounds = grid_coords(trans_image, grid_size)
+    for index, bound in enumerate(bounds):
+        h_start, w_start, h_end, w_end = bound
+        for y in range(h_start, h_end):
+            for x in range(w_start, w_end):
+                mag = trans_image[y][x][0]
+                angle = trans_image[y][x][1]
 
-        bounds = grid_coords(trans_image, grid_size)
-        for index, bound in enumerate(bounds):
-            h_start, w_start, h_end, w_end = bound
-            for y in range(h_start, h_end):
-                for x in range(w_start, w_end):
-                    mag = trans_image[y][x][0]
-                    angle = trans_image[y][x][1]
+                if mag > 0:
+                    if angle >= np.pi:
+                        low = HOG_BINS - 1
+                    else:
+                        low = get_bin(angle, HOG_BIN_WIDTH)
+                    high = (low + 1) % HOG_BINS
 
-                    if mag > 0:
-                        if angle >= np.pi:
-                            low = HOG_BINS - 1
-                        else:
-                            low = get_bin(angle, HOG_BIN_WIDTH)
-                        high = (low + 1) % HOG_BINS;
+                    high_weight = (
+                        angle - low * HOG_BIN_WIDTH) / HOG_BIN_WIDTH
+                    low_weight = 1 - high_weight
 
-                        high_weight = (
-                            angle - low * HOG_BIN_WIDTH) / HOG_BIN_WIDTH
-                        low_weight = 1 - high_weight
-
-                        # Split vote between adjacent bins
-                        features[index][low] += mag * low_weight
-                        features[index][high] += mag * high_weight
-            norm = np.linalg.norm(features[index])
-            features[index] = features[index] / norm
-        return features
+                    # Split vote between adjacent bins
+                    features[index][low] += mag * low_weight
+                    features[index][high] += mag * high_weight
+        norm = np.linalg.norm(features[index])
+        features[index] = features[index] / norm
+    return features
 
 
 def HOG_extractor(image_file):
+    """Histogram of Gradients Feature extractor"""
     image = Image.open(image_file)
     image = image.convert('RGB')
     image = resize_to(image)
@@ -224,6 +228,7 @@ def HOG_extractor(image_file):
 
 
 def energy_parameters(values, coords):
+    """Energy parameters computation."""
     if len(values) < 2 and len(values[0]) < 2:
         return np.array([values[0][0], 0])
     count = 0
@@ -244,6 +249,7 @@ def energy_parameters(values, coords):
 
 
 def haar1Ds(signal):
+    """1-dimensional Haard components."""
     output = np.empty((2, max([1, int(len(signal) / 2)])))
 
     if len(signal) > 1:
@@ -260,13 +266,14 @@ def haar1Ds(signal):
 
 
 def haar1D(image, vertical):
+    """1-dimensional Haard vertical component."""
     if vertical:
         image = image.transpose()
 
     output = np.empty((2, len(image), max([1, int(len(image[0]) / 2)])))
 
-    for i in range(0, len(image)):
-        row_decomp = haar1Ds(image[i])
+    for i, cell in enumerate(image):
+        row_decomp = haar1Ds(cell)
         output[0][i] = row_decomp[0]
         output[1][i] = row_decomp[1]
 
@@ -278,6 +285,7 @@ def haar1D(image, vertical):
 
 
 def haar2D(image):
+    """2-dimensional Haard components."""
     h_mean, h_detail = haar1D(image, False)
     average, vertical = haar1D(h_mean, True)
     horizontal, diagonal = haar1D(h_detail, True)
@@ -286,38 +294,39 @@ def haar2D(image):
 
 
 def wavelet_subbands_aggregate(trans_image, grid_size):
-        index = 0
-        features = np.empty((((len(trans_image) - 1) * len(DECOMPS) + 1) *
-            grid_size * grid_size * 2,))
-        features.astype('d')
-        bounds = []
-        for i in range(len(trans_image)):
-            bounds.append(grid_coords(trans_image[i][0], grid_size))
-        for cell in range(grid_size * grid_size):
-            for i in range(len(trans_image)):
-                for j in range(len(trans_image[i])):
-                    params = energy_parameters(
-                        trans_image[i][j], bounds[i][cell])
-                    features[index] = params[0]
-                    features[index + 1] = params[1]
+    """Wavelet subbands aggregation. """
+    index = 0
+    features = np.empty((((len(trans_image) - 1) * len(DECOMPS) + 1) *
+        grid_size * grid_size * 2,))
+    features.astype('d')
+    bounds = []
+    for cell in trans_image:
+        bounds.append(grid_coords(cell[0], grid_size))
+    for cell_index in range(grid_size * grid_size):
+        for i, row in enumerate(trans_image):
+            for cell in row:
+                params = energy_parameters(
+                    cell, bounds[i][cell_index])
+                features[index] = params[0]
+                features[index + 1] = params[1]
 
-                    index += len(params)
+                index += len(params)
 
-        return features
+    return features
 
 
 def wavelet_subbands_transform(image_a, levels):
+    """Haard Wavelet subbands transformation."""
     image_l = get_luminance(image_a)
-    height, width = image_l.shape
 
     output = []
 
-    for i in range(0, levels):
+    for _ in range(0, levels):
         level_output = []
         decomp = haar2D(image_l)
         for j in range(0, len(DECOMPS)):
             level_output.append(decomp[j + 1])
-        image_l = decomp[0];
+        image_l = decomp[0]
         output.append(level_output)
 
     output.append([image_l])
@@ -326,6 +335,7 @@ def wavelet_subbands_transform(image_a, levels):
 
 
 def wavelet_subbands_extractor(image_file, levels):
+    """Wavelet subbands feature extractor."""
     image = Image.open(image_file)
     image = image.convert('RGB')
     image = resize_to(image)
@@ -348,6 +358,7 @@ IMAGE_EXTRACTORS = {
 IMAGE_PROVENANCE = list(IMAGE_EXTRACTORS.keys()) + [PRETRAINED, WAVELET]
 
 
+#pylint: disable=locally-disabled,bare-except
 def get_image_extractors(res_object, field_id):
     """Returns the feature extractor function for an image field"""
     extractors = []
@@ -357,12 +368,12 @@ def get_image_extractors(res_object, field_id):
         for feature in extracted_features:
             if isinstance(feature, list) and feature[0] == PRETRAINED:
                 _, cnn_name = feature[:]
-                extractors.append(lambda x: list(
-                    create_image_feature_extractor(cnn_name, None)(x))[0])
+                extractors.append(lambda x, param=cnn_name: list(
+                    create_image_feature_extractor(param, None)(x))[0])
             elif isinstance(feature, list) and feature[0] == WAVELET:
                 _, levels = feature[:]
-                extractors.append(lambda x:
-                    wavelet_subbands_extractor(x, levels))
+                extractors.append(lambda x, param=levels:
+                    wavelet_subbands_extractor(x, param))
             else:
                 extractors.append(IMAGE_EXTRACTORS[feature])
 
@@ -386,6 +397,7 @@ def expand_image(res_object, parent_id, image_file):
 
 
 class ImageFeaturizer(Featurizer):
+    """This class provides methods for image Feature extraction."""
 
     def __init__(self, fields, input_fields, out_fields=None):
         self.fields = fields
@@ -393,6 +405,7 @@ class ImageFeaturizer(Featurizer):
         self.subfields = {}
         self.generators = {}
         self.out_fields = self.add_subfields(out_fields)
+        super().__init__(fields, input_fields, out_fields)
 
     def _add_subfield(self, field_id, field):
         """Adding a subfield and the corresponding generator """

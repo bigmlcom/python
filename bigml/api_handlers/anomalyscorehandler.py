@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -68,10 +69,11 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
             # retrieving fields info from model structure
             model_info = anomaly
         else:
+            # minimal info to check status and prepare image fields
             image_fields_filter = IMAGE_FIELDS_FILTER + "," + \
                 ",".join(SPECIFIC_EXCLUDES[resource_type])
             model_info = check_resource(anomaly_id,
-                                        query_string=IMAGE_FIELDS_FILTER,
+                                        query_string=image_fields_filter,
                                         wait_time=wait_time,
                                         retries=retries,
                                         raise_on_error=True,

@@ -41,6 +41,11 @@ pca.projection({"petal length": 3, "petal width": 1,
 import logging
 import math
 
+try:
+    from pandas import DataFrame
+    PANDAS_READY = True
+except ImportError:
+    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_pca_id
@@ -347,11 +352,11 @@ class PCA(ModelFields):
             if len(new_fields) > len(new_headers):
                 new_headers.expand(new_fields[len(new_headers):])
             else:
-                new_headers[0: len(new_fields)]
+                new_headers = new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
         dataframe = False
-        if pandas_ready and isinstance(input_data_list, DataFrame):
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True
             inner_data_list = input_data_list.to_dict('records')
         else:
@@ -361,6 +366,6 @@ class PCA(ModelFields):
             prediction = self.projection(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        if pandas_ready and dataframe:
+        if PANDAS_READY and dataframe:
             return DataFrame.from_dict(inner_data_list)
         return inner_data_list

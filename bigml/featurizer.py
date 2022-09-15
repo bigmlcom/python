@@ -54,6 +54,7 @@ def expand_date(res_object, parent_id, date):
 
 
 class Featurizer:
+    """A class to generate the components derived from a composed field """
 
     def __init__(self, fields, input_fields, out_fields=None):
         self.fields = fields

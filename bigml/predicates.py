@@ -52,6 +52,6 @@ class Predicates():
 
         """
 
-        return all([predicate.apply(input_data, fields) for
-                    predicate in self.predicates
-                    if isinstance(predicate, Predicate)])
+        return all(predicate.apply(input_data, fields) for
+                   predicate in self.predicates
+                   if isinstance(predicate, Predicate))

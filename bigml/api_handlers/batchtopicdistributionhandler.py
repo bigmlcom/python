@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2016-2022 BigML
 #
@@ -62,7 +63,7 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.batch_topic_distribution_url, body)
-        return
+        return None
 
     def get_batch_topic_distribution(self, batch_topic_distribution,
                                      query_string=''):

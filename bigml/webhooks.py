@@ -26,17 +26,15 @@ except ImportError:
     import sha
     sha1 = sha.sha
 
-from collections import OrderedDict
-
 
 SORTING_SEQUENCE = ["timestamp", "message", "resource", "event"]
 
 
-def dict_to_msg(object):
+def dict_to_msg(obj):
     """Builds a representation of the dict object in a specific key sequence"""
     pair_list = []
     for key in SORTING_SEQUENCE:
-        pair_list.append("'%s': '%s'" % (key, object.get(key)))
+        pair_list.append("'%s': '%s'" % (key, obj.get(key)))
     return "{%s}" % ", ".join(pair_list)
 
 
@@ -50,15 +48,15 @@ def compute_signature(msg, secret, encoding="utf-8"):
 
 
 def check_signature(request, secret):
+    """Checks the signature when the webhook has been given one"""
     sig_header = request.META['HTTP_X_BIGML_SIGNATURE'].replace('sha1=', '')
     payload = request.body
     computed_sig = compute_signature(payload, secret)
     if sig_header == computed_sig:
         return True
-    else:
-        # code for old version of the msg hash
-        payload = dict_to_msg(json.loads(payload))
-        computed_sig = compute_signature(payload, secret)
-        if sig_header == computed_sig:
-            return True
+    # code for old version of the msg hash
+    payload = dict_to_msg(json.loads(payload))
+    computed_sig = compute_signature(payload, secret)
+    if sig_header == computed_sig:
+        return True
     return False

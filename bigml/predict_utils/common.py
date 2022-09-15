@@ -53,14 +53,14 @@ def missing_branch(children):
     """Checks if the missing values are assigned to a special branch
 
     """
-    return any([child[MISSING_OFFSET] for child in children])
+    return any(child[MISSING_OFFSET] for child in children)
 
 
 def none_value(children):
     """Checks if the predicate has a None value
 
     """
-    return any([child[VALUE_OFFSET] is None for child in children])
+    return any(child[VALUE_OFFSET] is None for child in children)
 
 
 def extract_distribution(summary):
@@ -71,6 +71,7 @@ def extract_distribution(summary):
     for group in DISTRIBUTION_GROUPS:
         if group in summary:
             return group, summary.get(group)
+    return None, []
 
 
 def last_prediction_predict(tree, offsets, fields, input_data, path=None):
@@ -123,6 +124,7 @@ def last_prediction_predict(tree, offsets, fields, input_data, path=None):
             node[offsets["max"]])
 
 
+#pylint: disable=locally-disabled,inconsistent-return-statements
 def proportional_predict(tree, offsets, fields, input_data, path=None,
                          missing_found=False, median=False, parent=None):
     """Makes a prediction based on a number of field values averaging

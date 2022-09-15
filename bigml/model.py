@@ -48,6 +48,7 @@ model.python()
 
 """
 import logging
+#pylint: disable=locally-disabled,unused-import
 import locale
 
 from functools import cmp_to_key
@@ -102,10 +103,13 @@ PYTHON_CONV = {
     "day-of-week": "lambda x: int(locale.atof(x))",
     "day-of-month": "lambda x: int(locale.atof(x))"}
 
+
+#pylint: disable=locally-disabled,eval-used
 PYTHON_FUNC = {numtype: eval(function)
                for numtype, function in PYTHON_CONV.items()}
 
 
+#pylint: disable=locally-disabled,invalid-name
 def init_structure(to):
     """Creates the empty structure to store predictions depending on the
     chosen format.
@@ -118,6 +122,7 @@ def init_structure(to):
         else []
 
 
+#pylint: disable=locally-disabled,unused-argument,invalid-name,redefined-builtin
 def cast_prediction(full_prediction, to=None,
                     confidence=False, probability=False,
                     path=False, distribution=False,
@@ -154,7 +159,6 @@ def cast_prediction(full_prediction, to=None,
     prediction_properties = [ \
         "prediction", "confidence", "probability", "path", "distribution",
         "count", "next", "d_min", "d_max", "median", "unused_fields"]
-    prediction = True
     result = init_structure(to)
     for prop in prediction_properties:
         value = full_prediction.get(prop)
@@ -170,6 +174,7 @@ def cast_prediction(full_prediction, to=None,
     return result
 
 
+#pylint: disable=locally-disabled,invalid-name,redefined-outer-name
 def sort_categories(a, b, categories_list):
     """Sorts a list of dictionaries with category keys according to their
     value and order in the categories_list. If not found, alphabetic order is
@@ -423,11 +428,11 @@ class Model(BaseModel):
 
                 if terms:
                     # only the terms used in the model are kept
-                    for field_id in terms:
+                    for field_id, field_terms in terms.items():
                         if self.tag_clouds.get(field_id):
-                            self.tag_clouds[field_id] = terms[field_id]
+                            self.tag_clouds[field_id] = field_terms
                         elif self.items.get(field_id):
-                            self.items[field_id] = terms[field_id]
+                            self.items[field_id] = field_terms
 
                 if self.boosting:
                     self.tree_type = BOOSTING
@@ -604,6 +609,7 @@ class Model(BaseModel):
         del prediction["category"]
         return prediction
 
+    #pylint: disable=locally-disabled,invalid-name,redefined-outer-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
         given criteria

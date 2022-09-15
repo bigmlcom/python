@@ -44,6 +44,11 @@ except ImportError:
     raise ImportError("Failed to import the Stemmer module. You need to"
                       " install pystemmer to use the Topic Model class.")
 
+try:
+    from pandas import DataFrame
+    PANDAS_READY = True
+except ImportError:
+    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_topic_model_id
@@ -85,7 +90,7 @@ class TopicModel(ModelFields):
     to generate topic distributions for input documents locally.
 
     """
-
+    #pylint: disable=locally-disabled,c-extension-no-member,invalid-name
     def __init__(self, topic_model, api=None, cache_get=None):
 
         self.lang = None
@@ -407,11 +412,11 @@ class TopicModel(ModelFields):
             if len(new_fields) > len(new_headers):
                 new_headers.expand(new_fields[len(new_headers):])
             else:
-                new_headers[0: len(new_fields)]
+                new_headers = new_headers[0: len(new_fields)]
         else:
             new_headers = new_fields
         dataframe = False
-        if pandas_ready and isinstance(input_data_list, DataFrame):
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True
             inner_data_list = input_data_list.to_dict('records')
         else:
@@ -425,7 +430,7 @@ class TopicModel(ModelFields):
             for ikey, key in enumerate(new_fields):
                 inner_data_list[index][new_headers[ikey]] = prediction_dict[
                     key]
-        if pandas_ready and dataframe:
+        if PANDAS_READY and dataframe:
             return DataFrame.from_dict(inner_data_list)
         return inner_data_list
 

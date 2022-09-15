@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=abstract-method
 #
 # Copyright 2014-2022 BigML
 #
@@ -65,7 +66,7 @@ class EvaluationHandlerMixin(ResourceHandlerMixin):
         if origin_resources_checked:
             body = json.dumps(create_args)
             return self._create(self.evaluation_url, body)
-        return
+        return None
 
     def get_evaluation(self, evaluation, query_string=''):
         """Retrieves an evaluation.

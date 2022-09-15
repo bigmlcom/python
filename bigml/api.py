@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=too-many-ancestors,non-parent-init-called, unused-import, no-member
 #
 # Copyright 2012-2022 BigML
 #
@@ -191,6 +192,55 @@ ID_GETTERS = {
 }
 
 
+PREDICTIONS = [PREDICTION_RE , PROJECTION_RE, ANOMALY_SCORE_RE,
+               CENTROID_RE, TOPIC_DISTRIBUTION_RE, ASSOCIATION_SET_RE]
+
+PREDICTION_LABELS = {
+    "anomalyscore": "score",
+    "topicdistribution": "topic distribution",
+    "associationset": "association set"}
+
+
+def get_resources_re(exceptions=None):
+    """Returning the patterns that correspond to a filtered subset of
+    resources.
+    """
+    if exceptions is None:
+        exceptions = {}
+    resources_re = list(RESOURCE_RE.values())
+    for res_re in exceptions:
+        resources_re.remove(res_re)
+    return resources_re
+
+
+NON_PREDICTIONS = get_resources_re(PREDICTIONS)
+
+
+def get_prediction_label(resource_id):
+    """Gets the label to be prepended to predictions according to their type"""
+    resource_type = get_resource_type(resource_id)
+    return PREDICTION_LABELS.get(resource_type, resource_type)
+
+
+#pylint: disable=locally-disabled,too-many-return-statements
+def get_prediction_attr(resource):
+    """Getting the attribute that contains the prediction, score, etc. """
+    if PREDICTION_RE.match(resource["resource"]):
+        return resource['object']['prediction'][
+            resource['object']['objective_fields'][0]]
+    if PROJECTION_RE.match(resource["resource"]):
+        return resource["object"]["projection"]["result"]
+    if ANOMALY_SCORE_RE.match(resource["resource"]):
+        return resource["object"]["score"]
+    if CENTROID_RE.match(resource["resource"]):
+        return resource["object"]["centroid_name"]
+    if TOPIC_DISTRIBUTION_RE.match(resource["resource"]):
+        return resource["object"]["topic_distribution"]["result"]
+    if ASSOCIATION_SET_RE.match(resource["resource"]):
+        return resource["object"]["association_set"]["result"]
+    return ""
+
+
 def count(listing):
     """Count of existing resources
 
@@ -214,7 +264,7 @@ def filter_kwargs(kwargs, list_of_keys, out=False):
     return new_kwargs
 
 
-class BigML(ExternalConnectorHandlerMixin,
+class BigML(BigMLConnection,ExternalConnectorHandlerMixin,
             LinearRegressionHandlerMixin, BatchProjectionHandlerMixin,
             ProjectionHandlerMixin, PCAHandlerMixin,
             ConfigurationHandlerMixin, FusionHandlerMixin,
@@ -231,7 +281,7 @@ class BigML(ExternalConnectorHandlerMixin,
             AnomalyScoreHandlerMixin, AnomalyHandlerMixin,
             CentroidHandlerMixin, ClusterHandlerMixin, PredictionHandlerMixin,
             EnsembleHandlerMixin, ModelHandlerMixin, DatasetHandlerMixin,
-            SourceHandlerMixin, ResourceHandlerMixin, BigMLConnection):
+            SourceHandlerMixin, ResourceHandlerMixin):
     """Entry point to create, retrieve, list, update, and delete
     BigML resources.
 
@@ -279,12 +329,14 @@ class BigML(ExternalConnectorHandlerMixin,
         given by the organization administrator.
 
         """
-        BigMLConnection.__init__(self, username=username, api_key=api_key,
-                                 debug=debug,
-                                 set_locale=set_locale, storage=storage,
-                                 domain=domain, project=project,
-                                 organization=organization,
-                                 short_debug=short_debug)
+        # first BigMLConnection needs to exist
+        super().__init__(username=username, api_key=api_key,
+                         debug=debug,
+                         set_locale=set_locale, storage=storage,
+                         domain=domain, project=project,
+                         organization=organization,
+                         short_debug=short_debug)
+        # adding mixins properties
         ResourceHandlerMixin.__init__(self)
         SourceHandlerMixin.__init__(self)
         DatasetHandlerMixin.__init__(self)
@@ -361,7 +413,7 @@ class BigML(ExternalConnectorHandlerMixin,
         """
         new_input_data = {}
         new_input_data.update(input_data)
-
+        #pylint: disable=locally-disabled,broad-except
         try:
             fields = self.get_fields(model_info)
             image_fields = [field_pair for field_pair in fields.items()
@@ -551,7 +603,7 @@ class BigML(ExternalConnectorHandlerMixin,
                                               query_string=ALL_FIELDS)
         else:
             LOGGER.error("Wrong resource id")
-            return
+            return None
         # Tries to extract fields information from resource dict. If it fails,
         # a get remote call is used to retrieve the resource by id.
         fields = None
@@ -562,6 +614,7 @@ class BigML(ExternalConnectorHandlerMixin,
             fields = get_fields(resource)
         return fields
 
+    #pylint: disable=locally-disabled,no-self-use
     def pprint(self, resource, out=sys.stdout):
         """Pretty prints a resource or part of it.
 
@@ -572,26 +625,11 @@ class BigML(ExternalConnectorHandlerMixin,
                 and 'resource' in resource):
 
             resource_id = resource['resource']
-            if (SOURCE_RE.match(resource_id) or DATASET_RE.match(resource_id)
-                    or MODEL_RE.match(resource_id)
-                    or EVALUATION_RE.match(resource_id)
-                    or ENSEMBLE_RE.match(resource_id)
-                    or CLUSTER_RE.match(resource_id)
-                    or ANOMALY_RE.match(resource_id)
-                    or TOPIC_MODEL_RE.match(resource_id)
-                    or LOGISTIC_REGRESSION_RE.match(resource_id)
-                    or TIME_SERIES_RE.match(resource_id)
-                    or DEEPNET_RE.match(resource_id)
-                    or FUSION_RE.match(resource_id)
-                    or PCA_RE.match(resource_id)
-                    or LINEAR_REGRESSION_RE.match(resource_id)
-                    or OPTIML_RE.match(resource_id)):
+            if (any(getattr(res_re, "match")(resource_id) for res_re
+                    in NON_PREDICTIONS)):
                 out.write("%s (%s bytes)\n" % (resource['object']['name'],
                                                resource['object']['size']))
             elif PREDICTION_RE.match(resource['resource']):
-                objective_field_name = (
-                    resource['object']['fields'][
-                        resource['object']['objective_fields'][0]]['name'])
                 input_data = {}
                 for key, value in list(resource['object']['input_data'].items()):
                     try:
@@ -599,11 +637,15 @@ class BigML(ExternalConnectorHandlerMixin,
                     except KeyError:
                         name = key
                     input_data[name] = value
-
-                prediction = (
-                    resource['object']['prediction'][
-                        resource['object']['objective_fields'][0]])
-                out.write("%s for %s is %s\n" % (objective_field_name,
+                try:
+                    prediction_label = (
+                        resource['object']['fields'][
+                            resource['object']['objective_fields'][0]]['name'])
+                except IndexError:
+                    prediction_label = get_prediction_label(
+                        resource["resource"])
+                prediction = get_prediction_attr(resource)
+                out.write("%s for %s is %s\n" % (prediction_label,
                                                  input_data,
                                                  prediction))
             out.flush()
@@ -624,7 +666,7 @@ class BigML(ExternalConnectorHandlerMixin,
         status = get_status(resource)
         if status['code'] != UPLOADING:
             LOGGER.error("Wrong resource id")
-            return
+            return None
         return STATUSES[UPLOADING]
 
     def check_resource(self, resource,
@@ -649,6 +691,7 @@ class BigML(ExternalConnectorHandlerMixin,
             download_url = "%s%s%s%s" % (self.url, batch_prediction_id,
                                          DOWNLOAD_DIR, self.auth)
             return self._create_remote_source(download_url, args=args)
+        return None
 
     def retrieve_resource(self, resource_id, query_string=None,
                           check_local_fn=None, retries=None):

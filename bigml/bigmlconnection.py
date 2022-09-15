@@ -40,11 +40,10 @@ except ImportError:
 
 import bigml.constants as c
 
-from bigml.util import (check_dir,
-                        maybe_save, get_exponential_wait)
+from bigml.util import check_dir, maybe_save, get_exponential_wait
 from bigml.util import DEFAULT_LOCALE
 from bigml.domain import Domain
-from bigml.domain import DEFAULT_DOMAIN, BIGML_PROTOCOL
+from bigml.domain import DEFAULT_DOMAIN
 
 
 LOG_FORMAT = '%(asctime)-15s: %(message)s'
@@ -127,6 +126,7 @@ def json_load(content):
 # Patch for requests
 #
 ##############################################################################
+#pylint: disable=locally-disabled,broad-except,used-before-assignment
 def patch_requests(short_debug):
     """ Monkey patches requests to get debug output.
 
@@ -147,6 +147,7 @@ def patch_requests(short_debug):
         response_content
         logging.debug("Response: %s\n", response_content)
         return response
+
     original_request = requests.api.request
     requests.api.request = debug_request
 
@@ -166,8 +167,7 @@ class BigMLConnection():
     """
     def __init__(self, username=None, api_key=None,
                  debug=False, set_locale=False, storage=None, domain=None,
-                 project=None, organization=None, short_debug=False,
-                 shared_key=None):
+                 project=None, organization=None, short_debug=False):
         """Initializes the BigML API.
 
         If left unspecified, `username` and `api_key` will default to the

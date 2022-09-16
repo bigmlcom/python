@@ -32,12 +32,12 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
     for resource_id in models_list:
         inner_files.append(resource_id.replace("/", "_"))
 
-    with zipfile.ZipFile(res_filename(pipeline_file), 'r') as zip_ref:
+    pipeline_file = res_filename(pipeline_file)
+    with zipfile.ZipFile(pipeline_file, 'r') as zip_ref:
         filenames = [os.path.basename(filename) for
                      filename in zip_ref.namelist()]
         assert all(filename in filenames for filename in inner_files)
-        zip_ref.extractall()
-
+        zip_ref.extractall(os.path.dirname(pipeline_file))
 
 
 #@step(r'I create a local pipeline for "(.*)" named "(.*)"$')

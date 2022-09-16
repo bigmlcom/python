@@ -162,7 +162,7 @@ def cast_prediction(full_prediction, to=None,
     result = init_structure(to)
     for prop in prediction_properties:
         value = full_prediction.get(prop)
-        if eval(prop):
+        if prop == prediction_properties[0] or eval(prop):
             if to is None:
                 # tuple
                 result = result + (value,)

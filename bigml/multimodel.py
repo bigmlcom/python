@@ -198,7 +198,7 @@ class MultiModel():
             to the correct type will be applied.
         """
         votes = MultiVote([])
-        for model in enumerate(self.models):
+        for model in self.models:
             prediction_info = model._predict( \
                 input_data,
                 missing_strategy=missing_strategy, unused_fields=unused_fields)

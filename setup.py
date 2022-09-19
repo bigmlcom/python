@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 - 2017-2021 BigML, Inc
+# Copyright 2012-2022 BigML, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -32,7 +32,7 @@ version = re.search("__version__ = '([^']+)'",
                     open(version_py_path).read()).group(1)
 
 TOPIC_MODELING_DEPENDENCIES = ["cython", "pystemmer==2.0.1"]
-IMAGES_DEPENDENCIES = ["bigml-sensenet==0.6.3"]
+IMAGES_DEPENDENCIES = ["bigml-sensenet==0.7.0"]
 
 # Concatenate files into the long description
 file_contents = []
@@ -53,7 +53,7 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['nose'],
     install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-        "requests-toolbelt", "msgpack", "numpy<1.22,>=1.21", "scipy",
+        "requests-toolbelt", "msgpack", "numpy>=1.22,<1.24", "scipy",
         "javascript"],
     extras_require={"images": IMAGES_DEPENDENCIES,
                     "topics": TOPIC_MODELING_DEPENDENCIES,

@@ -3,6 +3,11 @@
 History
 -------
 
+8.1.1 (2022-09-21)
+------------------
+
+- Fixing bug in api.ok: response to failing API calls.
+
 8.1.0 (2022-09-16)
 ------------------
 

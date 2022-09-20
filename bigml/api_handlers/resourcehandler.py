@@ -463,6 +463,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
        parameter.
 
     """
+
     resource_id = get_resource_id(resource)
     # ephemeral predictions
     if isinstance(resource, dict) and resource.get("resource") is None:
@@ -481,7 +482,9 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     elif get_method is None:
         raise ValueError("You must supply either the get_method or the api"
                          " connection info to retrieve the resource")
-    if not isinstance(resource, dict) and not http_ok(resource):
+
+    if not isinstance(resource, dict) or not http_ok(resource) or \
+            resource.get("object") is None:
         resource = resource_id
 
     if isinstance(resource, str):
@@ -497,6 +500,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
     counter = 0
     elapsed = 0
     while retries is None or counter < retries:
+
         counter += 1
         status = get_status(resource)
         code = status['code']

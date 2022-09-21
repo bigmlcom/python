@@ -249,10 +249,11 @@ decimal number in the [0, 1] range
 
 .. code-block:: python
 
-    def progress_log(progress):
-        """Logs the progress"""
+    def progress_log(progress, resource):
+        """Logs the progress of a resource"""
+        resource_id = resource["resource"]
         progress_percentage = int(progress * 100)
-        print(f"The resource progress is {progress_percentage}%")
+        print(f"The progress of {resource_id} is {progress_percentage}%")
 
     dataset = api.get_dataset("anomaly/5e4ee08e440ca13244102dbd")
     api.ok(dataset, progress_cb=progress_log)

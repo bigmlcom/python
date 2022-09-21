@@ -529,7 +529,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
                 print("Progress: %s" % progress)
             try:
                 if progress_cb is not None:
-                    progress_cb(progress)
+                    progress_cb(progress, resource)
             except:
                 print("WARNING: Progress callback raised exception. Please,"
                       "double check your function.")

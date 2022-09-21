@@ -451,7 +451,8 @@ def exception_on_error(resource, logger=None):
 
 def check_resource(resource, get_method=None, query_string='', wait_time=1,
                    retries=None, raise_on_error=False,
-                   max_elapsed_estimate=float('inf'), api=None, debug=False):
+                   max_elapsed_estimate=float('inf'), api=None, debug=False,
+                   progress_cb=None):
     """Waits until a resource is finished.
 
        Given a resource and its corresponding get_method (if absent, the
@@ -520,7 +521,24 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             if raise_on_error:
                 exception_on_error(resource)
             return resource
-        _wait_time = get_exponential_wait(wait_time, counter)
+        # resource is ok
+        progress = 0
+        if status is not None:
+            progress = status.get("progress", 0)
+            if debug:
+                print("Progress: %s" % progress)
+            try:
+                if progress_cb is not None:
+                    progress_cb(progress)
+            except:
+                print("WARNING: Progress callback raised exception. Please,"
+                      "double check your function.")
+            status_code = status.get("code")
+            progress = progress if progress > 0.8 \
+                else 0 # dumping when almost finished
+        progress_dumping = (1 - progress)
+        _wait_time = get_exponential_wait(wait_time,
+            max(int(counter * progress_dumping), 1))
         _max_wait = max_elapsed_estimate - _wait_time
         _wait_time = min(_max_wait, _wait_time)
         if _wait_time <= 0:
@@ -645,7 +663,8 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
     #pylint: disable=locally-disabled,invalid-name
     def ok(self, resource, query_string='', wait_time=1,
            max_requests=None, raise_on_error=False, retries=None,
-           error_retries=None, max_elapsed_estimate=float('inf'), debug=False):
+           error_retries=None, max_elapsed_estimate=float('inf'), debug=False,
+           progress_cb=None):
         """Waits until the resource is finished or faulty, updates it and
            returns True when a finished resource is correctly retrieved
            and False if the retrieval fails or the resource is faulty.
@@ -691,8 +710,8 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
             max_elapsed_estimate=max_elapsed_estimate,
             raise_on_error=False, # we don't raise on error to update always
             api=self,
-            debug=debug)
-
+            debug=debug,
+            progress_cb=progress_cb)
 
         if http_ok(new_resource):
             resource.update(new_resource)

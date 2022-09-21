@@ -224,7 +224,9 @@ error to be raised in both the HTTP problem or faulty resource scenarios.
 The ``api.ok`` method is repeatedly calling the API but it sleeps for some
 time between calls. The sleeping time is set by using an exponential function
 that generates a random number in a range. The upper limit of that range is
-increasing with the number of retries. The parameters like the initial
+increasing with the number of retries. When the progress of the resource
+reaches 80%, the waiting times descend by applying a progress dumping.
+The parameters like the initial
 waiting time, the number of retries or the estimate of the maximum elapsed
 time can be provided to fit every particular case.
 
@@ -240,8 +242,25 @@ time can be provided to fit every particular case.
     # initialized again and the sleep period will start from 60s
     # repeating the increasing process.
 
+Sometimes, it can be useful to report the progress of the resource. To that
+end, ``api.ok`` accepts a ``progress_cb`` callback function that will be called
+every time that the status is checked internally. The progress will be a
+decimal number in the [0, 1] range
 
-If you don't want the contents of the variable to be updated, you can
+.. code-block:: python
+
+    def progress_log(progress):
+        """Logs the progress"""
+        progress_percentage = int(progress * 100)
+        print(f"The resource progress is {progress_percentage}%")
+
+    dataset = api.get_dataset("anomaly/5e4ee08e440ca13244102dbd")
+    api.ok(dataset, progress_cb=progress_log)
+
+
+As explained previously, the ``api.ok`` method updates the contents of the
+variable that is given as first argument. If you prefer to wait
+for the resource without side effects on that variable, you can
 also use the ``check_resource`` function:
 
 .. code-block:: python

@@ -3,11 +3,15 @@
 History
 -------
 
-8.2.0 (2022-09-21)
+8.2.0 (2022-09-22)
+------------------
+
+- Adding new option to api.ok to report progress via a function callback.
+
+8.1.1 (2022-09-21)
 ------------------
 
 - Fixing bug in api.ok: response to failing API calls.
-- Adding new option to api.ok to report progress via a function callback.
 
 8.1.0 (2022-09-16)
 ------------------

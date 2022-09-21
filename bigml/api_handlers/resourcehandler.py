@@ -681,6 +681,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                                     This is not a hard limit for the method
                                     to end, but an estimation of time to wait.
              debug: (boolean) Whether to print traces for every get call
+             progress_cb: (function) Callback function to log progress
 
         """
         def maybe_retrying(resource, error_retries, new_resource=None):

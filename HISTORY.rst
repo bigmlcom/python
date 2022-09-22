@@ -3,6 +3,11 @@
 History
 -------
 
+8.2.1 (2022-09-23)
+------------------
+
+- Fixing update annotations function when creating annotated images sources.
+
 8.2.0 (2022-09-22)
 ------------------
 

@@ -440,6 +440,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
             source = self.get_source(source_id)
             if source.get("object", {}).get("closed"):
                 source = self.clone_source(source_id)
+        self.ok(source)
         # corresponding source IDs
         try:
             sources = source["object"]["sources"]

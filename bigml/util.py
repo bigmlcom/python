@@ -213,12 +213,11 @@ def locale_synonyms(main_locale, locale_alias):
         return False
     alternatives = LOCALE_SYNONYMS[language_code]
     if isinstance(alternatives[0], str):
-        return main_locale in alternatives and locale_alias in alternatives
+        return locale_alias in alternatives
     result = False
     for subgroup in alternatives:
-        if main_locale in subgroup:
-            result = locale_alias in subgroup
-            break
+        result = locale_alias in subgroup
+        break
     return result
 
 

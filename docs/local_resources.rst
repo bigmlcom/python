@@ -102,6 +102,10 @@ the API when needed are retrieved from the ``BIGML_USERNAME`` and
 environment, any attempt to download the information will raise a condition
 asking the user to set these variables.
 
+If a connection with no ``storage`` information is provided, then the models
+will never be stored in your local file system, and will be retrieved from
+BigML's API each time the local model is instantiated.
+
 Ensembles and composite objects, like Fusions, need more than one resource
 to be downloaded and stored locally for the class to work. In this case,
 the class needs all the component models,
@@ -2144,10 +2148,11 @@ should be applied and after that, both the prediction and the anomaly score
 should be computed and added to the initial data. The ``Pipeline`` class
 will help us do that.
 
-Fist, we instantiate the ``Pipeline`` object by providing the models
+First, we instantiate the ``Pipeline`` object by providing the models
 that we want it to use and a name for it:
 
 .. code-block:: python
+
     from bigml.pipeline import Pipeline
     local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
                                "anomaly/5143a51a37203f2cf7027551"],
@@ -2164,6 +2169,7 @@ model's prediction and the anomaly's score. All of them will be added to the
 original input data.
 
 .. code-block:: python
+
     local_pipeline.execute([{"plasma glucose": 130, "bmi":3},
                             {"age":26, "plasma glucose": 70}])
     """That could produce a result such as
@@ -2178,6 +2184,7 @@ the API connection info and/or a ``cache_get`` function to be used when
 resources are stored in memory caches.
 
 .. code-block:: python
+
     from bigml.pipeline import Pipeline
     local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
                                "anomaly/5143a51a37203f2cf7027551"],
@@ -2197,6 +2204,7 @@ a ``.zip`` file whose name is the name of the ``Pipeline`` and will
 be placed in the ``output_directory`` given by the user:
 
 .. code-block:: python
+
     from bigml.pipeline import Pipeline
     local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
                                "anomaly/5143a51a37203f2cf7027551"],
@@ -2208,6 +2216,120 @@ be placed in the ``output_directory`` given by the user:
 In this example, we wil find a ``my_export_dir/my new pipeline.zip`` file
 in the current directory. The file contains a ``my new pipeline`` folder where
 the four JSONs for the two datasets and two models are stored.
+
+Local batch predictions
+-----------------------
+
+As explained in the ``101s`` provided in the `Quick Start<#quick_start>`_
+section, batch predictions for a list of inputs can be obtained by iterating
+the single predictions discussed in each different local model. However,
+we've also provided a homogeneous ``batch_prediction`` method in the following
+local objects:
+
+
+- SupervisedModel
+- Anomaly
+- Cluster
+- PCA
+- TopicModel
+
+which can receive the following parameters:
+
+- input_data_list:  This can be a list of input data, expressed as a
+                    dictionary containing ``field_name: field_value`` pairs or
+                    a Pandas' DataFrame
+- outputs:          That's a dictionary that can contain ``output_fields``
+                    and/or ``output_headers`` information. Each one is
+                    defined by default as the list of prediction keys to be
+                    added to the inputs and the list of headers to be used
+                    as keys in the output. E.g., for a supervised learning
+                    model, the default if no information is provided would
+                    be equivalent to ``{"output_fields": ["prediction",
+                    "probability"], "output_headers": ["prediction",
+                    "probability"]}`` and both the prediction and the
+                    associated probability would be added to the input data.
+- **kwargs:         Any other parameters allowed in the ``.predict`` method
+                    could be added to the batch prediction too. For instance,
+                    we could add the operating kind to a supervised model
+                    batch prediction using ``operating_kind=probability`` as
+                    argument.
+
+
+Let's write some examples. If we are reading data from a CSV, we can use the
+``csv`` library and pass the list of inputs as an array to an anomaly detector.
+
+.. code-block:: python
+
+    import csv
+
+    from bigml.anomaly import Anomaly
+
+    input_data_list = []
+    with open("my_input_data.csv") as handler:
+        reader = csv.DictReader(handler)
+        for row_dict in reader:
+            input_data_list.append(row_dict)
+
+    local_anomaly = Anomaly("anomaly/5143a51a37203f2cf7027551")
+    scored_data_list = local_anomaly.batch_predict(input_data_list)
+
+Or if we are using a Pandas' ``DataFrame`` instead to read the data, we could
+also use the DataFrame directly as input argument:
+
+.. code-block:: python
+
+    import pandas as pd
+
+    from bigml.anomaly import Anomaly
+    dataframe = pd.read_csv("my_input_data.csv")
+
+    local_anomaly = Anomaly("anomaly/5143a51a37203f2cf7027551")
+    scored_dataframe = local_anomaly.batch_predict(dataframe)
+
+Now, let's add some complexity and do use a supervised model. We'd like to
+add both the predicted value and the associated probability but we'd like
+to use an ``operating point`` when predicting. The operating point needs
+specifying a positive class, the kind of metric to compare (probabily or
+confidence) and the threshold to use. We also want the prediction to
+be added to the input data using the key ``sm_prediction``. In this case, the
+code would be similar to
+
+.. code-block:: python
+
+    import pandas as pd
+
+    from bigml.supervised import SupervisedModel
+    dataframe = pd.read_csv("my_input_data.csv")
+
+    local_supervised = SupervisedModel("ensemble/5143a51a37203f2cf7027551")
+    operating_point = {"positive_class": "yes",
+                       "kind": "probability",
+                       "threshold": 0.7}
+    predicted_dataframe = local_supervised.batch_predict(
+        dataframe,
+        outputs={"output_headers": ["sm_prediction", "probability"]},
+        operating_point=operating_point)
+
+and the result would be like the one below:
+
+.. code-block:: python
+
+    >>>predicted_dataframe
+         pregnancies  plasma glucose  ...  sm_prediction  probability
+    0              6             148  ...           true      0.95917
+    1              1              85  ...          false      0.99538
+    2              8             183  ...           true      0.93701
+    3              1              89  ...          false      0.99452
+    4              0             137  ...           true      0.90622
+    ..           ...             ...  ...            ...          ...
+    195            1             117  ...          false      0.90906
+    196            5             123  ...          false      0.97179
+    197            2             120  ...          false      0.99300
+    198            1             106  ...          false      0.99452
+    199            2             155  ...          false      0.51737
+
+    [200 rows x 11 columns]
+
 
 Local predictions with shared models
 ------------------------------------

@@ -3,6 +3,13 @@
 History
 -------
 
+8.2.2 (2022-09-29)
+------------------
+
+- Fixing locale check.
+- Documenting the new ``.batch_predict`` method added to local models to
+  homogenize local batch predictions and accept Pandas' DataFrame as input.
+
 8.2.1 (2022-09-23)
 ------------------
 

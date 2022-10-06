@@ -139,6 +139,8 @@ class Ensemble(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.objective_id = None
         self.distributions = None
@@ -213,6 +215,8 @@ class Ensemble(ModelFields):
                                              no_check_fields=True)
 
             self.dataset_id = ensemble.get('object', {}).get('dataset')
+            self.name = ensemble.get('object', {}).get('name')
+            self.description = ensemble.get('object', {}).get('description')
             if ensemble['object'].get('type') == BOOSTING:
                 self.boosting = ensemble['object'].get('boosting')
             self.distributions = ensemble['object'].get('distributions', [])

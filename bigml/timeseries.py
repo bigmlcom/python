@@ -141,6 +141,8 @@ class TimeSeries(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.input_fields = []
         self.default_numeric_value = None
@@ -164,6 +166,8 @@ class TimeSeries(ModelFields):
             isinstance(time_series['object'], dict):
             time_series = time_series['object']
             self.dataset_id = time_series.get('dataset')
+            self.name = time_series.get("name")
+            self.description = time_series.get("description")
         try:
             self.input_fields = time_series.get("input_fields", [])
             self.default_numeric_value = time_series.get( \

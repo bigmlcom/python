@@ -119,6 +119,8 @@ class LogisticRegression(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.class_names = None
         self.input_fields = []
@@ -152,6 +154,8 @@ class LogisticRegression(ModelFields):
             isinstance(logistic_regression['object'], dict):
             logistic_regression = logistic_regression['object']
             self.dataset_id = logistic_regression.get('dataset')
+            self.name = logistic_regression.get("name")
+            self.description = logistic_regression.get("description")
         try:
             self.input_fields = logistic_regression.get("input_fields", [])
             self.default_numeric_value = logistic_regression.get(

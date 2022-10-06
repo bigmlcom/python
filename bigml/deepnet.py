@@ -136,6 +136,8 @@ class Deepnet(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.regression = False
         self.network = None
@@ -153,6 +155,8 @@ class Deepnet(ModelFields):
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
             self.dataset_id = deepnet.get('dataset')
+            self.name = deepnet.get('name')
+            self.description = deepnet.get('description')
         self.input_fields = deepnet['input_fields']
         self.default_numeric_value = deepnet.get('default_numeric_value')
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):

@@ -202,6 +202,8 @@ class Anomaly(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.sample_size = None
         self.input_fields = None
@@ -218,6 +220,8 @@ class Anomaly(ModelFields):
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']
             self.dataset_id = anomaly.get('dataset')
+            self.name = anomaly.get("name")
+            self.description = anomaly.get("description")
             self.sample_size = anomaly.get('sample_size')
             self.input_fields = anomaly.get('input_fields')
             self.default_numeric_value = anomaly.get('default_numeric_value')
@@ -359,11 +363,7 @@ class Anomaly(ModelFields):
         """
         if outputs is None:
             outputs = {}
-        if outputs.get(OUT_NEW_HEADERS):
-            new_headers = outputs.get(OUT_NEW_HEADERS, DFT_OUTPUTS)
-        else:
-            new_headers = DFT_OUTPUTS
-
+        new_headers = outputs.get(OUT_NEW_HEADERS, DFT_OUTPUTS)
         dataframe = False
         if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True

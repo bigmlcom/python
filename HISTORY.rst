@@ -3,6 +3,13 @@
 History
 -------
 
+8.2.3 (2022-10-07)
+------------------
+
+- Fixing dump methods for all local resources.
+- Refactoring output options in batch_predict methods.
+- Adding name and description to local resources.
+
 8.2.2 (2022-09-29)
 ------------------
 

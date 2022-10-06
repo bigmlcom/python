@@ -103,6 +103,8 @@ class TopicModel(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.seed = None
         self.case_sensitive = False
@@ -120,6 +122,8 @@ class TopicModel(ModelFields):
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']
             self.dataset_id = topic_model.get('dataset')
+            self.name = topic_model.get("name")
+            self.description = topic_model.get("description")
         if 'topic_model' in topic_model \
                 and isinstance(topic_model['topic_model'], dict):
             status = get_status(topic_model)
@@ -405,16 +409,13 @@ class TopicModel(ModelFields):
         """
         if outputs is None:
             outputs = {}
-        if outputs.get(OUT_NEW_FIELDS) is None:
-            new_fields = [topic["name"] for topic in self.topics]
-        if outputs.get(OUT_NEW_HEADERS):
-            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
-            if len(new_fields) > len(new_headers):
-                new_headers.expand(new_fields[len(new_headers):])
-            else:
-                new_headers = new_headers[0: len(new_fields)]
+        new_fields = outputs.get(OUT_NEW_FIELDS, [topic["name"] for topic
+            in self.topics])
+        new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+        if len(new_fields) > len(new_headers):
+            new_headers.expand(new_fields[len(new_headers):])
         else:
-            new_headers = new_fields
+            new_headers = new_headers[0: len(new_fields)]
         dataframe = False
         if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True

@@ -139,6 +139,8 @@ class Fusion(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.models_ids = None
         self.objective_id = None
         self.distribution = None
@@ -156,6 +158,8 @@ class Fusion(ModelFields):
 
         if 'object' in fusion:
             fusion = fusion.get('object', {})
+            self.name = fusion.get('name')
+            self.description = fusion.get('description')
         self.model_ids, self.weights = get_models_weight( \
             fusion['models'])
         model_types = [get_resource_type(model) for model in self.model_ids]

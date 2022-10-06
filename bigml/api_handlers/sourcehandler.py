@@ -446,7 +446,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
             sources = source["object"]["sources"]
         except KeyError:
             raise ValueError("Failed to find the list of sources in the "
-                             "created composite.")
+                             "created composite: %s." % source["resource"])
         try:
             with ZipFile(images_file) as zip_handler:
                 file_list = zip_handler.namelist()

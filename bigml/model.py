@@ -352,6 +352,8 @@ class Model(BaseModel):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.ids_map = {}
         self.terms = {}
@@ -367,6 +369,8 @@ class Model(BaseModel):
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
             self.dataset_id = model.get('dataset')
+            self.name = model.get('name')
+            self.description = model.get('description')
 
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)

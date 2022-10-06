@@ -141,6 +141,8 @@ class SupervisedModel(BaseModel):
         for attr, value in list(local_model.__dict__.items()):
             setattr(self, attr, value)
         self.local_model = local_model
+        self.name = self.local_model.name
+        self.description = self.local_model.description
 
     def predict(self, *args, **kwargs):
         """Delegating method to local model object"""
@@ -177,16 +179,12 @@ class SupervisedModel(BaseModel):
         """
         if outputs is None:
             outputs = {}
-        if outputs.get(OUT_NEW_FIELDS) is None:
-            new_fields = DFT_OUTPUTS
-        if outputs.get(OUT_NEW_HEADERS):
-            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
-            if len(new_fields) > len(new_headers):
-                new_headers.expand(new_fields[len(new_headers):])
-            else:
-                new_headers = new_headers[0: len(new_fields)]
+        new_fields = outputs.get(OUT_NEW_FIELDS, DFT_OUTPUTS)
+        new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+        if len(new_fields) > len(new_headers):
+            new_headers.expand(new_fields[len(new_headers):])
         else:
-            new_headers = new_fields
+            new_headers = new_headers[0: len(new_fields)]
         dataframe = False
         if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True

@@ -164,6 +164,8 @@ class Cluster(ModelFields):
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.dataset_id = None
         self.cluster_global = None
         self.total_ss = None
@@ -191,7 +193,8 @@ class Cluster(ModelFields):
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
             self.dataset_id = cluster.get('dataset')
-
+            self.name = cluster.get("name")
+            self.description = cluster.get("description")
         if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
             if 'code' in status and status['code'] == FINISHED:
@@ -664,16 +667,12 @@ class Cluster(ModelFields):
         """
         if outputs is None:
             outputs = {}
-        if outputs.get(OUT_NEW_FIELDS) is None:
-            new_fields = DFT_OUTPUTS
-        if outputs.get(OUT_NEW_HEADERS):
-            new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
-            if len(new_fields) > len(new_headers):
-                new_headers.expand(new_fields[len(new_headers):])
-            else:
-                new_headers = new_headers[0: len(new_fields)]
+        new_fields = outputs.get(OUT_NEW_FIELDS, DFT_OUTPUTS)
+        new_headers = outputs.get(OUT_NEW_HEADERS, new_fields)
+        if len(new_fields) > len(new_headers):
+            new_headers.expand(new_fields[len(new_headers):])
         else:
-            new_headers = new_fields
+            new_headers = new_headers[0: len(new_fields)]
         dataframe = False
         if PANDAS_READY and isinstance(input_data_list, DataFrame):
             dataframe = True

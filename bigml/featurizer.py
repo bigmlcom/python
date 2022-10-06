@@ -63,7 +63,6 @@ class Featurizer:
         self.generators = {}
         self.out_fields = self.add_subfields(out_fields)
 
-
     def add_subfields(self, out_fields=None):
         """Adding the subfields information in the fields structure and the
         generating functions for the subfields values.

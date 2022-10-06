@@ -152,7 +152,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     return list(terms_set.items())
 
 
-class ModelFields():
+class ModelFields(Featurizer):
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
 
@@ -174,9 +174,9 @@ class ModelFields():
                                key=lambda x: x[1].get("column_number")) \
                         if not self.objective_id or \
                         field_id != self.objective_id]
-                self.featurizer = Featurizer(self.fields, self.input_fields,
-                                             out_fields=model_fields)
-                self.model_fields = self.featurizer.out_fields
+                super().__init__(self.fields, self.input_fields,
+                                 out_fields=model_fields)
+                self.model_fields = self.out_fields
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -347,7 +347,7 @@ class ModelFields():
                 else:
                     unused_fields.append(key)
             # feature generation (datetime and image features)
-            new_input = self.featurizer.extend_input(new_input)
+            new_input = self.extend_input(new_input)
             # we fill the input with the chosen default, if selected
             new_input = self.fill_numeric_defaults(new_input)
             final_input = {}

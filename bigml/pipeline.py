@@ -182,7 +182,10 @@ class Pipeline:
                 self.local_resources[index].extend(dataset_chain)
                 self.local_resources[index].reverse()
 
-        new_resources = self.local_resources[0][:]
+        try:
+            new_resources = self.local_resources[0][:]
+        except IndexError:
+            new_resources = []
         for index, resources in enumerate(self.local_resources):
             if index < 1:
                 continue

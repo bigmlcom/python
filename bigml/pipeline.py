@@ -25,27 +25,50 @@ etc.) that describes the input data processing.
 import copy
 import os
 import zipfile
+import numpy as np
+import types
+
+try:
+    from pandas import DataFrame, concat
+    PANDAS_READY = True
+except ImportError:
+    PANDAS_READY = False
 
 from datetime import datetime
 
+from bigml.constants import OUT_NEW_HEADERS, DATAFRAME, INTERNAL
 from bigml.api import get_api_connection, get_resource_id, get_resource_type
-from bigml.util import use_cache, load, check_dir
+from bigml.util import use_cache, load, check_dir, get_data_format, \
+    format_data, get_formatted_data
 from bigml.constants import STORAGE
 from bigml.dataset import Dataset
 from bigml.supervised import SupervisedModel
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
-from bigml.topicmodel import TopicModel
 from bigml.pca import PCA
 
+try:
+    from bigml.topicmodel import TopicModel
+    NO_TOPIC = False
+except ImportError:
+    NO_TOPIC = True
 
-LOCAL_CLASSES = {
-    "dataset": Dataset,
-    "cluster": Cluster,
-    "anomaly": Anomaly,
-    "topicmodel": TopicModel,
-    "pca": PCA,
-    }
+
+if NO_TOPIC:
+    LOCAL_CLASSES = {
+        "dataset": Dataset,
+        "cluster": Cluster,
+        "anomaly": Anomaly,
+        "pca": PCA,
+        }
+else:
+    LOCAL_CLASSES = {
+        "dataset": Dataset,
+        "cluster": Cluster,
+        "anomaly": Anomaly,
+        "topicmodel": TopicModel,
+        "pca": PCA,
+        }
 
 
 def get_datasets_chain(dataset, dataset_list=None):
@@ -79,7 +102,201 @@ def check_in_path(path, resource_list):
     return True
 
 
-class Pipeline:
+class Transformer():
+
+    def __init__(self, generator, data_format, resource_id=None, name=None,
+                 description=None):
+        self.generator = generator
+        self.data_format = data_format
+        self.resource_id = resource_id,
+        self.name = name
+        self.description = description
+
+    def __formatted_input(self, input_data_list):
+        """Returns a copy of the input data list in the expected format """
+        return get_formatted_data(input_data_list, self.data_format)
+
+    def transform(self, input_data_list, out_format=None):
+        data_format = get_data_format(input_data_list)
+        inner_data_list = self.__formatted_input(input_data_list)
+        result = self.data_transform(inner_data_list)
+        if self.data_format != data_format and out_format is None:
+            return format_data(result, data_format)
+        elif self.data_format != out_format:
+            return format_data(result, out_format)
+        return result
+
+    def data_transform(input_data_list):
+        """Method to be re-implemented in each of the transformers """
+        return input_data_list
+
+
+class BMLTransformer(Transformer):
+
+    def __init__(self, local_resource, outputs=None, **kwargs):
+        try:
+            generator = local_resource.transform
+        except AttributeError:
+            if hasattr(local_resource, "batch_predict"):
+                generator = lambda x : \
+                    local_resource.batch_predict(x, outputs=outputs, **kwargs)
+            else:
+                raise ValueError("The local resource needs to provide "
+                                 "a transform, or batch_predict "
+                                 "method to generate transformations.")
+        super().__init__(generator,
+                         INTERNAL,
+                         local_resource.resource_id,
+                         local_resource.name,
+                         local_resource.description)
+
+    def data_transform(self, input_data_list):
+        return self.generator(input_data_list)
+
+
+class DFTransformer(Transformer):
+
+    def __init__(self, generator, resource_id=None, name=None,
+                 description=None):
+        if isinstance(generator, list):
+            generator = generator
+        else:
+            generator = [generator]
+        for index, item in enumerate(generator):
+            if not isinstance(item, tuple) and isinstance(
+                    item, types.FunctionType):
+                generator[index] = (item, [], {})
+            elif isinstance(item, tuple) and isinstance(
+                    item[0], types.FunctionType):
+                try:
+                    args = item[1]
+                    if not isinstance(args, list):
+                        raise ValueError("The syntax of the first argument is "
+                                         " function or (function, list, dict)")
+                except IndexError:
+                    args = []
+                try:
+                    kwargs = item[2]
+                    if not isinstance(kwargs, dict):
+                        raise ValueError("The syntax of the first argument is "
+                                         " function or (function, list, dict)")
+                except IndexError:
+                    kwargs = {}
+
+                generator[index] = (item[0], args, kwargs)
+            else:
+                raise ValueError("Only functions or tuples of functions are "
+                                 "allowed as first argument.")
+
+        super().__init__(generator,
+                         DATAFRAME,
+                         resource_id or "dftrans_%s" %
+                             str(datetime.now()).replace(" ", "_"),
+                         name,
+                         description)
+
+    def data_transform(self, input_data_list):
+        """Calling the corresponding method in the generator.
+        The input_data_list is expected to be a Dataframe.
+
+        """
+        result = input_data_list.copy()
+        for function, args, kwargs in self.generator:
+            result = result.pipe(function, *args, **kwargs)
+        return result
+
+
+class SKTransformer(Transformer):
+
+    def __init__(self, generator, resource_id=None, name=None,
+                 description=None, output=None):
+        try:
+            generator_fn = generator.transform
+        except AttributeError:
+            try:
+                generator_fn = generator.predict
+            except AttributeError:
+                try:
+                    generator_fn = generator.score
+                except AttributeError:
+                    raise ValueError("Failed to find a .transform, .predict "
+                                     "or .score method in the first argument "
+                                     "object.")
+
+        super().__init__(generator_fn,
+                         DATAFRAME,
+                         resource_id or "sktrans_%s" %
+                             str(datetime.now()).replace(" ", "_"),
+                         name,
+                         description)
+        self.output = output or {}
+        try:
+            self.output_headers = generator.get_feature_names_out()
+        except AttributeError:
+            self.output_headers = self.output.get(OUT_NEW_HEADERS)
+
+    def data_transform(self, input_data_list):
+        """Calling the corresponding method in the generator.
+        The input_data_list is expected to be a Dataframe.
+
+        """
+        result = self.generator(input_data_list)
+        try:
+            result = result.toarray()
+        except AttributeError:
+            pass
+        df_kwargs = {"index": input_data_list.index}
+        if self.output_headers is not None:
+            df_kwargs.update({"columns": self.output_headers})
+        result = DataFrame(result, **df_kwargs)
+        return concat([input_data_list, result], axis=1)
+
+
+class Pipeline(Transformer):
+    """Class to define sequential transformations. The transformations can
+    come from BigML resources or be defined as Pipe steps defined as functions
+    to be applied to DataFrame pipes, scikit pipelines
+
+    """
+    def __init__(self, name, steps=None, description=None):
+
+        self.name = name
+        self.description = description
+        self.steps = []
+        self.extend(steps)
+
+    def extend(self, steps=None):
+        if steps is None:
+            steps = []
+        for step in steps:
+            if not hasattr(step, "transform"):
+                raise ValueError("Failed to find the .transform method in "
+                    "all the Pipeline steps.")
+        self.steps.extend(steps)
+
+    def transform(self, input_data_list):
+        """Applying the Pipeline transformations and predictions on the
+        list of input data.
+
+        """
+        current_format = get_data_format(input_data_list)
+        inner_data_list = input_data_list.copy()
+        if len(self.steps) > 0:
+            for index, step in enumerate(self.steps[:-1]):
+                try:
+                    inner_data_list = step.transform(inner_data_list)
+                except Exception as exc:
+                    raise ValueError("Failed to apply step number %s: %s" %
+                        (index, exc))
+            try:
+                inner_data_list = self.steps[-1].transform(
+                    inner_data_list, out_format=current_format)
+            except Exception as exc:
+                raise ValueError("Failed to apply the last step: %s" % exc)
+        return inner_data_list
+
+
+class BMLPipeline(Pipeline):
     """The class represents the sequential transformations (and predictions)
     that the input data goes through in a prediction workflow.
     Reproduces the pre-modeling steps that need to be applied before
@@ -134,65 +351,83 @@ class Pipeline:
             self.__dict__ = load(name, cache_get)
             return
 
-        self.name = name
-        self.description = description
-        self.resource_list = resource_list
+        super().__init__(name, description=description)
+
+        # API related attributes
+        self._resource_list = resource_list
         if isinstance(resource_list, str):
-            self.resource_list = [resource_list]
-        self.local_resources = []
-        self.init_settings = init_settings or {}
-        self.execution_settings = execution_settings or {}
-        self.api = get_api_connection(api)
-        self.api.storage = self._get_pipeline_storage()
-        self.cache_get = cache_get
-        self.datasets = {}
+            self._resource_list = [resource_list]
+        for item in self._resource_list:
+            resource_id = get_resource_id(item)
+            if resource_id is None:
+                raise ValueError("Only resource IDs are allowed as first "
+                    "argument.")
+        self._api = get_api_connection(api)
+        self._api.storage = self._get_pipeline_storage()
+        self._cache_get = cache_get
+
+        local_resources = []
+        init_settings = init_settings or {}
+        execution_settings = execution_settings or {}
+        datasets = {}
+        steps = []
 
         kwargs = {}
-        if self.api is not None:
-            kwargs["api"] = self.api
+        if self._api is not None:
+            kwargs["api"] = self._api
         if cache_get is not None:
             kwargs["cache_get"] = cache_get
 
-        for resource_id in self.resource_list:
-            self.init_settings[resource_id] = self.init_settings.get(
+        for resource_id in self._resource_list:
+            init_settings[resource_id] = init_settings.get(
                 resource_id, {})
-            self.init_settings[resource_id].update(kwargs)
+            init_settings[resource_id].update(kwargs)
 
-        for index, resource in enumerate(self.resource_list):
+        for index, resource in enumerate(self._resource_list):
             resource_id = get_resource_id(resource)
             resource_type = get_resource_type(resource_id)
             local_class = LOCAL_CLASSES.get(resource_type, SupervisedModel)
-            kwargs = self.init_settings.get(resource_id, {})
+            kwargs = init_settings.get(resource_id, {})
             local_resource = local_class(resource, **kwargs)
             if isinstance(local_resource, SupervisedModel):
-                self.execution_settings[resource_id] = \
-                    self.execution_settings.get(
+                execution_settings[resource_id] = \
+                    execution_settings.get(
                         resource_id, {})
-                self.execution_settings[resource_id].update({"full": True})
-            self.local_resources.append([local_resource])
+                execution_settings[resource_id].update({"full": True})
+            local_resources.append([local_resource])
             if (hasattr(local_resource, "dataset_id") and \
                     local_resource.dataset_id) or \
                     isinstance(local_resource, Dataset):
-                if local_resource.dataset_id in self.datasets:
-                    dataset = self.datasets[local_resource.dataset_id]
+                if local_resource.dataset_id in datasets:
+                    dataset = datasets[local_resource.dataset_id]
                 else:
-                    dataset = Dataset(local_resource.dataset_id, api=self.api)
-                    self.datasets = get_datasets_dict(dataset, self.datasets)
+                    dataset = Dataset(local_resource.dataset_id,
+                                      api=self._api)
+                    datasets = get_datasets_dict(dataset, datasets)
                 dataset_chain = get_datasets_chain(dataset)
-                self.local_resources[index].extend(dataset_chain)
-                self.local_resources[index].reverse()
+                local_resources[index].extend(dataset_chain)
+                local_resources[index].reverse()
 
         try:
-            new_resources = self.local_resources[0][:]
+            new_resources = local_resources[0][:]
         except IndexError:
             new_resources = []
-        for index, resources in enumerate(self.local_resources):
+        for index, resources in enumerate(local_resources):
             if index < 1:
                 continue
             for resource in resources:
                 if resource not in new_resources:
                     new_resources.append(resource)
-        self.local_resources = new_resources
+        local_resources = new_resources
+        for local_resource in local_resources:
+            # non-flatline datasets will not add transformations
+            if isinstance(local_resource, Dataset) and \
+                    local_resource.transformations is None:
+                continue
+            steps.append(BMLTransformer(
+                local_resource, **execution_settings.get(
+                local_resource.resource_id, {})))
+        self.extend(steps)
 
     def _get_pipeline_storage(self):
         """ Creating a separate folder inside the given storage folder to
@@ -202,11 +437,11 @@ class Pipeline:
         case, we rename the folder by adding a datetime suffix and create a
         new pipeline folder to store them.
         """
-        if self.api.storage is None:
-            self.api.storage = STORAGE
-        path = os.path.join(self.api.storage, self.name)
+        if self._api.storage is None:
+            self._api.storage = STORAGE
+        path = os.path.join(self._api.storage, self.name)
         if os.path.exists(path):
-            if check_in_path(path, self.resource_list):
+            if check_in_path(path, self._resource_list):
                 return path
             # adding a suffix to store old pipeline version
             datetime_str = str(datetime.now()).replace(" ", "_")
@@ -214,26 +449,6 @@ class Pipeline:
             os.rename(path, bck_path)
         check_dir(path)
         return path
-
-    def execute(self, input_data_list):
-        """Applying the Pipeline transformations and predictions on the
-        list of input data.
-
-        """
-
-        inner_data = copy.deepcopy(input_data_list)
-        for index, local_resource in enumerate(self.local_resources):
-            # first dataset will never contain transformations
-            if index < 1:
-                continue
-            if isinstance(local_resource, Dataset):
-                inner_data = local_resource.transform(inner_data)
-            else:
-                execution_settings = self.execution_settings.get(
-                    local_resource.resource_id, {})
-                inner_data = local_resource.batch_predict(
-                    inner_data, **execution_settings)
-        return inner_data
 
     def export(self, output_directory=None):
         """Exports all the resources needed in the pipeline to the user-given
@@ -254,11 +469,11 @@ class Pipeline:
         # write README file with the information that describes the Pipeline
         name = self.name
         description = self.description or ""
-        resources = ", ".join(self.resource_list)
+        resources = ", ".join(self._resource_list)
         readme = (f"Pipeline name: {name}\n{description}\n\n"
                   f"Built from: {resources}")
-        with open(os.path.join(self.api.storage, "README.txt"), "w",
+        with open(os.path.join(self._api.storage, "README.txt"), "w",
                   encoding="utf-8") as readme_handler:
             readme_handler.write(readme)
         with zipfile.ZipFile(out_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            zipdir(self.api.storage, zipf)
+            zipdir(self._api.storage, zipf)

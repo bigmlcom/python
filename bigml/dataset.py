@@ -22,7 +22,7 @@ Class to store Dataset transformations based on the Dataset API response
 from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
 from bigml.basemodel import get_resource_dict
-from bigml.util import DEFAULT_LOCALE, use_cache, cast, load
+from bigml.util import DEFAULT_LOCALE, use_cache, cast, load, dump, dumps
 from bigml.constants import FINISHED
 from bigml.flatline import Flatline
 
@@ -38,6 +38,8 @@ class Dataset:
             return
 
         self.resource_id = None
+        self.name = None
+        self.description = None
         self.rows = None
         self.origin_dataset = None
         self.in_fields = None
@@ -54,7 +56,8 @@ class Dataset:
 
         if 'object' in dataset and isinstance(dataset['object'], dict):
             dataset = dataset['object']
-
+            self.name = dataset.get('name')
+            self.description = dataset.get('description')
         if 'fields' in dataset and isinstance(dataset['fields'], dict):
             status = get_status(dataset)
             if 'code' in status and status['code'] == FINISHED:
@@ -164,3 +167,18 @@ class Dataset:
             results[index] = {key: value for key, value in result.items()
                               if value is not None}
         return results
+
+    def dump(self, output=None, cache_set=None):
+        """Uses msgpack to serialize the resource object
+        If cache_set is filled with a cache set method, the method is called
+
+        """
+        self_vars = vars(self)
+        dump(self_vars, output=output, cache_set=cache_set)
+
+    def dumps(self):
+        """Uses msgpack to serialize the resource object to a string
+
+        """
+        self_vars = vars(self)
+        return dumps(self_vars)

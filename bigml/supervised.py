@@ -58,7 +58,8 @@ from bigml.ensemble import Ensemble
 from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
-from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
+from bigml.util import get_data_format, get_formatted_data
 
 
 COMPONENT_CLASSES = {
@@ -185,19 +186,15 @@ class SupervisedModel(BaseModel):
             new_headers.expand(new_fields[len(new_headers):])
         else:
             new_headers = new_headers[0: len(new_fields)]
-        dataframe = False
-        if PANDAS_READY and isinstance(input_data_list, DataFrame):
-            dataframe = True
-            inner_data_list = input_data_list.to_dict('records')
-        else:
-            inner_data_list = input_data_list[:]
+        data_format = get_data_format(input_data_list)
+        inner_data_list = get_formatted_data(input_data_list, INTERNAL)
         for input_data in inner_data_list:
             kwargs.update({"full": True})
             prediction = self.predict(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        if PANDAS_READY and dataframe:
-            return DataFrame.from_dict(inner_data_list)
+        if data_format != INTERNAL:
+            return format_data(inner_data_list, out_format=INTERNAL)
         return inner_data_list
 
     #pylint: disable=locally-disabled,arguments-differ

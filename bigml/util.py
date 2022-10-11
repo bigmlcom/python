@@ -35,6 +35,12 @@ import msgpack
 
 import bigml.constants as c
 
+try:
+    from pandas import DataFrame, concat
+    PANDAS_READY = True
+except ImportError:
+    PANDAS_READY = False
+
 DEFAULT_LOCALE = 'en_US.UTF-8'
 WINDOWS_DEFAULT_LOCALE = 'English'
 LOCALE_SYNONYMS = {
@@ -649,3 +655,36 @@ def is_image(filename):
     """Checking whether the file is an image based on its extension """
     return os.path.splitext(filename)[1].replace(".", "").lower() \
         in c.IMAGE_EXTENSIONS
+
+
+def get_data_format(input_data_list):
+    """Returns the format used in input_data_list: DataFrame or
+    list of dicts.
+
+    """
+    if PANDAS_READY and isinstance(input_data_list, DataFrame):
+        return c.DATAFRAME
+    if isinstance(input_data_list, list) and (len(input_data_list) == 0 or
+            isinstance(input_data_list[0], dict)):
+        return c.INTERNAL
+    raise ValueError("Data is expected to be provided as a list of "
+                     "dictionaries or Pandas' DataFrame.")
+
+
+def format_data(input_data_list, out_format=None):
+    """Transforms the input data format to the one expected """
+    if out_format == c.DATAFRAME:
+        input_data_list = DataFrame.from_dict(input_data_list)
+    elif out_format == c.INTERNAL:
+        input_data_list = input_data_list.to_dict('records')
+    return input_data_list
+
+
+def get_formatted_data(input_data_list, out_format=None):
+    """Checks the type of data and transforms if needed """
+    current_format = get_data_format(input_data_list)
+    if current_format != out_format:
+        inner_data_list = format_data(input_data_list, out_format)
+    else:
+        inner_data_list = input_data_list.copy()
+    return inner_data_list

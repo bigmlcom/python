@@ -54,8 +54,9 @@ from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_topic_model_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
-from bigml.util import use_cache, load, dump, dumps
-from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
+from bigml.util import use_cache, load, dump, dumps, get_data_format, \
+    get_formatted_data
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
 
 
 LOGGER = logging.getLogger('BigML')
@@ -416,12 +417,8 @@ class TopicModel(ModelFields):
             new_headers.expand(new_fields[len(new_headers):])
         else:
             new_headers = new_headers[0: len(new_fields)]
-        dataframe = False
-        if PANDAS_READY and isinstance(input_data_list, DataFrame):
-            dataframe = True
-            inner_data_list = input_data_list.to_dict('records')
-        else:
-            inner_data_list = input_data_list[:]
+        data_format = get_data_format(input_data_list)
+        inner_data_list = get_formatted_data(input_data_list, INTERNAL)
         for index, input_data in enumerate(inner_data_list):
             prediction = self.distribution(input_data, **kwargs)
             prediction_dict = {}
@@ -431,8 +428,8 @@ class TopicModel(ModelFields):
             for ikey, key in enumerate(new_fields):
                 inner_data_list[index][new_headers[ikey]] = prediction_dict[
                     key]
-        if PANDAS_READY and dataframe:
-            return DataFrame.from_dict(inner_data_list)
+        if data_format != INTERNAL:
+            return format_data(inner_data_list, out_format=INTERNAL)
         return inner_data_list
 
     def dump(self, output=None, cache_set=None):

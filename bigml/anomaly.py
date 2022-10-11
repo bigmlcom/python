@@ -57,8 +57,9 @@ from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields, NUMERIC
-from bigml.util import cast, use_cache, load
-from bigml.constants import OUT_NEW_HEADERS
+from bigml.util import cast, use_cache, load, get_data_format, \
+    get_formatted_data
+from bigml.constants import OUT_NEW_HEADERS, INTERNAL
 
 
 DEPTH_FACTOR = 0.5772156649
@@ -364,16 +365,12 @@ class Anomaly(ModelFields):
         if outputs is None:
             outputs = {}
         new_headers = outputs.get(OUT_NEW_HEADERS, DFT_OUTPUTS)
-        dataframe = False
-        if PANDAS_READY and isinstance(input_data_list, DataFrame):
-            dataframe = True
-            inner_data_list = input_data_list.to_dict('records')
-        else:
-            inner_data_list = input_data_list[:]
+        data_format = get_data_format(input_data_list)
+        inner_data_list = get_formatted_data(input_data_list, INTERNAL)
         for input_data in inner_data_list:
             prediction = {"score": self.anomaly_score(input_data, **kwargs)}
             for index, key in enumerate(DFT_OUTPUTS):
                 input_data[new_headers[index]] = prediction[key]
-        if PANDAS_READY and dataframe:
-            return DataFrame.from_dict(inner_data_list)
+        if data_format != INTERNAL:
+            return format_data(inner_data_list, out_format=INTERNAL)
         return inner_data_list

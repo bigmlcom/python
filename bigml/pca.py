@@ -41,18 +41,14 @@ pca.projection({"petal length": 3, "petal width": 1,
 import logging
 import math
 
-try:
-    from pandas import DataFrame
-    PANDAS_READY = True
-except ImportError:
-    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_pca_id
-from bigml.util import cast, use_cache, load, NUMERIC
+from bigml.util import cast, use_cache, load, NUMERIC, get_data_format, \
+    get_formatted_data, format_data
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
-from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS
+from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
 
 
 try:
@@ -355,17 +351,13 @@ class PCA(ModelFields):
             new_headers.expand(new_fields[len(new_headers):])
         else:
             new_headers = new_headers[0: len(new_fields)]
-        dataframe = False
-        if PANDAS_READY and isinstance(input_data_list, DataFrame):
-            dataframe = True
-            inner_data_list = input_data_list.to_dict('records')
-        else:
-            inner_data_list = input_data_list[:]
+        data_format = get_data_format(input_data_list)
+        inner_data_list = get_formatted_data(input_data_list, INTERNAL)
         for input_data in inner_data_list:
             kwargs.update({"full": True})
             prediction = self.projection(input_data, **kwargs)
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
-        if PANDAS_READY and dataframe:
-            return DataFrame.from_dict(inner_data_list)
+        if data_format != INTERNAL:
+            return format_data(inner_data_list, out_format=INTERNAL)
         return inner_data_list

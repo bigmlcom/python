@@ -44,11 +44,6 @@ model.predict({"petal length": 3, "petal width": 1,
 import json
 import os
 
-try:
-    from pandas import DataFrame
-    PANDAS_READY = True
-except ImportError:
-    PANDAS_READY = False
 
 from bigml.api import get_resource_id, get_resource_type, \
     get_api_connection, get_ensemble_id
@@ -59,7 +54,7 @@ from bigml.logistic import LogisticRegression
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
 from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
-from bigml.util import get_data_format, get_formatted_data
+from bigml.util import get_data_format, get_formatted_data, format_data
 
 
 COMPONENT_CLASSES = {

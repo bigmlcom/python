@@ -523,6 +523,7 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             return resource
         # resource is ok
         progress = 0
+        #pylint: disable=locally-disabled, bare-except
         if status is not None:
             progress = status.get("progress", 0)
             if debug:
@@ -533,7 +534,6 @@ def check_resource(resource, get_method=None, query_string='', wait_time=1,
             except:
                 print("WARNING: Progress callback raised exception. Please,"
                       "double check your function.")
-            status_code = status.get("code")
             progress = progress if progress > 0.8 \
                 else 0 # dumping when almost finished
         progress_dumping = (1 - progress)

@@ -36,7 +36,7 @@ import msgpack
 import bigml.constants as c
 
 try:
-    from pandas import DataFrame, concat
+    from pandas import DataFrame
     PANDAS_READY = True
 except ImportError:
     PANDAS_READY = False

@@ -45,12 +45,6 @@ anomaly.anomaly_score({"src_bytes": 350})
 
 import math
 
-try:
-    from pandas import DataFrame
-    PANDAS_READY = True
-except ImportError:
-    PANDAS_READY = False
-
 from bigml.predicate_utils.utils import OPERATOR_CODE, PREDICATE_INFO_LENGTH
 from bigml.predicate_utils.utils import apply_predicates
 from bigml.api import FINISHED
@@ -58,7 +52,7 @@ from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields, NUMERIC
 from bigml.util import cast, use_cache, load, get_data_format, \
-    get_formatted_data
+    get_formatted_data, format_data
 from bigml.constants import OUT_NEW_HEADERS, INTERNAL
 
 

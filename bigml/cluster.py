@@ -45,16 +45,11 @@ import re
 import csv
 import codecs
 
-try:
-    from pandas import DataFrame
-    PANDAS_READY = True
-except ImportError:
-    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_cluster_id
 from bigml.util import cast, utf8, NUMERIC, use_cache, load, dump, dumps, \
-    get_data_format, get_formatted_data
+    get_data_format, get_formatted_data, format_data
 from bigml.centroid import Centroid
 from bigml.basemodel import get_resource_dict
 from bigml.generators.model import print_distribution

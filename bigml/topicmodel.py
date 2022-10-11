@@ -44,18 +44,13 @@ except ImportError:
     raise ImportError("Failed to import the Stemmer module. You need to"
                       " install pystemmer to use the Topic Model class.")
 
-try:
-    from pandas import DataFrame
-    PANDAS_READY = True
-except ImportError:
-    PANDAS_READY = False
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_topic_model_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.util import use_cache, load, dump, dumps, get_data_format, \
-    get_formatted_data
+    get_formatted_data, format_data
 from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
 
 

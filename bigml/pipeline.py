@@ -22,10 +22,8 @@ etc.) that describes the input data processing.
 
 """
 
-import copy
 import os
 import zipfile
-import numpy as np
 import types
 
 try:
@@ -103,12 +101,26 @@ def check_in_path(path, resource_list):
 
 
 class Transformer():
+    """Base class to handle transformations. It offers a transform method
+    that can handle list of dictionaries or Pandas DataFrames a inputs and
+    delegates to the `data_transform` method the actual transformations to
+    be applied and should be implemented in the classes derived from it.
+    """
 
     def __init__(self, generator, data_format, resource_id=None, name=None,
                  description=None):
+        """Adds initial attributes:
+         - generator: object, function or list of functions that will be
+           doing the transformation
+         - data_format: whether to accept a DataFrame or a list of dictionaries
+           as inputs for the generator
+         - resource_id: unique identifier for the transformer object
+         - name: name for the transformer
+         - description: description for the transformations in the transformer
+        """
         self.generator = generator
         self.data_format = data_format
-        self.resource_id = resource_id,
+        self.resource_id = resource_id
         self.name = name
         self.description = description
 
@@ -117,23 +129,42 @@ class Transformer():
         return get_formatted_data(input_data_list, self.data_format)
 
     def transform(self, input_data_list, out_format=None):
+        """Returns a new input_data_list where the transformations defined
+        in the generator have been applied. It handles format transformation
+        if needed before applying the generator function.
+        """
         data_format = get_data_format(input_data_list)
         inner_data_list = self.__formatted_input(input_data_list)
         result = self.data_transform(inner_data_list)
         if self.data_format != data_format and out_format is None:
             return format_data(result, data_format)
-        elif self.data_format != out_format:
+        if self.data_format != out_format:
             return format_data(result, out_format)
         return result
 
-    def data_transform(input_data_list):
-        """Method to be re-implemented in each of the transformers """
-        return input_data_list
+    def data_transform(self, input_data_list):
+        """Method to be re-implemented in each of the transformers. Using
+        identity by default."""
+        raise NotImplementedError("This method needs to be implemented")
 
 
 class BMLTransformer(Transformer):
-
+    """Transformer wrapper for BigML resources."""
     def __init__(self, local_resource, outputs=None, **kwargs):
+        """Receives a local resource (Dataset, SupervisedModel, Cluster...)
+        and creates a `Transformer` from it to apply the corresponding
+        transformations.
+        - for Datasets, Flatline transformations (if any) are applied
+        - for models, a batch prediction (scoring, topic distribution, etc.) is
+          applied and added to the original input.
+
+        Optional arguments are:
+        :param outputs: dictionary of output fields and headers
+        :type outputs: dict
+        :param kwargs: dictionary of runtime settings for batch predictions
+                       (e.g. missing_strategy, operating_point, etc.)
+        :type kwargs: dict
+        """
         try:
             generator = local_resource.transform
         except AttributeError:
@@ -151,16 +182,26 @@ class BMLTransformer(Transformer):
                          local_resource.description)
 
     def data_transform(self, input_data_list):
+        """Returns a list of dictionaries with the generated transformations.
+        The input list is expected to be a list of dictionaries"""
         return self.generator(input_data_list)
 
 
 class DFTransformer(Transformer):
-
+    """Transformer wrapper for DataFrames """
     def __init__(self, generator, resource_id=None, name=None,
                  description=None):
-        if isinstance(generator, list):
-            generator = generator
-        else:
+        """Receives the function or list of functions to be applied on
+        the input DataFrame
+        Optional parameters are:
+        :param resource_id: unique ID for the Transformer
+        :type resource_id: str
+        :param name: Transformer name
+        :type name: str
+        :param description: Description for the transformations.
+        :type description: str
+        """
+        if not isinstance(generator, list):
             generator = [generator]
         for index, item in enumerate(generator):
             if not isinstance(item, tuple) and isinstance(
@@ -207,9 +248,23 @@ class DFTransformer(Transformer):
 
 
 class SKTransformer(Transformer):
-
+    """Transformer wrapper for scikit learn pipelines or transformations """
     def __init__(self, generator, resource_id=None, name=None,
                  description=None, output=None):
+        """Receives the pipeline or transformation to be applied on
+        the input DataFrame
+        Optional parameters are:
+        :param resource_id: unique ID for the Transformer
+        :type resource_id: str
+        :param name: Transformer name
+        :type name: str
+        :param description: Description for the transformations.
+        :type description: str
+        :param output: Dictionary containing the headers to be used for the
+                       new fields generated in the transformation.
+        :type output: dict
+        """
+
         try:
             generator_fn = generator.transform
         except AttributeError:
@@ -259,13 +314,28 @@ class Pipeline(Transformer):
 
     """
     def __init__(self, name, steps=None, description=None):
+        """Builds a Pipeline from the list of steps provided in the `steps`
+        argument. It is compulsory to assign a name that will be used as
+        reference
+        :param name: Reference name for the pipeline
+        :type name: str
+        :param steps: List of Transformers. All of them need to offer a
+                      `.transform` method
+        :type steps: list
+        :param description: Description of the transformations in the pipeline
+        :type description: str
+        """
+        super().__init__(None,
+             None,
+             "pipeline_%s" % str(datetime.now()).replace(" ", "_"),
+             name,
+             description)
 
-        self.name = name
-        self.description = description
         self.steps = []
         self.extend(steps)
 
     def extend(self, steps=None):
+        """Adding new transformations to the Pipeline steps"""
         if steps is None:
             steps = []
         for step in steps:
@@ -274,25 +344,36 @@ class Pipeline(Transformer):
                     "all the Pipeline steps.")
         self.steps.extend(steps)
 
-    def transform(self, input_data_list):
+    def transform(self, input_data_list, out_format=None):
         """Applying the Pipeline transformations and predictions on the
-        list of input data.
+        list of input data. `out_format` forces the output format
+        to either a DataFrame or a list of dictionaries.
 
         """
+        result = self.data_transform(input_data_list)
+        if out_format is not None:
+            current_format = get_data_format(result)
+            if current_format != out_format:
+                return format_data(result, out_format)
+        return result
+
+    def data_transform(self, input_data_list):
+        """Delegates transformation to each Transformer step"""
         current_format = get_data_format(input_data_list)
-        inner_data_list = input_data_list.copy()
-        if len(self.steps) > 0:
-            for index, step in enumerate(self.steps[:-1]):
-                try:
-                    inner_data_list = step.transform(inner_data_list)
-                except Exception as exc:
-                    raise ValueError("Failed to apply step number %s: %s" %
-                        (index, exc))
+        if len(self.steps) == 0:
+            return input_data_list
+        inner_data_list = input_data_list
+        for index, step in enumerate(self.steps[:-1]):
             try:
-                inner_data_list = self.steps[-1].transform(
-                    inner_data_list, out_format=current_format)
+                inner_data_list = step.transform(inner_data_list)
             except Exception as exc:
-                raise ValueError("Failed to apply the last step: %s" % exc)
+                raise ValueError("Failed to apply step number %s: %s" %
+                    (index, exc))
+        try:
+            inner_data_list = self.steps[-1].transform(
+                inner_data_list, out_format=current_format)
+        except Exception as exc:
+            raise ValueError("Failed to apply the last step: %s" % exc)
         return inner_data_list
 
 
@@ -304,8 +385,8 @@ class BMLPipeline(Pipeline):
     method to add the final prediction. The mandatory arguments for the class
     are:
       - name: Each pipeline needs to be identified with a unique name
-      - resource_ids: A list of resource IDs. Only datasets and supervised
-                      or unsupervised model resources are allowed.
+      - resource_list: A list of resource IDs. Only datasets and supervised
+                       or unsupervised model resources are allowed.
 
     When a dataset is provided, only the chain of transformations leading to
     that dataset structure is applied. When a model is provided, the input
@@ -317,33 +398,40 @@ class BMLPipeline(Pipeline):
     def __init__(self, resource_list, name, description=None, api=None,
                  cache_get=None, init_settings=None, execution_settings=None):
         """The pipeline needs
-              - resource_list (list): a dataset/model ID or a list of them
-                to define the transformations and predictions to be added to
-                the input data.
-              - name (string): a unique name that will be used when caching the
-                resources it needs to be executed
+        :param resource_list: A dataset/model ID or a list of them
+                              to define the transformations and predictions
+                              to be added to the input data.
+        :type resource_list: list
+        :param name: A unique name that will be used when caching the
+                     resources it needs to be executed.
+        :type name: str
         Optionally, it can receive:
-              - description (string): a description of the pipeline procedure
-              - api (BigML): a BigML API connection object
-              - cache (function): a cache_get function to retrieve cached
-                                  resources
-              - init_settings (map): a map describing the optional
-                                     arguments added when instantiating the
-                                     local model (one per model). E.g.:
-                  {"deepnet/111111111111111111": {
-                      "operation_settings": {
-                          "region_score_threshold": 0.6}},
-                   "deepnet/222222222222222222": {
-                      "operation_settings": {
-                          "region_score_threshold": 0.7}}}
-              - execution_settings (map): a map describing the optional
-                                          arguments added when creating the
-                                          predictions. E.g.:
-
-                  {"model/111111111111111111": {
-                      "missing_strategy": 1},
-                   "model/222222222222222222": {
-                      "operating_kind": "confidence"}}
+        :param description: A description of the pipeline procedure
+        :type description: str
+        :param api: A BigML API connection object
+        :type api: BigML
+        :param cache_get: A cache_get function to retrieve cached resources
+        :type cache_get: function
+        :param init_settings: A dictionary describing the optional arguments
+                              added when instantiating the local model
+                              (one per model ID)
+           e.g.:
+              {"deepnet/111111111111111111": {
+                  "operation_settings": {
+                      "region_score_threshold": 0.6}},
+               "deepnet/222222222222222222": {
+                  "operation_settings": {
+                      "region_score_threshold": 0.7}}}
+        :type init_settings: dict
+        :param execution_settings: A dictionary describing the optional
+                                   arguments added when creating the
+                                   predictions.
+           e.g.:
+              {"model/111111111111111111": {
+                  "missing_strategy": 1},
+               "model/222222222222222222": {
+                  "operating_kind": "confidence"}}
+        :type execution_settings: dict
 
         """
 

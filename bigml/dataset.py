@@ -35,6 +35,10 @@ class Dataset:
     def __init__(self, dataset, api=None, cache_get=None):
         if use_cache(cache_get):
             self.__dict__ = load(get_dataset_id(dataset), cache_get)
+            self.origin_dataset = Dataset(self.origin_dataset,
+                api=api, cache_get=cache_get)
+            self.in_fields = Fields(self.in_fields)
+            self.out_fields = Fields(self.out_fields)
             return
 
         self.resource_id = None
@@ -173,12 +177,22 @@ class Dataset:
         If cache_set is filled with a cache set method, the method is called
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
+        del self_vars["api"]
+        del self_vars["cache_get"]
+        self_vars["in_fields"] = self_vars["in_fields"].fields
+        self_vars["out_fields"] = self_vars["out_fields"].fields
+        self_vars["origin_dataset"] = self_vars["origin_dataset"].resource_id
         dump(self_vars, output=output, cache_set=cache_set)
 
     def dumps(self):
         """Uses msgpack to serialize the resource object to a string
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
+        del self_vars["api"]
+        del self_vars["cache_get"]
+        self_vars["in_fields"] = self_vars["in_fields"].fields
+        self_vars["out_fields"] = self_vars["out_fields"].fields
+        self_vars["origin_dataset"] = self_vars["origin_dataset"].resource_id
         return dumps(self_vars)

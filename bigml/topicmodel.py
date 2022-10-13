@@ -432,7 +432,7 @@ class TopicModel(ModelFields):
         If cache_set is filled with a cache set method, the method is called
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         del self_vars["stemmer"]
         dump(self_vars, output=output, cache_set=cache_set)
 
@@ -440,6 +440,6 @@ class TopicModel(ModelFields):
         """Uses msgpack to serialize the resource object to a string
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         del self_vars["stemmer"]
         dumps(self_vars)

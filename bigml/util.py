@@ -30,6 +30,7 @@ import ast
 import datetime
 
 from urllib.parse import urlparse
+from unidecode import unidecode
 
 import msgpack
 
@@ -298,16 +299,65 @@ def find_locale(data_locale=DEFAULT_LOCALE, verbose=False):
                                                           new_locale))
 
 
+def asciify(name):
+    """Translating to ascii and underscores """
+
+    if len(name) == 0:
+        # case of empty name?
+        return name
+
+    name = unidecode(name).lower()
+    name = re.sub(r'\W+', '_', name)
+    return name
+
+
+def res_filename(storage_dir, resource_id, extension=None):
+    """Returns a filename from a resource id"""
+    basename = asciify(resource_id)
+    if extension is None:
+        extension = ""
+    basename = f"{basename}{extension}"
+    filename = os.path.join(storage_dir, basename)
+    return filename
+
+
+def fs_cache_get(storage_dir, minimized=True):
+    """Returns a function that retrieves a minimized resource from the file
+    system
+    """
+    extension = ".min" if minimized else ""
+    def cache_get(resource_id):
+        filename = res_filename(storage_dir, asciify(resource_id), extension)
+        if not os.path.exists(filename):
+            raise ValueError(f"Failed to find the dump file {filename}.")
+        with open(filename, "rb") as handler:
+            return handler.read()
+
+    return cache_get
+
+
+def fs_cache_set(storage_dir, minimized=True):
+    """Returns a function that stores a minimized resource in the file system """
+    extension = ".min" if minimized else ""
+    check_dir(storage_dir)
+
+    def cache_set(resource_id, msg):
+        filename = res_filename(storage_dir, asciify(resource_id), extension)
+        with open(filename, "wb") as handler:
+            handler.write(msg)
+            return filename
+
+    return cache_set
+
+
 def get_predictions_file_name(model, path):
     """Returns the file name for a multimodel predictions file
 
     """
     if isinstance(model, dict) and 'resource' in model:
         model = model['resource']
-    return "%s%s%s_%s" % (path,
-                          os.sep,
-                          model.replace("/", "_"),
-                          PREDICTIONS_FILE_SUFFIX)
+    filename = res_filename(path, model)
+    return f"{filename}_{PREDICTIONS_FILE_SUFFIX}"
 
 
 def clear_console_line(out=sys.stdout, length=PROGRESS_BAR_WIDTH):

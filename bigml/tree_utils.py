@@ -30,6 +30,7 @@ from unidecode import unidecode
 
 
 from bigml.predicate_utils.utils import LT, LE, EQ, NE, GE, GT, IN
+from bigml.util import asciify
 
 DEFAULT_LOCALE = 'en_US.UTF-8'
 TM_TOKENS = 'tokens_only'
@@ -226,12 +227,7 @@ def slugify(name, reserved_keywords=None, prefix=''):
     """Translates a field name into a variable name.
 
     """
-    if len(name) == 0:
-        # case of empty name?
-        return name
-
-    name = unidecode(name).lower()
-    name = re.sub(r'\W+', '_', name)
+    name = asciify(name)
     try:
         if name[0].isdigit():
             name = "field_" + name

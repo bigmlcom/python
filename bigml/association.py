@@ -492,7 +492,7 @@ class Association(ModelFields):
         If cache_set is filled with a cache set method, the method is called
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         for index, elem in enumerate(self_vars["items"]):
             self_vars["items"][index] = vars(elem)
         for index, elem in enumerate(self_vars["rules"]):
@@ -503,7 +503,7 @@ class Association(ModelFields):
         """Uses msgpack to serialize the resource object to a string
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         for index, elem in enumerate(self_vars["items"]):
             self_vars["items"][index] = vars(elem)
         for index, elem in enumerate(self_vars["rules"]):

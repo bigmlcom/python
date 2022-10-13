@@ -1018,7 +1018,7 @@ class Ensemble(ModelFields):
         If cache_set is filled with a cache set method, the method is called
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         del self_vars["api"]
         if "multi_model" in self_vars:
             for model in self_vars["multi_model"].models:
@@ -1030,7 +1030,7 @@ class Ensemble(ModelFields):
         """Uses msgpack to serialize the resource object to a string
 
         """
-        self_vars = vars(self)
+        self_vars = vars(self).copy()
         del self_vars["api"]
         if "multi_model" in self_vars:
             del self_vars["multi_model"]

@@ -37,7 +37,8 @@ from datetime import datetime
 from bigml.constants import OUT_NEW_HEADERS, DATAFRAME, INTERNAL
 from bigml.api import get_api_connection, get_resource_id, get_resource_type
 from bigml.util import use_cache, load, check_dir, get_data_format, \
-    format_data, get_formatted_data
+    format_data, get_formatted_data, save_json, fs_cache_get, fs_cache_set, \
+    dump, asciify
 from bigml.constants import STORAGE
 from bigml.dataset import Dataset
 from bigml.supervised import SupervisedModel
@@ -180,6 +181,7 @@ class BMLTransformer(Transformer):
                          local_resource.resource_id,
                          local_resource.name,
                          local_resource.description)
+        self.dump = local_resource.dump
 
     def data_transform(self, input_data_list):
         """Returns a list of dictionaries with the generated transformations.
@@ -313,7 +315,7 @@ class Pipeline(Transformer):
     to be applied to DataFrame pipes, scikit pipelines
 
     """
-    def __init__(self, name, steps=None, description=None):
+    def __init__(self, name, steps=None, resource_id=None, description=None):
         """Builds a Pipeline from the list of steps provided in the `steps`
         argument. It is compulsory to assign a name that will be used as
         reference
@@ -325,9 +327,9 @@ class Pipeline(Transformer):
         :param description: Description of the transformations in the pipeline
         :type description: str
         """
-        super().__init__(None,
-             None,
-             "pipeline_%s" % str(datetime.now()).replace(" ", "_"),
+        super().__init__(None, # no generator is provided
+             None, # no data format is assumed
+             resource_id or name,
              name,
              description)
 
@@ -395,16 +397,16 @@ class BMLPipeline(Pipeline):
     prediction to the result.
 
     """
-    def __init__(self, resource_list, name, description=None, api=None,
+    def __init__(self, name, resource_list, description=None, api=None,
                  cache_get=None, init_settings=None, execution_settings=None):
         """The pipeline needs
+        :param name: A unique name that will be used when caching the
+                     resources it needs to be executed.
+        :type name: str
         :param resource_list: A dataset/model ID or a list of them
                               to define the transformations and predictions
                               to be added to the input data.
         :type resource_list: list
-        :param name: A unique name that will be used when caching the
-                     resources it needs to be executed.
-        :type name: str
         Optionally, it can receive:
         :param description: A description of the pipeline procedure
         :type description: str
@@ -435,43 +437,50 @@ class BMLPipeline(Pipeline):
 
         """
 
-        if use_cache(cache_get):
+        if resource_list is None and use_cache(cache_get):
             self.__dict__ = load(name, cache_get)
-            return
+        else:
+            super().__init__(name, description=description)
 
-        super().__init__(name, description=description)
-
-        # API related attributes
-        self._resource_list = resource_list
-        if isinstance(resource_list, str):
-            self._resource_list = [resource_list]
-        for item in self._resource_list:
-            resource_id = get_resource_id(item)
-            if resource_id is None:
-                raise ValueError("Only resource IDs are allowed as first "
-                    "argument.")
+            # API related attributes
+            self.resource_list = resource_list
+            if isinstance(resource_list, str):
+                self.resource_list = [resource_list]
+            for item in self.resource_list:
+                resource_id = get_resource_id(item)
+                if resource_id is None:
+                    raise ValueError("Only resource IDs are allowed as first "
+                        "argument.")
+            self.init_settings = init_settings or {}
+            self.execution_settings = execution_settings or {}
         self._api = get_api_connection(api)
         self._api.storage = self._get_pipeline_storage()
         self._cache_get = cache_get
+        self.steps = []
+        self.extend(self.__retrieve_steps())
 
+    def __retrieve_steps(self):
+        """Retrieving the steps that need to be used to reproduce the
+        transformations leading to the resources given in the original list
+        """
         local_resources = []
-        init_settings = init_settings or {}
-        execution_settings = execution_settings or {}
+        init_settings = self.init_settings.copy()
+        execution_settings = self.execution_settings.copy()
         datasets = {}
         steps = []
 
         kwargs = {}
         if self._api is not None:
             kwargs["api"] = self._api
-        if cache_get is not None:
-            kwargs["cache_get"] = cache_get
+        if self._cache_get is not None:
+            kwargs["cache_get"] = self._cache_get
 
-        for resource_id in self._resource_list:
+        for resource_id in self.resource_list:
             init_settings[resource_id] = init_settings.get(
                 resource_id, {})
             init_settings[resource_id].update(kwargs)
 
-        for index, resource in enumerate(self._resource_list):
+        for index, resource in enumerate(self.resource_list):
             resource_id = get_resource_id(resource)
             resource_type = get_resource_type(resource_id)
             local_class = LOCAL_CLASSES.get(resource_type, SupervisedModel)
@@ -512,10 +521,11 @@ class BMLPipeline(Pipeline):
             if isinstance(local_resource, Dataset) and \
                     local_resource.transformations is None:
                 continue
+            execution_settings = self.execution_settings.get(
+                local_resource.resource_id, {})
             steps.append(BMLTransformer(
-                local_resource, **execution_settings.get(
-                local_resource.resource_id, {})))
-        self.extend(steps)
+                local_resource, **execution_settings))
+        return steps
 
     def _get_pipeline_storage(self):
         """ Creating a separate folder inside the given storage folder to
@@ -529,7 +539,7 @@ class BMLPipeline(Pipeline):
             self._api.storage = STORAGE
         path = os.path.join(self._api.storage, self.name)
         if os.path.exists(path):
-            if check_in_path(path, self._resource_list):
+            if check_in_path(path, self.resource_list):
                 return path
             # adding a suffix to store old pipeline version
             datetime_str = str(datetime.now()).replace(" ", "_")
@@ -554,14 +564,51 @@ class BMLPipeline(Pipeline):
         if output_directory is None:
             output_directory = os.getcwd()
         out_filename = os.path.join(output_directory, f"{self.name}.zip")
+
         # write README file with the information that describes the Pipeline
         name = self.name
         description = self.description or ""
-        resources = ", ".join(self._resource_list)
+        resources = ", ".join(self.resource_list)
         readme = (f"Pipeline name: {name}\n{description}\n\n"
                   f"Built from: {resources}")
         with open(os.path.join(self._api.storage, "README.txt"), "w",
                   encoding="utf-8") as readme_handler:
             readme_handler.write(readme)
+        # write JSON file describing the pipeline resources
+        pipeline_vars = vars(self)
+        stored_vars = {}
+        for key, value in pipeline_vars.items():
+            if not key.startswith("_") and not key == "steps":
+                stored_vars.update({key: value})
+        pipeline_filename = os.path.join(self._api.storage, self.name)
+        save_json(stored_vars, pipeline_filename)
         with zipfile.ZipFile(out_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             zipdir(self._api.storage, zipf)
+
+    def dump(self, output_dir=None, cache_set=None):
+        """Uses msgpack to serialize the resource object and all its steps
+        If cache_set is filled with a cache set method, the method is called
+        to store the serialized value
+        """
+        pipeline_vars = vars(self)
+        stored_vars = {}
+        for key, value in pipeline_vars.items():
+            if not key.startswith("_") and not key == "steps":
+                stored_vars.update({key: value})
+        if output_dir is not None:
+            check_dir(output_dir)
+            cache_set = cache_set or fs_cache_set(output_dir)
+        dump(stored_vars, output=None, cache_set=cache_set)
+        for step in self.steps:
+            step.dump(cache_set=cache_set)
+
+    @classmethod
+    def load(cls, name, dump_dir):
+        """Restores the information of the pipeline and its steps from a
+        previously dumped pipeline file. The objects used in each step
+        of the pipeline are expected to be in the same
+        """
+        if dump_dir is not None and name is not None:
+            return cls(name,
+                       None,
+                       cache_get=fs_cache_get(dump_dir))

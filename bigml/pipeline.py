@@ -397,7 +397,7 @@ class BMLPipeline(Pipeline):
     prediction to the result.
 
     """
-    def __init__(self, name, resource_list, description=None, api=None,
+    def __init__(self, name, resource_list=None, description=None, api=None,
                  cache_get=None, init_settings=None, execution_settings=None):
         """The pipeline needs
         :param name: A unique name that will be used when caching the
@@ -443,6 +443,8 @@ class BMLPipeline(Pipeline):
             super().__init__(name, description=description)
 
             # API related attributes
+            if resource_list is None:
+                resource_list = []
             self.resource_list = resource_list
             if isinstance(resource_list, str):
                 self.resource_list = [resource_list]
@@ -563,7 +565,9 @@ class BMLPipeline(Pipeline):
 
         if output_directory is None:
             output_directory = os.getcwd()
-        out_filename = os.path.join(output_directory, f"{self.name}.zip")
+        check_dir(output_directory)
+        name = asciify(self.name)
+        out_filename = os.path.join(output_directory, f"{name}.zip")
 
         # write README file with the information that describes the Pipeline
         name = self.name
@@ -580,7 +584,7 @@ class BMLPipeline(Pipeline):
         for key, value in pipeline_vars.items():
             if not key.startswith("_") and not key == "steps":
                 stored_vars.update({key: value})
-        pipeline_filename = os.path.join(self._api.storage, self.name)
+        pipeline_filename = os.path.join(self._api.storage, asciify(self.name))
         save_json(stored_vars, pipeline_filename)
         with zipfile.ZipFile(out_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             zipdir(self._api.storage, zipf)

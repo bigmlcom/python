@@ -2126,13 +2126,13 @@ instantiate the corresponding local object, so that you can use its
     logistic_regression_prediction = local_supervised_1.predict(input_data)
     model_prediction = local_supervised_2.predict(input_data)
 
-Local Pipeline
---------------
+Local Pipelines
+---------------
 
 More often than not, the Machine Learning solution to a problem entails
 using data transformations and different models. In order to reproduce those
 locally and create batch predictions for a list of test input data rows, we
-can use the ``Pipeline`` class.
+can use the ``BMLPipeline`` class.
 
 As an example, let's think about a basic workflow where a simple feature
 engineering transformation has been applied (for instance creating the
@@ -2145,33 +2145,33 @@ should not rely on them.
 
 When new data is received, the transformation to generate the ratio
 should be applied and after that, both the prediction and the anomaly score
-should be computed and added to the initial data. The ``Pipeline`` class
+should be computed and added to the initial data. The ``BMLPipeline`` class
 will help us do that.
 
-First, we instantiate the ``Pipeline`` object by providing the models
+First, we instantiate the ``BMLPipeline`` object by providing the models
 that we want it to use and a name for it:
 
 .. code-block:: python
 
-    from bigml.pipeline import Pipeline
-    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
-                               "anomaly/5143a51a37203f2cf7027551"],
-                               "my new pipeline")
+    from bigml.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("my new pipeline",
+                                 ["model/5143a51a37203f2cf7020351",
+                                  "anomaly/5143a51a37203f2cf7027551"])
 
 This code will retrieve all the datasets previous to the model and anomaly
 detector construction and will store any transformation that they contain.
 It creates a sequence starting on the first dataset that was created to
 summarize the uploaded data, adding the datasets that store transformations,
-and finally the model and anomaly detector. The ``Pipeline`` object offers
-a ``.execute`` method that can receive a list of input data or a DataFrame.
-For every row, it will execute the stored transformations and generate the
-model's prediction and the anomaly's score. All of them will be added to the
-original input data.
+and finally the model and anomaly detector. The ``BMLPipeline`` object offers
+a ``.transform`` method that can receive a list of input data dictionaries
+or a DataFrame. For every row, it will execute the stored transformations
+and generate the model's prediction and the anomaly's score.
+All of them will be added to the original input data.
 
 .. code-block:: python
 
-    local_pipeline.execute([{"plasma glucose": 130, "bmi":3},
-                            {"age":26, "plasma glucose": 70}])
+    local_pipeline.transform([{"plasma glucose": 130, "bmi":3},
+                             {"age":26, "plasma glucose": 70}])
     """That could produce a result such as
     [{"plasma glucose": 130, "bmi":3, "prediction": "True",
       "probability": 0.578, "score": 0.753},
@@ -2185,12 +2185,12 @@ resources are stored in memory caches.
 
 .. code-block:: python
 
-    from bigml.pipeline import Pipeline
-    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
-                               "anomaly/5143a51a37203f2cf7027551"],
-                               "my new pipeline",
-                               api=BigML("my user", "my api",
-                                         storage="my_storage"))
+    from bigml.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("my new pipeline",
+                                 ["model/5143a51a37203f2cf7020351",
+                                  "anomaly/5143a51a37203f2cf7027551"],
+                                  api=BigML("my user", "my api",
+                                            storage="my_storage"))
 
 If no API connection is passed, or if the one given has no
 ``api.storage`` value, we use the default ``./storage`` directory
@@ -2198,24 +2198,163 @@ followed by the name of the pipeline as storage folder for the
 JSON of the resources used in the pipeline.
 In this case, four resources will be stored: the dataset created from
 the uploaded data, the dataset generated when we added the ratio
-field, the model and the anomaly detector. The ``Pipeline`` object
+field, the model and the anomaly detector. The ``BMLPipeline`` object
 offers an ``.export`` method that can compress the entire directory to
-a ``.zip`` file whose name is the name of the ``Pipeline`` and will
-be placed in the ``output_directory`` given by the user:
+a ``.zip`` file whose name is the name of the ``BMLPipeline``
+(conveniently encoded) and will be placed in the ``output_directory``
+given by the user:
 
 .. code-block:: python
 
-    from bigml.pipeline import Pipeline
-    local_pipeline = Pipeline(["model/5143a51a37203f2cf7020351",
-                               "anomaly/5143a51a37203f2cf7027551"],
-                               "my new pipeline",
-                               api=BigML("my user", "my api",
-                                         storage="my_storage"))
+    from bigml.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("my new pipeline",
+                                 ["model/5143a51a37203f2cf7020351",
+                                  "anomaly/5143a51a37203f2cf7027551"]
+                                  api=BigML("my user", "my api",
+                                            storage="my_storage"))
     local_pipeline.export(output_directory="my_export_dir")
 
-In this example, we wil find a ``my_export_dir/my new pipeline.zip`` file
+In this example, we wil find a ``my_export_dir/my_new_pipeline.zip`` file
 in the current directory. The file contains a ``my new pipeline`` folder where
 the four JSONs for the two datasets and two models are stored.
+
+The ``BMLPipeline`` provides also methods to ``dump`` and ``load`` the
+transformers it contains, in order to save them in a cache or in the file
+system. As an example, we can create a ``BMLPipeline``, dump its contents to
+a file system folder and build a second pipeline from them. The name of
+the pipeline will be used as reference to know which object to load.
+
+
+.. code-block:: python
+
+    from bigml.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("pipeline1",
+                                 "model/5143a51a37203f2cf7020351")
+    local_pipeline.dump("./pipeline1_storage")
+    # the `pipeline1_storage` folder is created and all the objects
+    # used in the pipeline are stored there, one file each
+    new_pipeline = BMLPipeline.load("pipeline1", "./pipeline1_storage")
+    # a new pipeline has been built with the same properties and steps
+    # that local_pipeline had
+
+
+If using a cache system, the same methods described in the
+`local caching<#local-caching>`_ section are available.
+
+.. code-block:: python
+
+    from bigml.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("pipeline1",
+                                 "model/631a6a6f8f679a2d31000445")
+    import redis
+    r = redis.Redis()
+    local_pipeline.dump(cache_set=r.set)
+    new_pipeline = BMLPipeline("pipeline1", cache_get=r.get)
+    # the new_pipeline has been recovered from Redis
+
+
+Sometimes, one may want to aggregate pre-existing transformations
+on your original data before loading it to BigML. In that case, you can use
+the ``Pipeline`` class to store the sequence of transformations made
+outside of BigML. As both ``Pipeline`` and ``BMLPipeline`` offer the
+``.transform`` method, they are also transformers and can be used as steps
+of a more general ``Pipeline``. Thus, combining pre-existing transformations
+based on scikit-learn or Pandas with the transformations and models generated
+in BigML is totally possible.
+
+As an example of use, we'll create a ``Pipeline`` based on a existing
+scikit pipeline.
+
+.. code-block:: python
+
+    import pandas as pd
+
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.model_selection import train_test_split
+    from sklearn.pipeline import Pipeline as SKPipeline
+
+    # Building a prediction pipeline using a scikit learn
+    # scaler and decision tree and adding the prediction
+    # to the initial dataframe
+
+    from bigml.pipeline import Pipeline, SKTransformer
+    from bigml.constants import OUT_NEW_HEADERS
+
+    # pre-existing code to build the scikit pipeline
+    df = pd.read_csv("data/diabetes.csv")
+    X = df.drop('diabetes', axis=1)
+    y = df['diabetes']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                        random_state=0)
+
+    pipe = SKPipeline([('scaler', StandardScaler()),
+                       ('DTC', DecisionTreeClassifier())])
+    pipe.fit(X_train, y_train)
+    # end of pre-existing code
+
+    pipeline = Pipeline(
+        "skpipeline", # pipeline name
+        steps=[SKTransformer(pipe,
+                             "skDTC",
+                             output={OUT_NEW_HEADERS: ["sk_prediction"]})])
+    # the `pipe` scikit pipeline is wrapped as a SKTransformer to offer
+    # a `.transform` method
+    pipeline.transform(X_test)
+
+This new pipeline can be combined with a ``BMLPipeline`` and will accumulate
+the insights of both.
+
+.. code-block:: python
+
+    from bigml.pipeline import BMLPipeline
+
+    bml_pipeline = BMLPipeline("bml_pipeline",
+                               "anomaly/631a6a6f8f679a2d31000445")
+    extended_pipeline = Pipeline("extended",
+                                 steps=[pipeline, bml_pipeline])
+    extended_pipeline.transform([{"plasma glucose": 80}])
+
+The same can be done for a Pandas' pipe sequence
+
+.. code-block:: python
+
+    # based on https://www.kdnuggets.com/2021/01/cleaner-data-analysis-pandas-pipes.html
+
+    import pandas as pd
+    import numpy as np
+
+    from bigml.pipeline import DFTransformer, Pipeline
+
+    marketing = pd.read_csv("./data/DirectMarketing.csv")
+
+    # code to define the transformations
+
+    def drop_missing(df):
+        thresh = len(df) * 0.6
+        df.dropna(axis=1, thresh=thresh, inplace=True)
+        return df
+
+    def remove_outliers(df, column_name):
+        low = np.quantile(df[column_name], 0.05)
+        high = np.quantile(df[column_name], 0.95)
+        return df[df[column_name].between(low, high, inclusive=True)]
+
+    def copy_df(df):
+       return df.copy()
+
+    pipeline = Pipeline("pandas_pipeline",
+                        steps=[DFTransformer([copy_df,
+                                              drop_missing,
+                                              (remove_outliers, ['Salary'])])])
+    # the list of functions are wrapped as a DFTransformer to offer
+    # a `.transform` method that generates the output using Pandas' `.pipe`
+    marketing_clean = pipeline.transform(marketing)
+
+where again, the pipeline could be combined with any ``BMLPipeline`` to
+produce a more general transformation sequence.
+
 
 Local batch predictions
 -----------------------

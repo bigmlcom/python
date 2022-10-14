@@ -190,6 +190,14 @@ class BMLTransformer(Transformer):
         The input list is expected to be a list of dictionaries"""
         return self.generator(input_data_list)
 
+    def merge_input_data(self, input_data_list, output_data_list):
+        """Adding input data to the output """
+        for index, input_data in enumerate(input_data_list):
+            for key, value in input_data.items():
+                if key not in output_data_list[index]:
+                    output_data_list[index].update({key: value})
+        return output_data_list
+
 
 class DFTransformer(Transformer):
     """Transformer wrapper for DataFrames """
@@ -313,7 +321,11 @@ class SKTransformer(Transformer):
         result = DataFrame(result, **df_kwargs)
         if not self.add_input:
             return result
-        return concat([input_data_list, result], axis=1)
+        return self.merge_input_data(input_data_list, result)
+
+    def merge_input_data(self, input_data_list, output_data_list):
+        """Merging the original input data with the output """
+        return concat([input_data_list, output_data_list], axis=1)
 
 
 class Pipeline(Transformer):
@@ -384,10 +396,8 @@ class Pipeline(Transformer):
                 inner_data_list, out_format=current_format)
             if hasattr(self.steps[-1], "add_input") and \
                     self.steps[-1].add_input:
-                for index, input_data in enumerate(input_data_list):
-                    for key, value in input_data.items():
-                        if key not in inner_data_list[index]:
-                            inner_data_list[index].update({key: value})
+                self.steps[-1].merge_input_data(input_data_list,
+                                                inner_data_list)
         except Exception as exc:
             raise ValueError("Failed to apply the last step: %s" % exc)
         return inner_data_list

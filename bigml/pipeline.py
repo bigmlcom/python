@@ -168,10 +168,12 @@ class BMLTransformer(Transformer):
         """
         try:
             generator = local_resource.transform
+            self.add_input = False
         except AttributeError:
             if hasattr(local_resource, "batch_predict"):
                 generator = lambda x : \
                     local_resource.batch_predict(x, outputs=outputs, **kwargs)
+                self.add_input = True
             else:
                 raise ValueError("The local resource needs to provide "
                                  "a transform, or batch_predict "
@@ -269,12 +271,15 @@ class SKTransformer(Transformer):
 
         try:
             generator_fn = generator.transform
+            self.add_input = False
         except AttributeError:
             try:
                 generator_fn = generator.predict
+                self.add_input = True
             except AttributeError:
                 try:
                     generator_fn = generator.score
+                    self.add_input = True
                 except AttributeError:
                     raise ValueError("Failed to find a .transform, .predict "
                                      "or .score method in the first argument "
@@ -306,6 +311,8 @@ class SKTransformer(Transformer):
         if self.output_headers is not None:
             df_kwargs.update({"columns": self.output_headers})
         result = DataFrame(result, **df_kwargs)
+        if not self.add_input:
+            return result
         return concat([input_data_list, result], axis=1)
 
 
@@ -369,11 +376,18 @@ class Pipeline(Transformer):
             try:
                 inner_data_list = step.transform(inner_data_list)
             except Exception as exc:
-                raise ValueError("Failed to apply step number %s: %s" %
-                    (index, exc))
+                raise ValueError(
+                    "Failed to apply step number %s in pipeline %s: %s" %
+                    (index, self.name, exc))
         try:
             inner_data_list = self.steps[-1].transform(
                 inner_data_list, out_format=current_format)
+            if hasattr(self.steps[-1], "add_input") and \
+                    self.steps[-1].add_input:
+                for index, input_data in enumerate(input_data_list):
+                    for key, value in input_data.items():
+                        if key not in inner_data_list[index]:
+                            inner_data_list[index].update({key: value})
         except Exception as exc:
             raise ValueError("Failed to apply the last step: %s" % exc)
         return inner_data_list
@@ -394,11 +408,14 @@ class BMLPipeline(Pipeline):
     that dataset structure is applied. When a model is provided, the input
     data is pre-modeled using that chain of transformations and the result
     is used as input for the predict-like method of the model, that adds the
-    prediction to the result.
+    prediction to the result. If the pipeline is expected to use strictly
+    the resources in the original resource_list, you can use the last_step
+    argument
 
     """
     def __init__(self, name, resource_list=None, description=None, api=None,
-                 cache_get=None, init_settings=None, execution_settings=None):
+                 cache_get=None, init_settings=None, execution_settings=None,
+                 last_step=False):
         """The pipeline needs
         :param name: A unique name that will be used when caching the
                      resources it needs to be executed.
@@ -459,9 +476,9 @@ class BMLPipeline(Pipeline):
         self._api.storage = self._get_pipeline_storage()
         self._cache_get = cache_get
         self.steps = []
-        self.extend(self.__retrieve_steps())
+        self.extend(self.__retrieve_steps(last_step))
 
-    def __retrieve_steps(self):
+    def __retrieve_steps(self, last_step):
         """Retrieving the steps that need to be used to reproduce the
         transformations leading to the resources given in the original list
         """
@@ -503,9 +520,10 @@ class BMLPipeline(Pipeline):
                     dataset = Dataset(local_resource.dataset_id,
                                       api=self._api)
                     datasets = get_datasets_dict(dataset, datasets)
-                dataset_chain = get_datasets_chain(dataset)
-                local_resources[index].extend(dataset_chain)
-                local_resources[index].reverse()
+                if not last_step:
+                    dataset_chain = get_datasets_chain(dataset)
+                    local_resources[index].extend(dataset_chain)
+                    local_resources[index].reverse()
 
         try:
             new_resources = local_resources[0][:]

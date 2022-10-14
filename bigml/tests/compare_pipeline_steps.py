@@ -23,7 +23,7 @@ from nose.tools import eq_
 from .world import world, res_filename
 
 
-from bigml.pipeline import BMLPipeline
+from bigml.pipeline import BMLPipeline, Pipeline
 from bigml.api import BigML
 
 def i_expand_file_with_models_list(step, pipeline_file, models_list):
@@ -44,9 +44,10 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
 def i_create_a_local_pipeline_from_models_list(
     step, models_list, name, storage):
     models_list = json.loads(models_list)
-    world.local_pipeline = BMLPipeline(models_list,
-                                       name,
+    world.local_pipeline = BMLPipeline(name,
+                                       models_list,
                                        api=BigML(storage=res_filename(storage)))
+    return world.local_pipeline
 
 
 def the_pipeline_transformed_data_is(step, input_data, output_data):
@@ -56,6 +57,12 @@ def the_pipeline_transformed_data_is(step, input_data, output_data):
         output_data = "{}"
     input_data = json.loads(input_data)
     output_data = json.loads(output_data)
-    transformed_data = world.local_pipeline.execute([input_data])
+    transformed_data = world.local_pipeline.transform([input_data])
     for key, value in transformed_data[0].items():
         eq_(output_data.get(key), value)
+
+
+def i_create_composed_pipeline(
+    step, pipelines_list, name):
+    world.local_pipeline = Pipeline(name,
+                                    pipelines_list)

@@ -419,8 +419,11 @@ def cast(input_data, fields):
 
     """
     for (key, value) in list(input_data.items()):
+        # inputs not in fields
+        if key not in fields:
+            continue
         # strings given as booleans
-        if isinstance(value, bool) and \
+        elif isinstance(value, bool) and \
                 fields[key]['optype'] == 'categorical' and \
                 len(fields[key]['summary']['categories']) == 2:
             try:

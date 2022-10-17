@@ -101,15 +101,6 @@ def check_in_path(path, resource_list):
     return True
 
 
-def merge_input_data(input_data_list, output_data_list):
-    """Adding input data to the output """
-    for index, input_data in enumerate(input_data_list):
-        for key, value in input_data.items():
-            if key not in output_data_list[index]:
-                output_data_list[index].update({key: value})
-    return output_data_list
-
-
 class Transformer():
     """Base class to handle transformations. It offers a transform method
     that can handle list of dictionaries or Pandas DataFrames a inputs and
@@ -198,6 +189,15 @@ class BMLTransformer(Transformer):
         """Returns a list of dictionaries with the generated transformations.
         The input list is expected to be a list of dictionaries"""
         return self.generator(input_data_list)
+
+    @staticmethod
+    def merge_input_data(input_data_list, output_data_list):
+        """Adding input data to the output """
+        for index, input_data in enumerate(input_data_list):
+            for key, value in input_data.items():
+                if key not in output_data_list[index]:
+                    output_data_list[index].update({key: value})
+        return output_data_list
 
 
 class DFTransformer(Transformer):
@@ -324,6 +324,11 @@ class SKTransformer(Transformer):
             return result
         return concat([input_data_list, result], axis=1)
 
+    @staticmethod
+    def merge_input_data(input_data_list, output_data_list):
+        """Adding input data to the output """
+        return concat([input_data_list, output_data_list], axis=1)
+
 
 class Pipeline(Transformer):
     """Class to define sequential transformations. The transformations can
@@ -393,8 +398,8 @@ class Pipeline(Transformer):
                 inner_data_list, out_format=current_format)
             if hasattr(self.steps[-1], "add_input") and \
                     self.steps[-1].add_input:
-                self.steps[-1].merge_input_data(input_data_list,
-                                                inner_data_list)
+                self.steps[-1].__class__.merge_input_data(input_data_list,
+                                                          inner_data_list)
         except Exception as exc:
             raise ValueError("Failed to apply the last step: %s" % exc)
         return inner_data_list

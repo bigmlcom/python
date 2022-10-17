@@ -81,7 +81,7 @@ class TestLocalPipeline(object):
                 And I create a local pipeline "<name3>" for both pipelines
                 Then the transformed data for "<input_data>" is "<output_data>"
         """
-        show_doc(self.test_scenario1)
+        show_doc(self.test_scenario2)
         headers = ["pipeline_file", "models_list", "model1", "name1",
                    "model2", "name2", "name", "input_data", "output_data"]
         examples = [
@@ -105,10 +105,10 @@ class TestLocalPipeline(object):
                 self, example["pipeline_file"], example["models_list"])
             pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, example["model1"], example["name1"],
-                storage=os.path.dirname(example["pipeline_file"]))
+                storage=os.path.splitext(example["pipeline_file"])[0])
             pipe2 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, example["model2"], example["name2"],
-                storage=os.path.dirname(example["pipeline_file"]))
+                storage=os.path.splitext(example["pipeline_file"])[0])
             pipeline_compare.i_create_composed_pipeline(self, [pipe1, pipe2],
                                                         example["name"])
             pipeline_compare.the_pipeline_transformed_data_is(

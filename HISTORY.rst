@@ -3,11 +3,11 @@
 History
 -------
 
-8.3.0 (2022-10-12)
+9.0.0 (2022-10-12)
 ------------------
 
-- Renaming Pipeline class to BMLPipeline and refactoring to allow scikit-leran
-  and Pandas pipelines.
+- Renaming Pipeline class to BMLPipeline and refactoring to allow scikit-learn
+  and Pandas pipelines to be also part of the Pipeline transformations.
 - Adding several Transformers (BMLTransformer, SKTransformer and DFTransformer)
   as wrappers for transformation generators.
 

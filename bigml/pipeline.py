@@ -101,6 +101,15 @@ def check_in_path(path, resource_list):
     return True
 
 
+def merge_input_data(input_data_list, output_data_list):
+    """Adding input data to the output """
+    for index, input_data in enumerate(input_data_list):
+        for key, value in input_data.items():
+            if key not in output_data_list[index]:
+                output_data_list[index].update({key: value})
+    return output_data_list
+
+
 class Transformer():
     """Base class to handle transformations. It offers a transform method
     that can handle list of dictionaries or Pandas DataFrames a inputs and
@@ -189,14 +198,6 @@ class BMLTransformer(Transformer):
         """Returns a list of dictionaries with the generated transformations.
         The input list is expected to be a list of dictionaries"""
         return self.generator(input_data_list)
-
-    def merge_input_data(self, input_data_list, output_data_list):
-        """Adding input data to the output """
-        for index, input_data in enumerate(input_data_list):
-            for key, value in input_data.items():
-                if key not in output_data_list[index]:
-                    output_data_list[index].update({key: value})
-        return output_data_list
 
 
 class DFTransformer(Transformer):
@@ -321,11 +322,7 @@ class SKTransformer(Transformer):
         result = DataFrame(result, **df_kwargs)
         if not self.add_input:
             return result
-        return self.merge_input_data(input_data_list, result)
-
-    def merge_input_data(self, input_data_list, output_data_list):
-        """Merging the original input data with the output """
-        return concat([input_data_list, output_data_list], axis=1)
+        return concat([input_data_list, result], axis=1)
 
 
 class Pipeline(Transformer):
@@ -644,3 +641,4 @@ class BMLPipeline(Pipeline):
             return cls(name,
                        None,
                        cache_get=fs_cache_get(dump_dir))
+        return None

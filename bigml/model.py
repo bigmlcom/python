@@ -365,7 +365,6 @@ class Model(BaseModel):
         # retrieving model information from
         self.resource_id, model = get_resource_dict( \
             model, "model", api=api, no_check_fields=fields is not None)
-
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
             self.dataset_id = model.get('dataset')

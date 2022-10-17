@@ -485,7 +485,8 @@ class BMLPipeline(Pipeline):
             self.init_settings = init_settings or {}
             self.execution_settings = execution_settings or {}
         self._api = get_api_connection(api)
-        self._api.storage = self._get_pipeline_storage()
+        if self._api.storage is None:
+            self._api.storage = self._get_pipeline_storage()
         self._cache_get = cache_get
         self.steps = []
         self.extend(self.__retrieve_steps(last_step))

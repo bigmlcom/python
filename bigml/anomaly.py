@@ -227,7 +227,6 @@ class Anomaly(ModelFields):
             ModelFields.__init__(
                 self, anomaly['model'].get('fields'),
                 missing_tokens=anomaly['model'].get('missing_tokens'))
-
             self.mean_depth = anomaly['model'].get('mean_depth')
             self.normalization_factor = anomaly['model'].get(
                 'normalization_factor')

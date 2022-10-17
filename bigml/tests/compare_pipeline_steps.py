@@ -42,11 +42,14 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
 
 #@step(r'I create a local pipeline for "(.*)" named "(.*)"$')
 def i_create_a_local_pipeline_from_models_list(
-    step, models_list, name, storage):
+    step, models_list, name, storage=None):
     models_list = json.loads(models_list)
+    kwargs = {}
+    if storage is not None:
+        kwargs = {'api': BigML(storage=res_filename(storage))}
     world.local_pipeline = BMLPipeline(name,
                                        models_list,
-                                       api=BigML(storage=res_filename(storage)))
+                                       **kwargs)
     return world.local_pipeline
 
 

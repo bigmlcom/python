@@ -68,7 +68,7 @@ class TestLocalPipeline(object):
                 self, example["pipeline_file"], example["models_list"])
             pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, example["models_list"], example["name"],
-                storage=os.path.dirname(example["pipeline_file"]))
+                storage=os.path.splitext(example["pipeline_file"])[0])
             pipeline_compare.the_pipeline_transformed_data_is(
                 self, example["input_data"], example["output_data"])
 

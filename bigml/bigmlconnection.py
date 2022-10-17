@@ -478,7 +478,8 @@ class BigMLConnection():
                           HTTP_NOT_FOUND,
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json_load(response.content)
-                LOGGER.error(self.error_message(error, method='get'))
+                LOGGER.error(self.error_message(error, method='get',
+                             resource_id=resource_id))
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -647,7 +648,8 @@ class BigMLConnection():
                           HTTP_METHOD_NOT_ALLOWED,
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json_load(response.content)
-                LOGGER.error(self.error_message(error, method='update'))
+                LOGGER.error(self.error_message(error, method='update',
+                             resource_id=resource_id))
             else:
                 LOGGER.error("Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
@@ -910,7 +912,8 @@ class BigMLConnection():
             'object': resources,
             'error': error}
 
-    def error_message(self, resource, resource_type='resource', method=None):
+    def error_message(self, resource, resource_type='resource', method=None,
+                      resource_id=None):
         """Error message for each type of resource
 
         """
@@ -922,9 +925,9 @@ class BigMLConnection():
             elif ('code' in resource
                   and 'status' in resource):
                 error_info = resource
-            resource_id = resource.get("resource")
+            resource_id = resource_id or resource.get("resource")
         else:
-            resource_id = resource
+            resource_id = resource_id or resource
         if error_info is not None and 'code' in error_info:
             code = error_info['code']
             if ('status' in error_info and

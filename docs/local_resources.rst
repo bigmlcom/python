@@ -2130,9 +2130,15 @@ Local Pipelines
 ---------------
 
 More often than not, the Machine Learning solution to a problem entails
-using data transformations and different models. In order to reproduce those
-locally and create batch predictions for a list of test input data rows, we
-can use the ``BMLPipeline`` class.
+using data transformations and different models that produce some predictions
+or scores. They all are useful information that contributes to the final
+Machine Learning based decision. Usually, the training workflow becomes
+a sequence of functions, each of which adds new fields to our data: engineered
+features, scores, predictions, etc. Of course, once the training  sequence
+is determined, the same steps will need to be reproduced to create
+batch predictions for a new list of test input data rows.
+The ``BMLPipeline`` class offers the tools to extract that sequence from
+the existing BigML objects and create the prediction pipeline.
 
 As an example, let's think about a basic workflow where a simple feature
 engineering transformation has been applied (for instance creating the
@@ -2141,12 +2147,16 @@ Also, an anomaly detector has been created from that model to check whether the
 new input data is too different from the original examples used to train it.
 If the score is low, the model is still valid, so we accept its prediction.
 If the score is too high, the model predictions might be inaccurate, and we
-should not rely on them.
+should not rely on them. Therefore, in order to take a decision on what to do
+for new input data, we will need not only the values of the fields of that
+new test case but also the prediction (plus the associated probability)
+and anomaly score that the trained model and anomaly detector provide for it.
 
-When new data is received, the transformation to generate the ratio
-should be applied and after that, both the prediction and the anomaly score
-should be computed and added to the initial data. The ``BMLPipeline`` class
-will help us do that.
+The process will be: on receving new data, the transformation to generate
+the ratio should be applied and a new `ratio` fields will be added.
+After that, both the prediction and the anomaly score should be computed
+and they also will be added to the initial data as new fields.
+The ``BMLPipeline`` class will help us do that.
 
 First, we instantiate the ``BMLPipeline`` object by providing the models
 that we want it to use and a name for it:
@@ -2162,8 +2172,14 @@ This code will retrieve all the datasets previous to the model and anomaly
 detector construction and will store any transformation that they contain.
 It creates a sequence starting on the first dataset that was created to
 summarize the uploaded data, adding the datasets that store transformations,
-and finally the model and anomaly detector. The ``BMLPipeline`` object offers
-a ``.transform`` method that can receive a list of input data dictionaries
+and finally the model and anomaly detector. Every transformation that was
+done when training those models, will be reflected as a new step in the
+``BMLPipeline`` and every model that was added to the list will also be
+added as an additional transformation step: the model will transform
+our data by adding its prediction and associated probability and the
+anomaly detector will transform the input by adding the computed
+anomaly score. The result is obtained using the ``BMLPipeline`` object, that
+offers a ``.transform`` method which accepts a list of input data dictionaries
 or a DataFrame. For every row, it will execute the stored transformations
 and generate the model's prediction and the anomaly's score.
 All of them will be added to the original input data.
@@ -2219,7 +2235,7 @@ in the current directory. The file contains a ``my new pipeline`` folder where
 the four JSONs for the two datasets and two models are stored.
 
 The ``BMLPipeline`` provides also methods to ``dump`` and ``load`` the
-transformers it contains, in order to save them in a cache or in the file
+data transformers it contains, in order to save them in a cache or in the file
 system. As an example, we can create a ``BMLPipeline``, dump its contents to
 a file system folder and build a second pipeline from them. The name of
 the pipeline will be used as reference to know which object to load.
@@ -2255,12 +2271,15 @@ If using a cache system, the same methods described in the
 
 Sometimes, one may want to aggregate pre-existing transformations
 on your original data before loading it to BigML. In that case, you can use
-the ``Pipeline`` class to store the sequence of transformations made
-outside of BigML. As both ``Pipeline`` and ``BMLPipeline`` offer the
-``.transform`` method, they are also transformers and can be used as steps
-of a more general ``Pipeline``. Thus, combining pre-existing transformations
+the more general ``Pipeline`` class to store any sequence of transformations
+made outside of BigML. As both ``Pipeline`` and ``BMLPipeline`` offer the
+``.transform`` method, they are also data transformers, meaning that they
+can be used as steps of a more general ``Pipeline`` as well.
+Thus, combining pre-existing transformations
 based on scikit-learn or Pandas with the transformations and models generated
-in BigML is totally possible.
+in BigML is totally possible. For that, we will use the
+``SKDataTransformer`` and ``DFDataTransformer`` classes, which provide a
+``.transform`` method too.
 
 As an example of use, we'll create a ``Pipeline`` based on a existing
 scikit pipeline.
@@ -2278,7 +2297,7 @@ scikit pipeline.
     # scaler and decision tree and adding the prediction
     # to the initial dataframe
 
-    from bigml.pipeline import Pipeline, SKTransformer
+    from bigml.pipeline import Pipeline, SKDataTransformer
     from bigml.constants import OUT_NEW_HEADERS
 
     # pre-existing code to build the scikit pipeline
@@ -2296,10 +2315,10 @@ scikit pipeline.
 
     pipeline = Pipeline(
         "skpipeline", # pipeline name
-        steps=[SKTransformer(pipe,
-                             "skDTC",
-                             output={OUT_NEW_HEADERS: ["sk_prediction"]})])
-    # the `pipe` scikit pipeline is wrapped as a SKTransformer to offer
+        steps=[SKDataTransformer(pipe,
+                                 "skDTC",
+                                 output={OUT_NEW_HEADERS: ["sk_prediction"]})])
+    # the `pipe` scikit pipeline is wrapped as a SKDataTransformer to offer
     # a `.transform` method
     pipeline.transform(X_test)
 
@@ -2325,7 +2344,7 @@ The same can be done for a Pandas' pipe sequence
     import pandas as pd
     import numpy as np
 
-    from bigml.pipeline import DFTransformer, Pipeline
+    from bigml.pipeline import DFDataTransformer, Pipeline
 
     marketing = pd.read_csv("./data/DirectMarketing.csv")
 
@@ -2345,15 +2364,22 @@ The same can be done for a Pandas' pipe sequence
        return df.copy()
 
     pipeline = Pipeline("pandas_pipeline",
-                        steps=[DFTransformer([copy_df,
-                                              drop_missing,
-                                              (remove_outliers, ['Salary'])])])
-    # the list of functions are wrapped as a DFTransformer to offer
+                        steps=[DFDataTransformer([copy_df,
+                                                  drop_missing,
+                                                  (remove_outliers,
+                                                   ['Salary'])])])
+    # the list of functions are wrapped as a DFDataTransformer to offer
     # a `.transform` method that generates the output using Pandas' `.pipe`
     marketing_clean = pipeline.transform(marketing)
 
 where again, the pipeline could be combined with any ``BMLPipeline`` to
 produce a more general transformation sequence.
+
+Of course, new classes could be built to support other transformation tools
+and libraries. A new data transformer can be created by deriving the
+``DataTransformer`` class and customizing its ``.data_transform`` method
+to cover the particulars of the functions to be used in the generation of
+new fields.
 
 
 Local batch predictions

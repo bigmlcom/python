@@ -101,7 +101,7 @@ def check_in_path(path, resource_list):
     return True
 
 
-class Transformer():
+class DataTransformer():
     """Base class to handle transformations. It offers a transform method
     that can handle list of dictionaries or Pandas DataFrames a inputs and
     delegates to the `data_transform` method the actual transformations to
@@ -115,9 +115,10 @@ class Transformer():
            doing the transformation
          - data_format: whether to accept a DataFrame or a list of dictionaries
            as inputs for the generator
-         - resource_id: unique identifier for the transformer object
-         - name: name for the transformer
-         - description: description for the transformations in the transformer
+         - resource_id: unique identifier for the data transformer object
+         - name: name for the data transformer
+         - description: description for the transformations in the data
+                        transformer
         """
         self.generator = generator
         self.data_format = data_format
@@ -144,16 +145,16 @@ class Transformer():
         return result
 
     def data_transform(self, input_data_list):
-        """Method to be re-implemented in each of the transformers. Using
+        """Method to be re-implemented in each of the data transformers. Using
         identity by default."""
         raise NotImplementedError("This method needs to be implemented")
 
 
-class BMLTransformer(Transformer):
+class BMLDataTransformer(DataTransformer):
     """Transformer wrapper for BigML resources."""
     def __init__(self, local_resource, outputs=None, **kwargs):
         """Receives a local resource (Dataset, SupervisedModel, Cluster...)
-        and creates a `Transformer` from it to apply the corresponding
+        and creates a `DataTransformer` from it to apply the corresponding
         transformations.
         - for Datasets, Flatline transformations (if any) are applied
         - for models, a batch prediction (scoring, topic distribution, etc.) is
@@ -200,16 +201,16 @@ class BMLTransformer(Transformer):
         return output_data_list
 
 
-class DFTransformer(Transformer):
-    """Transformer wrapper for DataFrames """
+class DFDataTransformer(DataTransformer):
+    """DataTransformer wrapper for DataFrames """
     def __init__(self, generator, resource_id=None, name=None,
                  description=None):
         """Receives the function or list of functions to be applied on
         the input DataFrame
         Optional parameters are:
-        :param resource_id: unique ID for the Transformer
+        :param resource_id: unique ID for the DataTransformer
         :type resource_id: str
-        :param name: Transformer name
+        :param name: DataTransformer name
         :type name: str
         :param description: Description for the transformations.
         :type description: str
@@ -260,16 +261,16 @@ class DFTransformer(Transformer):
         return result
 
 
-class SKTransformer(Transformer):
-    """Transformer wrapper for scikit learn pipelines or transformations """
+class SKDataTransformer(DataTransformer):
+    """DataTransformer wrapper for scikit learn pipelines or transformations """
     def __init__(self, generator, resource_id=None, name=None,
                  description=None, output=None):
         """Receives the pipeline or transformation to be applied on
         the input DataFrame
         Optional parameters are:
-        :param resource_id: unique ID for the Transformer
+        :param resource_id: unique ID for the DataTransformer
         :type resource_id: str
-        :param name: Transformer name
+        :param name: DataTransformer name
         :type name: str
         :param description: Description for the transformations.
         :type description: str
@@ -330,7 +331,7 @@ class SKTransformer(Transformer):
         return concat([input_data_list, output_data_list], axis=1)
 
 
-class Pipeline(Transformer):
+class Pipeline(DataTransformer):
     """Class to define sequential transformations. The transformations can
     come from BigML resources or be defined as Pipe steps defined as functions
     to be applied to DataFrame pipes, scikit pipelines
@@ -342,7 +343,7 @@ class Pipeline(Transformer):
         reference
         :param name: Reference name for the pipeline
         :type name: str
-        :param steps: List of Transformers. All of them need to offer a
+        :param steps: List of DataTransformers. All of them need to offer a
                       `.transform` method
         :type steps: list
         :param description: Description of the transformations in the pipeline
@@ -381,7 +382,7 @@ class Pipeline(Transformer):
         return result
 
     def data_transform(self, input_data_list):
-        """Delegates transformation to each Transformer step"""
+        """Delegates transformation to each DataTransformer step"""
         current_format = get_data_format(input_data_list)
         if len(self.steps) == 0:
             return input_data_list

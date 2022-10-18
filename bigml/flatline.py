@@ -35,7 +35,7 @@ class Flatline:
 
     """
 
-    __FLATLINEJS = require('../flatline/flatline-node.js')
+    __FLATLINEJS = require('./flatline/flatline-node.js')
     interpreter = __FLATLINEJS.bigml.dixie.flatline
 
     #pylint: disable=locally-disabled,invalid-name

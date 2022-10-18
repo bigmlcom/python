@@ -8,8 +8,8 @@ History
 
 - Renaming Pipeline class to BMLPipeline and refactoring to allow scikit-learn
   and Pandas pipelines to be also part of the Pipeline transformations.
-- Adding several Transformers (BMLTransformer, SKTransformer and DFTransformer)
-  as wrappers for transformation generators.
+- Adding several DataTransformers (BMLDataTransformer, SKDataTransformer and
+  DFDataTransformer) as wrappers for transformation generators.
 
 8.2.3 (2022-10-07)
 ------------------

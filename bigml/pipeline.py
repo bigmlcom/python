@@ -557,7 +557,7 @@ class BMLPipeline(Pipeline):
                 continue
             execution_settings = self.execution_settings.get(
                 local_resource.resource_id, {})
-            steps.append(BMLTransformer(
+            steps.append(BMLDataTransformer(
                 local_resource, **execution_settings))
         return steps
 

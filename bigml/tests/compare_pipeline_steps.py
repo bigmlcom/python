@@ -23,7 +23,7 @@ from nose.tools import eq_
 from .world import world, res_filename
 
 
-from bigml.pipeline import BMLPipeline, Pipeline
+from bigml.pipeline.pipeline import BMLPipeline, Pipeline
 from bigml.api import BigML
 
 def i_expand_file_with_models_list(step, pipeline_file, models_list):

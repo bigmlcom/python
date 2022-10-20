@@ -62,7 +62,7 @@ setuptools.setup(
                 'bigml.tests.my_ensemble',
                 'bigml.api_handlers', 'bigml.predicate_utils',
                 'bigml.generators', 'bigml.predict_utils',
-                'bigml.images'],
+                'bigml.images', 'bigml.pipeline'],
     package_data={'bigml':['generators/static/*',
                            'flatline/*']},
     classifiers=[

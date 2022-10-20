@@ -2163,7 +2163,7 @@ that we want it to use and a name for it:
 
 .. code-block:: python
 
-    from bigml.pipeline import BMLPipeline
+    from bigml.pipeline.pipeline import BMLPipeline
     local_pipeline = BMLPipeline("my new pipeline",
                                  ["model/5143a51a37203f2cf7020351",
                                   "anomaly/5143a51a37203f2cf7027551"])
@@ -2201,7 +2201,7 @@ resources are stored in memory caches.
 
 .. code-block:: python
 
-    from bigml.pipeline import BMLPipeline
+    from bigml.pipeline.pipeline import BMLPipeline
     local_pipeline = BMLPipeline("my new pipeline",
                                  ["model/5143a51a37203f2cf7020351",
                                   "anomaly/5143a51a37203f2cf7027551"],
@@ -2222,7 +2222,7 @@ given by the user:
 
 .. code-block:: python
 
-    from bigml.pipeline import BMLPipeline
+    from bigml.pipeline.pipeline import BMLPipeline
     local_pipeline = BMLPipeline("my new pipeline",
                                  ["model/5143a51a37203f2cf7020351",
                                   "anomaly/5143a51a37203f2cf7027551"]
@@ -2243,7 +2243,7 @@ the pipeline will be used as reference to know which object to load.
 
 .. code-block:: python
 
-    from bigml.pipeline import BMLPipeline
+    from bigml.pipeline.pipeline import BMLPipeline
     local_pipeline = BMLPipeline("pipeline1",
                                  "model/5143a51a37203f2cf7020351")
     local_pipeline.dump("./pipeline1_storage")
@@ -2259,7 +2259,7 @@ If using a cache system, the same methods described in the
 
 .. code-block:: python
 
-    from bigml.pipeline import BMLPipeline
+    from bigml.pipeline.pipeline import BMLPipeline
     local_pipeline = BMLPipeline("pipeline1",
                                  "model/631a6a6f8f679a2d31000445")
     import redis
@@ -2297,7 +2297,7 @@ scikit pipeline.
     # scaler and decision tree and adding the prediction
     # to the initial dataframe
 
-    from bigml.pipeline import Pipeline, SKDataTransformer
+    from bigml.pipeline.transformer import Pipeline, SKDataTransformer
     from bigml.constants import OUT_NEW_HEADERS
 
     # pre-existing code to build the scikit pipeline
@@ -2344,7 +2344,7 @@ The same can be done for a Pandas' pipe sequence
     import pandas as pd
     import numpy as np
 
-    from bigml.pipeline import DFDataTransformer, Pipeline
+    from bigml.pipeline.transformer import DFDataTransformer, Pipeline
 
     marketing = pd.read_csv("./data/DirectMarketing.csv")
 

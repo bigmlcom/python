@@ -15,11 +15,13 @@
 # under the License.
 
 """
-Pipeline: Classes that encapsulate the information needed to add the new
-fields and predictions defined in a sequence of transformations or models.
-The arguments to create a Pipeline are its name and the list of
-datasets and models (and/or anomaly dectectors, clusters,
-etc.) that describe the input data processing to be used.
+DataTransformer classes that handle the transformations generated on input
+data by Feature Engineering, Models, Anomaly Detectors, etc.
+The BMLDataTransformer will take care of transformations that use BigML
+objects as transformation generators. Other libraries, like Pandas
+(DFDataTransfomer) and scikit-learn (SKDataTransformer)
+will need their own DataTransformer subclasses to define
+their own transformations.
 
 """
 

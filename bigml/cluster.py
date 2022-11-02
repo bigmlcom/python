@@ -676,7 +676,7 @@ class Cluster(ModelFields):
             for index, key in enumerate(new_fields):
                 input_data[new_headers[index]] = prediction[key]
         if data_format != INTERNAL:
-            return format_data(inner_data_list, out_format=INTERNAL)
+            return format_data(inner_data_list, out_format=data_format)
         return inner_data_list
 
     def dump(self, output=None, cache_set=None):

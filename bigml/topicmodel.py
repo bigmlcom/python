@@ -424,7 +424,7 @@ class TopicModel(ModelFields):
                 inner_data_list[index][new_headers[ikey]] = prediction_dict[
                     key]
         if data_format != INTERNAL:
-            return format_data(inner_data_list, out_format=INTERNAL)
+            return format_data(inner_data_list, out_format=data_format)
         return inner_data_list
 
     def dump(self, output=None, cache_set=None):

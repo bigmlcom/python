@@ -3,6 +3,13 @@
 History
 -------
 
+9.0.1 (2022-11-02)
+------------------
+
+- Fixing local batch_prediction method on DataFrames.
+- Improving the training examples method in the Fields class to produce
+  examples of categorical field values following their original distribution.
+
 9.0.0 (2022-10-12)
 ------------------
 

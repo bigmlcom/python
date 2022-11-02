@@ -679,9 +679,9 @@ class Fields():
                     if missings and random.randint(0, 5) > 3:
                         value = None
                     else:
-                        categories_number = len(field["summary"]["categories"])
-                        index = random.randint(0, categories_number - 1)
-                        value = field["summary"]["categories"][index][0]
+                        categories = [cat[0] for cat in field["summary"]["categories"]]
+                        weights = [cat[1] for cat in field["summary"]["categories"]]
+                        value = random.choices(categories, weights)[0]
                 if optype == "text":
                     if missings and random.randint(0, 5) > 3:
                         value = None

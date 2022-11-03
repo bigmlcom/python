@@ -24,7 +24,7 @@ from javascript import require
 class Flatline:
     """A bridge to an underlying nodejs Flatline interpreter.
 
-    This class uses execjs to launch a Nodejs interpreter that loads
+    This class uses JSPyBridge to launch a Nodejs interpreter that loads
     Flatline's javascript implementation and allows interaction via
     Python constructs.
 

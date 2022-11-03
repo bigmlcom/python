@@ -56,26 +56,32 @@ def expand_date(res_object, parent_id, date):
 class Featurizer:
     """A class to generate the components derived from a composed field """
 
-    def __init__(self, fields, input_fields, out_fields=None):
+    def __init__(self, fields, input_fields, selected_fields=None,
+                 preferred_only=True):
         self.fields = fields
         self.input_fields = input_fields
         self.subfields = {}
         self.generators = {}
-        self.out_fields = self.add_subfields(out_fields)
+        self.preferred_only = preferred_only
+        self.selected_fields = self.add_subfields(
+            selected_fields, preferred_only=preferred_only)
 
-    def add_subfields(self, out_fields=None):
+    def add_subfields(self, selected_fields=None, preferred_only=True):
         """Adding the subfields information in the fields structure and the
         generating functions for the subfields values.
         """
-        # filling model fields with preferred input fields
-        fields = out_fields or self.fields
-        self.out_fields = {}
-        self.out_fields.update({field_id: field for field_id, field \
-            in fields.items() if field_id in self.input_fields \
-            and self.fields[field_id].get("preferred", True)})
+        # filling preferred fields with preferred input fields
+        fields = selected_fields or self.fields
+
+        if selected_fields is None:
+            selected_fields = {}
+            selected_fields.update({field_id: field for field_id, field \
+                in fields.items() if field_id in self.input_fields \
+                and (not preferred_only or self.fields[field_id].get(
+                "preferred", True))})
 
         # computing the subfields generated from parsing datetimes
-        for fid, finfo in list(self.out_fields.items()):
+        for fid, finfo in list(selected_fields.items()):
 
             # datetime subfields
             if finfo.get('parent_optype', False) == DATETIME:
@@ -84,7 +90,7 @@ class Featurizer:
                 if parent_id in list(self.subfields.keys()):
                     self.subfields[parent_id].update(subfield)
                 else:
-                    self.out_fields[parent_id] = self.fields[parent_id]
+                    selected_fields[parent_id] = self.fields[parent_id]
                     self.subfields[parent_id] = subfield
                     self.generators.update({parent_id: expand_date})
             elif finfo.get('provenance', False) in IMAGE_PROVENANCE:
@@ -93,17 +99,21 @@ class Featurizer:
                                  "option to install the libraries required "
                                  "for local predictions in this case.")
 
-        return self.out_fields
-
+        return selected_fields
 
     def extend_input(self, input_data):
         """Computing the values for the generated subfields and adding them
-        to the original input data. Parent fields will be removed.
+        to the original input data. Parent fields will be removed if the
+        `preferred_only` option is set, as they are not used in models.
+        However, the `preferred_only` option set to False will keep them,
+        allowing to be used as generators in other transformations.
         """
-        expanded = {}
+        extended = {}
         for f_id, value in list(input_data.items()):
             if f_id in self.subfields:
-                expanded.update(self.generators[f_id](self, f_id, value))
+                if not self.preferred_only:
+                    extended[f_id] = value
+                extended.update(self.generators[f_id](self, f_id, value))
             else:
-                expanded[f_id] = value
-        return expanded
+                extended[f_id] = value
+        return extended

@@ -399,13 +399,16 @@ def expand_image(res_object, parent_id, image_file):
 class ImageFeaturizer(Featurizer):
     """This class provides methods for image Feature extraction."""
 
-    def __init__(self, fields, input_fields, out_fields=None):
+    def __init__(self, fields, input_fields, selected_fields=None,
+                 preferred_only=True):
         self.fields = fields
         self.input_fields = input_fields
         self.subfields = {}
         self.generators = {}
-        self.out_fields = self.add_subfields(out_fields)
-        super().__init__(fields, input_fields, out_fields)
+        self.preferred_only = preferred_only
+        self.selected_fields = self.add_subfields(selected_fields,
+            preferred_only=preferred_only)
+        super().__init__(fields, input_fields, selected_fields, preferred_only)
 
     def _add_subfield(self, field_id, field):
         """Adding a subfield and the corresponding generator """
@@ -417,42 +420,48 @@ class ImageFeaturizer(Featurizer):
             parent_type = self.fields[parent_id]["optype"]
             expand_fn_list = get_image_extractors(self, parent_id) \
                 if parent_type == IMAGE else [expand_date]
-            self.out_fields[parent_id] = self.fields[parent_id]
+            self.selected_fields[parent_id] = self.fields[parent_id]
             self.subfields[parent_id] = subfield
             self.generators.update({parent_id: expand_fn_list})
 
-    def add_subfields(self, out_fields=None):
+    def add_subfields(self, selected_fields=None, preferred_only=True):
         """Adding the subfields information in the fields structure and the
         generating functions for the subfields values.
         """
-        # filling out fields with preferred input fields
-        fields = out_fields or self.fields
-        self.out_fields = {}
-        self.out_fields.update({field_id: field for field_id, field \
-            in fields.items() if field_id in self.input_fields \
-            and self.fields[field_id].get("preferred", True)})
+        # filling preferred fields with preferred input fields
+        fields = selected_fields or self.fields
+
+        if selected_fields is None:
+            selected_fields = {}
+            selected_fields.update({field_id: field for field_id, field \
+                in fields.items() if field_id in self.input_fields \
+                and (not preferred_only or self.fields[field_id].get(
+                "preferred", True))})
+        self.selected_fields = selected_fields
 
         # computing the generated subfields
-        for fid, finfo in list(self.out_fields.items()):
+        for fid, finfo in list(self.selected_fields.items()):
             if finfo.get('parent_optype', False) == 'datetime' or \
                 finfo.get('provenance', False) in IMAGE_PROVENANCE:
                 # datetime and image subfields
                 self._add_subfield(fid, finfo)
 
-        return self.out_fields
+        return self.selected_fields
 
     def extend_input(self, input_data):
         """Computing the values for the generated subfields and adding them
         to the original input data. Parent fields will be removed.
         """
-        expanded = {}
+        extended = {}
         for f_id, value in list(input_data.items()):
             if f_id in self.generators.keys():
+                if not self.preferred_only:
+                    extended[f_id] = value
                 if self.fields[f_id]["optype"] == IMAGE:
-                    expanded.update(expand_image(self, f_id, input_data[f_id]))
+                    extended.update(expand_image(self, f_id, input_data[f_id]))
                 else:
-                    expanded.update(
+                    extended.update(
                         self.generators[f_id][0](self, f_id, input_data[f_id]))
             else:
-                expanded[f_id] = value
-        return expanded
+                extended[f_id] = value
+        return extended

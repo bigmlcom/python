@@ -64,7 +64,7 @@ class DataTransformer():
         self.name = name
         self.description = description
 
-    def __formatted_input(self, input_data_list):
+    def _formatted_input(self, input_data_list):
         """Returns a copy of the input data list in the expected format """
         return get_formatted_data(input_data_list, self.data_format)
 
@@ -74,7 +74,7 @@ class DataTransformer():
         if needed before applying the generator function.
         """
         data_format = get_data_format(input_data_list)
-        inner_data_list = self.__formatted_input(input_data_list)
+        inner_data_list = self._formatted_input(input_data_list)
         result = self.data_transform(inner_data_list)
         if self.data_format != data_format and out_format is None:
             return format_data(result, data_format)
@@ -122,6 +122,7 @@ class BMLDataTransformer(DataTransformer):
                          local_resource.resource_id,
                          local_resource.name,
                          local_resource.description)
+        self.local_resource = local_resource
         self.dump = local_resource.dump
 
     def data_transform(self, input_data_list):
@@ -129,13 +130,18 @@ class BMLDataTransformer(DataTransformer):
         The input list is expected to be a list of dictionaries"""
         return self.generator(input_data_list)
 
-    @staticmethod
-    def merge_input_data(input_data_list, output_data_list):
+    def merge_input_data(self, input_data_list, output_data_list,
+                         out_format=None):
         """Adding input data to the output """
+        data_format = get_data_format(input_data_list)
+        input_data_list = self._formatted_input(input_data_list)
+        output_data_list = self._formatted_input(output_data_list)
         for index, input_data in enumerate(input_data_list):
             for key, value in input_data.items():
                 if key not in output_data_list[index]:
                     output_data_list[index].update({key: value})
+        if self.data_format != out_format:
+            return format_data(output_data_list, data_format)
         return output_data_list
 
 

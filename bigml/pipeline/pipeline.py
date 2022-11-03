@@ -163,8 +163,9 @@ class Pipeline(DataTransformer):
                 inner_data_list, out_format=current_format)
             if hasattr(self.steps[-1], "add_input") and \
                     self.steps[-1].add_input:
-                self.steps[-1].__class__.merge_input_data(input_data_list,
-                                                          inner_data_list)
+                self.steps[-1].merge_input_data(
+                    input_data_list, inner_data_list,
+                    out_format=current_format)
         except Exception as exc:
             raise ValueError("Failed to apply the last step: %s" % exc)
         return inner_data_list
@@ -317,6 +318,7 @@ class BMLPipeline(Pipeline):
         for local_resource in local_resources:
             # non-flatline datasets will not add transformations
             if isinstance(local_resource, Dataset) and \
+                    local_resource.origin_dataset is not None and \
                     local_resource.transformations is None:
                 continue
             execution_settings = self.execution_settings.get(

@@ -2385,12 +2385,11 @@ new fields.
 Local batch predictions
 -----------------------
 
-As explained in the ``101s`` provided in the `Quick Start<#quick_start>`_
-section, batch predictions for a list of inputs can be obtained by iterating
-the single predictions discussed in each different local model. However,
-we've also provided a homogeneous ``batch_prediction`` method in the following
-local objects:
-
+As explained in the ``101s`` provided in the
+`Quick Start <index.html#quick-start>`_ section, batch predictions for a
+list of inputs can be obtained by iterating the single predictions discussed
+in each different local model. However, we've also provided a
+homogeneous ``batch_predict`` method in the following local objects:
 
 - SupervisedModel
 - Anomaly

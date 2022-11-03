@@ -723,13 +723,18 @@ def get_data_format(input_data_list):
     raise ValueError("Data is expected to be provided as a list of "
                      "dictionaries or Pandas' DataFrame.")
 
-
+#pylint: disable=locally-disabled,comparison-with-itself
 def format_data(input_data_list, out_format=None):
     """Transforms the input data format to the one expected """
     if out_format == c.DATAFRAME:
         input_data_list = DataFrame.from_dict(input_data_list)
     elif out_format == c.INTERNAL:
         input_data_list = input_data_list.to_dict('records')
+        # pandas nan, NaN, etc. outputs need to be changed to None
+        for row in input_data_list:
+            for key, value in row.items():
+                if value != value:
+                    row[key] = None
     return input_data_list
 
 

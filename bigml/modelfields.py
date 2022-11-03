@@ -160,7 +160,8 @@ class ModelFields(Featurizer):
     #pylint: disable=locally-disabled,no-member,access-member-before-definition
     def __init__(self, fields, objective_id=None, data_locale=None,
                  missing_tokens=None, categories=False,
-                 numerics=False, operation_settings=None, model_fields=None):
+                 numerics=False, operation_settings=None, model_fields=None,
+                 preferred_only=True):
         if isinstance(fields, dict):
             tmp_fields = copy.deepcopy(fields)
             try:
@@ -175,8 +176,9 @@ class ModelFields(Featurizer):
                         if not self.objective_id or \
                         field_id != self.objective_id]
                 super().__init__(self.fields, self.input_fields,
-                                 out_fields=model_fields)
-                self.model_fields = self.out_fields
+                                 selected_fields=model_fields,
+                                 preferred_only=preferred_only)
+                self.model_fields = self.selected_fields
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:

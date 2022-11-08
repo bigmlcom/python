@@ -324,7 +324,6 @@ class BMLPipeline(Pipeline):
                 local_resource.resource_id, {})
             steps.append(BMLDataTransformer(
                 local_resource, **execution_settings))
-        print("***", steps)
         return steps
 
     def _get_pipeline_storage(self):

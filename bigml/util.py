@@ -419,8 +419,8 @@ def cast(input_data, fields):
 
     """
     for (key, value) in list(input_data.items()):
-        # inputs not in fields
-        if key not in fields:
+        # inputs not in fieldsor empty
+        if key not in fields or value is None:
             continue
         # strings given as booleans
         if isinstance(value, bool) and \
@@ -746,3 +746,16 @@ def get_formatted_data(input_data_list, out_format=None):
     else:
         inner_data_list = input_data_list.copy()
     return inner_data_list
+
+
+def get_data_transformations(resource_id, parent_id):
+    """Returns the pipeline that contains the tranformations and derived
+    features created from the raw data to the actual resource.
+
+    """
+    if parent_id is None:
+        raise ValueError("Failed to find the dataset information "
+                         "needed to buid the data transformations "
+                         "pipeline.")
+    from bigml.pipeline.pipeline import BMLPipeline
+    return BMLPipeline("dt-%s" % resource_id, [parent_id])

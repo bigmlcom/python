@@ -158,8 +158,13 @@ class Fusion(ModelFields):
 
         if 'object' in fusion:
             fusion = fusion.get('object', {})
+        try:
             self.name = fusion.get('name')
             self.description = fusion.get('description')
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
+
         self.model_ids, self.weights = get_models_weight( \
             fusion['models'])
         model_types = [get_resource_type(model) for model in self.model_ids]

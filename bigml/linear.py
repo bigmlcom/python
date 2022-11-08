@@ -53,9 +53,10 @@ except ImportError:
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_linear_regression_id
 from bigml.util import cast, check_no_training_missings, flatten, \
-    use_cache, load, dump, dumps, NUMERIC
+    use_cache, load, dump, dumps, get_data_transformations, NUMERIC
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
+from bigml.constants import DECIMALS
 
 try:
     from bigml.laminar.numpy_ops import dot
@@ -113,7 +114,7 @@ class LinearRegression(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.input_fields = []
         self.term_forms = {}
         self.tag_clouds = {}
@@ -137,7 +138,7 @@ class LinearRegression(ModelFields):
         if 'object' in linear_regression and \
             isinstance(linear_regression['object'], dict):
             linear_regression = linear_regression['object']
-            self.dataset_id = linear_regression.get('dataset')
+            self.parent_id = linear_regression.get('dataset')
             self.name = linear_regression.get('name')
             self.description = linear_regression.get('description')
         try:
@@ -329,7 +330,7 @@ class LinearRegression(ModelFields):
         prediction = dot([flatten(self.coefficients)], [input_array])[0][0]
 
         result = {
-            "prediction": prediction}
+            "prediction": round(prediction, DECIMALS)}
         if self.xtx_inverse:
             result.update({"confidence_bounds": self.confidence_bounds( \
                 compact_input_array)})
@@ -394,6 +395,12 @@ class LinearRegression(ModelFields):
                 else:
                     self.field_codings[field_id] = {\
                         element["coding"]: element['coefficients']}
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

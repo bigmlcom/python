@@ -49,7 +49,7 @@ import codecs
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_cluster_id
 from bigml.util import cast, utf8, NUMERIC, use_cache, load, dump, dumps, \
-    get_data_format, get_formatted_data, format_data
+    get_data_format, get_formatted_data, format_data, get_data_transformations
 from bigml.centroid import Centroid
 from bigml.basemodel import get_resource_dict
 from bigml.generators.model import print_distribution
@@ -162,7 +162,7 @@ class Cluster(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.cluster_global = None
         self.total_ss = None
         self.within_ss = None
@@ -188,9 +188,14 @@ class Cluster(ModelFields):
 
         if 'object' in cluster and isinstance(cluster['object'], dict):
             cluster = cluster['object']
-            self.dataset_id = cluster.get('dataset')
+        try:
+            self.parent_id = cluster.get('dataset')
             self.name = cluster.get("name")
             self.description = cluster.get("description")
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
+
         if 'clusters' in cluster and isinstance(cluster['clusters'], dict):
             status = get_status(cluster)
             if 'code' in status and status['code'] == FINISHED:
@@ -678,6 +683,12 @@ class Cluster(ModelFields):
         if data_format != INTERNAL:
             return format_data(inner_data_list, out_format=data_format)
         return inner_data_list
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

@@ -3,6 +3,16 @@
 History
 -------
 
+9.1.0 (2022-11-09)
+------------------
+
+- Enabling local models to generate the transformations pipeline used in
+  training to be able to apply it locally to input data for predictions.
+- Refactoring local models to bring the feature extraction capabilities to
+  the transformations pipeline.
+- Rounding local numeric predictions and scores to 5 digits.
+- Improving Pipelines and Image Processing documentation.
+
 9.0.1 (2022-11-02)
 ------------------
 

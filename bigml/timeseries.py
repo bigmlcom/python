@@ -165,10 +165,10 @@ class TimeSeries(ModelFields):
         if 'object' in time_series and \
             isinstance(time_series['object'], dict):
             time_series = time_series['object']
+        try:
             self.dataset_id = time_series.get('dataset')
             self.name = time_series.get("name")
             self.description = time_series.get("description")
-        try:
             self.input_fields = time_series.get("input_fields", [])
             self.default_numeric_value = time_series.get( \
                 "default_numeric_value")
@@ -178,7 +178,7 @@ class TimeSeries(ModelFields):
             objective_field = time_series['objective_field'] if \
                 time_series.get('objective_field') else \
                 time_series['objective_fields']
-        except KeyError:
+        except (AttributeError, KeyError):
             raise ValueError("Failed to find the time series expected "
                              "JSON structure. Check your arguments.")
         if 'time_series' in time_series and \

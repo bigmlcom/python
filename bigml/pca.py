@@ -45,7 +45,7 @@ import math
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_pca_id
 from bigml.util import cast, use_cache, load, NUMERIC, get_data_format, \
-    get_formatted_data, format_data
+    get_formatted_data, format_data, get_data_transformations
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
@@ -101,7 +101,7 @@ class PCA(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.input_fields = []
         self.default_numeric_value = None
         self.term_forms = {}
@@ -123,18 +123,17 @@ class PCA(ModelFields):
         if 'object' in pca and \
             isinstance(pca['object'], dict):
             pca = pca['object']
-            self.dataset_id = pca.get('dataset')
+        try:
+            self.parent_id = pca.get('dataset')
             self.name = pca.get("name")
             self.description = pca.get("description")
-        try:
             self.input_fields = pca.get("input_fields", [])
             self.default_numeric_value = pca.get("default_numeric_value")
             self.dataset_field_types = pca.get("dataset_field_types", {})
             self.famd_j = 1 if (self.dataset_field_types['categorical'] != \
                 self.dataset_field_types['total']) else \
                 self.dataset_field_types['categorical']
-
-        except KeyError:
+        except (AttributeError, KeyError):
             raise ValueError("Failed to find the pca expected "
                              "JSON structure. Check your arguments.")
         if 'pca' in pca and \
@@ -361,3 +360,9 @@ class PCA(ModelFields):
         if data_format != INTERNAL:
             return format_data(inner_data_list, out_format=data_format)
         return inner_data_list
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)

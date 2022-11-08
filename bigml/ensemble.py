@@ -59,8 +59,9 @@ from bigml.basemodel import BaseModel, print_importance, check_local_but_fields
 from bigml.modelfields import ModelFields, NUMERIC
 from bigml.multivotelist import MultiVoteList
 from bigml.tree_utils import add_distribution
-from bigml.util import cast, use_cache, load, dump, dumps
-
+from bigml.util import cast, use_cache, load, dump, dumps, \
+    get_data_transformations
+from bigml.constants import DECIMALS
 
 BOOSTING = 1
 LOGGER = logging.getLogger('BigML')
@@ -141,7 +142,7 @@ class Ensemble(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.objective_id = None
         self.distributions = None
         self.distribution = None
@@ -214,7 +215,7 @@ class Ensemble(ModelFields):
                 ensemble = retrieve_resource(self.api, self.resource_id,
                                              no_check_fields=True)
 
-            self.dataset_id = ensemble.get('object', {}).get('dataset')
+            self.parent_id = ensemble.get('object', {}).get('dataset')
             self.name = ensemble.get('object', {}).get('name')
             self.description = ensemble.get('object', {}).get('description')
             if ensemble['object'].get('type') == BOOSTING:
@@ -858,7 +859,7 @@ class Ensemble(ModelFields):
                 unused_fields = unused_fields.intersection( \
                     set(prediction.get("unused_fields", [])))
             if not isinstance(result, dict):
-                result = {"prediction": result}
+                result = {"prediction": round(result, DECIMALS)}
             result['unused_fields'] = list(unused_fields)
 
         return result
@@ -1025,6 +1026,12 @@ class Ensemble(ModelFields):
                 model.dump(output=output, cache_set=cache_set)
             del self_vars["multi_model"]
         dump(self_vars, output=output, cache_set=cache_set)
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dumps(self):
         """Uses msgpack to serialize the resource object to a string

@@ -497,7 +497,7 @@ is reached.
 Let's assume you decide that you have a binary problem, with classes ``True``
 and ``False`` as possible outcomes. Imagine you want to be very sure to
 predict the `True` outcome, so you don't want to predict that unless the
-probability associated to it is over ``0,8``. You can achieve this with any
+probability associated to it is over ``0.8``. You can achieve this with any
 classification model by creating an operating point:
 
 .. code-block:: python
@@ -511,13 +511,50 @@ parameter:
 
 .. code-block:: python
 
-    prediction = local_model.predict(inputData,
+    prediction = local_model.predict(input_data,
                                      operating_point=operating_point)
 
 where ``inputData`` should contain the values for which you want to predict.
 Local models allow two kinds of operating points: ``probability`` and
 ``confidence``. For both of them, the threshold can be set to any number
 in the ``[0, 1]`` range.
+
+
+Local feature generation for predictions
+----------------------------------------
+
+All kind of local models (ensembles, clusters, etc.) offer a prediction-like
+method that receives the input data to be used as test data and produces the
+prediction output (prediction, centroid, etc.). However, one of BigML's
+capabilities is automatic feature extraction from date-time
+or image fields. Also, the Flatline language allows the user to create
+new features to from the raw data to be used in modelling. Thus, your model
+might use features that have been derived from the original raw data and should
+be replicated at prediction time.
+
+``Local pipelines`` are objects that will store all the
+feature extraction and transformations used to produce the dataset that was
+used for training (see `Local Pipelines <#local-pipelines>`_).
+These objects provide a ``.transform`` method that can be
+applied to the raw input data to reproduce the same transformations that
+were used to define the training data used by the model from the raw training
+data. Every local model class offers a ``.data_transformations`` method that
+generates a ``BMLPipeline`` object, storing these transformations.
+The user can apply them before calling the corresponding prediction method.
+
+.. code-block:: python
+
+    from bigml.model import Model
+    local_model = Model('model/502fdbff15526876610002435')
+    local_pipeline = local_model.data_transformations()
+    # the pipeline transform method is applied to lists of dictionaries
+    # (one row per dictionary).
+    # For a single prediction, a list of one input is sent to be
+    # transformed and the result will be a list, whose
+    # first element is used as transformed input data
+    input_data = local_pipeline.transform(
+        [{"petal length": 4.4, "sepal width": 3.2}])[0]
+    prediction = local_model.predict(input_data)
 
 
 Local Clusters
@@ -2140,11 +2177,43 @@ batch predictions for a new list of test input data rows.
 The ``BMLPipeline`` class offers the tools to extract that sequence from
 the existing BigML objects and create the prediction pipeline.
 
-As an example, let's think about a basic workflow where a simple feature
-engineering transformation has been applied (for instance creating the
-ratio of two fields) and then a model has been created from the new dataset.
-Also, an anomaly detector has been created from that model to check whether the
-new input data is too different from the original examples used to train it.
+The first obvious goal that we may have is reproducing the same feature
+extraction and transformations that were used when training our data to create
+our model. That is achieved by using a ``BMLPipeline`` object built
+on the training dataset.
+
+.. code-block:: python
+
+    from bigml.pipeline.pipeline import BMLPipeline
+    local_pipeline = BMLPipeline("my transformations pipeline",
+                                 ["dataset/5143a55637203f2cf7020351"])
+
+Starting from ``dataset/5143a55637203f2cf7020351``
+and tracing the previous datasets up till the original source built from
+our data, the pipeline will store all the steps that were done
+to transform it. Maybe some year, month and day new features were
+automatically extracted from our date-time fields, or even
+the features corresponding to the histogram of gradients were
+obtained from an image field (if your dataset had one of those).
+Also, if transformations were defined using ``Flatline`` to
+generate new fields, they will be detected and stored as a transformation
+step. They are all retrieved and ready to be applied to a
+list of dictionaries representing your rows information using the
+``.transform`` method.
+
+.. code-block:: python
+
+    local_pipeline.transform([{"plasma glucose": 130, "bmi":3},
+                             {"age":26, "plasma glucose": 70}])
+
+
+As a more powerful example, let's think about an entire workflow where
+models have been built on a dataset adding a new field with a
+simple feature engineering transformation, like the ratio of two fields.
+Suppose a model has been created from the new dataset.
+Also, an anomaly detector has been created from the same dataset
+to check whether the new input data is too different from the original
+examples used to train the model.
 If the score is low, the model is still valid, so we accept its prediction.
 If the score is too high, the model predictions might be inaccurate, and we
 should not rely on them. Therefore, in order to take a decision on what to do
@@ -2152,10 +2221,11 @@ for new input data, we will need not only the values of the fields of that
 new test case but also the prediction (plus the associated probability)
 and anomaly score that the trained model and anomaly detector provide for it.
 
-The process will be: on receving new data, the transformation to generate
-the ratio should be applied and a new `ratio` fields will be added.
+To solve the problem, the process will be: on receving new data,
+the transformation to generate the ratio between the raw input fields
+should be applied and a new ``ratio`` field should be added.
 After that, both the prediction and the anomaly score should be computed
-and they also will be added to the initial data as new fields.
+and they also should be added to the initial data as new fields.
 The ``BMLPipeline`` class will help us do that.
 
 First, we instantiate the ``BMLPipeline`` object by providing the models
@@ -2399,24 +2469,24 @@ homogeneous ``batch_predict`` method in the following local objects:
 
 which can receive the following parameters:
 
-- input_data_list:  This can be a list of input data, expressed as a
-                    dictionary containing ``field_name: field_value`` pairs or
-                    a Pandas' DataFrame
-- outputs:          That's a dictionary that can contain ``output_fields``
-                    and/or ``output_headers`` information. Each one is
-                    defined by default as the list of prediction keys to be
-                    added to the inputs and the list of headers to be used
-                    as keys in the output. E.g., for a supervised learning
-                    model, the default if no information is provided would
-                    be equivalent to ``{"output_fields": ["prediction",
-                    "probability"], "output_headers": ["prediction",
-                    "probability"]}`` and both the prediction and the
-                    associated probability would be added to the input data.
-- **kwargs:         Any other parameters allowed in the ``.predict`` method
-                    could be added to the batch prediction too. For instance,
-                    we could add the operating kind to a supervised model
-                    batch prediction using ``operating_kind=probability`` as
-                    argument.
+- **input_data_list**: This can be a list of input data, expressed as a
+  dictionary containing ``field_name: field_value`` pairs or
+  a Pandas' DataFrame
+- **outputs**: That's a dictionary that can contain ``output_fields``
+  and/or ``output_headers`` information. Each one is
+  defined by default as the list of prediction keys to be
+  added to the inputs and the list of headers to be used
+  as keys in the output. E.g., for a supervised learning
+  model, the default if no information is provided would
+  be equivalent to ``{"output_fields": ["prediction",
+  "probability"], "output_headers": ["prediction",
+  "probability"]}`` and both the prediction and the
+  associated probability would be added to the input data.
+- **\*\*kwargs**: Any other parameters allowed in the ``.predict`` method
+  could be added to the batch prediction too. For instance,
+  we could add the operating kind to a supervised model
+  batch prediction using ``operating_kind=probability`` as
+  argument.
 
 
 Let's write some examples. If we are reading data from a CSV, we can use the

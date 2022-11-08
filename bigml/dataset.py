@@ -64,6 +64,7 @@ class Dataset:
         self.description = None
         self.rows = None
         self.origin_dataset = None
+        self.parent_id = None
         self.in_fields = None
         self.out_fields = None
         self.description = None
@@ -104,8 +105,10 @@ class Dataset:
                     new_fields = None
                 origin_dataset = dataset.get("origin_dataset")
                 if origin_dataset:
+                    self.parent_id = origin_dataset
                     self.add_transformations(origin_dataset, new_fields)
                 elif dataset.get("source"):
+                    self.parent_id = dataset.get("source")
                     self.in_fields = out_fields_obj.fields
                     self.featurizer = Featurizer(self.in_fields,
                         self.input_fields,

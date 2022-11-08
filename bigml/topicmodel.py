@@ -50,7 +50,7 @@ from bigml.api import get_status, get_api_connection, get_topic_model_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields
 from bigml.util import use_cache, load, dump, dumps, get_data_format, \
-    get_formatted_data, format_data
+    get_formatted_data, format_data, get_data_transformations
 from bigml.constants import OUT_NEW_FIELDS, OUT_NEW_HEADERS, INTERNAL
 
 
@@ -101,7 +101,7 @@ class TopicModel(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.seed = None
         self.case_sensitive = False
         self.bigrams = False
@@ -117,9 +117,14 @@ class TopicModel(ModelFields):
 
         if 'object' in topic_model and isinstance(topic_model['object'], dict):
             topic_model = topic_model['object']
-            self.dataset_id = topic_model.get('dataset')
+        try:
+            self.parent_id = topic_model.get('dataset')
             self.name = topic_model.get("name")
             self.description = topic_model.get("description")
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
+
         if 'topic_model' in topic_model \
                 and isinstance(topic_model['topic_model'], dict):
             status = get_status(topic_model)
@@ -426,6 +431,12 @@ class TopicModel(ModelFields):
         if data_format != INTERNAL:
             return format_data(inner_data_list, out_format=data_format)
         return inner_data_list
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

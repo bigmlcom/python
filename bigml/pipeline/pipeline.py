@@ -290,13 +290,12 @@ class BMLPipeline(Pipeline):
                         resource_id, {})
                 execution_settings[resource_id].update({"full": True})
             local_resources.append([local_resource])
-            if (hasattr(local_resource, "dataset_id") and \
-                    local_resource.dataset_id) or \
-                    isinstance(local_resource, Dataset):
-                if local_resource.dataset_id in datasets:
+            if (hasattr(local_resource, "parent_id") and \
+                    get_resource_type(local_resource.parent_id) == "dataset"):
+                if local_resource.parent_id in datasets:
                     dataset = datasets[local_resource.dataset_id]
                 else:
-                    dataset = Dataset(local_resource.dataset_id,
+                    dataset = Dataset(local_resource.parent_id,
                                       api=self._api)
                     datasets = get_datasets_dict(dataset, datasets)
                 if not last_step:
@@ -325,6 +324,7 @@ class BMLPipeline(Pipeline):
                 local_resource.resource_id, {})
             steps.append(BMLDataTransformer(
                 local_resource, **execution_settings))
+        print("***", steps)
         return steps
 
     def _get_pipeline_storage(self):

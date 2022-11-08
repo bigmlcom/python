@@ -52,8 +52,8 @@ from bigml.api import get_status, get_api_connection, get_anomaly_id
 from bigml.basemodel import get_resource_dict
 from bigml.modelfields import ModelFields, NUMERIC
 from bigml.util import cast, use_cache, load, get_data_format, \
-    get_formatted_data, format_data
-from bigml.constants import OUT_NEW_HEADERS, INTERNAL
+    get_formatted_data, format_data, get_data_transformations
+from bigml.constants import OUT_NEW_HEADERS, INTERNAL, DECIMALS
 
 
 DEPTH_FACTOR = 0.5772156649
@@ -199,7 +199,7 @@ class Anomaly(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.sample_size = None
         self.input_fields = None
         self.default_numeric_value = None
@@ -214,7 +214,8 @@ class Anomaly(ModelFields):
 
         if 'object' in anomaly and isinstance(anomaly['object'], dict):
             anomaly = anomaly['object']
-            self.dataset_id = anomaly.get('dataset')
+        try:
+            self.parent_id = anomaly.get('dataset')
             self.name = anomaly.get("name")
             self.description = anomaly.get("description")
             self.sample_size = anomaly.get('sample_size')
@@ -222,6 +223,9 @@ class Anomaly(ModelFields):
             self.default_numeric_value = anomaly.get('default_numeric_value')
             self.normalize_repeats = anomaly.get('normalize_repeats', False)
             self.id_fields = anomaly.get('id_fields', [])
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
 
         if 'model' in anomaly and isinstance(anomaly['model'], dict):
             ModelFields.__init__(
@@ -261,6 +265,12 @@ class Anomaly(ModelFields):
             return min(self.mean_depth, default_depth)
         return None
 
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
+
     def anomaly_score(self, input_data):
         """Returns the anomaly score given by the iforest
             To produce an anomaly score, we evaluate each tree in the iforest
@@ -278,7 +288,6 @@ class Anomaly(ModelFields):
             return 1
         # Checks and cleans input_data leaving the fields used in the model
         norm_input_data = self.filter_input_data(input_data)
-
         # Strips affixes for numeric values and casts to the final field type
         cast(norm_input_data, self.fields)
 
@@ -297,7 +306,8 @@ class Anomaly(ModelFields):
             depth_sum += tree_depth
 
         observed_mean_depth = float(depth_sum) / len(self.iforest)
-        return math.pow(2, - observed_mean_depth / self.norm)
+        return round(math.pow(2, - observed_mean_depth / self.norm),
+                     DECIMALS)
 
     def anomalies_filter(self, include=True):
         """Returns the LISP expression needed to filter the subset of

@@ -51,14 +51,15 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
-from bigml.util import cast, use_cache, load, PRECISION
+from bigml.util import cast, use_cache, load, get_data_transformations, \
+    PRECISION
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
     DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD, \
-    IMAGE
+    IMAGE, DECIMALS
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
@@ -138,7 +139,7 @@ class Deepnet(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.regression = False
         self.network = None
         self.networks = None
@@ -154,11 +155,15 @@ class Deepnet(ModelFields):
 
         if 'object' in deepnet and isinstance(deepnet['object'], dict):
             deepnet = deepnet['object']
-            self.dataset_id = deepnet.get('dataset')
+        try:
+            self.parent_id = deepnet.get('dataset')
             self.name = deepnet.get('name')
             self.description = deepnet.get('description')
-        self.input_fields = deepnet['input_fields']
-        self.default_numeric_value = deepnet.get('default_numeric_value')
+            self.input_fields = deepnet['input_fields']
+            self.default_numeric_value = deepnet.get('default_numeric_value')
+        except (AttributeError, KeyError):
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
         if 'deepnet' in deepnet and isinstance(deepnet['deepnet'], dict):
             status = get_status(deepnet)
             objective_field = deepnet['objective_fields']
@@ -378,7 +383,7 @@ class Deepnet(ModelFields):
                 prediction = self.predict_single(input_array)
         if full:
             if not isinstance(prediction, dict):
-                prediction = {"prediction": prediction}
+                prediction = {"prediction": round(prediction, DECIMALS)}
             prediction.update({"unused_fields": unused_fields})
         else:
             if isinstance(prediction, dict):
@@ -527,3 +532,9 @@ class Deepnet(ModelFields):
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
         return prediction
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)

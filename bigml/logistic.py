@@ -49,7 +49,7 @@ from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, \
     get_logistic_regression_id
 from bigml.util import cast, check_no_missing_numerics, use_cache, load, \
-    PRECISION, NUMERIC
+    get_data_transformations, PRECISION, NUMERIC
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.model import parse_operating_point, sort_categories
 from bigml.modelfields import ModelFields
@@ -121,7 +121,7 @@ class LogisticRegression(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.class_names = None
         self.input_fields = []
         self.term_forms = {}
@@ -153,7 +153,7 @@ class LogisticRegression(ModelFields):
         if 'object' in logistic_regression and \
             isinstance(logistic_regression['object'], dict):
             logistic_regression = logistic_regression['object']
-            self.dataset_id = logistic_regression.get('dataset')
+            self.parent_id = logistic_regression.get('dataset')
             self.name = logistic_regression.get("name")
             self.description = logistic_regression.get("description")
         try:

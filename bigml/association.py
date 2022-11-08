@@ -47,7 +47,7 @@ from bigml.modelfields import ModelFields
 from bigml.associationrule import AssociationRule
 from bigml.item import Item
 from bigml.io import UnicodeWriter
-from bigml.util import use_cache, load, dump, dumps
+from bigml.util import use_cache, load, dump, dumps, get_data_transformations
 
 LOGGER = logging.getLogger('BigML')
 
@@ -121,7 +121,7 @@ class Association(ModelFields):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.complement = None
         self.discretization = {}
         self.default_numeric_value = None
@@ -140,12 +140,15 @@ class Association(ModelFields):
 
         self.resource_id, association = get_resource_dict( \
             association, "association", api=api)
-
         if 'object' in association and isinstance(association['object'], dict):
             association = association['object']
-            self.dataset_id = association.get('dataset')
+        try:
+            self.parent_id = association.get('dataset')
             self.name = association.get("name")
             self.description = association.get("description")
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
 
         if 'associations' in association and \
                 isinstance(association['associations'], dict):
@@ -486,6 +489,12 @@ class Association(ModelFields):
                         break
             out.write("\n".join(out_rules))
         out.write("\n")
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object

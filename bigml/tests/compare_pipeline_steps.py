@@ -43,7 +43,8 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
 #@step(r'I create a local pipeline for "(.*)" named "(.*)"$')
 def i_create_a_local_pipeline_from_models_list(
     step, models_list, name, storage=None):
-    models_list = json.loads(models_list)
+    if not isinstance(models_list, list):
+        models_list = json.loads(models_list)
     kwargs = {}
     if storage is not None:
         kwargs = {'api': BigML(storage=res_filename(storage))}
@@ -63,6 +64,18 @@ def the_pipeline_transformed_data_is(step, input_data, output_data):
     transformed_data = world.local_pipeline.transform([input_data])
     for key, value in transformed_data[0].items():
         eq_(output_data.get(key), value)
+
+
+def the_pipeline_result_key_is(step, input_data, key, value, precision=None):
+    if input_data is None:
+        input_data = "{}"
+    input_data = json.loads(input_data)
+    transformed_data = world.local_pipeline.transform([input_data])
+    pipe_value = transformed_data[0].get(key)
+    if precision is not None and not isinstance(value, str):
+        pipe_value = round(pipe_value, precision)
+        value = round(value, precision)
+    eq_(str(value), str(pipe_value))
 
 
 def i_create_composed_pipeline(

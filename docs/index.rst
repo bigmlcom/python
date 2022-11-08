@@ -15,7 +15,11 @@
    101_anomaly
    101_topic_model
    101_association
+   101_pca
    101_scripting
+   101_images_classification
+   101_images_feature_extraction
+   101_object_detection
    reading_resources
    updating_resources
    deleting_resources
@@ -443,12 +447,14 @@ finished or failed event is reached. A secret can be included in the call to
 verify the webhook call authenticity, and a
 
 .. code-block:: python
+
     bigml.webhooks.check_signature(request, signature)
 
 function is offered to that end. As an example, this snippet creates a source
 and sets a webhook to call ``https://my_webhook.com/endpoint`` when finished:
 
 .. code-block:: python
+
     from bigml.api import BigML
     api = BigML()
     # using a webhook with a secret
@@ -611,7 +617,14 @@ document. You can also check other simple examples in the following documents:
 - `time series 101 <101_ts.html>`_
 - `fusion 101 <101_fusion.html>`_
 - `optiml 101 <101_optiml.html>`_
+- `PCA 101 <101_pca.html>`_
 - `scripting 101 <101_scripting.html>`_
+
+And for specifics on Image Processing:
+- `Images Classification 101 <101_images_classification.html>`_
+- `Object Detection 101<101_object_detection.html>`_
+- `Images Feature Extraction 101 <101_images_feature_extraction.html>`_
+
 
 Fields Structure
 ----------------

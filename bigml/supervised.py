@@ -154,6 +154,12 @@ class SupervisedModel(BaseModel):
             del new_kwargs["missing_strategy"]
             return self.local_model.predict_probability(*args, **new_kwargs)
 
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return self.local_model.data_transformations()
+
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch prediction for a list of inputs using the local
         supervised model. Allows to define some output settings to
@@ -187,7 +193,10 @@ class SupervisedModel(BaseModel):
             kwargs.update({"full": True})
             prediction = self.predict(input_data, **kwargs)
             for index, key in enumerate(new_fields):
-                input_data[new_headers[index]] = prediction[key]
+                try:
+                    input_data[new_headers[index]] = prediction[key]
+                except KeyError:
+                    pass
         if data_format != INTERNAL:
             return format_data(inner_data_list, out_format=data_format)
         return inner_data_list

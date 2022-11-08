@@ -25,7 +25,6 @@ is used for local predictions.
 import logging
 import re
 import copy
-import os
 
 
 from bigml.util import invert_dictionary, dump, dumps, DEFAULT_LOCALE
@@ -33,19 +32,6 @@ from bigml.constants import DEFAULT_MISSING_TOKENS, FIELDS_PARENT, \
     ENSEMBLE_PATH, DEFAULT_OPERATION_SETTINGS
 from bigml.api_handlers.resourcehandler import get_resource_type
 from bigml.predicate import TM_FULL_TERM, TM_ALL
-from bigml.featurizer import Featurizer
-
-# avoiding tensorflow info logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
-
-#pylint: disable=locally-disabled,bare-except,ungrouped-imports
-try:
-    import tensorflow as tf
-    tf.autograph.set_verbosity(0)
-    from bigml.images.featurizers import ImageFeaturizer as Featurizer
-except:
-    pass
 
 LOGGER = logging.getLogger('BigML')
 
@@ -152,7 +138,7 @@ def get_unique_terms(terms, term_forms, tag_cloud):
     return list(terms_set.items())
 
 
-class ModelFields(Featurizer):
+class ModelFields:
     """ A lightweight wrapper of the field information in the model, cluster
     or anomaly objects
 
@@ -160,8 +146,7 @@ class ModelFields(Featurizer):
     #pylint: disable=locally-disabled,no-member,access-member-before-definition
     def __init__(self, fields, objective_id=None, data_locale=None,
                  missing_tokens=None, categories=False,
-                 numerics=False, operation_settings=None, model_fields=None,
-                 preferred_only=True):
+                 numerics=False, operation_settings=None, model_fields=None):
         if isinstance(fields, dict):
             tmp_fields = copy.deepcopy(fields)
             try:
@@ -175,10 +160,15 @@ class ModelFields(Featurizer):
                                key=lambda x: x[1].get("column_number")) \
                         if not self.objective_id or \
                         field_id != self.objective_id]
-                super().__init__(self.fields, self.input_fields,
-                                 selected_fields=model_fields,
-                                 preferred_only=preferred_only)
-                self.model_fields = self.selected_fields
+                if model_fields is not None:
+                    self.model_fields = model_fields
+                else:
+                    self.model_fields = {}
+                    self.model_fields.update(
+                        {field_id: field for field_id, field \
+                        in self.fields.items() if field_id in \
+                        self.input_fields and self.fields[field_id].get(
+                        "preferred", True)})
                 self.data_locale = data_locale
                 self.missing_tokens = missing_tokens
                 if self.data_locale is None:
@@ -348,9 +338,10 @@ class ModelFields(Featurizer):
                     new_input[key] = value
                 else:
                     unused_fields.append(key)
-            # feature generation (datetime and image features)
-            new_input = self.extend_input(new_input)
-            # we fill the input with the chosen default, if selected
+            # Feature generation (datetime and image features) is now done
+            # when a Pipeline is created for the model, so no features are
+            # added any more at this point.
+            # We fill the input with the chosen default, if selected
             new_input = self.fill_numeric_defaults(new_input)
             final_input = {}
             for key, value in new_input.items():

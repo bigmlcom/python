@@ -62,9 +62,10 @@ from bigml.exceptions import NoRootDecisionTree
 
 from bigml.api import FINISHED, STATUSES
 from bigml.api import get_status, get_api_connection, get_model_id
-from bigml.util import find_locale, cast, use_cache, load
+from bigml.util import find_locale, cast, use_cache, load, \
+    get_data_transformations
 from bigml.util import DEFAULT_LOCALE, PRECISION, NUMERIC
-from bigml.constants import LAST_PREDICTION, PROPORTIONAL
+from bigml.constants import LAST_PREDICTION, PROPORTIONAL, DECIMALS
 from bigml.basemodel import BaseModel, get_resource_dict
 from bigml.multivote import ws_confidence
 from bigml.prediction import Prediction
@@ -354,7 +355,7 @@ class Model(BaseModel):
         self.resource_id = None
         self.name = None
         self.description = None
-        self.dataset_id = None
+        self.parent_id = None
         self.ids_map = {}
         self.terms = {}
         self.regression = False
@@ -367,10 +368,13 @@ class Model(BaseModel):
             model, "model", api=api, no_check_fields=fields is not None)
         if 'object' in model and isinstance(model['object'], dict):
             model = model['object']
-            self.dataset_id = model.get('dataset')
+        try:
+            self.parent_id = model.get('dataset')
             self.name = model.get('name')
             self.description = model.get('description')
-
+        except AttributeError:
+            raise ValueError("Failed to find the expected "
+                             "JSON structure. Check your arguments.")
         if 'model' in model and isinstance(model['model'], dict):
             status = get_status(model)
             if 'code' in status and status['code'] == FINISHED:
@@ -716,6 +720,9 @@ class Model(BaseModel):
             norm_input_data, missing_strategy=missing_strategy,
             operating_point=operating_point, operating_kind=operating_kind,
             unused_fields=unused_fields)
+        if self.regression:
+            full_prediction['prediction'] = round(
+                full_prediction['prediction'], DECIMALS)
         if full:
             return dict((key, value) for key, value in \
                 full_prediction.items() if value is not None)
@@ -787,3 +794,9 @@ class Model(BaseModel):
             result.update({'unused_fields': unused_fields})
 
         return result
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)

@@ -59,6 +59,7 @@ class TestComparePrediction(object):
                 And I wait until the anomaly detector is ready less
                 than <time_3> secs
                 And I create a local anomaly detector
+                And I enable the pre-modeling pipeline
                 When I create an anomaly score for "<input_data>"
                 Then the anomaly score is "<score>"
                 And I create a local anomaly score for "<input_data>"
@@ -87,13 +88,13 @@ class TestComparePrediction(object):
             anomaly_create.i_create_an_anomaly(self)
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["model_wait"])
-            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_compare.i_create_a_local_anomaly(self, pre_model=True)
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
@@ -137,13 +138,13 @@ class TestComparePrediction(object):
             anomaly_create.i_create_an_anomaly(self, shared=example["data"])
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_compare.i_create_a_local_anomaly(self, pre_model=True)
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
@@ -185,13 +186,13 @@ class TestComparePrediction(object):
             anomaly_create.i_create_an_anomaly(self, shared=example["data"])
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_compare.i_create_a_local_anomaly(self, pre_model=True)
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
@@ -235,12 +236,12 @@ class TestComparePrediction(object):
             anomaly_create.i_create_an_anomaly(self, shared=example["data"])
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_compare.i_create_a_local_anomaly(self, pre_model=True)
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
@@ -284,13 +285,13 @@ class TestComparePrediction(object):
             anomaly_create.i_create_an_anomaly(self, shared=example["data"])
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_anomaly(self)
+            prediction_compare.i_create_a_local_anomaly(self, pre_model=True)
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
@@ -333,13 +334,13 @@ class TestComparePrediction(object):
             cluster_create.i_create_a_cluster(self, shared=example["data"])
             cluster_create.the_cluster_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_cluster(self)
+            prediction_compare.i_create_a_local_cluster(self, pre_model=True)
             prediction_create.i_create_a_centroid(
                 self, example["input_data"])
             prediction_create.the_centroid_is_with_distance(
                 self, example["centroid"], example["distance"])
             prediction_compare.i_create_a_local_centroid(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_centroid_is(
                 self, example["centroid"], example["distance"])
 
@@ -382,13 +383,13 @@ class TestComparePrediction(object):
             cluster_create.i_create_a_cluster(self, shared=example["data"])
             cluster_create.the_cluster_is_finished_in_less_than(
                 self, example["model_wait"])
-            prediction_compare.i_create_a_local_cluster(self)
+            prediction_compare.i_create_a_local_cluster(self, pre_model=True)
             prediction_create.i_create_a_centroid(
                 self, example["input_data"])
             prediction_create.the_centroid_is_with_distance(
                 self, example["centroid"], example["distance"])
             prediction_compare.i_create_a_local_centroid(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_centroid_is(
                 self, example["centroid"], example["distance"])
 
@@ -430,12 +431,13 @@ class TestComparePrediction(object):
                 self, shared=example["data"])
             association_create.the_association_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_association(self)
+            prediction_compare.i_create_a_local_association(
+                self, pre_model=True)
             prediction_create.i_create_an_association_set(
                 self, example["input_data"])
             prediction_compare.the_association_set_is_like_file(
                 self, example["association_set_file"])
             prediction_compare.i_create_a_local_association_set(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_association_set_is_like_file(
                 self, example["association_set_file"])

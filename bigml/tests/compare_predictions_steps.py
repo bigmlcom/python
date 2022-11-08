@@ -118,8 +118,7 @@ def i_create_a_local_prediction_with_confidence(step, data=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data,
-                                                       full=True)
+    world.local_prediction = world.local_model.predict(data, full=True)
 
 
 #@step(r'I create a local prediction for "(.*)"$')
@@ -129,12 +128,14 @@ def i_create_a_local_prediction(step, data=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict(data, full=True)
 
+
 #@step(r'I create a local images prediction for "(.*)"$')
 def i_create_a_local_regions_prediction(step, image_file=None):
     if image_file is None:
         return None
     data = res_filename(image_file)
     world.local_prediction = world.local_model.predict(data, full=True)
+
 
 #@step(r'I create a local prediction for "(.*)" in operating point "(.*)"$')
 def i_create_a_local_prediction_op(step, data=None, operating_point=None):
@@ -222,18 +223,23 @@ def i_create_a_local_proportional_median_prediction(step, data=None):
 
 
 #@step(r'I create a local cluster')
-def i_create_a_local_cluster(step):
+def i_create_a_local_cluster(step, pre_model=False):
     world.local_cluster = Cluster(world.cluster["resource"])
+    if pre_model:
+        world.local_pipeline = world.local_cluster.data_transformations()
+
 
 
 #@step(r'I create a local centroid for "(.*)"')
-def i_create_a_local_centroid(step, data=None):
+def i_create_a_local_centroid(step, data=None, pre_model=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
     for key, value in list(data.items()):
         if value == "":
             del data[key]
+    if pre_model is not None:
+        data = pre_model.transform([data])[0]
     world.local_centroid = world.local_cluster.centroid(data)
 
 
@@ -242,16 +248,22 @@ def the_local_centroid_is(step, centroid, distance):
     check_prediction(world.local_centroid['centroid_name'], centroid)
     check_prediction(world.local_centroid['distance'], distance)
 
+
 #@step(r'I create a local anomaly detector$')
-def i_create_a_local_anomaly(step):
+def i_create_a_local_anomaly(step, pre_model=False):
     world.local_anomaly = Anomaly(world.anomaly["resource"])
+    if pre_model:
+        world.local_pipeline = world.local_anomaly.data_transformations()
 
 
 #@step(r'I create a local anomaly score for "(.*)"$')
-def i_create_a_local_anomaly_score(step, input_data):
+def i_create_a_local_anomaly_score(step, input_data, pre_model=None):
     input_data = json.loads(input_data)
+    if pre_model is not None:
+        input_data = pre_model.transform([input_data])[0]
     world.local_anomaly_score = world.local_anomaly.anomaly_score( \
         input_data)
+
 
 #@step(r'the local anomaly score is "(.*)"$')
 def the_local_anomaly_score_is(step, score):
@@ -260,8 +272,11 @@ def the_local_anomaly_score_is(step, score):
 
 
 #@step(r'I create a local association')
-def i_create_a_local_association(step):
+def i_create_a_local_association(step, pre_model=False):
     world.local_association = Association(world.association)
+    if pre_model:
+        world.local_pipeline = world.local_association.data_transformations()
+
 
 #@step(r'I create a proportional missing strategy local prediction for "(.*)"')
 def i_create_a_proportional_local_prediction(step, data=None):
@@ -307,6 +322,7 @@ def the_multiple_local_prediction_is(step, prediction):
     local_prediction = world.local_prediction
     prediction = json.loads(prediction)
     eq_(local_prediction, prediction)
+
 
 #@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
@@ -395,20 +411,24 @@ def the_local_ensemble_prediction_is(step, prediction):
     else:
         eq_(local_prediction, prediction)
 
+
 #@step(r'the local probability is "(.*)"')
 def the_local_probability_is(step, probability):
     probability =  round(float(probability), 4)
     local_probability = world.local_prediction["probability"]
+
 
 def eq_local_and_remote_probability(step):
     local_probability = str(round(world.local_prediction["probability"], 3))
     remote_probability = str(round(world.prediction["probability"], 3))
     assert_almost_equal(local_probability, remote_probability)
 
+
 #@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):
     world.local_model = MultiModel(world.list_of_models)
     world.local_ensemble = None
+
 
 #@step(r'I create a batch prediction for "(.*)" and save it in "(.*)"')
 def i_create_a_batch_prediction(step, input_data_list, directory):
@@ -418,9 +438,11 @@ def i_create_a_batch_prediction(step, input_data_list, directory):
     assert isinstance(input_data_list, list)
     world.local_model.batch_predict(input_data_list, directory)
 
+
 #@step(r'I combine the votes in "(.*)"')
 def i_combine_the_votes(step, directory):
     world.votes = world.local_model.batch_votes(directory)
+
 
 #@step(r'the plurality combined predictions are "(.*)"')
 def the_plurality_combined_prediction(step, predictions):
@@ -429,6 +451,7 @@ def the_plurality_combined_prediction(step, predictions):
         combined_prediction = world.votes[i].combine()
         check_prediction(combined_prediction, predictions[i])
 
+
 #@step(r'the confidence weighted predictions are "(.*)"')
 def the_confidence_weighted_prediction(step, predictions):
     predictions = eval(predictions)
@@ -436,11 +459,13 @@ def the_confidence_weighted_prediction(step, predictions):
         combined_prediction = world.votes[i].combine(1)
         eq_(combined_prediction, predictions[i])
 
+
 #@step(r'I create a local logistic regression model$')
 def i_create_a_local_logistic_model(step):
     world.local_model = LogisticRegression(world.logistic_regression)
     if hasattr(world, "local_ensemble"):
         world.local_ensemble = None
+
 
 #@step(r'I create a local deepnet model$')
 def i_create_a_local_deepnet(step):
@@ -449,9 +474,11 @@ def i_create_a_local_deepnet(step):
     if hasattr(world, "local_ensemble"):
         world.local_ensemble = None
 
+
 #@step(r'I create a local topic model$')
 def i_create_a_local_topic_model(step):
     world.local_topic_model = TopicModel(world.topic_model)
+
 
 #@step(r'the topic distribution is "(.*)"$')
 def the_topic_distribution_is(step, distribution):
@@ -466,6 +493,7 @@ def the_local_topic_distribution_is(step, distribution):
         assert_almost_equal(topic_dist["probability"], distribution[index],
                             places=5)
 
+
 #@step(r'the association set is like file "(.*)"')
 def the_association_set_is_like_file(step, filename):
     filename = res_filename(filename)
@@ -478,11 +506,15 @@ def the_association_set_is_like_file(step, filename):
         file_result = json.load(filehandler)
     eq_(result, file_result)
 
+
 #@step(r'I create a local association set$')
-def i_create_a_local_association_set(step, data):
+def i_create_a_local_association_set(step, data, pre_model=None):
     data = json.loads(data)
+    if pre_model is not None:
+        data = pre_model.transform([data])[0]
     world.local_association_set = world.local_association.association_set( \
         data)
+
 
 #@step(r'the local association set is like file "(.*)"')
 def the_local_association_set_is_like_file(step, filename):
@@ -502,6 +534,7 @@ def the_local_association_set_is_like_file(step, filename):
             eq_(result['rules'],
                 world.local_association_set[index]['rules'])
 
+
 #@step(r'I create a local prediction for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
@@ -510,6 +543,7 @@ def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
+
 
 #@step(r'I create a local ensemble prediction for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_ensemble_prediction_op_kind( \
@@ -521,6 +555,7 @@ def i_create_a_local_ensemble_prediction_op_kind( \
     world.local_prediction = world.local_ensemble.predict( \
         data, operating_kind=operating_kind)
 
+
 #@step(r'I create a local deepnet for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_deepnet_prediction_op_kind( \
         step, data=None, operating_kind=None):
@@ -530,6 +565,7 @@ def i_create_a_local_deepnet_prediction_op_kind( \
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
+
 
 #@step(r'I create a local logistic regression for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_logistic_prediction_op_kind( \
@@ -541,13 +577,16 @@ def i_create_a_local_logistic_prediction_op_kind( \
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
 
+
 #@step(r'I create a local PCA')
 def create_local_pca(step):
     world.local_pca = PCA(world.pca["resource"])
 
+
 #@step(r'I create a local PCA')
 def i_create_a_local_linear(step):
     world.local_model = LinearRegression(world.linear_regression["resource"])
+
 
 #@step(r'I create a local projection for "(.*)"')
 def i_create_a_local_projection(step, data=None):
@@ -560,6 +599,7 @@ def i_create_a_local_projection(step, data=None):
     world.local_projection = world.local_pca.projection(data, full=True)
     for name, value in list(world.local_projection.items()):
         world.local_projection[name] = round(value, 5)
+
 
 #@step(r'I create a local linear regression prediction for "(.*)"')
 def i_create_a_local_linear_prediction(step, data=None):

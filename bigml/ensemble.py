@@ -1014,6 +1014,13 @@ class Ensemble(ModelFields):
         gc.collect()
         return fields, objective_id
 
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        Avoiding to set it in a Mixin to maintain the current dump function.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)
+
     def dump(self, output=None, cache_set=None):
         """Uses msgpack to serialize the resource object
         If cache_set is filled with a cache set method, the method is called
@@ -1026,12 +1033,6 @@ class Ensemble(ModelFields):
                 model.dump(output=output, cache_set=cache_set)
             del self_vars["multi_model"]
         dump(self_vars, output=output, cache_set=cache_set)
-
-    def data_transformations(self):
-        """Returns the pipeline transformations previous to the modeling
-        step as a pipeline, so that they can be used in local predictions.
-        """
-        return get_data_transformations(self.resource_id, self.parent_id)
 
     def dumps(self):
         """Uses msgpack to serialize the resource object to a string

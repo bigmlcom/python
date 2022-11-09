@@ -608,3 +608,10 @@ class LogisticRegression(ModelFields):
                 else:
                     self.field_codings[field_id] = {\
                         element["coding"]: element['coefficients']}
+
+    def data_transformations(self):
+        """Returns the pipeline transformations previous to the modeling
+        step as a pipeline, so that they can be used in local predictions.
+        Avoiding to set it in a Mixin to maintain the current dump function.
+        """
+        return get_data_transformations(self.resource_id, self.parent_id)

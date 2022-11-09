@@ -128,10 +128,12 @@ def i_create_a_local_prediction_with_confidence(step, data=None,
 
 
 #@step(r'I create a local prediction for "(.*)"$')
-def i_create_a_local_prediction(step, data=None):
+def i_create_a_local_prediction(step, data=None, pre_model=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
+    if pre_model is not None:
+        data = pre_model.transform([data])[0]
     world.local_prediction = world.local_model.predict(data, full=True)
 
 

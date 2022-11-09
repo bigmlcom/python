@@ -88,8 +88,11 @@ def i_create_a_local_supervised_model_from_file(step, model_file):
 
 
 #@step(r'I create a local model$')
-def i_create_a_local_model(step):
+def i_create_a_local_model(step, pre_model=False):
     world.local_model = Model(world.model)
+    if pre_model:
+        world.local_pipeline = world.local_model.data_transformations()
+
 
 #@step(r'I create a local fusion$')
 def i_create_a_local_fusion(step):
@@ -114,10 +117,13 @@ def i_create_a_multiple_local_prediction(step, data=None):
 
 
 #@step(r'I create a local prediction for "(.*)" with confidence$')
-def i_create_a_local_prediction_with_confidence(step, data=None):
+def i_create_a_local_prediction_with_confidence(step, data=None,
+                                                pre_model=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
+    if pre_model is not None:
+        data = pre_model.transform([input_data])[0]
     world.local_prediction = world.local_model.predict(data, full=True)
 
 
@@ -579,8 +585,10 @@ def i_create_a_local_logistic_prediction_op_kind( \
 
 
 #@step(r'I create a local PCA')
-def create_local_pca(step):
+def create_local_pca(step, pre_model=False):
     world.local_pca = PCA(world.pca["resource"])
+    if pre_model:
+        world.local_pipeline = world.local_pca.data_transformations()
 
 
 #@step(r'I create a local PCA')
@@ -589,10 +597,12 @@ def i_create_a_local_linear(step):
 
 
 #@step(r'I create a local projection for "(.*)"')
-def i_create_a_local_projection(step, data=None):
+def i_create_a_local_projection(step, data=None, pre_model=None):
     if data is None:
         data = "{}"
     data = json.loads(data)
+    if pre_model is not None:
+        data = pre_model.transform([data])[0]
     for key, value in list(data.items()):
         if value == "":
             del data[key]

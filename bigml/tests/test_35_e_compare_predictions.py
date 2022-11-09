@@ -214,8 +214,8 @@ class TestComparePrediction(object):
                 self, example["input_data"])
             projection_create.the_projection_is(
                 self, example["projection"])
-            compare_predictions.create_local_pca(self)
+            compare_predictions.create_local_pca(self, pre_model=True)
             compare_predictions.i_create_a_local_projection(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             compare_predictions.the_local_projection_is(
                 self, example["projection"])

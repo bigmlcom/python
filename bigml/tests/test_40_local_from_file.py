@@ -303,9 +303,9 @@ class TestLocalFromFile(object):
             ['data/iris.csv', '10', '10', '500', './tmp/anomaly.json',
              {"petal length": 2, "petal width": 2, "sepal length": 2,
               "sepal width": 2, "species": "Iris-setosa"},
-              0.6438650402661579, '{}'],
+              0.64387, '{}'],
             ['data/iris.csv', '10', '10', '500',
-             './tmp/anomaly_dft.json', {}, 0.7769870167267092,
+             './tmp/anomaly_dft.json', {}, 0.77699,
              '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
@@ -525,10 +525,10 @@ class TestLocalFromFile(object):
         examples = [
             ['data/grades.csv', '20', '20', '50', './tmp/linear.json',
              {"Prefix": 5, "Assignment": 57.14, "Tutorial": 34.09,
-              "Midterm": 64, "TakeHome": 40, "Final": 50}, 54.695511642999996,
+              "Midterm": 64, "TakeHome": 40, "Final": 50}, 54.69551,
               '{}'],
             ['data/grades.csv', '20', '20', '50', './tmp/linear_dft.json', {},
-             100.332461974, '{"default_numeric_value": "maximum"}']]
+             100.33246, '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, sys._getframe().f_code.co_name, example)

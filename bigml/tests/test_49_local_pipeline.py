@@ -182,8 +182,9 @@ class TestLocalPipeline(object):
                 self, example["input_data"])
             prediction_create.the_prediction_is(
                 self, example["objective_id"], example["prediction"])
-            pipeline_compare.the_pipeline_prediction_is(
-                self, example["input_data"], example["prediction"])
+            pipeline_compare.the_pipeline_result_key_is(
+                self, example["input_data"], "prediction",
+                example["prediction"])
 
     def test_scenario4(self):
         """

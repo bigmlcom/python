@@ -493,13 +493,13 @@ class TestComparePrediction(object):
             model_create.i_create_a_model(self, shared=example["data"])
             model_create.the_model_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_model(self)
+            prediction_compare.i_create_a_local_model(self, pre_model=True)
             prediction_create.i_create_a_prediction(
                 self, example["input_data"])
             prediction_create.the_prediction_is(
                 self, example["objective_id"], example["prediction"])
             prediction_compare.i_create_a_local_prediction(
-                self, example["input_data"])
+                self, example["input_data"], pre_model=world.local_pipeline)
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
 

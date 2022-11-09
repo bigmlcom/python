@@ -293,7 +293,7 @@ class BMLPipeline(Pipeline):
             if (hasattr(local_resource, "parent_id") and \
                     get_resource_type(local_resource.parent_id) == "dataset"):
                 if local_resource.parent_id in datasets:
-                    dataset = datasets[local_resource.dataset_id]
+                    dataset = datasets[local_resource.parent_id]
                 else:
                     dataset = Dataset(local_resource.parent_id,
                                       api=self._api)

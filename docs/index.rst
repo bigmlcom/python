@@ -620,7 +620,8 @@ document. You can also check other simple examples in the following documents:
 - `PCA 101 <101_pca.html>`_
 - `scripting 101 <101_scripting.html>`_
 
-And for specifics on Image Processing:
+And for examples on Image Processing:
+
 - `Images Classification 101 <101_images_classification.html>`_
 - `Object Detection 101<101_object_detection.html>`_
 - `Images Feature Extraction 101 <101_images_feature_extraction.html>`_

@@ -747,7 +747,7 @@ def get_formatted_data(input_data_list, out_format=None):
         inner_data_list = input_data_list.copy()
     return inner_data_list
 
-
+#pylint: disable=locally-disabled,import-outside-toplevel
 def get_data_transformations(resource_id, parent_id):
     """Returns the pipeline that contains the tranformations and derived
     features created from the raw data to the actual resource.

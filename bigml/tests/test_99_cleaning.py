@@ -24,7 +24,7 @@ from .world import world, teardown_fn, setup_module
 
 class TestCleaningProject(object):
 
-    def setup(self):
+    def setup_method(self):
         """
             Debug information
         """
@@ -34,7 +34,7 @@ class TestCleaningProject(object):
         """Final empty test """
         assert True
 
-    def teardown(self):
+    def teardown_method(self):
         """
             Debug information
         """

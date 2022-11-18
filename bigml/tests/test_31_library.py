@@ -26,13 +26,13 @@ from . import create_library_steps as library_create
 
 class TestLibrary(object):
 
-    def setup(self):
+    def setup_method(self):
         """
             Debug information
         """
         print("\n-------------------\nTests in: %s\n" % __name__)
 
-    def teardown(self):
+    def teardown_method(self):
         """
             Debug information
         """

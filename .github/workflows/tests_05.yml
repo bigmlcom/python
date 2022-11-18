@@ -31,8 +31,8 @@ jobs:
 
     - name: Run tests *01 05 40 45 99*
       run: |
-        pip uninstall nose
         pip3 install nose
+        pip3 install pytest
         export TESTS=$(for t in  "05" "40" "45" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
         echo $TESTS
         pytest -s $TESTS

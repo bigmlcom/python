@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.8]
+        python: [3.10]
     env:
         BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
         BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}
@@ -32,6 +32,8 @@ jobs:
 
     - name: Run tests *22 24 25 26 27 28 29 30 31 32 34 39 43 42 44 99*
       run: |
-        export TESTS=$(for t in "22" "24" "25" "26" "27" "28" "29" "30" "31" "32" "34" "39" "43" "42" "44" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
+        pip3 install nose
+        pip3 install pytest
+        export TESTS=$(for t in "22" "24" "25" "26" "27" "28" "29" "30" "31" "32" "34" "39" "43" "42" "44" "99"; do ls bigml/tests/*$t*.py;done|paste -sd " ")
         echo $TESTS
-        python setup.py nosetests --nocapture --tests=$TESTS
+        pytest -s $TESTS

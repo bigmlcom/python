@@ -103,5 +103,5 @@ def the_measured_measure_is_value(step, measure, value):
 
 #@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
 def the_measured_measure_is_greater_value(step, measure, value):
-    assert_greater(world.evaluation['result']['model'][measure] + 0.0,
+    assert (world.evaluation['result']['model'][measure] + 0.0 >
                    float(value))

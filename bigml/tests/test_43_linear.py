@@ -30,13 +30,13 @@ from . import create_batch_prediction_steps as batch_pred_create
 
 class TestLinearRegression(object):
 
-    def setup(self):
+    def setup_method(self):
         """
             Debug information
         """
         print("\n-------------------\nTests in: %s\n" % __name__)
 
-    def teardown(self):
+    def teardown_method(self):
         """
             Debug information
         """

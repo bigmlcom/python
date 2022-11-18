@@ -3,6 +3,12 @@
 History
 -------
 
+9.1.1 (2022-11-18)
+------------------
+
+- Removing traces and refactoring Flatline interpreter invocation.
+- Migrating tests to pytest.
+
 9.1.0 (2022-11-09)
 ------------------
 

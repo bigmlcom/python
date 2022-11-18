@@ -934,8 +934,9 @@ To use external data connectors:
 Running the Tests
 -----------------
 
-The test will be run using `nose <https://nose.readthedocs.org/en/latest/>`_ ,
-that is installed on setup, and you'll need to set up your authentication
+The tests will be run using `nose <https://nose.readthedocs.org/en/latest/>`_
+and `pytest <https://docs.pytest.org/en/7.2.x/>`_ as a transition to pytest
+stardard tests. You'll need to set up your authentication
 via environment variables, as explained
 in the authentication section. Also some of the tests need other environment
 variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization
@@ -948,7 +949,7 @@ With that in place, you can run the test suite simply by issuing
 
 .. code-block:: bash
 
-    $ python setup.py nosetests
+    $ pytest
 
 Additionally, `Tox <http://tox.testrun.org/>`_ can be used to
 automatically run the test suite in virtual environments for all

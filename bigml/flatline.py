@@ -105,21 +105,18 @@ class Flatline:
         return Flatline.interpreter.defined_primitives
 
     @staticmethod
-    def check_lisp(sexp, dataset=None):
+    def check_lisp(sexp, fields=None):
         """Checks whether the given lisp s-expression is valid.
 
         Any operations referring to a dataset's fields will use the
-        information found in the provided dataset, which should have
-        the structure of the 'object' component of a BigML dataset
-        resource.
+        information found in fields structure.
 
         """
-        r = Flatline.interpreter.evaluate_sexp(sexp, dataset)
-        r.pop('mapper', None)
+        r = Flatline.interpreter.evaluate_sexp(sexp, fields, True).valueOf()
         return r
 
     @staticmethod
-    def check_json(json_sexp, dataset=None):
+    def check_json(json_sexp, fields=None):
         """Checks whether the given JSON s-expression is valid.
 
         Works like `check_lisp` (which see), but taking a JSON
@@ -127,8 +124,7 @@ class Flatline:
         Lisp sexp string.
 
         """
-        r = Flatline.interpreter.evaluate_js(json_sexp, dataset)
-        r.pop('mapper', None)
+        r = Flatline.interpreter.evaluate_js(json_sexp, fields).valueOf()
         return r
 
     @staticmethod

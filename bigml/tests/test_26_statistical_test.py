@@ -28,13 +28,13 @@ from . import create_statistical_tst_steps as statistical_tst_create
 
 class TestStatisticalTest(object):
 
-    def setup(self):
+    def setup_method(self):
         """
             Debug information
         """
         print("\n-------------------\nTests in: %s\n" % __name__)
 
-    def teardown(self):
+    def teardown_method(self):
         """
             Debug information
         """

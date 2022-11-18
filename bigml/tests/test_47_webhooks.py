@@ -50,13 +50,13 @@ class RequestMockup(object):
 
 class TestWebhook(object):
 
-    def setup(self):
+    def setup_method(self):
         """
             Debug information
         """
         print("\n-------------------\nTests in: %s\n" % __name__)
 
-    def teardown(self):
+    def teardown_method(self):
         """
             Debug information
         """

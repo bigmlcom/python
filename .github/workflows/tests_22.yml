@@ -34,6 +34,8 @@ jobs:
       run: |
         pip uninstall nose
         pip3 install nose
+        pip uninstall pyreadline
+        pip install pyreadline3
         export TESTS=$(for t in "22" "24" "25" "26" "27" "28" "29" "30" "31" "32" "34" "39" "43" "42" "44" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
         echo $TESTS
         nosetests --nocapture --tests=$TESTS

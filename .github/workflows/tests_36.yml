@@ -34,6 +34,6 @@ jobs:
       run: |
         pip3 install nose
         pip3 install pytest
-        export TESTS=$(for t in "36" "33" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
+        export TESTS=$(for t in "36" "33" "99"; do ls bigml/tests/*$t*.py;done|paste -sd " ")
         echo $TESTS
         pytest -s $TESTS

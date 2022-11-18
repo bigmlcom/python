@@ -32,7 +32,7 @@ jobs:
 
     - name: Run tests *01 02 04 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 41 45 99 38 99*
       run: |
-        pip install -U nose --no-binary :all:
+        pip3 install -U nose --no-binary :all:
         export TESTS=$(for t in "01" "02" "04" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "41" "38" "99"; do ls bigml/tests/*$t*.py;done|paste -sd ",")
         echo $TESTS
         nosetests --nocapture --tests=$TESTS

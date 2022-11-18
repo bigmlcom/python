@@ -37,5 +37,5 @@ def i_get_the_errors_values(step):
 
 #@step(r'the (missing values counts|error counts) dict is "(.*)"')
 def i_get_the_properties_values(step, text, properties_dict):
-    assert_not_equal(None, properties_dict)
+    assert None != properties_dict
     eq_(world.step_result, json.loads(properties_dict))

@@ -149,7 +149,7 @@ def i_create_a_local_regions_prediction(step, image_file=None):
 def i_create_a_local_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_point)
+    assert operating_point is not None
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_point=operating_point)
@@ -159,7 +159,7 @@ def i_create_a_local_prediction_op(step, data=None, operating_point=None):
 def i_create_a_local_ensemble_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_point)
+    assert operating_point is not None
     data = json.loads(data)
     world.local_prediction = world.local_ensemble.predict( \
         data, operating_point=operating_point)
@@ -547,7 +547,7 @@ def the_local_association_set_is_like_file(step, filename):
 def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
@@ -558,7 +558,7 @@ def i_create_a_local_ensemble_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     data = json.loads(data)
     world.local_prediction = world.local_ensemble.predict( \
         data, operating_kind=operating_kind)
@@ -569,7 +569,7 @@ def i_create_a_local_deepnet_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
@@ -580,7 +580,7 @@ def i_create_a_local_logistic_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)

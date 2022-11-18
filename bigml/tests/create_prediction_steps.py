@@ -43,7 +43,7 @@ def i_create_a_prediction(step, data=None):
 def i_create_a_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_point)
+    assert operating_point is not None
     model = world.model['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -58,7 +58,7 @@ def i_create_a_prediction_op(step, data=None, operating_point=None):
 def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_point)
+    assert operating_point is not None
     ensemble = world.ensemble['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -73,7 +73,7 @@ def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
 def i_create_a_fusion_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_point)
+    assert operating_point is not None
     fusion = world.fusion['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -323,7 +323,7 @@ def the_fusion_probability_is(step, probability):
 def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     model = world.model['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -338,7 +338,7 @@ def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
 def i_create_an_ensemble_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert_is_not_none(operating_kind)
+    assert operating_kind is not None
     ensemble = world.ensemble['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \

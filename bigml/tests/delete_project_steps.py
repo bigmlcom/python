@@ -33,7 +33,7 @@ def wait_until_project_deleted(step, secs):
     resource = world.api.get_project(project_id)
     while (resource['code'] == HTTP_OK):
         time.sleep(3)
-        assert_less(datetime.utcnow() - start, timedelta(seconds=int(secs)))
+        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
         resource = world.api.get_project(project_id)
     eq_(resource['code'], HTTP_NOT_FOUND)
     world.projects.remove(project_id)

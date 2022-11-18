@@ -351,4 +351,4 @@ def logged_wait(start, delta, count, res_description, progress=0, status=None):
     if elapsed > delta / 2.0:
         print("%s seconds waiting for %s" % \
             (elapsed, res_description))
-    assert_less(elapsed, delta)
+    assert elapsed < delta

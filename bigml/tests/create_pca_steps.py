@@ -19,8 +19,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world, logged_wait
-from nose.tools import eq_, assert_less
+from .world import world, logged_wait, eq_
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED

@@ -18,8 +18,7 @@
 import json
 import os
 
-from nose.tools import eq_, assert_almost_equal
-from .world import world, res_filename
+from .world import world, res_filename, eq_, approx_
 
 
 #@step(r'I create a local forecast for "(.*)"')
@@ -35,12 +34,12 @@ def the_local_forecast_is(step, local_forecasts):
     for field_id in local_forecasts:
         forecast = world.local_forecast[field_id]
         local_forecast = local_forecasts[field_id]
-        eq_(len(forecast), len(local_forecast), "forecast: %s" % forecast)
+        eq_(len(forecast), len(local_forecast), msg="forecast: %s" % forecast)
         for index in range(len(forecast)):
             for attr in attrs:
                 if isinstance(forecast[index][attr], list):
                     for pos, item in enumerate(forecast[index][attr]):
-                        assert_almost_equal(local_forecast[index][attr][pos],
-                                            item, places=5)
+                        approx_(local_forecast[index][attr][pos],
+                                item, precision=5)
                 else:
                     eq_(forecast[index][attr], local_forecast[index][attr])

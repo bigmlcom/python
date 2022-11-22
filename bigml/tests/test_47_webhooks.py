@@ -24,7 +24,7 @@ from collections import OrderedDict
 from bigml.webhooks import check_signature
 
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method, delete_local, ok_
 
 
 BIGML_SECRET = 'mysecret'
@@ -68,5 +68,5 @@ class TestWebhook(object):
             Scenario: Testing webhook secret signature
         """
         show_doc(self.test_scenario1)
-        assert check_signature(RequestMockup(BIGML_REQUEST_MOCKUP),
-                               BIGML_SECRET)
+        ok_(check_signature(RequestMockup(BIGML_REQUEST_MOCKUP),
+                            BIGML_SECRET))

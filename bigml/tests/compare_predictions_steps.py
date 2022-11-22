@@ -19,8 +19,7 @@ import json
 import os
 
 from zipfile import ZipFile
-from nose.tools import eq_, assert_almost_equal, assert_is_not_none
-from .world import world, res_filename
+from .world import world, res_filename, eq_, approx_, ok_
 from bigml.model import Model, cast_prediction
 from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
@@ -149,7 +148,7 @@ def i_create_a_local_regions_prediction(step, image_file=None):
 def i_create_a_local_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert operating_point is not None
+    ok_(operating_point is not None)
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_point=operating_point)
@@ -159,7 +158,7 @@ def i_create_a_local_prediction_op(step, data=None, operating_point=None):
 def i_create_a_local_ensemble_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert operating_point is not None
+    ok_(operating_point is not None)
     data = json.loads(data)
     world.local_prediction = world.local_ensemble.predict( \
         data, operating_point=operating_point)
@@ -379,8 +378,7 @@ def the_local_prediction_is(step, prediction, precision=4):
             world.local_model.models[0].regression):
         local_prediction = round(float(local_prediction), precision)
         prediction = round(float(prediction), precision)
-        assert_almost_equal(local_prediction, float(prediction),
-                            places=precision)
+        approx_(local_prediction, float(prediction), precision=precision)
     else:
         if isinstance(local_prediction, str):
             eq_(local_prediction, prediction)
@@ -403,7 +401,7 @@ def the_local_probabilities_are(step, prediction):
     expected_probabilities = [float(p) for p in json.loads(prediction)]
 
     for local, expected in zip(local_probabilities, expected_probabilities):
-        assert_almost_equal(local, expected, places=4)
+        approx_(local, expected, precision=4)
 
 #@step(r'the local ensemble prediction is "(.*)"')
 def the_local_ensemble_prediction_is(step, prediction):
@@ -415,7 +413,7 @@ def the_local_ensemble_prediction_is(step, prediction):
     else:
         local_prediction = world.local_prediction
     if world.local_ensemble.regression:
-        assert_almost_equal(local_prediction, float(prediction), places=5)
+        approx_(local_prediction, float(prediction), precision=5)
     else:
         eq_(local_prediction, prediction)
 
@@ -429,7 +427,7 @@ def the_local_probability_is(step, probability):
 def eq_local_and_remote_probability(step):
     local_probability = str(round(world.local_prediction["probability"], 3))
     remote_probability = str(round(world.prediction["probability"], 3))
-    assert_almost_equal(local_probability, remote_probability)
+    approx_(local_probability, remote_probability)
 
 
 #@step(r'I create a local multi model')
@@ -443,7 +441,7 @@ def i_create_a_batch_prediction(step, input_data_list, directory):
     if len(directory) > 0 and not os.path.exists(directory):
         os.makedirs(directory)
     input_data_list = eval(input_data_list)
-    assert isinstance(input_data_list, list)
+    ok_(isinstance(input_data_list, list))
     world.local_model.batch_predict(input_data_list, directory)
 
 
@@ -498,8 +496,7 @@ def the_topic_distribution_is(step, distribution):
 def the_local_topic_distribution_is(step, distribution):
     distribution = json.loads(distribution)
     for index, topic_dist in enumerate(world.local_topic_distribution):
-        assert_almost_equal(topic_dist["probability"], distribution[index],
-                            places=5)
+        approx_(topic_dist["probability"], distribution[index])
 
 
 #@step(r'the association set is like file "(.*)"')
@@ -535,10 +532,8 @@ def the_local_association_set_is_like_file(step, filename):
         file_result = json.load(filehandler)
         for index in range(0, len(file_result)):
             result = file_result[index]
-            assert_almost_equal( \
-                result['score'],
-                world.local_association_set[index]['score'],
-                places=5)
+            approx_(result['score'], world.local_association_set[
+                index]['score'])
             eq_(result['rules'],
                 world.local_association_set[index]['rules'])
 
@@ -547,7 +542,7 @@ def the_local_association_set_is_like_file(step, filename):
 def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
@@ -558,7 +553,7 @@ def i_create_a_local_ensemble_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     data = json.loads(data)
     world.local_prediction = world.local_ensemble.predict( \
         data, operating_kind=operating_kind)
@@ -569,7 +564,7 @@ def i_create_a_local_deepnet_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
@@ -580,7 +575,7 @@ def i_create_a_local_logistic_prediction_op_kind( \
         step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     data = json.loads(data)
     world.local_prediction = world.local_model.predict( \
         data, operating_kind=operating_kind)
@@ -634,5 +629,5 @@ def the_local_projection_is(step, projection):
     eq_(len(list(projection.keys())), len(list(world.local_projection.keys())))
     for name, value in list(projection.items()):
         eq_(world.local_projection[name], projection[name],
-            "local: %s, %s - expected: %s" % ( \
+            msg="local: %s, %s - expected: %s" % ( \
                 name, world.local_projection[name], projection[name]))

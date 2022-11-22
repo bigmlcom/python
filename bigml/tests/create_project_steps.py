@@ -20,13 +20,10 @@ import time
 import json
 from datetime import datetime
 from urllib.parse import urlencode
-from nose.tools import eq_, assert_less
-from .world import world
+from .world import world, eq_
 
-from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import UPLOADING
+from bigml.api import HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
 from .read_resource_steps import wait_until_status_code_is

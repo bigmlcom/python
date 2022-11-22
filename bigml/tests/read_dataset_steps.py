@@ -16,10 +16,9 @@
 
 import json
 
-from .world import world
+from .world import world, eq_, ok_
 from bigml.api import HTTP_OK
 from bigml.fields import Fields
-from nose.tools import eq_, assert_not_equal
 
 
 #@step(r'I ask for the missing values counts in the fields')
@@ -37,5 +36,5 @@ def i_get_the_errors_values(step):
 
 #@step(r'the (missing values counts|error counts) dict is "(.*)"')
 def i_get_the_properties_values(step, text, properties_dict):
-    assert None != properties_dict
+    ok_(properties_dict is not None)
     eq_(world.step_result, json.loads(properties_dict))

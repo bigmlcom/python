@@ -18,9 +18,8 @@
 import time
 import json
 import os
-from nose.tools import eq_, assert_less
 from datetime import datetime
-from .world import world, res_filename
+from .world import world, res_filename, eq_, ok_
 
 from bigml.api import HTTP_OK
 from bigml.api import HTTP_CREATED
@@ -315,7 +314,7 @@ def i_check_model_stored(step, filename, pmml):
         content = file_handler.read()
         model_id = world.model["resource"][ \
             (world.model["resource"].index("/") + 1):]
-        assert(content.index(model_id) > -1)
+        ok_(content.index(model_id) > -1)
 
 #@step(r'I read model from file "(.*)"$')
 def i_read_model_file(step, filename):
@@ -539,21 +538,17 @@ def local_logistic_prediction_is(step, input_data, prediction):
     eq_(world.local_logistic.predict(input_data), prediction)
 
 def local_linear_prediction_is(step, input_data, prediction):
-    world.eq_(world.local_linear_regression.predict(input_data),
-              prediction,
-              precision=5)
+    eq_(world.local_linear_regression.predict(input_data),
+        prediction, precision=5)
 
 def local_deepnet_prediction_is(step, input_data, prediction):
-    world.eq_(world.local_deepnet.predict(input_data), prediction,
-              precision=4)
+    eq_(world.local_deepnet.predict(input_data), prediction, precision=4)
 
 def local_ensemble_prediction_is(step, input_data, prediction):
-    world.eq_(world.local_ensemble.predict(input_data), prediction,
-              precision=5)
+    eq_(world.local_ensemble.predict(input_data), prediction, precision=5)
 
 def local_model_prediction_is(step, input_data, prediction):
-    world.eq_(world.local_model.predict(input_data), prediction,
-              precision=5)
+    eq_(world.local_model.predict(input_data), prediction, precision=5)
 
 def local_cluster_prediction_is(step, input_data, prediction):
     eq_(world.local_cluster.centroid(input_data), prediction)

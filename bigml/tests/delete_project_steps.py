@@ -16,8 +16,7 @@
 
 import time
 from datetime import datetime, timedelta
-from .world import world
-from nose.tools import eq_, assert_less
+from .world import world, eq_, ok_
 from bigml.api import HTTP_NO_CONTENT, HTTP_OK, HTTP_NOT_FOUND
 
 
@@ -33,7 +32,7 @@ def wait_until_project_deleted(step, secs):
     resource = world.api.get_project(project_id)
     while (resource['code'] == HTTP_OK):
         time.sleep(3)
-        assert datetime.utcnow() - start < timedelta(seconds=int(secs))
+        ok_(datetime.utcnow() - start < timedelta(seconds=int(secs)))
         resource = world.api.get_project(project_id)
     eq_(resource['code'], HTTP_NOT_FOUND)
     world.projects.remove(project_id)

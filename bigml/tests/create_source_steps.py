@@ -21,13 +21,10 @@ import csv
 
 
 from datetime import datetime
-from .world import world, res_filename
-from nose.tools import eq_, assert_less
+from .world import world, res_filename, eq_, ok_
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import UPLOADING
+from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 
 
@@ -201,4 +198,4 @@ def source_has_args(step, args="{}"):
             eq_(world.source[key], value,
                 "Expected key %s: %s. Found %s" % (key, value, world.source[key]))
         else:
-            assert False, "No key %s in source." % key
+            ok_(False, "No key %s in source." % key)

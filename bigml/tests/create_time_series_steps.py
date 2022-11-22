@@ -17,15 +17,11 @@
 import time
 import json
 import os
-from nose.tools import eq_, assert_less
 from datetime import datetime
-from .world import world, res_filename
+from .world import world, res_filename, eq_
 
-from bigml.api import HTTP_OK
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 from bigml.timeseries import TimeSeries
 

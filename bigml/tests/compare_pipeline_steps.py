@@ -19,8 +19,7 @@ import json
 import os
 import zipfile
 
-from nose.tools import eq_
-from .world import world, res_filename
+from .world import world, res_filename, eq_, ok_
 
 
 from bigml.pipeline.pipeline import BMLPipeline, Pipeline
@@ -36,7 +35,7 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
     with zipfile.ZipFile(pipeline_file, 'r') as zip_ref:
         filenames = [os.path.basename(filename) for
                      filename in zip_ref.namelist()]
-        assert all(filename in filenames for filename in inner_files)
+        ok_(all(filename in filenames for filename in inner_files))
         zip_ref.extractall(os.path.dirname(pipeline_file))
 
 
@@ -80,5 +79,4 @@ def the_pipeline_result_key_is(step, input_data, key, value, precision=None):
 
 def i_create_composed_pipeline(
     step, pipelines_list, name):
-    world.local_pipeline = Pipeline(name,
-                                    pipelines_list)
+    world.local_pipeline = Pipeline(name, pipelines_list)

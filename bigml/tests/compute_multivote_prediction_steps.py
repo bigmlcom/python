@@ -18,8 +18,7 @@ import time
 import json
 import os
 from datetime import datetime, timedelta
-from .world import world, res_filename
-from nose.tools import eq_
+from .world import world, res_filename, eq_
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -37,7 +36,7 @@ def i_create_a_multivote(step, predictions_file):
         with open(predictions_file, 'r') as predictions_file:
             world.multivote = MultiVote(json.load(predictions_file))
     except IOError:
-        assert False, "Failed to read %s" % predictions_file
+        ok_(False, "Failed to read %s" % predictions_file)
 
 #@step(r'I compute the prediction with confidence using method "(.*)"$')
 def compute_prediction(step, method):
@@ -46,14 +45,14 @@ def compute_prediction(step, method):
         world.combined_prediction = prediction["prediction"]
         world.combined_confidence = prediction["confidence"]
     except ValueError:
-        assert False, "Incorrect method"
+        ok_(False, "Incorrect method")
 
 #@step(r'I compute the prediction without confidence using method "(.*)"$')
 def compute_prediction_no_confidence(step, method):
     try:
         world.combined_prediction_nc = world.multivote.combine(int(method))
     except ValueError:
-        assert False, "Incorrect method"
+        ok_(False, "Incorrect method")
 
 #@step(r'the combined prediction is "(.*)"$')
 def check_combined_prediction(step, prediction):
@@ -63,7 +62,7 @@ def check_combined_prediction(step, prediction):
             eq_(round(world.combined_prediction, DIGITS),
                 round(float(prediction), DIGITS))
         except ValueError as exc:
-            assert False, str(exc)
+            ok_(False, str(exc))
     else:
         eq_(world.combined_prediction, prediction)
 
@@ -75,7 +74,7 @@ def check_combined_prediction_no_confidence(step, prediction):
             eq_(round(world.combined_prediction_nc, DIGITS),
                 round(float(prediction), DIGITS))
         except ValueError as exc:
-            assert False, str(exc)
+            ok_(False, str(exc))
     else:
         eq_(world.combined_prediction, prediction)
 
@@ -85,4 +84,4 @@ def check_combined_confidence(step, confidence):
         eq_(round(world.combined_confidence, DIGITS),
             round(float(confidence), DIGITS))
     except ValueError as exc:
-        assert False, str(exc)
+        ok_(False, str(exc))

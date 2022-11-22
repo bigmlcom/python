@@ -49,7 +49,7 @@ setuptools.setup(
     url="https://bigml.com/developers",
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
-    setup_requires = ['nose', 'pytest'],
+    setup_requires = ['pytest'],
     install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
         "requests-toolbelt", "msgpack", "numpy>=1.22,<1.24", "scipy",
         "javascript"],
@@ -72,6 +72,5 @@ setuptools.setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
-    test_suite='nose.collector'
+    ]
 )

@@ -20,8 +20,7 @@ import requests
 import csv
 import traceback
 from datetime import datetime
-from .world import world, res_filename
-from nose.tools import eq_, ok_, assert_less
+from .world import world, res_filename, eq_, ok_
 
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED

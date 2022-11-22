@@ -18,8 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from nose.tools import eq_, ok_, assert_less
-from .world import world, res_filename
+from .world import world, res_filename, eq_, ok_
 
 from .read_resource_steps import wait_until_status_code_is
 

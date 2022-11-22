@@ -30,13 +30,13 @@ from . import inspect_model_steps as inspect_model
 
 class TestLocalModelOutputs(object):
 
-    def __init__(self):
-        self.shared = {} # stores shared objects references
-
     def setup_method(self):
         """
             Debug information
         """
+        if not hasattr(self, "shared"):
+            self.shared = {} # stores shared objects references
+
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):

@@ -26,6 +26,8 @@ import pkg_resources
 import datetime
 import pprint
 import json
+import pytest
+import math
 
 from bigml.api import BigML
 from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED, \
@@ -34,7 +36,7 @@ from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES, \
     TINY_RESOURCE, ALL_FIELDS
 from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
 from bigml.util import get_exponential_wait
-from nose.tools import assert_less, eq_
+
 
 MAX_RETRIES = 10
 RESOURCE_TYPES = [
@@ -119,6 +121,34 @@ def flatten_shared(shared_dict):
         for _, resource in value.items():
             ids_list.append(resource["resource"])
     return ids_list
+
+
+def eq_(*args, msg=None, precision=None):
+    """Wrapper to assert. If precision is set, previous rounding"""
+    new_args = list(args)
+    if precision is not None:
+        for index, arg in enumerate(new_args):
+            new_args[index] = float_round(arg, precision)
+        assert all([new_args[0] == b for b in new_args[1:]]), msg
+    else:
+        assert new_args[0] == new_args[1], msg
+
+
+def ok_(value, msg=None):
+    """Wrapper to assert."""
+    if msg is None:
+        assert value
+    else:
+        assert value, msg
+
+
+def approx_(number_a, number_b, msg=None, precision=5):
+    """Wrapper for pytest approx function"""
+    epsilon = math.pow(0.1, precision)
+    if msg is None:
+        assert number_a == pytest.approx(number_b, abs=epsilon)
+    else:
+        assert number_a == pytest.approx(number_b, abs=epsilon), msg
 
 
 class World(object):
@@ -255,20 +285,13 @@ class World(object):
         return self.api.get_resource(
             resource_id, query_string=ALL_FIELDS)
 
-    def eq_(*args, **kwargs):
-        if "precision" in kwargs:
-            precision = kwargs["precision"]
-            del kwargs["precision"]
-            new_args = list(args)[1:]
-            for index, arg in enumerate(new_args):
-                new_args[index] = float_round(arg, precision)
-        return eq_(*new_args, **kwargs)
-
 
 world = World()
 
-def res_filename(file):
-    return pkg_resources.resource_filename('bigml', "../%s" % file)
+def res_filename(filename):
+    directory = pkg_resources.resource_filename('bigml', '__init__.py')
+    return os.path.join(os.path.dirname(os.path.dirname(directory)), filename)
+
 
 def setup_module():
     """Operations to be performed before each module
@@ -282,6 +305,7 @@ def setup_module():
         world.project_id = world.shared["project"]["common"]['resource']
         print("Creating common project: ", world.project_id)
     world.clear()
+
 
 def teardown_module():
     """Operations to be performed after each module
@@ -324,7 +348,6 @@ def delete_local():
     world.local_deepnet = None
 
 
-
 def logged_wait(start, delta, count, res_description, progress=0, status=None):
     """Comparing the elapsed time to the expected delta and waiting for
        the next sleep period.
@@ -351,4 +374,4 @@ def logged_wait(start, delta, count, res_description, progress=0, status=None):
     if elapsed > delta / 2.0:
         print("%s seconds waiting for %s" % \
             (elapsed, res_description))
-    assert elapsed < delta
+    ok_(elapsed < delta)

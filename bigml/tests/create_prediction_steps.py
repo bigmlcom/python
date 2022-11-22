@@ -17,10 +17,8 @@
 
 import json
 import time
-from nose.tools import assert_almost_equals, eq_, assert_is_not_none, \
-    assert_less
 from datetime import datetime
-from .world import world, res_filename
+from .world import world, res_filename, eq_, ok_, approx_
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
@@ -43,7 +41,7 @@ def i_create_a_prediction(step, data=None):
 def i_create_a_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert operating_point is not None
+    ok_(operating_point is not None)
     model = world.model['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -58,7 +56,7 @@ def i_create_a_prediction_op(step, data=None, operating_point=None):
 def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert operating_point is not None
+    ok_(operating_point is not None)
     ensemble = world.ensemble['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -73,7 +71,7 @@ def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
 def i_create_a_fusion_prediction_op(step, data=None, operating_point=None):
     if data is None:
         data = "{}"
-    assert operating_point is not None
+    ok_(operating_point is not None)
     fusion = world.fusion['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -114,7 +112,7 @@ def i_create_a_proportional_prediction(step, data=None):
 
 def check_prediction(got, expected, precision=4):
     if not isinstance(got, str):
-        assert_almost_equals(got, float(expected), precision)
+        approx_(got, float(expected), precision=precision)
     else:
         eq_(got, expected)
 
@@ -134,14 +132,13 @@ def the_centroid_is(step, centroid):
     check_prediction(world.centroid['centroid_name'], centroid)
 
 def the_centroid_is_ok(step):
-    assert world.api.ok(world.centroid)
+    ok_(world.api.ok(world.centroid))
 
 
 def the_confidence_is(step, confidence):
     local_confidence = world.prediction.get('confidence', \
         world.prediction.get('probability'))
-    assert_almost_equals(float(local_confidence),
-                         float(confidence), 4)
+    approx_(float(local_confidence), float(confidence), precision=4)
 
 def i_create_an_ensemble_prediction(step, data=None):
     if data is None:
@@ -312,8 +309,7 @@ def the_logistic_probability_is(step, probability):
     for [prediction, remote_probability] in world.prediction['probabilities']:
         if prediction == world.prediction['output']:
             break
-    assert_almost_equals(round(float(remote_probability), 4),
-                         round(float(probability), 4))
+    approx_(round(float(remote_probability), 4), round(float(probability), 4))
 
 
 def the_fusion_probability_is(step, probability):
@@ -323,7 +319,7 @@ def the_fusion_probability_is(step, probability):
 def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     model = world.model['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \
@@ -338,7 +334,7 @@ def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
 def i_create_an_ensemble_prediction_op_kind(step, data=None, operating_kind=None):
     if data is None:
         data = "{}"
-    assert operating_kind is not None
+    ok_(operating_kind is not None)
     ensemble = world.ensemble['resource']
     data = json.loads(data)
     resource = world.api.create_prediction( \

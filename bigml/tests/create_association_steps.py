@@ -19,8 +19,7 @@ import json
 import os
 import io
 from datetime import datetime
-from .world import world, res_filename
-from nose.tools import eq_, assert_less
+from .world import world, res_filename, eq_
 
 from bigml.api import BigML
 from bigml.api import HTTP_CREATED

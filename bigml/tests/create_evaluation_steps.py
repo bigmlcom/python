@@ -17,8 +17,7 @@
 import time
 import json
 from datetime import datetime
-from .world import world
-from nose.tools import eq_, assert_less, assert_greater
+from .world import world, eq_, ok_
 
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED
@@ -103,5 +102,5 @@ def the_measured_measure_is_value(step, measure, value):
 
 #@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
 def the_measured_measure_is_greater_value(step, measure, value):
-    assert (world.evaluation['result']['model'][measure] + 0.0 >
+    ok_(world.evaluation['result']['model'][measure] + 0.0 >
                    float(value))

@@ -17,8 +17,7 @@
 
 from datetime import datetime
 
-from .world import world, logged_wait
-from nose.tools import eq_, assert_less
+from .world import world, logged_wait, eq_, ok_
 from bigml.api import HTTP_OK, get_status, get_resource_type
 
 
@@ -40,7 +39,7 @@ def wait_until_status_code_is(code1, code2, secs, resource_info):
         count += 1
         resource_type = get_resource_type(resource_info["resource"])
         logged_wait(start, delta, count, resource_type, status=status)
-        assert (datetime.utcnow() - start).seconds < delta
+        ok_((datetime.utcnow() - start).seconds < delta)
         resource_info = world.get_minimal_resource(
             resource_info['resource']).get("object")
         status = get_status(resource_info)

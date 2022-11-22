@@ -18,8 +18,7 @@ import time
 import json
 import os
 from datetime import datetime
-from .world import world
-from nose.tools import eq_
+from .world import world, eq_
 
 from .read_resource_steps import wait_until_status_code_is
 

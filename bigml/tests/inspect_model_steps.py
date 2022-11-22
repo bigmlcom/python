@@ -22,8 +22,7 @@ import bigml.generators.model as g
 
 
 from bigml.tests.world import res_filename
-from .world import world
-from nose.tools import eq_
+from .world import world, eq_
 from bigml.predict_utils.common import extract_distribution
 from bigml.util import utf8
 

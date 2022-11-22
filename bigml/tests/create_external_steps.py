@@ -21,8 +21,7 @@ import sys
 
 
 from datetime import datetime
-from .world import world, res_filename
-from nose.tools import eq_, assert_less
+from .world import world, res_filename, eq_, ok_
 
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED
@@ -70,4 +69,4 @@ def external_connector_has_args(step, args="{}"):
             eq_(world.external_connector[key], value,
                 "Expected key %s: %s. Found %s" % (key, value, world.external_connector[key]))
         else:
-            assert False, "No key %s in external connector." % key
+            ok_(False, "No key %s in external connector." % key)

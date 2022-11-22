@@ -15,8 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .world import world
-from nose.tools import ok_
+from .world import world, ok_
 
 #@step(r'I store the dataset id in a list')
 def i_store_dataset_id(step):

@@ -14,11 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .world import world, res_filename
+from .world import world, res_filename, eq_, ok_
 from bigml.fields import Fields, get_resource_type
 from bigml.io import UnicodeReader
 
-from nose.tools import eq_
 
 #@step(r'I create a Fields object from the source with objective column "(.*)"')
 def create_fields(step, objective_column):
@@ -48,7 +47,7 @@ def import_summary_file(step, summary_file):
 
 #@step(r'I check the new field structure has field "(.*)" as "(.*)"')
 def check_field_type(step, field_id, field_type):
-    assert field_id in list(world.fields_struct['fields'].keys())
+    ok_(field_id in list(world.fields_struct['fields'].keys()))
     eq_(world.fields_struct['fields'][field_id]["optype"], field_type)
 
 

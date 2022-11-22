@@ -24,7 +24,7 @@ import os
 
 from bigml.api import BigML
 
-from .world import world
+from .world import world, eq_
 from .world import setup_module as general_setup_module
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
@@ -110,13 +110,13 @@ class TestProjPrediction(object):
             print("\nTesting with:\n", example)
             source_create.i_upload_a_file_with_project_conn(self, example[0])
             source_create.the_source_is_finished(self, example[1])
-            assert world.source['project'] == world.project_id
+            eq_(world.source['project'], world.project_id)
             dataset_create.i_create_a_dataset(self)
             dataset_create.the_dataset_is_finished_in_less_than(self, example[2])
-            assert world.dataset['project'] == world.project_id
+            eq_(world.dataset['project'], world.project_id)
             model_create.i_create_a_model(self)
             model_create.the_model_is_finished_in_less_than(self, example[3])
-            assert world.model['project'] == world.project_id
+            eq_(world.model['project'], world.project_id)
             prediction_create.i_create_a_prediction(self, example[4])
             prediction_create.the_prediction_is(self, example[5], example[6])
-            assert world.prediction['project'] == world.project_id
+            eq_(world.prediction['project'], world.project_id)

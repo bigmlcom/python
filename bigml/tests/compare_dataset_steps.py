@@ -18,8 +18,7 @@
 import json
 import os
 
-from nose.tools import eq_
-from .world import world, res_filename
+from .world import world, res_filename, eq_
 
 
 from bigml.dataset import Dataset

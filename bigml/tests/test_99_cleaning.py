@@ -19,7 +19,7 @@
 
 """
 
-from .world import world, teardown_fn, setup_module
+from .world import world, teardown_fn, setup_module, ok_
 
 
 class TestCleaningProject(object):
@@ -32,7 +32,7 @@ class TestCleaningProject(object):
 
     def test_final(step):
         """Final empty test """
-        assert True
+        ok_(True)
 
     def teardown_method(self):
         """

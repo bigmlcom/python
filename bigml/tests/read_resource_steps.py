@@ -17,9 +17,9 @@
 
 from datetime import datetime
 
-from .world import world, logged_wait, eq_, ok_
 from bigml.api import HTTP_OK, get_status, get_resource_type
 
+from .world import world, logged_wait, eq_, ok_
 
 
 def wait_until_status_code_is(code1, code2, secs, resource_info):
@@ -49,8 +49,8 @@ def wait_until_status_code_is(code1, code2, secs, resource_info):
     return i_get_the_resource(resource_info)
 
 
-#@step(r'I get the resource "(.*)"')
 def i_get_the_resource(resource_info):
+    """Step: I get the resource <resource_info>"""
     resource = world.get_maximal_resource(resource_info["resource"])
     world.status = resource['code']
     eq_(world.status, HTTP_OK)

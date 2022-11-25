@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Creating datasets with missing values and errors counters
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import read_dataset_steps as dataset_read
@@ -29,31 +29,34 @@ from . import create_prediction_steps as prediction_create
 from . import compare_predictions_steps as prediction_compare
 from . import create_model_steps as model_create
 
-class TestMissingsAndErrors(object):
+class TestMissingsAndErrors:
+    """Testing Missings and Errors retrieval"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully obtaining missing values counts:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                When I ask for the missing values counts in the fields
-                Then the missing values counts dict is "<missing_values>"
+        Scenario: Successfully obtaining missing values counts:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            When I ask for the missing values counts in the fields
+            Then the missing values counts dict is "<missing_values>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "source_conf", "dataset_wait",
@@ -64,7 +67,7 @@ class TestMissingsAndErrors(object):
              '{"000000": 1}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])
             source_create.i_update_source_with(self, example["source_conf"])
@@ -74,50 +77,53 @@ class TestMissingsAndErrors(object):
                 self, example["source_wait"])
             dataset_read.i_get_the_missing_values(self)
             dataset_read.i_get_the_properties_values(
-                self, 'missing values count', example["missing_values"])
+                self, example["missing_values"])
 
     def test_scenario2(self):
         """
-            Scenario: Successfully obtaining parsing error counts:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I update the source with params "<params>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                When I ask for the error counts in the fields
-                Then the error counts dict is "<error_values>"
+        Scenario: Successfully obtaining parsing error counts:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            When I ask for the error counts in the fields
+            Then the error counts dict is "<error_values>"
         """
         print(self.test_scenario2.__doc__)
+        headers = ["data", "source_wait", "source_conf",
+                   "dataset_wait", "error_values"]
         examples = [
             ['data/iris_missing.csv', '30',
-             '{"fields": {"000000": {"optype": "numeric"}}}', '30',
+             '{"fields": {"000000": {"optype": "numeric"}}}', 30,
              '{"000000": 1}']]
         for example in examples:
-            print("\nTesting with:\n", example)
-            source_create.i_upload_a_file(self, example[0])
-            source_create.the_source_is_finished(self, example[1])
-            source_create.i_update_source_with(self, example[2])
+            example = dict(zip(headers, example))
+            show_method(self, self.bigml["method"], example)
+            source_create.i_upload_a_file(self, example["data"])
+            source_create.the_source_is_finished(self, example["source_wait"])
+            source_create.i_update_source_with(self, example["source_conf"])
             dataset_create.i_create_a_dataset(self)
-            dataset_create.the_dataset_is_finished_in_less_than(self,
-                                                                example[3])
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
             dataset_read.i_get_the_errors_values(self)
             dataset_read.i_get_the_properties_values(
-                self, 'error counts', example[4])
+                self, example["error_values"])
 
     def test_scenario3(self):
         """
-            Scenario: Successfully comparing predictions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a local model
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a local model
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "input_data", "objective_id", "prediction"]
@@ -136,7 +142,7 @@ class TestMissingsAndErrors(object):
         show_doc(self.test_scenario3)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2017-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Comparing remote and local predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -33,36 +33,38 @@ from . import create_projection_steps as projection_create
 from . import compare_predictions_steps as compare_predictions
 
 
-class TestComparePrediction(object):
+class TestComparePrediction:
+    """Test predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-
+        self.bigml = {}
 
     def test_scenario6(self):
         """
-            Scenario: Successfully comparing projections for PCAs:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a PCA with "<model_conf>"
-                And I wait until the PCA is ready less than <model_wait> secs
-                And I create a local PCA
-                When I create a projection for "<input_data>"
-                Then the projection is "<projection>"
-                And I create a local projection for "<input_data>"
-                Then the local projection is "<projection>"
+        Scenario: Successfully comparing projections for PCAs:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a PCA with "<model_conf>"
+            And I wait until the PCA is ready less than <model_wait> secs
+            And I create a local PCA
+            When I create a projection for "<input_data>"
+            Then the projection is "<projection>"
+            And I create a local projection for "<input_data>"
+            Then the local projection is "<projection>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "input_data", "model_conf", "projection"]
@@ -102,7 +104,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario6)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"])
@@ -124,19 +126,19 @@ class TestComparePrediction(object):
 
     def test_scenario7(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for PCAs:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a PCA
-                And I wait until the PCA is ready less than <model_wait> secs
-                And I create a local PCA
-                When I create a projection for "<input_data>"
-                Then the projection is "<projection>"
-                And I create a local projection for "<input_data>"
-                Then the local projection is "<projection>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for PCAs:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a PCA
+            And I wait until the PCA is ready less than <model_wait> secs
+            And I create a local PCA
+            When I create a projection for "<input_data>"
+            Then the projection is "<projection>"
+            And I create a local projection for "<input_data>"
+            Then the local projection is "<projection>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "projection"]
@@ -199,7 +201,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -216,6 +218,7 @@ class TestComparePrediction(object):
                 self, example["projection"])
             compare_predictions.create_local_pca(self, pre_model=True)
             compare_predictions.i_create_a_local_projection(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"],
+                pre_model=self.bigml["local_pipeline"])
             compare_predictions.the_local_projection_is(
                 self, example["projection"])

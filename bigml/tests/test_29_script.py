@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,35 +20,36 @@
 """ Creating and updating scripts
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_script_steps as script_create
 
-class TestScript(object):
+class TestScript:
+    """Testint script methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a whizzml script:
-                Given I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <script_wait> secs
-                And I update the script with "<param>", "<param_value>"
-                And I wait until the script is ready less than <script_wait> secs
-                Then the script code is "<source_code>" and the value of "<param>" is "<param_value>"
+        Scenario: Successfully creating a whizzml script:
+            Given I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <script_wait> secs
+            And I update the script with "<param>", "<param_value>"
+            And I wait until the script is ready less than <script_wait> secs
+            Then the script code is "<source_code>" and the value of "<param>" is "<param_value>"
         """
         show_doc(self.test_scenario1)
         headers = ["source_code", "script_wait", "param", "param_value"]
@@ -54,7 +57,7 @@ class TestScript(object):
             ['(+ 1 1)', '30', 'name', 'my script']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             script_create.i_create_a_script(self, example["source_code"])
             script_create.the_script_is_finished(self, example["script_wait"])
             script_create.i_update_a_script(

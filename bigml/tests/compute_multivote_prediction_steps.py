@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012, 2015-2022 BigML
 #
@@ -14,32 +15,31 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 import json
-import os
-from datetime import datetime, timedelta
-from .world import world, res_filename, eq_
 
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
 from bigml.multivote import MultiVote
+
+from .world import world, res_filename, eq_, ok_
 
 DIGITS = 5
 
-#@step(r'I create a MultiVote for the set of predictions in file (.*)$')
-def i_create_a_multivote(step, predictions_file):
-    predictions_file = res_filename(predictions_file)
-    try:
-        with open(predictions_file, 'r') as predictions_file:
-            world.multivote = MultiVote(json.load(predictions_file))
-    except IOError:
-        ok_(False, "Failed to read %s" % predictions_file)
 
-#@step(r'I compute the prediction with confidence using method "(.*)"$')
+def i_create_a_multivote(step, predictions_file):
+    """Step: I create a MultiVote for the set of predictions in file
+    <predictions_file>
+    """
+    predictions_path = res_filename(predictions_file)
+    try:
+        with open(predictions_file, 'r') as predictions_path:
+            world.multivote = MultiVote(json.load(predictions_path))
+    except IOError:
+        ok_(False, "Failed to read %s" % predictions_path)
+
+
 def compute_prediction(step, method):
+    """Step: I compute the prediction with confidence using method
+    <method>
+    """
     try:
         prediction = world.multivote.combine(int(method), full=True)
         world.combined_prediction = prediction["prediction"]
@@ -47,16 +47,18 @@ def compute_prediction(step, method):
     except ValueError:
         ok_(False, "Incorrect method")
 
-#@step(r'I compute the prediction without confidence using method "(.*)"$')
+
 def compute_prediction_no_confidence(step, method):
+    """Step: I compute the prediction without confidence using method <method>
+    """
     try:
         world.combined_prediction_nc = world.multivote.combine(int(method))
     except ValueError:
         ok_(False, "Incorrect method")
 
-#@step(r'the combined prediction is "(.*)"$')
-def check_combined_prediction(step, prediction):
 
+def check_combined_prediction(step, prediction):
+    """Step: the combined prediction is <prediction>"""
     if world.multivote.is_regression():
         try:
             eq_(round(world.combined_prediction, DIGITS),
@@ -66,9 +68,9 @@ def check_combined_prediction(step, prediction):
     else:
         eq_(world.combined_prediction, prediction)
 
-#@step(r'the combined prediction without confidence is "(.*)"$')
-def check_combined_prediction_no_confidence(step, prediction):
 
+def check_combined_prediction_no_confidence(step, prediction):
+    """Step: the combined prediction without confidence is <prediction>"""
     if world.multivote.is_regression():
         try:
             eq_(round(world.combined_prediction_nc, DIGITS),
@@ -78,8 +80,9 @@ def check_combined_prediction_no_confidence(step, prediction):
     else:
         eq_(world.combined_prediction, prediction)
 
-#@step(r'the confidence for the combined prediction is (.*)$')
+
 def check_combined_confidence(step, confidence):
+    """Step: the confidence for the combined prediction is <confidence>"""
     try:
         eq_(round(world.combined_confidence, DIGITS),
             round(float(confidence), DIGITS))

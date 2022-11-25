@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2014-2022 BigML
 #
@@ -17,12 +17,13 @@
 
 from .world import world, ok_
 
-#@step(r'I store the dataset id in a list')
 def i_store_dataset_id(step):
+    """Step: I store the dataset id in a list"""
     world.dataset_ids.append(world.dataset['resource'])
 
-#@step(r'I check the model stems from the original dataset list')
+
 def i_check_model_datasets_and_datasets_ids(step):
+    """Step: I check the model stems from the original dataset list"""
     model = world.model
     ok_('datasets' in model and model['datasets'] == world.dataset_ids,
         ("The model contains only %s and the dataset ids are %s" %

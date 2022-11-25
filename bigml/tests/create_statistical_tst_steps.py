@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2015-2022 BigML
 #
@@ -13,27 +14,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import time
-import json
-import os
-from datetime import datetime
-from .world import world, eq_
-
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_
 
 
-#@step(r'the statistical test name is "(.*)"')
 def i_check_tst_name(step, name):
+    """Step: the statistical test name is <name>"""
     statistical_test_name = world.statistical_test['name']
     eq_(name, statistical_test_name)
 
-#@step(r'I create an statistical test from a dataset$')
+
 def i_create_a_tst_from_dataset(step):
+    """Step: I create an statistical test from a dataset"""
     dataset = world.dataset.get('resource')
     resource = world.api.create_statistical_test(dataset, \
         {'name': 'new statistical test'})
@@ -44,8 +39,8 @@ def i_create_a_tst_from_dataset(step):
     world.statistical_tests.append(resource['resource'])
 
 
-#@step(r'I update the statistical test name to "(.*)"$')
 def i_update_tst_name(step, name):
+    """Step: I update the statistical test name to <name>"""
     resource = world.api.update_statistical_test( \
         world.statistical_test['resource'], {'name': name})
     world.status = resource['code']
@@ -54,12 +49,13 @@ def i_update_tst_name(step, name):
     world.statistical_test = resource['object']
 
 
-#@step(r'I wait until the statistical test status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_tst_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the statistical test status code is either
+    code1 or code2 less than <secs>"""
     world.statistical_test = wait_until_status_code_is(
         code1, code2, secs, world.statistical_test)
 
 
-#@step(r'I wait until the statistical test is ready less than (\d+)')
 def the_tst_is_finished_in_less_than(step, secs):
+    """Step: I wait until the statistical test is ready less than <secs>"""
     wait_until_tst_status_code_is(step, FINISHED, FAULTY, secs)

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2020 BigML
 #
@@ -18,10 +20,8 @@
 """ Creating clones for models
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -35,31 +35,34 @@ from . import create_time_series_steps as time_create
 from . import create_pca_steps as pca_create
 
 
-class TestCloning(object):
+class TestCloning:
+    """Testing cloned resources creation"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a clone from a model:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the model is ready less than <model_wait> secs
-                Then the origin model is the previous model
+        Scenario: Successfully creating a clone from a model:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the model is ready less than <model_wait> secs
+            Then the origin model is the previous model
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -67,7 +70,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '10']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -84,14 +87,14 @@ class TestCloning(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully creating a clone from a ensemble:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble
-                And I wait until the ensemble is ready less than <model_wait> secs
-                Then the origin ensemble is the previous ensemble
+        Scenario: Successfully creating a clone from a ensemble:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble
+            And I wait until the ensemble is ready less than <model_wait> secs
+            Then the origin ensemble is the previous ensemble
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -99,7 +102,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -116,14 +119,14 @@ class TestCloning(object):
 
     def test_scenario3(self):
         """
-            Scenario: Successfully creating a clone from a deepnet:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a quick deepnet
-                And I wait until the deepnet is ready less than <model_wait> secs
-                Then the origin deepnet is the previous deepnet
+        Scenario: Successfully creating a clone from a deepnet:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a quick deepnet
+            And I wait until the deepnet is ready less than <model_wait> secs
+            Then the origin deepnet is the previous deepnet
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -131,7 +134,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '100']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -148,14 +151,14 @@ class TestCloning(object):
 
     def test_scenario4(self):
         """
-            Scenario: Successfully creating a clone from a logistic regression:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a logistic regression
-                And I wait until the logistic regression is ready less than <model_wait> secs
-                Then the origin logistic regression is the previous logistic regression
+        Scenario: Successfully creating a clone from a logistic regression:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a logistic regression
+            And I wait until the logistic regression is ready less than <model_wait> secs
+            Then the origin logistic regression is the previous logistic regression
         """
         show_doc(self.test_scenario4)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -163,7 +166,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -181,14 +184,14 @@ class TestCloning(object):
 
     def test_scenario5(self):
         """
-            Scenario: Successfully creating a clone from a linear regression:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a linear regression
-                And I wait until the linear regression is ready less than <model_wait> secs
-                Then the origin linear regression is the previous linear regression
+        Scenario: Successfully creating a clone from a linear regression:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a linear regression
+            And I wait until the linear regression is ready less than <model_wait> secs
+            Then the origin linear regression is the previous linear regression
         """
         show_doc(self.test_scenario5)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -196,7 +199,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"], shared=example["data"])
@@ -214,14 +217,14 @@ class TestCloning(object):
 
     def test_scenario6(self):
         """
-            Scenario: Successfully creating a clone from a cluster:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster
-                And I wait until the cluster is ready less than <model_wait> secs
-                Then the origin cluster is the previous cluster
+        Scenario: Successfully creating a clone from a cluster:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster
+            And I wait until the cluster is ready less than <model_wait> secs
+            Then the origin cluster is the previous cluster
         """
         show_doc(self.test_scenario6)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -229,7 +232,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -247,14 +250,14 @@ class TestCloning(object):
 
     def test_scenario7(self):
         """
-            Scenario: Successfully creating a clone from a topic model:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a topic model
-                And I wait until the topic model is ready less than <model_wait> secs
-                Then the origin topic model is the previous topic model
+        Scenario: Successfully creating a clone from a topic model:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a topic model
+            And I wait until the topic model is ready less than <model_wait> secs
+            Then the origin topic model is the previous topic model
         """
         show_doc(self.test_scenario7)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -263,7 +266,7 @@ class TestCloning(object):
             ['data/spam.csv', '10', '10', '100', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(
@@ -284,14 +287,14 @@ class TestCloning(object):
 
     def test_scenario8(self):
         """
-            Scenario: Successfully creating a clone from an anomaly detector:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less than <model_wait> secs
-                Then the origin anomaly detector is the previous anomaly detector
+        Scenario: Successfully creating a clone from an anomaly detector:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less than <model_wait> secs
+            Then the origin anomaly detector is the previous anomaly detector
         """
         show_doc(self.test_scenario8)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -299,7 +302,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '100']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -317,14 +320,14 @@ class TestCloning(object):
 
     def test_scenario9(self):
         """
-            Scenario: Successfully creating a clone from an association:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an association
-                And I wait until the association is ready less than <model_wait> secs
-                Then the origin association is the previous association
+        Scenario: Successfully creating a clone from an association:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an association
+            And I wait until the association is ready less than <model_wait> secs
+            Then the origin association is the previous association
         """
         show_doc(self.test_scenario9)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -332,7 +335,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '100']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -351,14 +354,14 @@ class TestCloning(object):
 
     def test_scenario10(self):
         """
-            Scenario: Successfully creating a clone from a time series:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a time series
-                And I wait until the time series is ready less than <model_wait> secs
-                Then the origin time series is the previous time series
+        Scenario: Successfully creating a clone from a time series:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a time series
+            And I wait until the time series is ready less than <model_wait> secs
+            Then the origin time series is the previous time series
         """
         show_doc(self.test_scenario10)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -366,7 +369,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '100']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -384,14 +387,14 @@ class TestCloning(object):
 
     def test_scenario11(self):
         """
-            Scenario: Successfully creating a clone from a pca:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a pca
-                And I wait until the pca is ready less than <model_wait> secs
-                Then the origin pca is the previous pca
+        Scenario: Successfully creating a clone from a pca:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a pca
+            And I wait until the pca is ready less than <model_wait> secs
+            Then the origin pca is the previous pca
         """
         show_doc(self.test_scenario11)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -399,7 +402,7 @@ class TestCloning(object):
             ['data/iris.csv', '10', '10', '100']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

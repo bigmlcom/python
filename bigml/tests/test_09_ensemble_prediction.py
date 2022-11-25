@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,42 +20,43 @@
 """ Creating ensembles predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_ensemble_steps as ensemble_create
 from . import create_prediction_steps as prediction_create
 
-class TestEnsemblePrediction(object):
+class TestEnsemblePrediction:
+    """Testing Ensemble Predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a prediction from an ensemble:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble of <number_of_models> models
-                And I wait until the ensemble is ready less than <model_wait> secs
-                When I create an ensemble prediction for "<input_data>"
-                And I wait until the prediction is ready less than <prediction_wait> secs
-                Then the prediction for "<objective_id>" is "<prediction>"
+        Scenario: Successfully creating a prediction from an ensemble:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble of <number_of_models> models
+            And I wait until the ensemble is ready less than <model_wait> secs
+            When I create an ensemble prediction for "<input_data>"
+            And I wait until the prediction is ready less than <prediction_wait> secs
+            Then the prediction for "<objective_id>" is "<prediction>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -72,7 +75,7 @@ class TestEnsemblePrediction(object):
              ' "TakeHome": 108.89}', '000005', '73.13558']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"], shared=example["data"])

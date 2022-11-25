@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,37 +20,38 @@
 """ Testing MultiVote predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import compute_multivote_prediction_steps as multivote_prediction
 
 
-class TestMultiVotePrediction(object):
+class TestMultiVotePrediction:
+    """Testing MultiVote methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario 1: Successfully computing predictions combinations:
-                Given I create a MultiVote for the set of predictions in file <predictions>
-                When I compute the prediction with confidence using method "<method>"
-                And I compute the prediction without confidence using method "<method>"
-                Then the combined prediction is "<prediction>"
-                And the combined prediction without confidence is "<prediction>"
-                And the confidence for the combined prediction is <confidence>
+        Scenario 1: Successfully computing predictions combinations:
+            Given I create a MultiVote for the set of predictions in file <predictions>
+            When I compute the prediction with confidence using method "<method>"
+            And I compute the prediction without confidence using method "<method>"
+            Then the combined prediction is "<prediction>"
+            And the combined prediction without confidence is "<prediction>"
+            And the confidence for the combined prediction is <confidence>
         """
         show_doc(self.test_scenario1)
         headers = ["predictions_file", "method", "prediction", "confidence"]
@@ -61,7 +64,7 @@ class TestMultiVotePrediction(object):
             ['data/predictions_r.json', '2', '1.55555556667', '0.40008']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             multivote_prediction.i_create_a_multivote(
                 self, example["predictions_file"])
             multivote_prediction.compute_prediction(

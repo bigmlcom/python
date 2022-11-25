@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2015-2022 BigML
 #
@@ -14,27 +14,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import time
-import json
-import os
-from datetime import datetime
-from .world import world, eq_
-
 from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
 from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_
 
 
-#@step(r'the sample name is "(.*)"')
 def i_check_sample_name(step, name):
+    """Step: the sample name is <name>"""
     sample_name = world.sample['name']
     eq_(name, sample_name)
 
-#@step(r'I create a sample from a dataset$')
+
 def i_create_a_sample_from_dataset(step):
+    """Step: I create a sample from a dataset"""
     dataset = world.dataset.get('resource')
     resource = world.api.create_sample(dataset, {'name': 'new sample'})
     world.status = resource['code']
@@ -44,8 +38,8 @@ def i_create_a_sample_from_dataset(step):
     world.samples.append(resource['resource'])
 
 
-#@step(r'I update the sample name to "(.*)"$')
 def i_update_sample_name(step, name):
+    """Step: I update the sample name to <name>"""
     resource = world.api.update_sample(world.sample['resource'],
                                        {'name': name})
     world.status = resource['code']
@@ -54,7 +48,7 @@ def i_update_sample_name(step, name):
     world.sample = resource['object']
 
 
-#@step(r'I wait until the sample is ready less than (\d+)')
 def the_sample_is_finished_in_less_than(step, secs):
+    """Step: I wait until the sample is ready less than <secs>"""
     world.sample = wait_until_status_code_is(
         FINISHED, FAULTY, secs, world.sample)

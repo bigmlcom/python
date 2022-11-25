@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
+#pylint: disable=locally-disabled,pointless-string-statement
 #
 # Copyright 2012-2022 BigML
 #
@@ -19,40 +21,43 @@ import json
 import os
 
 from zipfile import ZipFile
-from .world import world, res_filename, eq_, approx_, ok_
 from bigml.model import Model, cast_prediction
 from bigml.logistic import LogisticRegression
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
 from bigml.association import Association
 from bigml.multimodel import MultiModel
-from bigml.multivote import MultiVote
 from bigml.topicmodel import TopicModel
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
 from bigml.supervised import SupervisedModel
 from bigml.fusion import Fusion
 from bigml.pca import PCA
-from bigml.supervised import SupervisedModel
 
 
 from .create_prediction_steps import check_prediction
+from .world import world, res_filename, eq_, approx_, ok_
+
 
 def extract_zip(input_zip):
-    input_zip=ZipFile(input_zip)
-    return {name: input_zip.read(name) for name in input_zip.namelist()}
+    """Extracting file names in zip"""
+    with ZipFile(input_zip) as zip_handler:
+        return {name: zip_handler.read(name) for name in \
+            zip_handler.namelist()}
 
 
-#@step(r'I retrieve a list of remote models tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_models(step, tag):
+    """Step: I retrieve a list of remote models tagged with <tag>"""
     world.list_of_models = [ \
         world.api.get_model(model['resource']) for model in
         world.api.list_models(query_string="project=%s;tags__in=%s" % \
             (world.project_id, tag))['objects']]
 
 
-#@step(r'I retrieve a list of remote logistic regression tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_logistic_regressions(step, tag):
+    """Step: I retrieve a list of remote logistic regression tagged with
+    <tag>
+    """
     world.list_of_models = [ \
         world.api.get_logistic_regression(model['resource']) for model in
         world.api.list_logistic_regressions( \
@@ -60,8 +65,8 @@ def i_retrieve_a_list_of_remote_logistic_regressions(step, tag):
                 (world.project_id, tag))['objects']]
 
 
-#@step(r'I retrieve a list of remote linear regression tagged with "(.*)"')
 def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
+    """Step: I retrieve a list of remote linear regression tagged with <tag>"""
     world.list_of_models = [ \
         world.api.get_linear_regression(model['resource']) for model in
         world.api.list_linear_regressions( \
@@ -69,120 +74,122 @@ def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
                 (world.project_id, tag))['objects']]
 
 
-#@step(r'I create a local model from a "(.*)" file$')
 def i_create_a_local_model_from_file(step, model_file):
-    world.local_model = Model(res_filename(model_file))
+    """Step: I create a local model from a <model_file> file"""
+    step.bigml["local_model"] = Model(res_filename(model_file))
 
-#@step(r'I create a local deepnet from a "(.*)" file$')
+
 def i_create_a_local_deepnet_from_zip_file(step, deepnet_file,
                                            operation_settings=None):
+    """Step: I create a local deepnet from a <deepnet_file> file"""
     zipped_files = extract_zip(res_filename(deepnet_file))
     deepnet = json.loads(list(zipped_files.values())[0])
-    world.local_model = Deepnet(deepnet,
+    step.bigml["local_model"] = Deepnet(deepnet,
                                 operation_settings=operation_settings)
 
-#@step(r'I create a local supervised model from a "(.*)" file$')
+
 def i_create_a_local_supervised_model_from_file(step, model_file):
-    world.local_model = SupervisedModel(res_filename(model_file))
+    """Step: I create a local supervised model from a <model_file> file"""
+    step.bigml["local_model"] = SupervisedModel(res_filename(model_file))
 
 
-#@step(r'I create a local model$')
 def i_create_a_local_model(step, pre_model=False):
-    world.local_model = Model(world.model)
+    """Step: I create a local model"""
+    step.bigml["local_model"] = Model(world.model)
     if pre_model:
-        world.local_pipeline = world.local_model.data_transformations()
+        step.bigml["local_pipeline"] = step.bigml["local_model"].data_transformations()
 
 
-#@step(r'I create a local fusion$')
 def i_create_a_local_fusion(step):
-    world.local_model = Fusion(world.fusion['resource'])
-    world.local_ensemble = None
+    """Step: I create a local fusion"""
+    step.bigml["local_model"] = Fusion(world.fusion['resource'])
+    step.bigml["local_ensemble"] = None
 
-#@step(r'I create a local supervised model$')
 def i_create_a_local_supervised_model(step, model_type=None):
+    """Step: I create a local supervised model"""
     if model_type is None:
         model = world.model
     else:
         model = getattr(world, model_type)
-    world.local_model = SupervisedModel(model)
+    step.bigml["local_model"] = SupervisedModel(model)
 
 
-#@step(r'I create a multiple local prediction for "(.*)"')
-def i_create_a_multiple_local_prediction(step, data=None):
-    if data is None:
-        data = "{}"
-    data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data, multiple='all')
-
-
-#@step(r'I create a local prediction for "(.*)" with confidence$')
 def i_create_a_local_prediction_with_confidence(step, data=None,
                                                 pre_model=None):
+    """Step: I create a local prediction for <data> with confidence"""
     if data is None:
         data = "{}"
-    data = json.loads(data)
+    input_data = json.loads(data)
     if pre_model is not None:
-        data = pre_model.transform([input_data])[0]
-    world.local_prediction = world.local_model.predict(data, full=True)
+        input_data = pre_model.transform([input_data])[0]
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(
+        input_data, full=True)
 
 
-#@step(r'I create a local prediction for "(.*)"$')
 def i_create_a_local_prediction(step, data=None, pre_model=None):
+    """Step: I create a local prediction for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
     if pre_model is not None:
         data = pre_model.transform([data])[0]
-    world.local_prediction = world.local_model.predict(data, full=True)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data, full=True)
 
 
-#@step(r'I create a local images prediction for "(.*)"$')
 def i_create_a_local_regions_prediction(step, image_file=None):
+    """Step: I create a local images prediction for <image_file>"""
     if image_file is None:
         return None
     data = res_filename(image_file)
-    world.local_prediction = world.local_model.predict(data, full=True)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data, full=True)
+    return step.bigml["local_prediction"]
 
 
-#@step(r'I create a local prediction for "(.*)" in operating point "(.*)"$')
 def i_create_a_local_prediction_op(step, data=None, operating_point=None):
+    """Step: I create a local prediction for <data> in operating point
+    <operating_point>
+    """
     if data is None:
         data = "{}"
     ok_(operating_point is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
         data, operating_point=operating_point)
 
 
-#@step(r'I create a local ensemble prediction for "(.*)" in operating point "(.*)"$')
 def i_create_a_local_ensemble_prediction_op(step, data=None, operating_point=None):
+    """Step: I create a local ensemble prediction for <data> in operating
+    point <operating_point>
+    """
     if data is None:
         data = "{}"
     ok_(operating_point is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_ensemble.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict( \
         data, operating_point=operating_point)
 
 
-#@step(r'I create local probabilities for "(.*)"$')
 def i_create_local_probabilities(step, data=None):
+    """Step: I create local probabilities for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
+    model = step.bigml["local_model"]
+    step.bigml["local_probabilities"] = model.predict_probability(
+        data, compact=True)
 
-    model = world.local_model
-    world.local_probabilities = model.predict_probability(data, compact=True)
 
-#@step(r'I create a local ensemble prediction for "(.*)"$')
 def i_create_a_local_ensemble_prediction(step, data=None):
+    """Step: I create a local ensemble prediction for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_ensemble.predict(data)
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict(data)
 
-#@step(r'I create a local deepnet prediction for "(.*)"$')
+
 def i_create_a_local_deepnet_prediction(step, data=None, image_fields=None,
                                         full=False):
+    """Step: I create a local deepnet prediction for <data>"""
     if data is None:
         data = "{}"
     if image_fields is None:
@@ -191,54 +198,60 @@ def i_create_a_local_deepnet_prediction(step, data=None, image_fields=None,
     for field in image_fields:
         if field in data:
             data[field] = res_filename(data[field])
-    world.local_prediction = world.local_model.predict(data, full=full)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data, full=full)
 
-#@step(r'I create a local deepnet prediction with operating point for "(.*)"$')
+
 def i_create_a_local_deepnet_prediction_with_op(step, data=None,
                                                 operating_point=None):
+    """Step: I create a local deepnet prediction with operating point
+    for <data>
+    """
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
         data, operating_point=operating_point)
 
-#@step(r'I create a local prediction using median for "(.*)"$')
+
 def i_create_a_local_median_prediction(step, data=None):
+    """Step: I create a local prediction using median for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data, median=True)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data, full=True)
 
 
-#@step(r'I create a local multimodel batch prediction using median for "(.*)"$')
-def i_create_a_local_mm_median_batch_prediction(self, data=None):
+def i_create_a_local_mm_median_batch_prediction(step, data=None):
+    """Step: I create a local multimodel batch prediction using median
+    for <data>
+    """
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.batch_predict(
+    step.bigml["local_prediction"] = step.bigml["local_model"].batch_predict(
         [data], to_file=False, use_median=True)[0].predictions[0]['prediction']
 
 
-#@step(r'I create a proportional missing strategy local prediction
-# using median for "(.*)"$')
 def i_create_a_local_proportional_median_prediction(step, data=None):
+    """Step: I create a proportional missing strategy local prediction
+    using median for <data>
+    """
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
-        data, missing_strategy=1, median=True)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
+        data, missing_strategy=1, full=True)
 
 
-#@step(r'I create a local cluster')
 def i_create_a_local_cluster(step, pre_model=False):
-    world.local_cluster = Cluster(world.cluster["resource"])
+    """Step: I create a local cluster"""
+    step.bigml["local_cluster"] = Cluster(world.cluster["resource"])
     if pre_model:
-        world.local_pipeline = world.local_cluster.data_transformations()
+        step.bigml["local_pipeline"] = step.bigml["local_cluster"].data_transformations()
 
 
-
-#@step(r'I create a local centroid for "(.*)"')
 def i_create_a_local_centroid(step, data=None, pre_model=None):
+    """Step: I create a local centroid for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
@@ -247,111 +260,113 @@ def i_create_a_local_centroid(step, data=None, pre_model=None):
             del data[key]
     if pre_model is not None:
         data = pre_model.transform([data])[0]
-    world.local_centroid = world.local_cluster.centroid(data)
+    step.bigml["local_centroid"] = step.bigml["local_cluster"].centroid(data)
 
 
-#@step(r'the local centroid is "(.*)" with distance "(.*)"')
 def the_local_centroid_is(step, centroid, distance):
-    check_prediction(world.local_centroid['centroid_name'], centroid)
-    check_prediction(world.local_centroid['distance'], distance)
+    """Step: the local centroid is <centroid> with distance <distance>"""
+    check_prediction(step.bigml["local_centroid"]['centroid_name'], centroid)
+    check_prediction(step.bigml["local_centroid"]['distance'], distance)
 
 
-#@step(r'I create a local anomaly detector$')
 def i_create_a_local_anomaly(step, pre_model=False):
-    world.local_anomaly = Anomaly(world.anomaly["resource"])
+    """Step: I create a local anomaly detector"""
+    step.bigml["local_anomaly"] = Anomaly(world.anomaly["resource"])
     if pre_model:
-        world.local_pipeline = world.local_anomaly.data_transformations()
+        step.bigml["local_pipeline"] = step.bigml["local_anomaly"].data_transformations()
 
 
-#@step(r'I create a local anomaly score for "(.*)"$')
 def i_create_a_local_anomaly_score(step, input_data, pre_model=None):
+    """Step: I create a local anomaly score for <data>"""
     input_data = json.loads(input_data)
     if pre_model is not None:
         input_data = pre_model.transform([input_data])[0]
-    world.local_anomaly_score = world.local_anomaly.anomaly_score( \
+    step.bigml["local_anomaly_score"] = step.bigml["local_anomaly"].anomaly_score( \
         input_data)
 
 
-#@step(r'the local anomaly score is "(.*)"$')
 def the_local_anomaly_score_is(step, score):
-    eq_(str(round(world.local_anomaly_score, 2)),
+    """Step: the local anomaly score is <score>"""
+    eq_(str(round(step.bigml["local_anomaly_score"], 2)),
         str(round(float(score), 2)))
 
 
-#@step(r'I create a local association')
 def i_create_a_local_association(step, pre_model=False):
-    world.local_association = Association(world.association)
+    """Step: I create a local association"""
+    step.bigml["local_association"] = Association(world.association)
     if pre_model:
-        world.local_pipeline = world.local_association.data_transformations()
+        step.bigml["local_pipeline"] = step.bigml["local_association"].data_transformations()
 
 
-#@step(r'I create a proportional missing strategy local prediction for "(.*)"')
 def i_create_a_proportional_local_prediction(step, data=None):
+    """Step: I create a proportional missing strategy local prediction for
+    <data>
+    """
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(
         data, missing_strategy=1, full=True)
-    world.local_prediction = cast_prediction(world.local_prediction,
+    step.bigml["local_prediction"] = cast_prediction(step.bigml["local_prediction"],
                                              to="list",
                                              confidence=True)
 
 
-#@step(r'I create a prediction from a multi model for "(.*)"')
 def i_create_a_prediction_from_a_multi_model(step, data=None):
+    """Step: I create a prediction from a multi model for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict(data)
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data)
 
 
-#@step(r'I create a batch multimodel prediction for "(.*)"')
 def i_create_a_batch_prediction_from_a_multi_model(step, data=None):
+    """Step: I create a batch multimodel prediction for <data>"""
     if data is None:
         data = "[{}]"
     data = json.loads(data)
-    world.local_prediction = world.local_model.batch_predict(data,
+    step.bigml["local_prediction"] = step.bigml["local_model"].batch_predict(data,
                                                              to_file=False)
 
-#@step(r'the predictions are "(.*)"')
 def the_batch_mm_predictions_are(step, predictions):
+    """Step: the predictions are <predictions>"""
     if predictions is None:
         predictions = "[{}]"
     predictions = json.loads(predictions)
-    for i in range(len(predictions)):
-        multivote = world.local_prediction[i]
-        for prediction in multivote.predictions:
-            eq_(prediction['prediction'], predictions[i])
+    for index, prediction in enumerate(predictions):
+        multivote = step.bigml["local_prediction"][index]
+        for mv_prediction in multivote.predictions:
+            eq_(mv_prediction['prediction'], prediction)
 
 
-#@step(r'the multiple local prediction is "(.*)"')
 def the_multiple_local_prediction_is(step, prediction):
-    local_prediction = world.local_prediction
+    """Step: the multiple local prediction is <prediction>"""
+    local_prediction = step.bigml["local_prediction"]
     prediction = json.loads(prediction)
     eq_(local_prediction, prediction)
 
 
-#@step(r'the local prediction\'s confidence is "(.*)"')
 def the_local_prediction_confidence_is(step, confidence):
-    if (isinstance(world.local_prediction, list) or
-        isinstance(world.local_prediction, tuple)):
-        local_confidence = world.local_prediction[1]
+    """Step: the local prediction's confidence is <confidence>"""
+    if isinstance(step.bigml["local_prediction"], (list, tuple)):
+        local_confidence = step.bigml["local_prediction"][1]
     else:
-        local_confidence = world.local_prediction.get('confidence', \
-            world.local_prediction.get('probability'))
+        local_confidence = step.bigml["local_prediction"].get('confidence', \
+            step.bigml["local_prediction"].get('probability'))
     local_confidence = round(float(local_confidence), 4)
     confidence = round(float(confidence), 4)
     eq_(local_confidence, confidence)
 
 
-#@step(r'the highest local prediction\'s confidence for "(.*)" is "(.*)"')
 def the_highest_local_prediction_confidence_is(
     step, input_data, confidence, missing_strategy=None):
+    """Step: the highest local prediction's confidence for <input_data> is
+    <confidence>"""
     input_data = json.loads(input_data)
     kwargs = {}
     if missing_strategy is not None:
         kwargs.update({"missing_strategy": missing_strategy})
-    local_confidence = world.local_model.predict_confidence(input_data,
+    local_confidence = step.bigml["local_model"].predict_confidence(input_data,
                                                             **kwargs)
     if isinstance(local_confidence, dict):
         local_confidence = round(float(local_confidence["confidence"]), 4)
@@ -361,21 +376,20 @@ def the_highest_local_prediction_confidence_is(
     eq_(local_confidence, confidence)
 
 
-#@step(r'the local prediction is "(.*)"')
 def the_local_prediction_is(step, prediction, precision=4):
-    if (isinstance(world.local_prediction, list) or
-        isinstance(world.local_prediction, tuple)):
-        local_prediction = world.local_prediction[0]
-    elif isinstance(world.local_prediction, dict):
-        local_prediction = world.local_prediction['prediction']
+    """Step: the local prediction is <prediction>"""
+    if isinstance(step.bigml["local_prediction"], (list, tuple)):
+        local_prediction = step.bigml["local_prediction"][0]
+    elif isinstance(step.bigml["local_prediction"], dict):
+        local_prediction = step.bigml["local_prediction"]['prediction']
     else:
-        local_prediction = world.local_prediction
-    if hasattr(world, "local_ensemble") and world.local_ensemble is not None:
-        world.local_model = world.local_ensemble
-    if (hasattr(world.local_model, "regression") and \
-            world.local_model.regression) or \
-            (isinstance(world.local_model, MultiModel) and \
-            world.local_model.models[0].regression):
+        local_prediction = step.bigml["local_prediction"]
+    if hasattr(world, "local_ensemble") and step.bigml["local_ensemble"] is not None:
+        step.bigml["local_model"] = step.bigml["local_ensemble"]
+    if (hasattr(step.bigml["local_model"], "regression") and \
+            step.bigml["local_model"].regression) or \
+            (isinstance(step.bigml["local_model"], MultiModel) and \
+            step.bigml["local_model"].models[0].regression):
         local_prediction = round(float(local_prediction), precision)
         prediction = round(float(prediction), precision)
         approx_(local_prediction, float(prediction), precision=precision)
@@ -389,118 +403,126 @@ def the_local_prediction_is(step, prediction, precision=4):
                 round(float(prediction), precision))
 
 
-#@step(r'the local regions prediction is "(.*)"')
 def the_local_regions_prediction_is(step, prediction):
+    """Step: the local regions prediction is <prediction>"""
     prediction = json.loads(prediction)
-    eq_(prediction, world.local_prediction)
+    eq_(prediction, step.bigml["local_prediction"])
 
 
-#@step(r'the local probabilities are "(.*)"')
 def the_local_probabilities_are(step, prediction):
-    local_probabilities = world.local_probabilities
+    """Step: the local probabilities are <prediction>"""
+    local_probabilities = step.bigml["local_probabilities"]
     expected_probabilities = [float(p) for p in json.loads(prediction)]
 
     for local, expected in zip(local_probabilities, expected_probabilities):
         approx_(local, expected, precision=4)
 
-#@step(r'the local ensemble prediction is "(.*)"')
+
 def the_local_ensemble_prediction_is(step, prediction):
-    if (isinstance(world.local_prediction, list) or
-        isinstance(world.local_prediction, tuple)):
-        local_prediction = world.local_prediction[0]
-    elif isinstance(world.local_prediction, dict):
-        local_prediction = world.local_prediction['prediction']
+    """Step: the local ensemble prediction is <prediction>"""
+    if isinstance(step.bigml["local_prediction"], (list, tuple)):
+        local_prediction = step.bigml["local_prediction"][0]
+    elif isinstance(step.bigml["local_prediction"], dict):
+        local_prediction = step.bigml["local_prediction"]['prediction']
     else:
-        local_prediction = world.local_prediction
-    if world.local_ensemble.regression:
+        local_prediction = step.bigml["local_prediction"]
+    if step.bigml["local_ensemble"].regression:
         approx_(local_prediction, float(prediction), precision=5)
     else:
         eq_(local_prediction, prediction)
 
 
-#@step(r'the local probability is "(.*)"')
 def the_local_probability_is(step, probability):
-    probability =  round(float(probability), 4)
-    local_probability = world.local_prediction["probability"]
+    """Step: the local probability is <probability>"""
+    local_probability = step.bigml["local_prediction"]["probability"]
+    if isinstance(probability, str):
+        probability = float(probability)
+    eq_(local_probability, probability, precision=4)
 
 
 def eq_local_and_remote_probability(step):
-    local_probability = str(round(world.local_prediction["probability"], 3))
-    remote_probability = str(round(world.prediction["probability"], 3))
+    """Step: check local and remote probability"""
+    local_probability = round(step.bigml["local_prediction"]["probability"], 3)
+    remote_probability = round(world.prediction["probability"], 3)
     approx_(local_probability, remote_probability)
 
 
-#@step(r'I create a local multi model')
 def i_create_a_local_multi_model(step):
-    world.local_model = MultiModel(world.list_of_models)
-    world.local_ensemble = None
+    """Step: I create a local multi model"""
+    step.bigml["local_model"] = MultiModel(world.list_of_models)
+    step.bigml["local_ensemble"] = None
 
 
-#@step(r'I create a batch prediction for "(.*)" and save it in "(.*)"')
 def i_create_a_batch_prediction(step, input_data_list, directory):
+    """Step: I create a batch prediction for <input_data_list> and save it
+    in <directory>
+    """
     if len(directory) > 0 and not os.path.exists(directory):
         os.makedirs(directory)
-    input_data_list = eval(input_data_list)
+    input_data_list = json.loads(input_data_list)
     ok_(isinstance(input_data_list, list))
-    world.local_model.batch_predict(input_data_list, directory)
+    step.bigml["local_model"].batch_predict(input_data_list, directory)
 
 
-#@step(r'I combine the votes in "(.*)"')
 def i_combine_the_votes(step, directory):
-    world.votes = world.local_model.batch_votes(directory)
+    """Step: I combine the votes in <directory>"""
+    world.votes = step.bigml["local_model"].batch_votes(directory)
 
 
-#@step(r'the plurality combined predictions are "(.*)"')
 def the_plurality_combined_prediction(step, predictions):
-    predictions = eval(predictions)
-    for i in range(len(world.votes)):
-        combined_prediction = world.votes[i].combine()
+    """Step: the plurality combined predictions are <predictions>"""
+    predictions = json.loads(predictions)
+    for i, votes_row in enumerate(world.votes):
+        combined_prediction = votes_row.combine()
         check_prediction(combined_prediction, predictions[i])
 
 
-#@step(r'the confidence weighted predictions are "(.*)"')
 def the_confidence_weighted_prediction(step, predictions):
-    predictions = eval(predictions)
-    for i in range(len(world.votes)):
-        combined_prediction = world.votes[i].combine(1)
+    """Step: the confidence weighted predictions are <predictions>"""
+    predictions = json.loads(predictions)
+    for i, votes_row in enumerate(world.votes):
+        combined_prediction = votes_row.combine(1)
         eq_(combined_prediction, predictions[i])
 
 
-#@step(r'I create a local logistic regression model$')
-def i_create_a_local_logistic_model(step):
-    world.local_model = LogisticRegression(world.logistic_regression)
+def i_create_a_local_logistic_model(step, pre_model=False):
+    """Step: I create a local logistic regression model"""
+    step.bigml["local_model"] = LogisticRegression(world.logistic_regression)
+    if pre_model:
+        step.bigml["local_pipeline"] = step.bigml[
+            "local_model"].data_transformations()
     if hasattr(world, "local_ensemble"):
-        world.local_ensemble = None
+        step.bigml["local_ensemble"] = None
 
 
-#@step(r'I create a local deepnet model$')
 def i_create_a_local_deepnet(step):
-    world.local_model = Deepnet({"resource": world.deepnet['resource'],
+    """Step: I create a local deepnet model"""
+    step.bigml["local_model"] = Deepnet({"resource": world.deepnet['resource'],
                                  "object": world.deepnet})
     if hasattr(world, "local_ensemble"):
-        world.local_ensemble = None
+        step.bigml["local_ensemble"] = None
 
 
-#@step(r'I create a local topic model$')
 def i_create_a_local_topic_model(step):
-    world.local_topic_model = TopicModel(world.topic_model)
+    """Step: I create a local topic model"""
+    step.bigml["local_topic_model"] = TopicModel(world.topic_model)
 
 
-#@step(r'the topic distribution is "(.*)"$')
 def the_topic_distribution_is(step, distribution):
+    """Step: the topic distribution is <distribution>"""
     eq_(json.loads(distribution),
         world.topic_distribution['topic_distribution']['result'])
 
 
-#@step(r'the local topic distribution is "(.*)"')
 def the_local_topic_distribution_is(step, distribution):
+    """Step: the local topic distribution is <distribution>"""
     distribution = json.loads(distribution)
-    for index, topic_dist in enumerate(world.local_topic_distribution):
+    for index, topic_dist in enumerate(step.bigml["local_topic_distribution"]):
         approx_(topic_dist["probability"], distribution[index])
 
 
-#@step(r'the association set is like file "(.*)"')
 def the_association_set_is_like_file(step, filename):
+    """Step: the association set is like file <filename>"""
     filename = res_filename(filename)
     result = world.association_set.get("association_set",{}).get("result", [])
     """ Uncomment if different text settings are used
@@ -512,17 +534,17 @@ def the_association_set_is_like_file(step, filename):
     eq_(result, file_result)
 
 
-#@step(r'I create a local association set$')
 def i_create_a_local_association_set(step, data, pre_model=None):
+    """Step: I create a local association set"""
     data = json.loads(data)
     if pre_model is not None:
         data = pre_model.transform([data])[0]
-    world.local_association_set = world.local_association.association_set( \
+    step.bigml["local_association_set"] = step.bigml["local_association"].association_set( \
         data)
 
 
-#@step(r'the local association set is like file "(.*)"')
 def the_local_association_set_is_like_file(step, filename):
+    """Step: the local association set is like file <filename>"""
     filename = res_filename(filename)
     """ Uncomment if different text settings are used
     with open(filename, "w") as filehandler:
@@ -530,71 +552,77 @@ def the_local_association_set_is_like_file(step, filename):
     """
     with open(filename) as filehandler:
         file_result = json.load(filehandler)
-        for index in range(0, len(file_result)):
-            result = file_result[index]
-            approx_(result['score'], world.local_association_set[
+        for index, result in enumerate(file_result):
+            approx_(result['score'], step.bigml["local_association_set"][
                 index]['score'])
             eq_(result['rules'],
-                world.local_association_set[index]['rules'])
+                step.bigml["local_association_set"][index]['rules'])
 
 
-#@step(r'I create a local prediction for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_prediction_op_kind(step, data=None, operating_kind=None):
+    """Step: I create a local prediction for <data> in operating kind
+    <operating_kind>
+    """
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
         data, operating_kind=operating_kind)
 
 
-#@step(r'I create a local ensemble prediction for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_ensemble_prediction_op_kind( \
         step, data=None, operating_kind=None):
+    """Step: I create a local ensemble prediction for <data> in operating
+    kind <operating_kind>"""
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_ensemble.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict( \
         data, operating_kind=operating_kind)
 
 
-#@step(r'I create a local deepnet for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_deepnet_prediction_op_kind( \
         step, data=None, operating_kind=None):
+    """Step: I create a local deepnet for <data> in operating kind
+    <operating_kind>
+    """
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
         data, operating_kind=operating_kind)
 
 
-#@step(r'I create a local logistic regression for "(.*)" in operating kind "(.*)"$')
 def i_create_a_local_logistic_prediction_op_kind( \
         step, data=None, operating_kind=None):
+    """Step: I create a local logistic regression for <data> in operating
+    kind <operating_kind>
+    """
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
     data = json.loads(data)
-    world.local_prediction = world.local_model.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict( \
         data, operating_kind=operating_kind)
 
 
-#@step(r'I create a local PCA')
 def create_local_pca(step, pre_model=False):
-    world.local_pca = PCA(world.pca["resource"])
+    """Step: I create a local PCA"""
+    step.bigml["local_pca"] = PCA(world.pca["resource"])
     if pre_model:
-        world.local_pipeline = world.local_pca.data_transformations()
+        step.bigml["local_pipeline"] = step.bigml["local_pca"].data_transformations()
 
 
-#@step(r'I create a local PCA')
 def i_create_a_local_linear(step):
-    world.local_model = LinearRegression(world.linear_regression["resource"])
+    """Step: I create a local linear regression"""
+    step.bigml["local_model"] = LinearRegression(world.linear_regression["resource"])
 
 
-#@step(r'I create a local projection for "(.*)"')
 def i_create_a_local_projection(step, data=None, pre_model=None):
+    """Step: I create a local projection for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
@@ -603,31 +631,32 @@ def i_create_a_local_projection(step, data=None, pre_model=None):
     for key, value in list(data.items()):
         if value == "":
             del data[key]
-    world.local_projection = world.local_pca.projection(data, full=True)
-    for name, value in list(world.local_projection.items()):
-        world.local_projection[name] = round(value, 5)
+    step.bigml["local_projection"] = step.bigml["local_pca"].projection(data, full=True)
+    for name, value in list(step.bigml["local_projection"].items()):
+        step.bigml["local_projection"][name] = round(value, 5)
 
 
-#@step(r'I create a local linear regression prediction for "(.*)"')
 def i_create_a_local_linear_prediction(step, data=None):
+    """Step: I create a local linear regression prediction for <data>"""
     if data is None:
         data = "{}"
     data = json.loads(data)
     for key, value in list(data.items()):
         if value == "":
             del data[key]
-    world.local_prediction = world.local_model.predict(data, full=True)
-    for name, value in list(world.local_prediction.items()):
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(data, full=True)
+    for name, value in list(step.bigml["local_prediction"].items()):
         if isinstance(value, float):
-            world.local_prediction[name] = round(value, 5)
+            step.bigml["local_prediction"][name] = round(value, 5)
 
 
 def the_local_projection_is(step, projection):
+    """Step: checking the local projection"""
     if projection is None:
         projection = "{}"
     projection = json.loads(projection)
-    eq_(len(list(projection.keys())), len(list(world.local_projection.keys())))
-    for name, value in list(projection.items()):
-        eq_(world.local_projection[name], projection[name],
+    eq_(len(list(projection.keys())), len(list(step.bigml["local_projection"].keys())))
+    for name, _ in list(projection.items()):
+        eq_(step.bigml["local_projection"][name], projection[name],
             msg="local: %s, %s - expected: %s" % ( \
-                name, world.local_projection[name], projection[name]))
+                name, step.bigml["local_projection"][name], projection[name]))

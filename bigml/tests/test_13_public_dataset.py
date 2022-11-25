@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,39 +20,40 @@
 """ Creating public dataset
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 
-class TestPublicDataset(object):
+class TestPublicDataset:
+    """Testing published datasets """
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating and reading a public dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I make the dataset public
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                When I get the dataset status using the dataset's public url
-                Then the dataset's status is FINISHED
+        Scenario: Successfully creating and reading a public dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I make the dataset public
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            When I get the dataset status using the dataset's public url
+            Then the dataset's status is FINISHED
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait"]
@@ -58,7 +61,7 @@ class TestPublicDataset(object):
             ['data/iris.csv', '10', '10']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file_from_stdin(
                 self, example["data"])
             source_create.the_source_is_finished(

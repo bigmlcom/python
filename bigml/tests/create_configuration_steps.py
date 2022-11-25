@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2017-2022 BigML
 #
@@ -14,22 +15,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-import json
-import os
-from datetime import datetime
-from .world import world, eq_
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 
+from .world import world, eq_
 from .read_resource_steps import wait_until_status_code_is
 
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
 
-#@step(r'I create a configuration$')
 def i_create_configuration(step, configurations):
+    """Step: I create a configuration"""
     resource = world.api.create_configuration(
         configurations, {"name": "configuration"})
     world.status = resource['code']
@@ -39,8 +33,8 @@ def i_create_configuration(step, configurations):
     world.configurations.append(resource['resource'])
 
 
-#@step(r'I update a configuration$')
 def i_update_configuration(step, changes):
+    """Step: I update a configuration"""
     resource = world.api.update_configuration(
         world.configuration["resource"], changes)
     world.status = resource['code']
@@ -49,22 +43,24 @@ def i_update_configuration(step, changes):
     world.configuration = resource['object']
 
 
-#@step(r'I wait until the configuration status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_configuration_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the configuration status code is either <code1> or
+    <code2> less than <secs>
+    """
     world.configuration = wait_until_status_code_is(
         code1, code2, secs, world.configuration)
 
 
-#@step(r'I wait until the configuration is ready less than (\d+)')
 def the_configuration_is_finished_in_less_than(step, secs):
+    """Step: I wait until the configuration is ready less than <secs>"""
     wait_until_configuration_status_code_is(step, FINISHED, FAULTY, secs)
 
 
-#@step(r'the configuration name is "(.*)"$')
 def i_check_configuration_name(step, name):
+    """Step: the configuration name is <name>"""
     eq_(world.configuration["name"], name["name"])
 
 
-#@step(r'the configuration contents are "(.*)"$')
 def i_check_configuration_conf(step, confs):
+    """Step: the configuration contents are <confs>"""
     eq_(world.configuration["configurations"], confs)

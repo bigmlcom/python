@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012-2022 BigML
 #
@@ -14,13 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 import json
 import os
-from datetime import datetime
-from .world import world, res_filename, eq_
-
-from .read_resource_steps import wait_until_status_code_is
 
 from bigml.api import HTTP_CREATED
 from bigml.api import HTTP_ACCEPTED
@@ -29,8 +25,12 @@ from bigml.api import FAULTY
 from bigml.api import get_status
 from bigml.topicmodel import TopicModel
 
-#@step(r'I create a Topic Model')
+from .world import world, res_filename, eq_
+from .read_resource_steps import wait_until_status_code_is
+
+
 def i_create_a_topic_model(step):
+    """Step: I create a Topic Model"""
     dataset = world.dataset.get('resource')
     resource = world.api.create_topic_model(
         dataset, {'seed': 'BigML', 'topicmodel_seed': 'BigML'})
@@ -40,8 +40,9 @@ def i_create_a_topic_model(step):
     world.topic_model = resource['object']
     world.topic_models.append(resource['resource'])
 
-#@step(r'I create a topic model from a dataset list$')
+
 def i_create_a_topic_model_from_dataset_list(step):
+    """Step: I create a topic model from a dataset list"""
     resource = world.api.create_topic_model(world.dataset_ids)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
@@ -50,8 +51,8 @@ def i_create_a_topic_model_from_dataset_list(step):
     world.topic_models.append(resource['resource'])
 
 
-#@step(r'I create a topic model with options "(.*)"$')
 def i_create_a_topic_model_with_options(step, options):
+    """Step: I create a topic model with options <options>"""
     dataset = world.dataset.get('resource')
     options = json.loads(options)
     options.update({'seed': 'BigML',
@@ -65,8 +66,8 @@ def i_create_a_topic_model_with_options(step, options):
     world.topic_models.append(resource['resource'])
 
 
-#@step(r'I update the topic model name to "(.*)"$')
 def i_update_topic_model_name(step, name):
+    """Step: I update the topic model name to <name>"""
     resource = world.api.update_topic_model(world.topic_model['resource'],
                                             {'name': name})
     world.status = resource['code']
@@ -75,18 +76,21 @@ def i_update_topic_model_name(step, name):
     world.topic_model = resource['object']
 
 
-#@step(r'I wait until the topic model status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_topic_model_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the topic model status code is either
+    <code1> or <code2> less than <secs>
+    """
     world.topic_model = wait_until_status_code_is(
         code1, code2, secs, world.topic_model)
 
 
-#@step(r'I wait until the topic model is ready less than (\d+)')
 def the_topic_model_is_finished_in_less_than(step, secs):
+    """Steps: I wait until the topic model is ready less than <secs>"""
     wait_until_topic_model_status_code_is(step, FINISHED, FAULTY, secs)
 
-#@step(r'I make the topic model shared')
+
 def make_the_topic_model_shared(step):
+    """Step: I make the topic model shared """
     resource = world.api.update_topic_model(world.topic_model['resource'],
                                             {'shared': True})
     world.status = resource['code']
@@ -94,20 +98,26 @@ def make_the_topic_model_shared(step):
     world.location = resource['location']
     world.topic_model = resource['object']
 
-#@step(r'I get the topic_model sharing info')
+
 def get_sharing_info(step):
+    """Step: I get the topic_model sharing info"""
     world.shared_hash = world.topic_model['shared_hash']
     world.sharing_key = world.topic_model['sharing_key']
 
-#@step(r'I check the topic model status using the topic model\'s shared url')
+
 def topic_model_from_shared_url(step):
+    """Step: I check the topic model status using the topic model\'s
+    shared url
+    """
     world.topic_model = world.api.get_topic_model("shared/topicmodel/%s" %
                                           world.shared_hash)
     eq_(get_status(world.topic_model)['code'], FINISHED)
 
-#@step(r'I check the topic model status using the topic model\'s shared key')
-def topic_model_from_shared_key(step):
 
+def topic_model_from_shared_key(step):
+    """Step: I check the topic model status using the topic model\'s
+    shared key
+    """
     username = os.environ.get("BIGML_USERNAME")
     world.topic_model = world.api.get_topic_model( \
         world.topic_model['resource'],
@@ -115,12 +125,14 @@ def topic_model_from_shared_key(step):
     eq_(get_status(world.topic_model)['code'], FINISHED)
 
 
-#@step(r'the topic model name is "(.*)"')
 def i_check_topic_model_name(step, name):
+    """Step: the topic model name is <name>"""
     topic_model_name = world.topic_model['name']
     eq_(name, topic_model_name)
 
+
 def i_create_a_topic_distribution(step, data=None):
+    """Step: Create topic distribution """
     if data is None:
         data = "{}"
     topic_model = world.topic_model['resource']
@@ -132,29 +144,32 @@ def i_create_a_topic_distribution(step, data=None):
     world.topic_distribution = resource['object']
     world.topic_distributions.append(resource['resource'])
 
-#@step(r'I create a local topic distribution')
+
 def i_create_a_local_topic_distribution(step, data=None):
-    world.local_topic_distribution = \
-        world.local_topic_model.distribution(json.loads(data))
+    """Step: I create a local topic distribution"""
+    step.bigml["local_topic_distribution"] = \
+        step.bigml["local_topic_model"].distribution(json.loads(data))
 
 
-#@step(r'I export the topic model$')
 def i_export_topic_model(step, filename):
+    """Step: I export the topic model"""
     world.api.export(world.topic_model.get('resource'),
                      filename=res_filename(filename))
 
 
-#@step(r'I create a local topic model from file "(.*)"')
 def i_create_local_topic_model_from_file(step, export_file):
-    world.local_topic_model = TopicModel(res_filename(export_file))
+    """Step: I create a local topic model from file <export_file>"""
+    step.bigml["local_topic_model"] = TopicModel(res_filename(export_file))
 
 
-#@step(r'the topic model ID and the local topic model ID match')
 def check_topic_model_id_local_id(step):
-    eq_(world.local_topic_model.resource_id, world.topic_model["resource"])
+    """Step: the topic model ID and the local topic model ID match"""
+    eq_(step.bigml["local_topic_model"].resource_id,
+        world.topic_model["resource"])
 
-#@step(r'I clone topic model')
+
 def clone_topic_model(step, topic_model):
+    """Step: I clone topic model"""
     resource = world.api.clone_topic_model(topic_model,
                                            {'project': world.project_id})
     # update status
@@ -164,5 +179,7 @@ def clone_topic_model(step, topic_model):
     # save reference
     world.topic_models.append(resource['resource'])
 
+
 def the_cloned_topic_model_is(step, topic_model):
+    """Check cloned topic model"""
     eq_(world.topic_model["origin"], topic_model)

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Creating local ensemble predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -29,35 +29,39 @@ from . import create_ensemble_steps as ensemble_create
 from . import create_prediction_steps as prediction_create
 from . import compare_predictions_steps as compare_pred
 
-class TestEnsemblePrediction(object):
 
-    def setup_method(self):
+class TestEnsemblePrediction:
+    """Testing local ensemble prediction"""
+
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a local prediction from an Ensemble:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble of <number_of_models> models
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local Ensemble
-                When I create a local ensemble prediction with confidence for "<input_data>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And the local probabilities are "<probabilities>"
+        Scenario: Successfully creating a local prediction from an Ensemble:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble of <number_of_models> models
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local Ensemble
+            When I create a local ensemble prediction with probabilities for "<input_data>"
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
+            And the local probabilities are "<probabilities>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -69,7 +73,7 @@ class TestEnsemblePrediction(object):
              '["0.3403", "0.4150", "0.2447"]' ]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -84,7 +88,7 @@ class TestEnsemblePrediction(object):
             ensemble_create.the_ensemble_is_finished_in_less_than(
                 self, example["model_wait"], shared=ensemble_shared)
             ensemble_create.create_local_ensemble(self)
-            prediction_create.create_local_ensemble_prediction_with_confidence(
+            prediction_create.create_local_ensemble_prediction_probabilities(
                 self, example["input_data"])
             compare_pred.the_local_prediction_is(self, example["prediction"])
             compare_pred.the_local_prediction_confidence_is(
@@ -94,20 +98,19 @@ class TestEnsemblePrediction(object):
 
     def test_scenario2(self):
         """
-
-            Scenario: Successfully obtaining field importance from an Ensemble:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<model_conf1>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf2>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf3>"
-                And I wait until the model is ready less than <model_wait> secs
-                When I create a local Ensemble with the last <number_of_models> models
-                Then the field importance text is <field_importance>
+        Scenario: Successfully obtaining field importance from an Ensemble:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<model_conf1>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf2>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf3>"
+            And I wait until the model is ready less than <model_wait> secs
+            When I create a local Ensemble with the last <number_of_models> models
+            Then the field importance text is <field_importance>
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -124,7 +127,7 @@ class TestEnsemblePrediction(object):
              '["000001", 0.037026666666666666]]']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -148,18 +151,17 @@ class TestEnsemblePrediction(object):
 
     def test_scenario3(self):
         """
-
-            Scenario: Successfully creating a local prediction from an Ensemble adding confidence:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble of <number_of_models> models
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local Ensemble
-                When I create a local ensemble prediction for "<input_data>" in JSON adding confidence
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario: Successfully creating a local prediction from an Ensemble adding confidence:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble of <number_of_models> models
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local Ensemble
+            When I create a local ensemble prediction for "<input_data>" in JSON adding confidence
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -170,7 +172,7 @@ class TestEnsemblePrediction(object):
              '{"petal width": 0.5}', 'Iris-versicolor', '0.415']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -193,19 +195,19 @@ class TestEnsemblePrediction(object):
 
     def test_scenario4(self):
         """
-            Scenario: Successfully obtaining field importance from an Ensemble created from local models:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<model_conf1>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf2>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf3>"
-                And I wait until the model is ready less than <model_wait> secs
-                When I create a local Ensemble with the last <number_of_models> local models
-                Then the field importance text is <field_importance>
+        Scenario: Successfully obtaining field importance from an Ensemble created from local models:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<model_conf1>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf2>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf3>"
+            And I wait until the model is ready less than <model_wait> secs
+            When I create a local Ensemble with the last <number_of_models> local models
+            Then the field importance text is <field_importance>
         """
         show_doc(self.test_scenario4)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -222,7 +224,7 @@ class TestEnsemblePrediction(object):
              '["000001", 0.037026666666666666]]']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -246,16 +248,16 @@ class TestEnsemblePrediction(object):
 
     def test_scenario5(self):
         """
-            Scenario: Successfully creating a local prediction from an Ensemble:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble of <number_of_models> models
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local Ensemble
-                When I create a local ensemble prediction using median with confidence for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully creating a local prediction from an Ensemble:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble of <number_of_models> models
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local Ensemble
+            When I create a local ensemble prediction using median with confidence for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         show_doc(self.test_scenario5)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -264,7 +266,7 @@ class TestEnsemblePrediction(object):
             ['data/grades.csv', '30', '30', '50', '2', '{}', 69.0934]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

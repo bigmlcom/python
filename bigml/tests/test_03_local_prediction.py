@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,37 +20,38 @@
 """ Testing local prediction
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import compare_predictions_steps as prediction_compare
 from . import create_ensemble_steps as ensemble_create
 from . import create_prediction_steps as prediction_create
 
 
-class TestLocalPrediction(object):
+class TestLocalPrediction:
+    """Testing local predictions """
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario 1: Successfully creating a prediction from a local model in a json file:
-                Given I create a local model from a "<model>" file
-                When I create a local prediction for "<data_input>" with confidence
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario 1: Successfully creating a prediction from a local model in a json file:
+            Given I create a local model from a "<model>" file
+            When I create a local prediction for "<data_input>" with confidence
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         show_doc(self.test_scenario1)
         headers = ["file_path", "input_data", "prediction", "confidence"]
@@ -59,7 +62,7 @@ class TestLocalPrediction(object):
              '0.90594']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             prediction_compare.i_create_a_local_model_from_file(
                 self, example["file_path"])
             prediction_compare.i_create_a_local_prediction_with_confidence(
@@ -71,11 +74,11 @@ class TestLocalPrediction(object):
 
     def test_scenario2(self):
         """
-            Scenario 2: Successfully creating a prediction from a local model in a json file:
-                Given I create a local model using SupervisedModel from a "<model>" file
-                When I create a local prediction for "<data_input>" with confidence
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario 2: Successfully creating a prediction from a local model in a json file:
+            Given I create a local model using SupervisedModel from a "<model>" file
+            When I create a local prediction for "<data_input>" with confidence
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         show_doc(self.test_scenario2)
         headers = ["file_path", "input_data", "prediction", "confidence"]
@@ -86,7 +89,7 @@ class TestLocalPrediction(object):
              '0.90594']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             prediction_compare.i_create_a_local_supervised_model_from_file(
                 self, example["file_path"])
             prediction_compare.i_create_a_local_prediction_with_confidence(
@@ -99,12 +102,12 @@ class TestLocalPrediction(object):
 
     def test_scenario3(self):
         """
-            Scenario 3: Successfully creating a local prediction from an Ensemble created from file storage:
-                Given I create a local Ensemble from path "<path>"
-                When I create a local ensemble prediction with confidence for "<data_input>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And the local probabilities are "<probabilities>"
+        Scenario 3: Successfully creating a local prediction from an Ensemble created from file storage:
+            Given I create a local Ensemble from path "<path>"
+            When I create a local ensemble prediction with confidence for "<data_input>"
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
+            And the local probabilities are "<probabilities>"
         """
         show_doc(self.test_scenario3)
         headers = ["file_path", "input_data", "prediction", "confidence",
@@ -115,10 +118,10 @@ class TestLocalPrediction(object):
              '["0.3533", "0.31", "0.33666"]' ]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             ensemble_create.create_local_ensemble(
                 self, path=example["file_path"])
-            prediction_create.create_local_ensemble_prediction_with_confidence(
+            prediction_create.create_local_ensemble_prediction_probabilities(
                 self, example["input_data"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
@@ -129,12 +132,12 @@ class TestLocalPrediction(object):
 
     def test_scenario4(self):
         """
-            Scenario 4: Successfully creating a local prediction from an Ensemble created from file storage:
-                Given I create a local SupervisedModel from path "<path>"
-                When I create a local ensemble prediction with confidence for "<data_input>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And the local probabilities are "<probabilities>"
+        Scenario 4: Successfully creating a local prediction from an Ensemble created from file storage:
+            Given I create a local SupervisedModel from path "<path>"
+            When I create a local ensemble prediction with confidence for "<data_input>"
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
+            And the local probabilities are "<probabilities>"
         """
         show_doc(self.test_scenario4)
         headers = ["file_path", "input_data", "prediction", "confidence",
@@ -145,10 +148,12 @@ class TestLocalPrediction(object):
              '["0.3533", "0.31", "0.33666"]' ]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             prediction_compare.i_create_a_local_supervised_model_from_file(
                 self, example["file_path"])
             prediction_compare.i_create_a_local_prediction_with_confidence(
+                self, example["input_data"])
+            prediction_compare.i_create_local_probabilities(
                 self, example["input_data"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
@@ -159,10 +164,10 @@ class TestLocalPrediction(object):
 
     def test_scenario5(self):
         """
-            Scenario 5: Successfully creating a prediction from a local images deepnet in a json file:
-                Given I create a local deepnet from a "<deepnet>" file
-                When I create a local prediction for "<data_input>"
-                Then the local prediction is "<prediction>"
+        Scenario 5: Successfully creating a prediction from a local images deepnet in a json file:
+            Given I create a local deepnet from a "<deepnet>" file
+            When I create a local prediction for "<data_input>"
+            Then the local prediction is "<prediction>"
         """
         show_doc(self.test_scenario5)
         headers = ["file_path", "input_data", "operation_settings",
@@ -173,7 +178,7 @@ class TestLocalPrediction(object):
              '{"prediction": [{"box": [0.68164, 0.30469, 0.79688, 0.36979], "label": "eye", "score": 0.79633}, {"box": [0.38086, 0.27865, 0.50391, 0.36068], "label": "eye", "score": 0.74563}]}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             prediction_compare.i_create_a_local_deepnet_from_zip_file(
                 self, example["file_path"],
                 operation_settings=example["operation_settings"])

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -13,15 +15,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
 """ Comparing remote and local predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_association_steps as association_create
@@ -31,39 +29,41 @@ from . import create_prediction_steps as prediction_create
 from . import compare_predictions_steps as prediction_compare
 
 
-class TestComparePrediction(object):
+class TestComparePrediction:
+    """Test local and remote predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for anomaly detectors
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less
-                than <time_3> secs
-                And I create a local anomaly detector
-                And I enable the pre-modeling pipeline
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for anomaly detectors
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less
+            than <time_3> secs
+            And I create a local anomaly detector
+            And I enable the pre-modeling pipeline
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score"]
@@ -77,7 +77,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1, examples)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -94,26 +94,26 @@ class TestComparePrediction(object):
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
     def test_scenario1b(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for anomaly detectors
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less
-                than <time_3> secs
-                And I create a local anomaly detector
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for anomaly detectors
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less
+            than <time_3> secs
+            And I create a local anomaly detector
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score"]
@@ -127,7 +127,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1b)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -144,27 +144,27 @@ class TestComparePrediction(object):
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
 
     def test_scenario1b_a(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for anomaly detectors
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less
-                than <time_3> secs
-                And I create a local anomaly detector
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for anomaly detectors
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less
+            than <time_3> secs
+            And I create a local anomaly detector
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score"]
@@ -175,7 +175,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1b_a)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -192,26 +192,26 @@ class TestComparePrediction(object):
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
     def test_scenario1c(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for anomaly detectors
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less
-                than <time_3> secs
-                And I create a local anomaly detector
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for anomaly detectors
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less
+            than <time_3> secs
+            And I create a local anomaly detector
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score"]
@@ -225,7 +225,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1c)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -241,26 +241,26 @@ class TestComparePrediction(object):
                 self, example["input_data"])
             prediction_create.the_anomaly_score_is(self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
     def test_scenario1c_a(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for anomaly detectors
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly detector is ready less
-                than <model_wait> secs
-                And I create a local anomaly detector
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for anomaly detectors
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly detector is ready less
+            than <model_wait> secs
+            And I create a local anomaly detector
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score"]
@@ -274,7 +274,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1c_a)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -291,25 +291,25 @@ class TestComparePrediction(object):
             prediction_create.the_anomaly_score_is(
                 self, example["score"])
             prediction_compare.i_create_a_local_anomaly_score(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
 
     def test_scenario2(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for cluster
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster
-                And I wait until the cluster is ready less than <model_wait> secs
-                And I create a local cluster
-                When I create a centroid for "<input_data>"
-                Then the centroid is "<centroid>" with distance "<distance>"
-                And I create a local centroid for "<input_data>"
-                Then the local centroid is "<centroid>" with
-                distance "<distance>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for cluster
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster
+            And I wait until the cluster is ready less than <model_wait> secs
+            And I create a local cluster
+            When I create a centroid for "<input_data>"
+            Then the centroid is "<centroid>" with distance "<distance>"
+            And I create a local centroid for "<input_data>"
+            Then the local centroid is "<centroid>" with
+            distance "<distance>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "centroid", "distance"]
@@ -323,7 +323,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario2)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -340,25 +340,25 @@ class TestComparePrediction(object):
             prediction_create.the_centroid_is_with_distance(
                 self, example["centroid"], example["distance"])
             prediction_compare.i_create_a_local_centroid(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_centroid_is(
                 self, example["centroid"], example["distance"])
 
     def test_scenario2_a(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for cluster
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster
-                And I wait until the cluster is ready less than <model_wait> secs
-                And I create a local cluster
-                When I create a centroid for "<input_data>"
-                Then the centroid is "<centroid>" with distance "<distance>"
-                And I create a local centroid for "<input_data>"
-                Then the local centroid is "<centroid>" with
-                distance "<distance>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for cluster
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster
+            And I wait until the cluster is ready less than <model_wait> secs
+            And I create a local cluster
+            When I create a centroid for "<input_data>"
+            Then the centroid is "<centroid>" with distance "<distance>"
+            And I create a local centroid for "<input_data>"
+            Then the local centroid is "<centroid>" with
+            distance "<distance>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "centroid", "distance"]
@@ -372,7 +372,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario2_a)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -389,28 +389,27 @@ class TestComparePrediction(object):
             prediction_create.the_centroid_is_with_distance(
                 self, example["centroid"], example["distance"])
             prediction_compare.i_create_a_local_centroid(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_centroid_is(
                 self, example["centroid"], example["distance"])
 
     def test_scenario3(self):
         """
-            Scenario: Successfully comparing association sets:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the association is ready less than <model_wait> secs
-                And I create a local association
-                When I create an association set for "<input_data>"
-                Then the association set is like the contents of
-                "<association_set_file>"
-                And I create a local association set for "<input_data>"
-                Then the local association set is like the contents of
-                "<association_set_file>"
-
+        Scenario: Successfully comparing association sets:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the association is ready less than <model_wait> secs
+            And I create a local association
+            When I create an association set for "<input_data>"
+            Then the association set is like the contents of
+            "<association_set_file>"
+            And I create a local association set for "<input_data>"
+            Then the local association set is like the contents of
+            "<association_set_file>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "association_set_file"]
@@ -419,7 +418,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario3)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -438,6 +437,6 @@ class TestComparePrediction(object):
             prediction_compare.the_association_set_is_like_file(
                 self, example["association_set_file"])
             prediction_compare.i_create_a_local_association_set(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"], pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_association_set_is_like_file(
                 self, example["association_set_file"])

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2018-2022 BigML
 #
@@ -20,7 +22,6 @@
 """
 import os
 import shutil
-import sys
 
 
 from bigml.api import BigML
@@ -47,18 +48,19 @@ def setup_module():
     # Project or Organization IDs
 
     world.bck_api = world.api
-    world.api = BigML(world.USERNAME, world.API_KEY, debug=world.debug,
+    world.api = BigML(world.username, world.api_key, debug=world.debug,
                       organization=BIGML_ORGANIZATION)
     print(world.api.connection_info())
     world.bck_project_id = world.project_id
     world.project_id = world.api.create_project( \
         {"name": world.test_project_name})['resource']
-    world.api = BigML(world.USERNAME, world.API_KEY, debug=world.debug,
+    world.api = BigML(world.username, world.api_key, debug=world.debug,
                       project=world.project_id)
     print("New connection: ", world.api.connection_info())
     world.clear()
 
 
+#pylint: disable=locally-disabled,broad-except
 def teardown_module():
     """Operations to be performed after each module
 
@@ -72,7 +74,7 @@ def teardown_module():
             world.delete_resources()
         except Exception as exc:
             print(exc)
-        world.api = BigML(world.USERNAME, world.API_KEY, debug=world.debug,
+        world.api = BigML(world.username, world.api_key, debug=world.debug,
                           organization=BIGML_ORGANIZATION)
         project_stats = world.api.get_project( \
             world.project_id)['object']['stats']
@@ -87,12 +89,15 @@ def teardown_module():
     print("New connection: ", world.api.connection_info())
 
 
-class TestOrgPrediction(object):
+class TestOrgPrediction:
+    """Testing predictions for organization resources"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
@@ -100,18 +105,19 @@ class TestOrgPrediction(object):
             Debug information
         """
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a prediction in an organization:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the model is ready less than <model_wait> secs
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
+        Scenario: Successfully creating a prediction in an organization:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the model is ready less than <model_wait> secs
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -121,7 +127,7 @@ class TestOrgPrediction(object):
              '000004', 'Iris-setosa']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(

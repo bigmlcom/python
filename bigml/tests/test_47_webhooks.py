@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import,invalid-name
 #
 # Copyright 2022 BigML
 #
@@ -24,7 +26,7 @@ from collections import OrderedDict
 from bigml.webhooks import check_signature
 
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local, ok_
+    show_method, ok_
 
 
 BIGML_SECRET = 'mysecret'
@@ -42,30 +44,35 @@ BIGML_REQUEST_MOCKUP = {
 }
 
 
-class RequestMockup(object):
+class RequestMockup:
+    """Test for webhooks with secrets"""
+
     def __init__(self, request_dict):
         self.body = json.dumps(request_dict["body"], sort_keys=True)
-        self.META = request_dict["META"]
+        self.meta = request_dict["META"]
 
 
-class TestWebhook(object):
+class TestWebhook:
+    """Testing webhooks"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Testing webhook secret signature
+        Scenario: Testing webhook secret signature
         """
         show_doc(self.test_scenario1)
         ok_(check_signature(RequestMockup(BIGML_REQUEST_MOCKUP),

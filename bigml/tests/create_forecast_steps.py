@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2017-2022 BigML
 #
@@ -16,15 +16,14 @@
 # under the License.
 
 import json
-import time
-from datetime import datetime
-from .world import world, eq_
+
 from bigml.api import HTTP_CREATED
-from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status
+
+from .world import world, eq_
 
 
 def i_create_a_forecast(step, data=None):
+    """Creating forecast """
     if data is None:
         data = "{}"
     time_series = world.time_series['resource']
@@ -38,12 +37,13 @@ def i_create_a_forecast(step, data=None):
 
 
 def the_forecast_is(step, predictions):
+    """Checking forecast"""
     predictions = json.loads(predictions)
     attrs = ["point_forecast", "model"]
     for field_id in predictions:
         forecast = world.forecast['forecast']['result'][field_id]
         prediction = predictions[field_id]
         eq_(len(forecast), len(prediction), "forecast: %s" % forecast)
-        for index in range(len(forecast)):
+        for index, item in enumerate(forecast):
             for attr in attrs:
-                eq_(forecast[index][attr], prediction[index][attr])
+                eq_(item[attr], prediction[index][attr])

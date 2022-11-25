@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2014-2022 BigML
 #
@@ -15,21 +15,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-import time
-import json
-from datetime import datetime
-from urllib.parse import urlencode
-from .world import world, eq_
-
 from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_
 
 
 def i_create_project(step, name):
+    """Creating projects """
     resource = world.api.create_project({"name": name})
     # update status
     world.status = resource['code']
@@ -40,10 +34,12 @@ def i_create_project(step, name):
 
 
 def the_project_is_finished(step, secs):
+    """Waiting for project to be finished"""
     wait_until_status_code_is(FINISHED, FAULTY, secs, world.project)
 
 
 def i_update_project_name_with(step, name=""):
+    """Updating project name"""
     resource = world.api.update_project(world.project.get('resource'),
                                         {"name": name})
     world.status = resource['code']
@@ -52,5 +48,6 @@ def i_update_project_name_with(step, name=""):
 
 
 def i_check_project_name(step, name=""):
+    """Checking project name"""
     updated_name = world.project.get("name", "")
     eq_(updated_name, name)

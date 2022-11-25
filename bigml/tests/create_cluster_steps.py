@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012-2022 BigML
 #
@@ -13,25 +14,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import time
 import json
 import os
-from datetime import datetime
-from .world import world, res_filename, eq_
 
-from .read_resource_steps import wait_until_status_code_is
-
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 from bigml.api import get_status
 from bigml.cluster import Cluster
 
+from .read_resource_steps import wait_until_status_code_is
+from .world import world, res_filename, eq_
 
-#@step(r'I create a cluster$')
+
 def i_create_a_cluster(step, shared=None):
+    """Step: I create a cluster"""
     if shared is None or world.shared.get("cluster", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
         resource = world.api.create_cluster(
@@ -44,8 +40,9 @@ def i_create_a_cluster(step, shared=None):
         world.cluster = resource['object']
         world.clusters.append(resource['resource'])
 
-#@step(r'I create a cluster from a dataset list$')
+
 def i_create_a_cluster_from_dataset_list(step):
+    """Step: I create a cluster from a dataset list"""
     resource = world.api.create_cluster(world.dataset_ids)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
@@ -54,8 +51,8 @@ def i_create_a_cluster_from_dataset_list(step):
     world.clusters.append(resource['resource'])
 
 
-#@step(r'I create a cluster with options "(.*)"$')
 def i_create_a_cluster_with_options(step, options):
+    """Step: I create a cluster with options <options>"""
     dataset = world.dataset.get('resource')
     options = json.loads(options)
     options.update({'seed': 'BigML',
@@ -69,14 +66,16 @@ def i_create_a_cluster_with_options(step, options):
     world.cluster = resource['object']
     world.clusters.append(resource['resource'])
 
-#@step(r'I wait until the cluster status code is either (\d) or (-\d) less than (\d+)')
+
 def wait_until_cluster_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the cluster status code is either <code1> or
+    <code2> less than <secs>"""
     world.cluster = wait_until_status_code_is(
         code1, code2, secs, world.cluster)
 
 
-#@step(r'I wait until the cluster is ready less than (\d+)')
 def the_cluster_is_finished_in_less_than(step, secs, shared=None):
+    """Step: I wait until the cluster is ready less than <secs>"""
     if shared is None or world.shared.get("cluster", {}).get(shared) is None:
         wait_until_cluster_status_code_is(step, FINISHED, FAULTY, secs)
         if shared is not None:
@@ -88,8 +87,8 @@ def the_cluster_is_finished_in_less_than(step, secs, shared=None):
         print("Reusing %s" % world.cluster["resource"])
 
 
-#@step(r'I make the cluster shared')
 def make_the_cluster_shared(step):
+    """Step: I make the cluster shared"""
     resource = world.api.update_cluster(world.cluster['resource'],
                                       {'shared': True})
     world.status = resource['code']
@@ -97,27 +96,30 @@ def make_the_cluster_shared(step):
     world.location = resource['location']
     world.cluster = resource['object']
 
-#@step(r'I get the cluster sharing info')
+
 def get_sharing_info(step):
+    """Step: I get the cluster sharing info"""
     world.shared_hash = world.cluster['shared_hash']
     world.sharing_key = world.cluster['sharing_key']
 
-#@step(r'I check the cluster status using the model\'s shared url')
+
 def cluster_from_shared_url(step):
+    """Step: I check the cluster status using the model's shared url"""
     world.cluster = world.api.get_cluster("shared/cluster/%s" % world.shared_hash)
     eq_(get_status(world.cluster)['code'], FINISHED)
 
-#@step(r'I check the cluster status using the model\'s shared key')
-def cluster_from_shared_key(step):
 
+def cluster_from_shared_key(step):
+    """Step: I check the cluster status using the model's shared key"""
     username = os.environ.get("BIGML_USERNAME")
     world.cluster = world.api.get_cluster(world.cluster['resource'],
         shared_username=username, shared_api_key=world.sharing_key)
     eq_(get_status(world.cluster)['code'], FINISHED)
 
-#@step(r'the data point in the cluster closest to "(.*)" is "(.*)"')
+
 def closest_in_cluster(step, reference, closest):
-    local_cluster = world.local_cluster
+    """Step: the data point in the cluster closest to <reference> is <closest>"""
+    local_cluster = step.bigml["local_cluster"]
     reference = json.loads(reference)
     closest = json.loads(closest)
     result = local_cluster.closest_in_cluster( \
@@ -125,32 +127,36 @@ def closest_in_cluster(step, reference, closest):
     result = json.loads(json.dumps(result))
     eq_(closest, result)
 
-#@step(r'the centroid in the cluster closest to "(.*)" is "(.*)"')
+
 def closest_centroid_in_cluster(step, reference, closest_id):
-    local_cluster = world.local_cluster
+    """Step: the centroid in the cluster closest to <reference> is
+    <closest_id>
+    """
+    local_cluster = step.bigml["local_cluster"]
     reference = json.loads(reference)
     result = local_cluster.sorted_centroids( \
         reference)
     result = result["centroids"][0]["centroid_id"]
     eq_(closest_id, result)
 
-#@step(r'I export the cluster$')
 def i_export_cluster(step, filename):
+    """Step: I export the cluster"""
     world.api.export(world.cluster.get('resource'),
                      filename=res_filename(filename))
 
-#@step(r'I create a local cluster from file "(.*)"')
+
 def i_create_local_cluster_from_file(step, export_file):
-    world.local_cluster = Cluster(res_filename(export_file))
+    """Step: I create a local cluster from file <export_file>"""
+    step.bigml["local_cluster"] = Cluster(res_filename(export_file))
 
 
-#@step(r'the cluster ID and the local cluster ID match')
 def check_cluster_id_local_id(step):
-    eq_(world.local_cluster.resource_id, world.cluster["resource"])
+    """Step: the cluster ID and the local cluster ID match"""
+    eq_(step.bigml["local_cluster"].resource_id, world.cluster["resource"])
 
 
-#@step(r'I clone cluster')
 def clone_cluster(step, cluster):
+    """Step: I clone cluster"""
     resource = world.api.clone_cluster(cluster,
                                        {'project': world.project_id})
     # update status
@@ -160,5 +166,7 @@ def clone_cluster(step, cluster):
     # save reference
     world.clusters.append(resource['resource'])
 
+
 def the_cloned_cluster_is(step, cluster):
+    """Checking the cluster is a clone"""
     eq_(world.cluster["origin"], cluster)

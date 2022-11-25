@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2019-2022 BigML
 #
@@ -15,28 +15,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 import json
-import os
-from datetime import datetime
-from .world import world, eq_
 
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_
 
 
-#@step(r'the linear name is "(.*)"')
 def i_check_linear_name(step, name):
+    """Step: the linear name is <name>"""
     linear_name = world.linear_regression['name']
     eq_(name, linear_name)
 
-#@step(r'I create a Linear Regression from a dataset$')
+
 def i_create_a_linear_regression_from_dataset(step, shared=None):
+    """Step: I create a Linear Regression from a dataset"""
     if shared is None or \
             world.shared.get("linear_regression", {}).get(shared) is None:
         dataset = world.dataset.get('resource')
@@ -49,15 +44,14 @@ def i_create_a_linear_regression_from_dataset(step, shared=None):
         world.linear_regressions.append(resource['resource'])
 
 
-#@step(r'I create a Linear Regression from a dataset$')
 def i_create_a_linear_regression_with_params(step, params):
+    """Step: I create a Linear Regression from a dataset"""
     i_create_a_linear_regression_with_objective_and_params(step, None, params)
 
 
-#@step(r'I create a Linear Regression with objective and params$')
-def i_create_a_linear_regression_with_objective_and_params(step,
-                                                           objective=None,
-                                                           params=None):
+def i_create_a_linear_regression_with_objective_and_params(
+    step, objective=None, params=None):
+    """Step: I create a Linear Regression with objective and params """
     if params is not None:
         params = json.loads(params)
     else:
@@ -72,12 +66,14 @@ def i_create_a_linear_regression_with_objective_and_params(step,
     world.linear_regression = resource['object']
     world.linear_regressions.append(resource['resource'])
 
+
 def i_create_a_linear_regression(step, shared=None):
+    """Creating linear regression from dataset """
     i_create_a_linear_regression_from_dataset(step, shared=shared)
 
 
-#@step(r'I update the linear regression name to "(.*)"$')
 def i_update_linear_regression_name(step, name):
+    """Step: I update the linear regression name to <name>"""
     resource = world.api.update_linear_regression( \
         world.linear_regression['resource'],
         {'name': name})
@@ -87,14 +83,16 @@ def i_update_linear_regression_name(step, name):
     world.linear_regression = resource['object']
 
 
-#@step(r'I wait until the linear regression status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_linear_regression_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the linear regression status code is either
+    <code1> or <code2> less than <secs>
+    """
     world.linear_regression = wait_until_status_code_is(
         code1, code2, secs, world.linear_regression)
 
 
-#@step(r'I wait until the linear is ready less than (\d+)')
 def the_linear_regression_is_finished_in_less_than(step, secs, shared=None):
+    """#Step: I wait until the linear is ready less than <secs>"""
     if shared is None or \
             world.shared.get("linear_regression", {}).get(shared) is None:
         wait_until_linear_regression_status_code_is(step, FINISHED, FAULTY, secs)
@@ -107,8 +105,8 @@ def the_linear_regression_is_finished_in_less_than(step, secs, shared=None):
         print("Reusing %s" % world.linear_regression["resource"])
 
 
-#@step(r'I clone linear regression')
 def clone_linear_regression(step, linear_regression):
+    """Step: I clone linear regression"""
     resource = world.api.clone_linear_regression(
         linear_regression, {'project': world.project_id})
     # update status
@@ -119,4 +117,5 @@ def clone_linear_regression(step, linear_regression):
     world.linear_regressions.append(resource['resource'])
 
 def the_cloned_linear_regression_is(step, linear_regression):
+    """Checking linear regression is a clone"""
     eq_(world.linear_regression["origin"], linear_regression)

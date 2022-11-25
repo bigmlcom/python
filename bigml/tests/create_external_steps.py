@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2020-2022 BigML
 #
@@ -14,26 +15,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 import json
-import csv
-import sys
 
-
-from datetime import datetime
-from .world import world, res_filename, eq_, ok_
-
-from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import HTTP_ACCEPTED
 from bigml.api import FINISHED
 from bigml.api import FAULTY
-from bigml.api import UPLOADING
-from bigml.api import get_status
-
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_, ok_
 
-#@step(r'I create an external connector$')
+
 def i_create_external_connector(step):
+    """Step: I create an external connector"""
     resource = world.api.create_external_connector(None, \
         {'project': world.project_id})
     # update status
@@ -44,25 +37,29 @@ def i_create_external_connector(step):
     world.external_connectors.append(resource['resource'])
 
 
-#@step(r'I wait until the external connector status code is either (\d) or (\d) less than (\d+)')
 def wait_until_external_connector_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the external connector status code is either
+    <code1> or <code2> less than <step>
+    """
     world.external_connector = wait_until_status_code_is(
         code1, code2, secs, world.external_connector)
 
 
-#@step(r'I wait until the external_connector is ready less than (\d+)')
 def the_external_connector_is_finished(step, secs):
+    """Step: I wait until the external_connector is ready less than <secs> """
     wait_until_external_connector_status_code_is(step, FINISHED, FAULTY, secs)
 
-#@step(r'I update the external_connector with params "(.*)"')
+
 def i_update_external_connector_with(step, data="{}"):
+    """Step: I update the external_connector with params <data>"""
     resource = world.api.update_external_connector( \
         world.external_connector.get('resource'), json.loads(data))
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
 
-#@step(r'the external connector exists and has args "(.*)"')
+
 def external_connector_has_args(step, args="{}"):
+    """Step: the external connector exists and has args <args>"""
     args = json.loads(args)
     for key, value in list(args.items()):
         if key in world.external_connector:

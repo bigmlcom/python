@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2022 BigML
 #
@@ -19,13 +20,14 @@ import json
 import os
 import zipfile
 
-from .world import world, res_filename, eq_, ok_
-
-
 from bigml.pipeline.pipeline import BMLPipeline, Pipeline
 from bigml.api import BigML
 
+from .world import res_filename, eq_, ok_
+
+
 def i_expand_file_with_models_list(step, pipeline_file, models_list):
+    """Extracting models from zip"""
     inner_files = []
     models_list = json.loads(models_list)
     for resource_id in models_list:
@@ -39,37 +41,39 @@ def i_expand_file_with_models_list(step, pipeline_file, models_list):
         zip_ref.extractall(os.path.dirname(pipeline_file))
 
 
-#@step(r'I create a local pipeline for "(.*)" named "(.*)"$')
 def i_create_a_local_pipeline_from_models_list(
     step, models_list, name, storage=None):
+    """Step: I create a local pipeline for <models_list> named <name> """
     if not isinstance(models_list, list):
         models_list = json.loads(models_list)
     kwargs = {}
     if storage is not None:
         kwargs = {'api': BigML(storage=res_filename(storage))}
-    world.local_pipeline = BMLPipeline(name,
+    step.bigml["local_pipeline"] = BMLPipeline(name,
                                        models_list,
                                        **kwargs)
-    return world.local_pipeline
+    return step.bigml["local_pipeline"]
 
 
 def the_pipeline_transformed_data_is(step, input_data, output_data):
+    """Checking pipeline's transform"""
     if input_data is None:
         input_data = "{}"
     if output_data is None:
         output_data = "{}"
     input_data = json.loads(input_data)
     output_data = json.loads(output_data)
-    transformed_data = world.local_pipeline.transform([input_data])
+    transformed_data = step.bigml["local_pipeline"].transform([input_data])
     for key, value in transformed_data[0].items():
         eq_(output_data.get(key), value)
 
 
 def the_pipeline_result_key_is(step, input_data, key, value, precision=None):
+    """Checking pipeline transformed property"""
     if input_data is None:
         input_data = "{}"
     input_data = json.loads(input_data)
-    transformed_data = world.local_pipeline.transform([input_data])
+    transformed_data = step.bigml["local_pipeline"].transform([input_data])
     pipe_value = transformed_data[0].get(key)
     if precision is not None and not isinstance(value, str):
         pipe_value = round(pipe_value, precision)
@@ -77,6 +81,6 @@ def the_pipeline_result_key_is(step, input_data, key, value, precision=None):
     eq_(str(value), str(pipe_value))
 
 
-def i_create_composed_pipeline(
-    step, pipelines_list, name):
-    world.local_pipeline = Pipeline(name, pipelines_list)
+def i_create_composed_pipeline(step, pipelines_list, name):
+    """Creating local Pipeline"""
+    step.bigml["local_pipeline"] = Pipeline(name, pipelines_list)

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2017-2022 BigML
 #
@@ -21,7 +23,7 @@
 import sys
 
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -33,21 +35,23 @@ from . import create_projection_steps as projection_create
 from . import compare_predictions_steps as compare_predictions
 
 
-class TestComparePrediction(object):
+class TestComparePrediction:
+    """Testing local and remote predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-
+        self.bigml = {}
 
     def test_scenario4(self):
         """
@@ -100,7 +104,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario4)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -150,7 +154,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -202,7 +206,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

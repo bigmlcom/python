@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,33 +20,31 @@
 """ Testing local model information output methods
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
 from . import compare_predictions_steps as prediction_compare
 from . import inspect_model_steps as inspect_model
 
-class TestLocalModelOutputs(object):
+class TestLocalModelOutputs:
+    """Testing local model code generators"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
-        if not hasattr(self, "shared"):
-            self.shared = {} # stores shared objects references
-
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
@@ -79,7 +79,7 @@ class TestLocalModelOutputs(object):
              'data/model/if_then_rules_tiny_kdd.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(self, example["source_wait"],
@@ -115,7 +115,7 @@ class TestLocalModelOutputs(object):
             ['data/iris_missing2.csv', '10', '10', '30', 'data/model/if_then_rules_iris_missing2_MISSINGS.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -181,7 +181,7 @@ class TestLocalModelOutputs(object):
              'data/model/if_then_rules_spam_textanalysis_6.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(
@@ -231,7 +231,7 @@ class TestLocalModelOutputs(object):
              'data/model/data_distribution_tiny_kdd.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -279,7 +279,7 @@ class TestLocalModelOutputs(object):
              'data/model/predictions_distribution_tiny_kdd.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -328,7 +328,7 @@ class TestLocalModelOutputs(object):
              'data/model/summarize_tiny_kdd.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -376,7 +376,7 @@ class TestLocalModelOutputs(object):
              'data/model/wrtree_csv.txt']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             world.debug=True
             model_create.i_read_model_file(self, example["data"])
             prediction_compare.i_create_a_local_model(self)

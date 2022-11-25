@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012-2022 BigML
 #
@@ -14,25 +15,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-import json
-import requests
-import csv
-import traceback
-from datetime import datetime
-from .world import world, res_filename, eq_, ok_
-
 from bigml.api import HTTP_CREATED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
+from bigml.api import FINISHED, FAULTY
 from bigml.io import UnicodeReader
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, res_filename, eq_, ok_
 
 
-#@step(r'I create a batch prediction for the dataset with the model$')
 def i_create_a_batch_prediction(step):
+    """Step: I create a batch prediction for the dataset with the model"""
     dataset = world.dataset.get('resource')
     model = world.model.get('resource')
     resource = world.api.create_batch_prediction(model, dataset)
@@ -43,8 +35,9 @@ def i_create_a_batch_prediction(step):
     world.batch_predictions.append(resource['resource'])
 
 
-#@step(r'I create a batch prediction for the dataset with the ensemble and "(.*)"$')
 def i_create_a_batch_prediction_ensemble(step, params=None):
+    """Step: I create a batch prediction for the dataset with the ensemble and
+    <params>"""
     if params is None:
         params = {}
     dataset = world.dataset.get('resource')
@@ -57,57 +50,60 @@ def i_create_a_batch_prediction_ensemble(step, params=None):
     world.batch_predictions.append(resource['resource'])
 
 
-#@step(r'I wait until the batch prediction status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_prediction_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the batch prediction status code is either <code1>
+    or <code2> less than <secs>"""
     world.batch_prediction = wait_until_status_code_is(
         code1, code2, secs, world.batch_prediction)
 
 
-#@step(r'I wait until the batch centroid status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_centroid_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the batch centroid status code is either <code1> or
+    <code2> less than <secs>"""
     world.batch_centroid = wait_until_status_code_is(
         code1, code2, secs, world.batch_centroid)
 
 
-#@step(r'I wait until the batch anomaly score status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_anomaly_score_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the batch anomaly score status code is either <code1>
+    or <code2> less than <secs>"""
     world.batch_anomlay_score = wait_until_status_code_is(
         code1, code2, secs, world.batch_anomaly_score)
 
 
-#@step(r'I wait until the batch prediction is ready less than (\d+)')
 def the_batch_prediction_is_finished_in_less_than(step, secs):
+    """Step: I wait until the batch prediction is ready less than <secs>"""
     wait_until_batch_prediction_status_code_is(step, FINISHED, FAULTY, secs)
 
 
-#@step(r'I wait until the batch centroid is ready less than (\d+)')
 def the_batch_centroid_is_finished_in_less_than(step, secs):
+    """Step: I wait until the batch centroid is ready less than <secs>"""
     wait_until_batch_centroid_status_code_is(step, FINISHED, FAULTY, secs)
 
 
-#@step(r'I wait until the batch anomaly score is ready less than (\d+)')
 def the_batch_anomaly_score_is_finished_in_less_than(step, secs):
+    """Step: I wait until the batch anomaly score is ready less than <secs>"""
     wait_until_batch_anomaly_score_status_code_is(step, FINISHED, FAULTY, secs)
 
 
-#@step(r'I download the created predictions file to "(.*)"')
 def i_download_predictions_file(step, filename):
+    """Step: I download the created predictions file to <filename>"""
     file_object = world.api.download_batch_prediction(
         world.batch_prediction, filename=res_filename(filename))
     ok_(file_object is not None)
     world.output = file_object
 
 
-#@step(r'I download the created centroid file to "(.*)"')
 def i_download_centroid_file(step, filename):
+    """Step: I download the created centroid file to <filename>"""
     file_object = world.api.download_batch_centroid(
         world.batch_centroid, filename=res_filename(filename))
     ok_(file_object is not None)
     world.output = file_object
 
 
-#@step(r'I download the created anomaly score file to "(.*)"')
 def i_download_anomaly_score_file(step, filename):
+    """Step: I download the created anomaly score file to <filename>"""
     file_object = world.api.download_batch_anomaly_score(
         world.batch_anomaly_score, filename=res_filename(filename))
     ok_(file_object is not None)
@@ -115,53 +111,54 @@ def i_download_anomaly_score_file(step, filename):
 
 
 def check_rows(prediction_rows, test_rows):
+    """Checking rows identity"""
     row_num = 0
     for row in prediction_rows:
         check_row = next(test_rows)
         row_num += 1
         eq_(len(check_row), len (row))
-        for index in range(len(row)):
-            dot = row[index].find(".")
+        for index, cell in enumerate(row):
+            dot = cell.find(".")
             if dot > 0:
                 try:
-                    decs = min(len(row[index]), len(check_row[index])) - dot - 1
-                    row[index] = round(float(row[index]), decs)
+                    decs = min(len(cell), len(check_row[index])) - dot - 1
+                    cell = round(float(cell), decs)
                     check_row[index] = round(float(check_row[index]), decs)
                 except ValueError:
                     pass
-            eq_(check_row[index], row[index],
+            eq_(check_row[index], cell,
                 "Got: %s/ Expected: %s in line %s" % (row, check_row, row_num))
 
 
-#@step(r'the batch prediction file is like "(.*)"')
 def i_check_predictions(step, check_file):
+    """Step: I download the created anomaly score file to <check_file>"""
     with UnicodeReader(world.output) as prediction_rows:
         with UnicodeReader(res_filename(check_file)) as test_rows:
             check_rows(prediction_rows, test_rows)
 
 
-#@step(r'the batch centroid file is like "(.*)"')
 def i_check_batch_centroid(step, check_file):
+    """Step: the batch centroid file is like <check_file>"""
     i_check_predictions(step, check_file)
 
 
-#@step(r'the batch anomaly score file is like "(.*)"')
 def i_check_batch_anomaly_score(step, check_file):
+    """Step: the batch anomaly score file is like <check_file>"""
     i_check_predictions(step, check_file)
 
 
-#@step(r'I check the batch centroid is ok')
 def i_check_batch_centroid_is_ok(step):
+    """Step: I check the batch centroid is ok"""
     ok_(world.api.ok(world.batch_centroid))
 
 
-#@step(r'I check the batch anomaly score is ok')
 def i_check_batch_anomaly_score_is_ok(step):
+    """Step: I check the batch anomaly score is ok"""
     ok_(world.api.ok(world.batch_anomaly_score))
 
 
-#@step(r'I create a batch centroid for the dataset$')
 def i_create_a_batch_prediction_with_cluster(step):
+    """Step: I create a batch centroid for the dataset"""
     dataset = world.dataset.get('resource')
     cluster = world.cluster.get('resource')
     resource = world.api.create_batch_centroid(cluster, dataset)
@@ -171,8 +168,9 @@ def i_create_a_batch_prediction_with_cluster(step):
     world.batch_centroid = resource['object']
     world.batch_centroids.append(resource['resource'])
 
-#@step(r'I create a batch anomaly score$')
+
 def i_create_a_batch_prediction_with_anomaly(step):
+    """Step: I create a batch anomaly score"""
     dataset = world.dataset.get('resource')
     anomaly = world.anomaly.get('resource')
     resource = world.api.create_batch_anomaly_score(anomaly, dataset)
@@ -183,8 +181,8 @@ def i_create_a_batch_prediction_with_anomaly(step):
     world.batch_anomaly_scores.append(resource['resource'])
 
 
-#@step(r'I create a linear batch prediction$')
 def i_create_a_linear_batch_prediction(step):
+    """Step: I create a linear batch prediction"""
     dataset = world.dataset.get('resource')
     linear_regression = world.linear_regression.get('resource')
     resource = world.api.create_batch_prediction(linear_regression, dataset)
@@ -195,8 +193,8 @@ def i_create_a_linear_batch_prediction(step):
     world.batch_predictions.append(resource['resource'])
 
 
-#@step(r'I create a source from the batch prediction$')
 def i_create_a_source_from_batch_prediction(step):
+    """Step: I create a source from the batch prediction"""
     batch_prediction = world.batch_prediction.get('resource')
     resource = world.api.source_from_batch_prediction(batch_prediction)
     world.status = resource['code']
@@ -206,8 +204,10 @@ def i_create_a_source_from_batch_prediction(step):
     world.sources.append(resource['resource'])
 
 
-#@step(r'I create a batch prediction for the dataset with the logistic regression$')
 def i_create_a_batch_prediction_logistic_model(step):
+    """Step: I create a batch prediction for the dataset with the logistic
+    regression
+    """
     dataset = world.dataset.get('resource')
     logistic = world.logistic_regression.get('resource')
     resource = world.api.create_batch_prediction(logistic, dataset)
@@ -218,8 +218,8 @@ def i_create_a_batch_prediction_logistic_model(step):
     world.batch_predictions.append(resource['resource'])
 
 
-#@step(r'I create a batch prediction for the dataset with the fusion$')
 def i_create_a_batch_prediction_fusion(step):
+    """Step: I create a batch prediction for the dataset with the fusion"""
     dataset = world.dataset.get('resource')
     fusion = world.fusion.get('resource')
     resource = world.api.create_batch_prediction(fusion, dataset)

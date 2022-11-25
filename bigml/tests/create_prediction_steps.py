@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2015-2022 BigML
 #
@@ -16,16 +16,16 @@
 # under the License.
 
 import json
-import time
-from datetime import datetime
-from .world import world, res_filename, eq_, ok_, approx_
+
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
-from bigml.api import get_status
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, res_filename, eq_, ok_, approx_
+
 
 def i_create_a_prediction(step, data=None):
+    """Creating prediction"""
     if data is None:
         data = "{}"
     model = world.model['resource']
@@ -39,6 +39,7 @@ def i_create_a_prediction(step, data=None):
 
 
 def i_create_a_prediction_op(step, data=None, operating_point=None):
+    """Creating prediction with operating point"""
     if data is None:
         data = "{}"
     ok_(operating_point is not None)
@@ -54,6 +55,7 @@ def i_create_a_prediction_op(step, data=None, operating_point=None):
 
 
 def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
+    """Creating prediction from ensemble with operating point"""
     if data is None:
         data = "{}"
     ok_(operating_point is not None)
@@ -69,6 +71,7 @@ def i_create_an_ensemble_prediction_op(step, data=None, operating_point=None):
 
 
 def i_create_a_fusion_prediction_op(step, data=None, operating_point=None):
+    """Create prediction from fusion with operating point"""
     if data is None:
         data = "{}"
     ok_(operating_point is not None)
@@ -84,6 +87,7 @@ def i_create_a_fusion_prediction_op(step, data=None, operating_point=None):
 
 
 def i_create_a_centroid(step, data=None):
+    """Create centroid"""
     if data is None:
         data = "{}"
     cluster = world.cluster['resource']
@@ -97,6 +101,7 @@ def i_create_a_centroid(step, data=None):
 
 
 def i_create_a_proportional_prediction(step, data=None):
+    """Create prediction using proportional strategy for missings"""
     if data is None:
         data = "{}"
     model = world.model['resource']
@@ -111,36 +116,50 @@ def i_create_a_proportional_prediction(step, data=None):
 
 
 def check_prediction(got, expected, precision=4):
+    """Checking prediction is as expected"""
     if not isinstance(got, str):
         approx_(got, float(expected), precision=precision)
     else:
         eq_(got, expected)
 
+
 def the_prediction_is(step, objective, prediction, precision=4):
+    """Checking the prediction for objective field"""
     check_prediction(world.prediction['prediction'][objective], prediction,
                      precision=precision)
 
+
 def the_median_prediction_is(step, objective, prediction, precision=4):
+    """Checking the prediction using median"""
     check_prediction(world.prediction['prediction_path'][
         'objective_summary']['median'], prediction, precision=precision)
 
+
 def the_centroid_is_with_distance(step, centroid, distance):
+    """Checking expected centroid and distance"""
     check_prediction(world.centroid['centroid_name'], centroid)
     check_prediction(world.centroid['distance'], distance)
 
+
 def the_centroid_is(step, centroid):
+    """Checking centroid"""
     check_prediction(world.centroid['centroid_name'], centroid)
 
+
 def the_centroid_is_ok(step):
+    """Checking centroid is ready"""
     ok_(world.api.ok(world.centroid))
 
 
 def the_confidence_is(step, confidence):
+    """Checking confidence"""
     local_confidence = world.prediction.get('confidence', \
         world.prediction.get('probability'))
     approx_(float(local_confidence), float(confidence), precision=4)
 
+
 def i_create_an_ensemble_prediction(step, data=None):
+    """Creating prediction from ensemble"""
     if data is None:
         data = "{}"
     ensemble = world.ensemble['resource']
@@ -152,7 +171,11 @@ def i_create_an_ensemble_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
+    """Creating prediction from ensemble using proportional strategy for
+    missings
+    """
     if data is None:
         data = "{}"
     if params is None:
@@ -170,42 +193,55 @@ def i_create_an_ensemble_proportional_prediction(step, data=None, params=None):
 
 
 def wait_until_prediction_status_code_is(step, code1, code2, secs):
+    """Waiting for prediction and storing result"""
     world.prediction = wait_until_status_code_is(
         code1, code2, secs, world.prediction)
 
+
 def the_prediction_is_finished_in_less_than(step, secs):
+    """Checking wait time"""
     wait_until_prediction_status_code_is(step, FINISHED, FAULTY, secs)
 
 
 def create_local_ensemble_prediction_add_confidence(step, input_data):
-    world.local_prediction = world.local_ensemble.predict(
+    """Creating prediction from local ensemble with confidence"""
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict(
         json.loads(input_data), full=True)
+
 
 def create_local_ensemble_prediction(step, input_data):
-    world.local_prediction = world.local_ensemble.predict(json.loads(input_data))
+    """Creating prediction from local ensemble"""
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict(json.loads(input_data))
 
-def create_local_ensemble_prediction_with_confidence(step, input_data):
-    world.local_prediction = world.local_ensemble.predict( \
+
+def create_local_ensemble_prediction_probabilities(step, input_data):
+    """Creating prediction from local ensemble with probabilities"""
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict( \
         json.loads(input_data), full=True)
-    world.local_probabilities = world.local_ensemble.predict_probability( \
+    step.bigml["local_probabilities"] = step.bigml[
+        "local_ensemble"].predict_probability( \
         json.loads(input_data), compact=True)
+
 
 def create_local_ensemble_proportional_prediction_with_confidence( \
     step, input_data, params=None):
+    """Creating prediction from local ensemble with confidence"""
     if params is None:
         params = {}
     kwargs = {"full": True, "missing_strategy": 1}
     kwargs.update(params)
-    world.local_prediction = world.local_ensemble.predict( \
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict( \
         json.loads(input_data), **kwargs)
 
 def create_local_ensemble_prediction_using_median_with_confidence( \
     step, input_data):
-    world.local_prediction = world.local_ensemble.predict( \
+    """Creating prediction from local ensemble using median with confidence"""
+    step.bigml["local_prediction"] = step.bigml["local_ensemble"].predict( \
         json.loads(input_data), full=True)
 
 
 def i_create_an_anomaly_score(step, data=None):
+    """Creating anomaly score"""
     if data is None:
         data = "{}"
     anomaly = world.anomaly['resource']
@@ -219,6 +255,7 @@ def i_create_an_anomaly_score(step, data=None):
 
 
 def i_create_an_association_set(step, data=None):
+    """Creating association set"""
     if data is None:
         data = "{}"
     association = world.association['resource']
@@ -230,19 +267,24 @@ def i_create_an_association_set(step, data=None):
     world.association_set = resource['object']
     world.association_sets.append(resource['resource'])
 
+
 def the_anomaly_score_is(step, score):
+    """Checking the expected anomaly score"""
     check_prediction(world.anomaly_score['score'], score)
 
 
 def the_logistic_prediction_is(step, prediction):
+    """Checking the expected logistic regression prediction"""
     check_prediction(world.prediction['output'], prediction)
 
 
 def the_fusion_prediction_is(step, prediction):
+    """Checking the expected fusion prediction """
     the_logistic_prediction_is(step, prediction)
 
 
 def i_create_a_logistic_prediction(step, data=None):
+    """Checking the expected logistic regression prediction"""
     if data is None:
         data = "{}"
     model = world.logistic_regression['resource']
@@ -254,7 +296,9 @@ def i_create_a_logistic_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_deepnet_prediction(step, data=None, image_fields=None):
+    """Creating a prediction from a deepnet"""
     if data is None:
         data = "{}"
     if image_fields is None:
@@ -275,8 +319,10 @@ def i_create_a_deepnet_prediction(step, data=None, image_fields=None):
         world.sources.append(world.prediction["input_data"][field])
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_deepnet_prediction_with_op(step, data=None,
                                           operating_point=None):
+    """Creating a prediction from a deepnet with operating point"""
     if data is None:
         data = "{}"
     deepnet = world.deepnet['resource']
@@ -292,6 +338,7 @@ def i_create_a_deepnet_prediction_with_op(step, data=None,
 
 def i_create_a_logistic_prediction_with_op(step, data=None,
                                            operating_point=None):
+    """Creating a prediction from a logistic regression with operating point"""
     if data is None:
         data = "{}"
     logistic_regression = world.logistic_regression['resource']
@@ -305,18 +352,22 @@ def i_create_a_logistic_prediction_with_op(step, data=None,
     world.predictions.append(resource['resource'])
 
 
+#pylint: disable=locally-disabled,undefined-loop-variable
 def the_logistic_probability_is(step, probability):
+    """Checking the logistic regression prediction probability"""
     for [prediction, remote_probability] in world.prediction['probabilities']:
         if prediction == world.prediction['output']:
             break
-    approx_(round(float(remote_probability), 4), round(float(probability), 4))
+    approx_(float(remote_probability), float(probability), precision=4)
 
 
 def the_fusion_probability_is(step, probability):
+    """Checking the fusion prediction probability"""
     the_logistic_probability_is(step, probability)
 
 
 def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
+    """Creating a prediction with operating kind"""
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
@@ -331,7 +382,9 @@ def i_create_a_prediction_op_kind(step, data=None, operating_kind=None):
     world.predictions.append(resource['resource'])
 
 
-def i_create_an_ensemble_prediction_op_kind(step, data=None, operating_kind=None):
+def i_create_an_ensemble_prediction_op_kind(
+    step, data=None, operating_kind=None):
+    """Creating a prediction from an ensemble with operating kind"""
     if data is None:
         data = "{}"
     ok_(operating_kind is not None)
@@ -345,8 +398,10 @@ def i_create_an_ensemble_prediction_op_kind(step, data=None, operating_kind=None
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_deepnet_prediction_op_kind(step, data=None,
                                           operating_kind=None):
+    """Creating a prediction from a deepnet with operating kind"""
     if data is None:
         data = "{}"
     deepnet = world.deepnet['resource']
@@ -359,8 +414,10 @@ def i_create_a_deepnet_prediction_op_kind(step, data=None,
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_logistic_prediction_with_op_kind(step, data=None,
                                                 operating_kind=None):
+    """Creating a prediction from a logistic regression with operating kind"""
     if data is None:
         data = "{}"
     logistic_regression = world.logistic_regression['resource']
@@ -373,7 +430,9 @@ def i_create_a_logistic_prediction_with_op_kind(step, data=None,
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_fusion_prediction(step, data=None):
+    """Creating a prediction from a fusion"""
     if data is None:
         data = "{}"
     fusion = world.fusion['resource']
@@ -385,7 +444,9 @@ def i_create_a_fusion_prediction(step, data=None):
     world.prediction = resource['object']
     world.predictions.append(resource['resource'])
 
+
 def i_create_a_linear_prediction(step, data=None):
+    """Creating a prediction from a linear regression"""
     if data is None:
         data = "{}"
     linear_regression = world.linear_regression['resource']

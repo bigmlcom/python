@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Comparing remote and local predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -36,37 +36,39 @@ from . import create_lda_steps as topic_create
 
 
 
-class TestComparePrediction(object):
+class TestComparePrediction:
+    """Test local and remote predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully comparing centroids with or without text options:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster
-                And I wait until the cluster is ready less than <model_wait> secs
-                And I create a local cluster
-                When I create a centroid for "<input_data>"
-                Then the centroid is "<centroid>" with distance "<distance>"
-                And I create a local centroid for "<input_data>"
-                Then the local centroid is "<centroid>" with distance "<distance>"
-
+        Scenario: Successfully comparing centroids with or without text options:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster
+            And I wait until the cluster is ready less than <model_wait> secs
+            And I create a local cluster
+            When I create a centroid for "<input_data>"
+            Then the centroid is "<centroid>" with distance "<distance>"
+            And I create a local centroid for "<input_data>"
+            Then the local centroid is "<centroid>" with distance "<distance>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "input_data", "centroid", "distance"]
@@ -87,7 +89,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario1)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])
             source_create.i_update_source_with(self, example["source_conf"])
@@ -109,18 +111,18 @@ class TestComparePrediction(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully comparing centroids with configuration options:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster with options "<options>"
-                And I wait until the cluster is ready less than <model_wait> secs
-                And I create a local cluster
-                When I create a centroid for "<input_data>"
-                Then the centroid is "<centroid>" with distance "<distance>"
-                And I create a local centroid for "<input_data_l>"
-                Then the local centroid is "<centroid>" with distance "<distance>"
+        Scenario: Successfully comparing centroids with configuration options:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster with options "<options>"
+            And I wait until the cluster is ready less than <model_wait> secs
+            And I create a local cluster
+            When I create a centroid for "<input_data>"
+            Then the centroid is "<centroid>" with distance "<distance>"
+            And I create a local centroid for "<input_data_l>"
+            Then the local centroid is "<centroid>" with distance "<distance>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "model_conf", "input_data_l", "centroid", "distance",
@@ -140,7 +142,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario2)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -165,18 +167,18 @@ class TestComparePrediction(object):
 
     def test_scenario3(self):
         """
-            Scenario: Successfully comparing scores from anomaly detectors:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector with params "<model_conf>"
-                And I wait until the anomaly detector is ready less than <model_wait> secs
-                And I create a local anomaly detector
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And I create a local anomaly score for "<input_data>"
-                Then the local anomaly score is "<score>"
+        Scenario: Successfully comparing scores from anomaly detectors:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector with params "<model_conf>"
+            And I wait until the anomaly detector is ready less than <model_wait> secs
+            And I create a local anomaly detector
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "score", "model_conf"]
@@ -202,7 +204,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario3)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -225,19 +227,19 @@ class TestComparePrediction(object):
 
     def test_scenario4(self):
         """
-            Scenario: Successfully comparing topic distributions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a topic model
-                And I wait until the topic model is ready less than <model_wait> secs
-                And I create a local topic model
-                When I create a topic distribution for "<input_data>"
-                Then the topic distribution is "<topic_distribution>"
-                And I create a local topic distribution for "<input_data>"
-                Then the local topic distribution is "<topic_distribution>"
+        Scenario: Successfully comparing topic distributions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a topic model
+            And I wait until the topic model is ready less than <model_wait> secs
+            And I create a local topic model
+            When I create a topic distribution for "<input_data>"
+            Then the topic distribution is "<topic_distribution>"
+            And I create a local topic distribution for "<input_data>"
+            Then the local topic distribution is "<topic_distribution>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "input_data", "topic_distribution"]
@@ -261,7 +263,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario4)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"])
@@ -284,19 +286,19 @@ class TestComparePrediction(object):
 
     def test_scenario5(self):
         """
-            Scenario: Successfully comparing association sets:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the association is ready less than <model_wait> secs
-                And I create a local association
-                When I create an association set for "<input_data>"
-                Then the association set is like the contents of "<association_set_file>"
-                And I create a local association set for "<input_data>"
-                Then the local association set is like the contents of "<association_set_file>"
+        Scenario: Successfully comparing association sets:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the association is ready less than <model_wait> secs
+            And I create a local association
+            When I create an association set for "<input_data>"
+            Then the association set is like the contents of "<association_set_file>"
+            And I create a local association set for "<input_data>"
+            Then the local association set is like the contents of "<association_set_file>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "association_set_file", "input_data"]
@@ -305,7 +307,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario5)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])
             source_create.i_update_source_with(self, example["source_conf"])
@@ -328,18 +330,18 @@ class TestComparePrediction(object):
 
     def test_scenario6(self):
         """
-            Scenario: Successfully comparing predictions for ensembles:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble with "<model_conf>"
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local ensemble
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions for ensembles:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble with "<model_conf>"
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local ensemble
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "model_conf"]
@@ -353,7 +355,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario6)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -377,20 +379,20 @@ class TestComparePrediction(object):
 
     def test_scenario7(self):
         """
-            Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an esemble with "<params>"
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local ensemble
-                When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the confidence for the prediction is "<confidence>"
-                And I create a proportional missing strategy local prediction for "<data_input>" with <"operating">
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an esemble with "<params>"
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local ensemble
+            When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the confidence for the prediction is "<confidence>"
+            And I create a proportional missing strategy local prediction for "<data_input>" with <"operating">
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "confidence",
@@ -403,7 +405,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -430,20 +432,20 @@ class TestComparePrediction(object):
 
     def test_scenario7b(self):
         """
-            Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an esemble with "<model_conf>"
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local ensemble
-                When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the confidence for the prediction is "<confidence>"
-                And I create a proportional missing strategy local prediction for "<input_data>" with <"operating">
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario: Successfully comparing predictions for ensembles with proportional missing strategy:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an esemble with "<model_conf>"
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local ensemble
+            When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the confidence for the prediction is "<confidence>"
+            And I create a proportional missing strategy local prediction for "<input_data>" with <"operating">
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
 
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -461,7 +463,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario7b)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -488,12 +490,10 @@ class TestComparePrediction(object):
 
     def test_scenario8(self):
         """
-            Scenario: Successfully comparing predictions for ensembles:
-                Given I create a local ensemble predictor from "<directory>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
-
-
+        Scenario: Successfully comparing predictions for ensembles:
+            Given I create a local ensemble predictor from "<directory>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["directory", "input_data", "prediction"]
         examples = [
@@ -501,7 +501,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario8)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             ensemble_create.create_local_ensemble_predictor(
                 self, example["directory"])
             prediction_compare.i_create_a_local_ensemble_prediction(
@@ -511,20 +511,20 @@ class TestComparePrediction(object):
 
     def test_scenario9(self):
         """
-            Scenario: Successfully comparing predictions for ensembles with proportional missing strategy in a supervised model:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an esemble with "<model_conf>"
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I create a local ensemble
-                When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the confidence for the prediction is "<confidence>"
-                And I create a proportional missing strategy local prediction for "<input_data>" with <"operating">
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
+        Scenario: Successfully comparing predictions for ensembles with proportional missing strategy in a supervised model:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an esemble with "<model_conf>"
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I create a local ensemble
+            When I create a proportional missing strategy prediction for "<input_data>" with <"operating">
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the confidence for the prediction is "<confidence>"
+            And I create a proportional missing strategy local prediction for "<input_data>" with <"operating">
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "confidence",
@@ -535,7 +535,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario9)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -562,25 +562,25 @@ class TestComparePrediction(object):
 
     def test_scenario10(self):
         """
-            Scenario: Successfully comparing predictions for fusions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a list of models
-                And I wait until the fusion is ready less than <model_wait> secs
-                And I create a local fusion
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions for fusions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I retrieve a list of remote models tagged with "<tag>"
+            And I create a fusion from a list of models
+            And I wait until the fusion is ready less than <model_wait> secs
+            And I create a local fusion
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait", "tag",
                    "input_data", "objective_id", "prediction"]
@@ -593,7 +593,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario10)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             tag = example["tag"]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(
@@ -629,26 +629,25 @@ class TestComparePrediction(object):
 
     def test_scenario11(self):
         """
-            Scenario: Successfully comparing predictions in operating points for fusions:
-            Scenario: Successfully comparing predictions for fusions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<tag>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a list of models
-                And I wait until the fusion is ready less than <model_wait> secs
-                And I create a local fusion
-                When I create a prediction for "<data_input>" in "<operating_point>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local fusion prediction for "<data_input>" in "<operating_point>"
-                Then the local ensemble prediction is "<prediction>"
+        Scenario: Successfully comparing predictions in operating points for fusions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<tag>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I retrieve a list of remote models tagged with "<tag>"
+            And I create a fusion from a list of models
+            And I wait until the fusion is ready less than <model_wait> secs
+            And I create a local fusion
+            When I create a prediction for "<data_input>" in "<operating_point>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local fusion prediction for "<data_input>" in "<operating_point>"
+            Then the local ensemble prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait", "tag",
                    "input_data", "objective_id", "prediction",
@@ -667,7 +666,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario11)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             tag = example["tag"]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(
@@ -702,25 +701,25 @@ class TestComparePrediction(object):
 
     def test_scenario12(self):
         """
-            Scenario: Successfully comparing predictions for fusions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a list of models
-                And I wait until the fusion is ready less than <model_wait> secs
-                And I create a local fusion
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions for fusions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I retrieve a list of remote models tagged with "<tag>"
+            And I create a fusion from a list of models
+            And I wait until the fusion is ready less than <model_wait> secs
+            And I create a local fusion
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "model_conf", "tag", "input_data", "objective_id",
@@ -737,7 +736,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario12)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -774,25 +773,25 @@ class TestComparePrediction(object):
 
     def test_scenario13(self):
         """
-            Scenario: Successfully comparing predictions for fusions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <"dataset_wait"> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a list of models
-                And I wait until the fusion is ready less than <model_wait> secs
-                And I create a local fusion
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions for fusions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <"dataset_wait"> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I retrieve a list of remote models tagged with "<tag>"
+            And I create a fusion from a list of models
+            And I wait until the fusion is ready less than <model_wait> secs
+            And I create a local fusion
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "tag", "input_data", "objective_id", "prediction"]
@@ -804,7 +803,7 @@ class TestComparePrediction(object):
 
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             tag = example["tag"]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(
@@ -835,13 +834,11 @@ class TestComparePrediction(object):
 
     def test_scenario14(self):
         """
-            Scenario: Successfully comparing predictions for ensembles:
-                Given I load the full ensemble information from "<directory>"
-                And I create a local ensemble from the ensemble +  models list
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
-
-
+        Scenario: Successfully comparing predictions for ensembles:
+            Given I load the full ensemble information from "<directory>"
+            And I create a local ensemble from the ensemble +  models list
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["directory", "input_data", "prediction"]
         examples = [
@@ -849,7 +846,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario14)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             model_list = ensemble_create.load_full_ensemble(
                 self, example["directory"])
             ensemble_create.create_local_ensemble_from_list(

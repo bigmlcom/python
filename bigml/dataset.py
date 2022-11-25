@@ -177,20 +177,12 @@ class Dataset:
             names = transformation.get("names", [])
             out_headers.extend(names)
             # evaluating first to raise an alert if the expression is failing
-            """
-            check = Flatline.interpreter.evaluate_sexp(
-                expr, fields, True).valueOf()
-            """
             check = Flatline.check_lisp(expr, fields)
             if "error" in check:
                 raise ValueError(check["error"])
             if expr == '(all)':
                 new_input_arrays = input_arrays.copy()
                 continue
-            """
-            new_input = Flatline.interpreter.eval_and_apply_sexp(
-                expr, fields, input_arrays)
-            """
             new_input = Flatline.apply_lisp(expr, input_arrays, self)
             for index, _ in enumerate(new_input):
                 try:

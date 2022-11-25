@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2018-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Creating tests for building local models from files
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_model_steps as model_create
 from . import create_linear_steps as linear_create
 from . import create_source_steps as source_create
@@ -34,34 +34,38 @@ from . import create_cluster_steps as cluster_create
 from . import create_lda_steps as topic_create
 from . import compare_predictions_steps as prediction_compare
 
-class TestLocalFromFile(object):
 
-    def setup_method(self):
+class TestLocalFromFile:
+    """Testing locally generated code"""
+
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario 1: Successfully creating a local model from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with params "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I export the "<pmml>" model to "<exported_file>"
-                When I create a local model from the file "<exported_file>"
-                Then the model ID and the local model ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 1: Successfully creating a local model from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with params "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I export the "<pmml>" model to "<exported_file>"
+            When I create a local model from the file "<exported_file>"
+            Then the model ID and the local model ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -75,7 +79,7 @@ class TestLocalFromFile(object):
              '{"default_numeric_value": "mean"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -96,17 +100,17 @@ class TestLocalFromFile(object):
 
     def test_scenario2(self):
         """
-            Scenario 2: Successfully creating a local ensemble from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an ensemble with "<params>"
-                And I wait until the ensemble is ready less than <model_wait> secs
-                And I export the ensemble to "<exported_file>"
-                When I create a local ensemble from the file "<exported_file>"
-                Then the ensemble ID and the local ensemble ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 2: Successfully creating a local ensemble from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an ensemble with "<params>"
+            And I wait until the ensemble is ready less than <model_wait> secs
+            And I export the ensemble to "<exported_file>"
+            When I create a local ensemble from the file "<exported_file>"
+            Then the ensemble ID and the local ensemble ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -121,7 +125,7 @@ class TestLocalFromFile(object):
              '{"default_numeric_value": "mean"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -142,20 +146,17 @@ class TestLocalFromFile(object):
 
     def test_scenario3(self):
         """
-            Scenario 3: Successfully creating a local logistic regression from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a logistic regression with "<params>"
-                And I wait until the logistic regression is ready less than <time_3> secs
-                And I export the logistic regression to "<exported_file>"
-                When I create a local logistic regression from the file "<exported_file>"
-                Then the logistic regression ID and the local logistic regression ID match
-                And the prediction for "<input_data>" is "<prediction>"
-                Examples:
-                | data                | time_1  | time_2 | time_3 | exported_file
-                | ../data/iris.csv | 10      | 10     | 50 | ./tmp/logistic.json
+        Scenario 3: Successfully creating a local logistic regression from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <time_1> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <time_2> secs
+            And I create a logistic regression with "<params>"
+            And I wait until the logistic regression is ready less than <time_3> secs
+            And I export the logistic regression to "<exported_file>"
+            When I create a local logistic regression from the file "<exported_file>"
+            Then the logistic regression ID and the local logistic regression ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -168,7 +169,7 @@ class TestLocalFromFile(object):
              'Iris-virginica', '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -190,17 +191,17 @@ class TestLocalFromFile(object):
 
     def test_scenario4(self):
         """
-            Scenario 4: Successfully creating a local deepnet from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a deepnet with "<params>"
-                And I wait until the deepnet is ready less than <model_wait> secs
-                And I export the deepnet to "<exported_file>"
-                When I create a local deepnet from the file "<exported_file>"
-                Then the deepnet ID and the local deepnet ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 4: Successfully creating a local deepnet from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a deepnet with "<params>"
+            And I wait until the deepnet is ready less than <model_wait> secs
+            And I export the deepnet to "<exported_file>"
+            When I create a local deepnet from the file "<exported_file>"
+            Then the deepnet ID and the local deepnet ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario4)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -213,7 +214,7 @@ class TestLocalFromFile(object):
              'Iris-virginica', '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -234,17 +235,17 @@ class TestLocalFromFile(object):
 
     def test_scenario5(self):
         """
-            Scenario 5: Successfully creating a local cluster from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a cluster with "<model_conf>"
-                And I wait until the cluster is ready less than <model_wait> secs
-                And I export the cluster to "<exported_file>"
-                When I create a local cluster from the file "<exported_file>"
-                Then the cluster ID and the local cluster ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 5: Successfully creating a local cluster from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a cluster with "<model_conf>"
+            And I wait until the cluster is ready less than <model_wait> secs
+            And I export the cluster to "<exported_file>"
+            When I create a local cluster from the file "<exported_file>"
+            Then the cluster ID and the local cluster ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario5)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -262,7 +263,7 @@ class TestLocalFromFile(object):
              '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -283,17 +284,17 @@ class TestLocalFromFile(object):
 
     def test_scenario6(self):
         """
-            Scenario 6: Successfully creating a local anomaly from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly with "<params>"
-                And I wait until the anomaly is ready less than <model_wait> secs
-                And I export the anomaly to "<exported_file>"
-                When I create a local anomaly from the file "<exported_file>"
-                Then the anomaly ID and the local anomaly ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 6: Successfully creating a local anomaly from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly with "<params>"
+            And I wait until the anomaly is ready less than <model_wait> secs
+            And I export the anomaly to "<exported_file>"
+            When I create a local anomaly from the file "<exported_file>"
+            Then the anomaly ID and the local anomaly ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario6)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -309,7 +310,7 @@ class TestLocalFromFile(object):
              '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -330,17 +331,17 @@ class TestLocalFromFile(object):
 
     def test_scenario7(self):
         """
-            Scenario 7: Successfully creating a local association from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an association with "<model_conf>"
-                And I wait until the association is ready less than <model_wait> secs
-                And I export the association to "<exported_file>"
-                When I create a local association from the file "<exported_file>"
-                Then the association ID and the local association ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 7: Successfully creating a local association from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an association with "<model_conf>"
+            And I wait until the association is ready less than <model_wait> secs
+            And I export the association to "<exported_file>"
+            When I create a local association from the file "<exported_file>"
+            Then the association ID and the local association ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario7)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -355,7 +356,7 @@ class TestLocalFromFile(object):
              '{"default_numeric_value": "mean"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -377,16 +378,16 @@ class TestLocalFromFile(object):
 
     def test_scenario8(self):
         """
-            Scenario 8: Successfully creating a local topic model from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a topic model
-                And I wait until the topic model is ready less than <model_wait> secs
-                And I export the topic model to "<exported_file>"
-                When I create a local topic model from the file "<exported_file>"
-                Then the topic model ID and the local topic model ID match
+        Scenario 8: Successfully creating a local topic model from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a topic model
+            And I wait until the topic model is ready less than <model_wait> secs
+            And I export the topic model to "<exported_file>"
+            When I create a local topic model from the file "<exported_file>"
+            Then the topic model ID and the local topic model ID match
         """
         show_doc(self.test_scenario8)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -395,7 +396,7 @@ class TestLocalFromFile(object):
             ['data/spam.csv', '10', '10', '500', './tmp/topic_model.json', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(
@@ -416,16 +417,16 @@ class TestLocalFromFile(object):
 
     def test_scenario9(self):
         """
-            Scenario 9: Successfully creating a local time series from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a time series with "<model_conf>"
-                And I wait until the time series is ready less than <model_wait> secs
-                And I export the time series to "<exported_file>"
-                When I create a local time series from the file "<exported_file>"
-                Then the time series ID and the local time series ID match
+        Scenario 9: Successfully creating a local time series from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a time series with "<model_conf>"
+            And I wait until the time series is ready less than <model_wait> secs
+            And I export the time series to "<exported_file>"
+            When I create a local time series from the file "<exported_file>"
+            Then the time series ID and the local time series ID match
         """
         show_doc(self.test_scenario9)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -434,7 +435,7 @@ class TestLocalFromFile(object):
             ['data/iris.csv', '10', '10', '500', './tmp/time_series.json']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])
             dataset_create.i_create_a_dataset(self)
@@ -451,23 +452,23 @@ class TestLocalFromFile(object):
 
     def test_scenario10(self):
         """
-            Scenario 10: Successfully creating a local fusion from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model with "<params>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a model with "<model_conf>"
-                And I wait until the model is ready less than <model_wait> secs
-                And I retrieve a list of remote models tagged with "<tag>"
-                And I create a fusion from a list of models
-                And I wait until the fusion is ready less than <fusion_wait> secs
-                And I export the fusion to "<exported_file>"
-                When I create a local fusion from the file "<exported_file>"
-                Then the fusion ID and the local fusion ID match
+        Scenario 10: Successfully creating a local fusion from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model with "<params>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a model with "<model_conf>"
+            And I wait until the model is ready less than <model_wait> secs
+            And I retrieve a list of remote models tagged with "<tag>"
+            And I create a fusion from a list of models
+            And I wait until the fusion is ready less than <fusion_wait> secs
+            And I export the fusion to "<exported_file>"
+            When I create a local fusion from the file "<exported_file>"
+            Then the fusion ID and the local fusion ID match
         """
         show_doc(self.test_scenario10)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -477,7 +478,7 @@ class TestLocalFromFile(object):
              'my_fusion_tag']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             tag = example["tag"]
             tag_args = '{"tags":["%s"]}' % tag
             source_create.i_upload_a_file(
@@ -507,17 +508,17 @@ class TestLocalFromFile(object):
 
     def test_scenario11(self):
         """
-            Scenario 11: Successfully creating a local linear regression from an exported file:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a linear regression with "<model_conf>"
-                And I wait until the linear regression is ready less than <model_wait> secs
-                And I export the linear regression to "<exported_file>"
-                When I create a local linear regression from the file "<exported_file>"
-                Then the linear regression ID and the local linear regression ID match
-                And the prediction for "<input_data>" is "<prediction>"
+        Scenario 11: Successfully creating a local linear regression from an exported file:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a linear regression with "<model_conf>"
+            And I wait until the linear regression is ready less than <model_wait> secs
+            And I export the linear regression to "<exported_file>"
+            When I create a local linear regression from the file "<exported_file>"
+            Then the linear regression ID and the local linear regression ID match
+            And the prediction for "<input_data>" is "<prediction>"
         """
         show_doc(self.test_scenario11)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -531,7 +532,7 @@ class TestLocalFromFile(object):
              100.33246, '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

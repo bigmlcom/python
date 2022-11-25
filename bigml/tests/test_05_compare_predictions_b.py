@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,10 +20,8 @@
 """ Comparing remote and local predictions
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -33,39 +33,42 @@ from . import compare_predictions_steps as prediction_compare
 from . import create_lda_steps as topic_create
 
 
-class TestComparePrediction(object):
+class TestComparePrediction:
+    """Testing local and remote predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario10(self):
         """
-           Scenario: Successfully comparing predictions with proportional missing strategy and balanced models:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a balanced model
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a local model
-                When I create a proportional missing strategy prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the confidence for the prediction is "<confidence>"
-                And I create a proportional missing strategy local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And I create local probabilities for "<input_data>"
-                Then the local probabilities are "<probabilities>"
+       Scenario: Successfully comparing predictions with proportional missing strategy and balanced models:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a balanced model
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a local model
+            When I create a proportional missing strategy prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the confidence for the prediction is "<confidence>"
+            And I create a proportional missing strategy local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
+            And I create local probabilities for "<input_data>"
+            Then the local probabilities are "<probabilities>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction",
@@ -80,7 +83,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario10)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"],
                 shared=example["data"])
             source_create.the_source_is_finished(self, example["source_wait"],
@@ -111,21 +114,21 @@ class TestComparePrediction(object):
 
     def test_scenario11(self):
         """
-            Scenario: Successfully comparing predictions for logistic regression with balance_fields:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I update the source with params "<source_conf>"
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a logistic regression model with objective "<objective_id>" and flags
-                And I wait until the logistic regression model is ready less than <model_wait> secs
-                And I create a local logistic regression model
-                When I create a logistic regression prediction for "<input_data>"
-                Then the logistic regression prediction is "<prediction>"
-                And the logistic regression probability for the prediction is "<probability>"
-                And I create a local logistic regression prediction for "<input_data>"
-                Then the local logistic regression prediction is "<prediction>"
-                And the local logistic regression probability for the prediction is "<probability>"
+        Scenario: Successfully comparing predictions for logistic regression with balance_fields:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I update the source with params "<source_conf>"
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a logistic regression model with objective "<objective_id>" and flags
+            And I wait until the logistic regression model is ready less than <model_wait> secs
+            And I create a local logistic regression model
+            When I create a logistic regression prediction for "<input_data>"
+            Then the logistic regression prediction is "<prediction>"
+            And the logistic regression probability for the prediction is "<probability>"
+            And I create a local logistic regression prediction for "<input_data>"
+            Then the local logistic regression prediction is "<prediction>"
+            And the local logistic regression probability for the prediction is "<probability>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "input_data", "prediction", "probability",
@@ -179,7 +182,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario11)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])
             source_create.i_update_source_with(self, example["source_conf"])
@@ -206,21 +209,21 @@ class TestComparePrediction(object):
 
     def test_scenario12(self):
         """
-            Scenario: Successfully comparing logistic regression predictions with constant fields:
+        Scenario: Successfully comparing logistic regression predictions with constant fields:
 
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I update the dataset with "<dataset_conf>"
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a logistic regression model
-                And I wait until the logistic regression model is ready less than <model_wait> secs
-                And I create a local logistic regression model
-                When I create a logistic regression prediction for "<input_data>"
-                Then the logistic regression prediction is "<prediction>"
-                And I create a local logistic regression prediction for "<input_data>"
-                Then the local logistic regression prediction is "<prediction>"
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I update the dataset with "<dataset_conf>"
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a logistic regression model
+            And I wait until the logistic regression model is ready less than <model_wait> secs
+            And I create a local logistic regression model
+            When I create a logistic regression prediction for "<input_data>"
+            Then the logistic regression prediction is "<prediction>"
+            And I create a local logistic regression prediction for "<input_data>"
+            Then the local logistic regression prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "prediction", "dataset_conf"]
@@ -232,7 +235,7 @@ class TestComparePrediction(object):
 
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -258,22 +261,22 @@ class TestComparePrediction(object):
 
     def test_scenario13(self):
         """
-            Scenario: Successfully comparing predictions:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a local model
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
-                And I export the model with tags "<model_tags>"
-                And I create a local model from file "<model_file>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a local model
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
+            And I export the model with tags "<model_tags>"
+            And I create a local model from file "<model_file>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction",
@@ -293,7 +296,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario13)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -329,18 +332,18 @@ class TestComparePrediction(object):
 
     def test_scenario14(self):
         """
-            Scenario: Successfully comparing predictions with supervised model:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a model
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a local supervised model
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                And I create a local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
+        Scenario: Successfully comparing predictions with supervised model:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a model
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a local supervised model
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            And I create a local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction"]
@@ -359,7 +362,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario14)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -382,20 +385,20 @@ class TestComparePrediction(object):
 
     def test_scenario15(self):
         """
-            Scenario: Successfully comparing predictions with text options:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a logistic regression model with objective "<objective_id>" and params "<model_conf>"
-                And I wait until the logistic regression model is ready less than <model_wait> secs
-                And I create a local logistic regression model
-                When I create a logistic regression prediction for "<input_data>"
-                Then the logistic regression prediction is "<prediction>"
-                And the logistic regression probability for the prediction is "<probability>"
-                And I create a local logistic regression prediction for "<input_data>"
-                Then the local logistic regression prediction is "<prediction>"
-                And the local logistic regression probability for the prediction is "<probability>"
+        Scenario: Successfully comparing predictions with text options:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a logistic regression model with objective "<objective_id>" and params "<model_conf>"
+            And I wait until the logistic regression model is ready less than <model_wait> secs
+            And I create a local logistic regression model
+            When I create a logistic regression prediction for "<input_data>"
+            Then the logistic regression prediction is "<prediction>"
+            And the logistic regression probability for the prediction is "<probability>"
+            And I create a local logistic regression prediction for "<input_data>"
+            Then the local logistic regression prediction is "<prediction>"
+            And the local logistic regression probability for the prediction is "<probability>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "model_conf", "input_data", "prediction", "probability",
@@ -408,7 +411,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario15)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(self, example["source_wait"],
@@ -436,19 +439,19 @@ class TestComparePrediction(object):
 
     def test_scenario16(self):
         """
-           Scenario: Successfully comparing remote and local predictions
-                     with raw date input:
-               Given I create a data source uploading a "<data>" file
-               And I wait until the source is ready less than <source_wait> secs
-               And I create a dataset
-               And I wait until the dataset is ready less than <dataset_wait> secs
-               And I create a model
-               And I wait until the model is ready less than <model_wait> secs
-               And I create a local model
-               When I create a prediction for "<input_data>"
-               Then the prediction for "<objective>" is "<prediction>"
-               And I create a local prediction for "<input_data>"
-               Then the local prediction is "<prediction>"
+       Scenario: Successfully comparing remote and local predictions
+                 with raw date input:
+           Given I create a data source uploading a "<data>" file
+           And I wait until the source is ready less than <source_wait> secs
+           And I create a dataset
+           And I wait until the dataset is ready less than <dataset_wait> secs
+           And I create a model
+           And I wait until the model is ready less than <model_wait> secs
+           And I create a local model
+           When I create a prediction for "<input_data>"
+           Then the prediction for "<objective>" is "<prediction>"
+           And I create a local prediction for "<input_data>"
+           Then the local prediction is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction"]
@@ -483,7 +486,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario16)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"], shared=example["data"])
@@ -499,30 +502,31 @@ class TestComparePrediction(object):
             prediction_create.the_prediction_is(
                 self, example["objective_id"], example["prediction"])
             prediction_compare.i_create_a_local_prediction(
-                self, example["input_data"], pre_model=world.local_pipeline)
+                self, example["input_data"],
+                pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
 
     def test_scenario17(self):
         """
-           Scenario: Successfully comparing remote and local predictions
-                     with raw date input:
-               Given I create a data source uploading a "<data>" file
-               And I wait until the source is ready less than <source_wait> secs
-               And I create a dataset
-               And I wait until the dataset is ready less than <dataset_wait> secs
-               And I create a logistic regression model
-               And I wait until the logistic regression is ready less
-               than <model_wait> secs
-               And I create a local logistic regression model
-               When I create a prediction for "<input_data>"
-               Then the prediction is "<prediction>"
-               And the logistic regression probability for the prediction
-               is "<probability>"
-               And I create a local prediction for "<input_data>"
-               Then the local prediction is "<prediction>"
-               And the local logistic regression probability for the
-               prediction is "<probability>"
+       Scenario: Successfully comparing remote and local predictions
+                 with raw date input:
+           Given I create a data source uploading a "<data>" file
+           And I wait until the source is ready less than <source_wait> secs
+           And I create a dataset
+           And I wait until the dataset is ready less than <dataset_wait> secs
+           And I create a logistic regression model
+           And I wait until the logistic regression is ready less
+           than <model_wait> secs
+           And I create a local logistic regression model
+           When I create a prediction for "<input_data>"
+           Then the prediction is "<prediction>"
+           And the logistic regression probability for the prediction
+           is "<probability>"
+           And I create a local prediction for "<input_data>"
+           Then the local prediction is "<prediction>"
+           And the local logistic regression probability for the
+           prediction is "<probability>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "prediction", "probability"]
@@ -557,7 +561,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario17)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -569,7 +573,8 @@ class TestComparePrediction(object):
                 self, shared=example["data"])
             model_create.the_logistic_model_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            prediction_compare.i_create_a_local_logistic_model(self)
+            prediction_compare.i_create_a_local_logistic_model(self,
+                pre_model=True)
             prediction_create.i_create_a_logistic_prediction(
                 self, example["input_data"])
             prediction_create.the_logistic_prediction_is(
@@ -577,7 +582,8 @@ class TestComparePrediction(object):
             prediction_create.the_logistic_probability_is(
                 self, example["probability"])
             prediction_compare.i_create_a_local_prediction(
-                self, example["input_data"])
+                self, example["input_data"],
+                pre_model=self.bigml["local_pipeline"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
             prediction_compare.the_local_probability_is(
@@ -585,21 +591,21 @@ class TestComparePrediction(object):
 
     def test_scenario18(self):
         """
-            Scenario: Successfully comparing predictions with proportional missing strategy for missing_splits models:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a weighted model with missing splits
-                And I wait until the model is ready less than <model_wait> secs
-                And I create a local model
-                When I create a proportional missing strategy prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the confidence for the prediction is "<confidence>"
-                And I create a proportional missing strategy local prediction for "<input_data>"
-                Then the local prediction is "<prediction>"
-                And the local prediction's confidence is "<confidence>"
-                And the highest local prediction's confidence is "<confidence>"
+        Scenario: Successfully comparing predictions with proportional missing strategy for missing_splits models:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a weighted model with missing splits
+            And I wait until the model is ready less than <model_wait> secs
+            And I create a local model
+            When I create a proportional missing strategy prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the confidence for the prediction is "<confidence>"
+            And I create a proportional missing strategy local prediction for "<input_data>"
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
+            And the highest local prediction's confidence is "<confidence>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "confidence"]
@@ -610,7 +616,7 @@ class TestComparePrediction(object):
         show_doc(self.test_scenario18)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

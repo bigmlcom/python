@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012, 2015-2022 BigML
 #
@@ -14,20 +15,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-import json
-from datetime import datetime
-from .world import world, eq_, ok_
-
 from bigml.api import HTTP_CREATED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
+from bigml.api import FINISHED, FAULTY
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_, ok_
 
-#@step(r'I create an evaluation for the model with the dataset$')
 def i_create_an_evaluation(step, shared=None):
+    """Step: I create an evaluation for the model with the dataset"""
     dataset = world.dataset.get('resource')
     model = world.model.get('resource')
     resource = world.api.create_evaluation(model, dataset)
@@ -38,8 +33,8 @@ def i_create_an_evaluation(step, shared=None):
     world.evaluations.append(resource['resource'])
 
 
-#@step(r'I create an evaluation for the ensemble with the dataset$')
 def i_create_an_evaluation_ensemble(step, params=None):
+    """Step: I create an evaluation for the ensemble with the dataset"""
     if params is None:
         params = {}
     dataset = world.dataset.get('resource')
@@ -51,8 +46,11 @@ def i_create_an_evaluation_ensemble(step, params=None):
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
 
-#@step(r'I create an evaluation for the logistic regression with the dataset$')
+
 def i_create_an_evaluation_logistic(step):
+    """Step: I create an evaluation for the logistic regression with
+    the dataset
+    """
     dataset = world.dataset.get('resource')
     logistic = world.logistic_regression.get('resource')
     resource = world.api.create_evaluation(logistic, dataset)
@@ -62,8 +60,9 @@ def i_create_an_evaluation_logistic(step):
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
 
-#@step(r'I create an evaluation for the deepnet with the dataset$')
+
 def i_create_an_evaluation_deepnet(step):
+    """Step: I create an evaluation for the deepnet with the dataset"""
     dataset = world.dataset.get('resource')
     deepnet = world.deepnet.get('resource')
     resource = world.api.create_evaluation(deepnet, dataset)
@@ -74,8 +73,8 @@ def i_create_an_evaluation_deepnet(step):
     world.evaluations.append(resource['resource'])
 
 
-#@step(r'I create an evaluation for the fusion with the dataset$')
 def i_create_an_evaluation_fusion(step):
+    """Step: I create an evaluation for the fusion with the dataset"""
     dataset = world.dataset.get('resource')
     fusion = world.fusion.get('resource')
     resource = world.api.create_evaluation(fusion, dataset)
@@ -85,22 +84,26 @@ def i_create_an_evaluation_fusion(step):
     world.evaluation = resource['object']
     world.evaluations.append(resource['resource'])
 
-#@step(r'I wait until the evaluation status code is either (\d) or (-\d) less than (\d+)')
+
 def wait_until_evaluation_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the evaluation status code is either <code1> or
+    <code2> less than <secs>"""
     world.evaluation = wait_until_status_code_is(
         code1, code2, secs, world.evaluation)
 
-#@step(r'I wait until the evaluation is ready less than (\d+)')
+
 def the_evaluation_is_finished_in_less_than(step, secs):
+    """Step: I wait until the evaluation is ready less than <secs>"""
     wait_until_evaluation_status_code_is(step, FINISHED, FAULTY, secs)
 
-#@step(r'the measured "(.*)" is (\d+\.*\d*)')
-def the_measured_measure_is_value(step, measure, value):
-    ev = world.evaluation['result']['model'][measure] + 0.0
-    eq_(ev, float(value), "The %s is: %s and %s is expected" % (
-        measure, ev, float(value)))
 
-#@step(r'the measured "(.*)" is greater than (\d+\.*\d*)')
+def the_measured_measure_is_value(step, measure, value):
+    """Step: the measured <measure> is <value>"""
+    ev_ = world.evaluation['result']['model'][measure] + 0.0
+    eq_(ev_, float(value), "The %s is: %s and %s is expected" % (
+        measure, ev_, float(value)))
+
+
 def the_measured_measure_is_greater_value(step, measure, value):
-    ok_(world.evaluation['result']['model'][measure] + 0.0 >
-                   float(value))
+    """#@step(r'the measured <measure> is greater than <value>"""
+    ok_(float(world.evaluation['result']['model'][measure]) > float(value))

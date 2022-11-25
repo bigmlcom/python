@@ -22,16 +22,16 @@ import os
 import re
 import shutil
 import time
-import pkg_resources
 import datetime
 import pprint
 import json
-import pytest
 import math
+import pytest
+
+import pkg_resources
 
 from bigml.api import BigML
-from bigml.api import HTTP_OK, HTTP_NO_CONTENT, HTTP_UNAUTHORIZED, \
-    HTTP_NOT_FOUND
+from bigml.api import HTTP_NO_CONTENT, HTTP_NOT_FOUND
 from bigml.constants import IRREGULAR_PLURALS, RENAMED_RESOURCES, \
     TINY_RESOURCE, ALL_FIELDS
 from bigml.api_handlers.externalconnectorhandler import get_env_connection_info
@@ -109,12 +109,13 @@ def show_method(self, method, example):
 
 
 def float_round(value, precision=5):
+    """Rounding if float"""
     if isinstance(value, float):
         return round(value, precision)
     return value
 
 
-def flatten_shared(shared_dict):
+def flatten_shared():
     """Returns the list of IDs stored in the world.shared structure """
     ids_list = []
     for _, value in world.shared.items():
@@ -129,7 +130,7 @@ def eq_(*args, msg=None, precision=None):
     if precision is not None:
         for index, arg in enumerate(new_args):
             new_args[index] = float_round(arg, precision)
-        assert all([new_args[0] == b for b in new_args[1:]]), msg
+        assert all(new_args[0] == b for b in new_args[1:]), msg
     else:
         assert new_args[0] == new_args[1], msg
 
@@ -151,11 +152,12 @@ def approx_(number_a, number_b, msg=None, precision=5):
         assert number_a == pytest.approx(number_b, abs=epsilon), msg
 
 
-class World(object):
+class World:
+    """Object to store common test resources"""
 
     def __init__(self):
-        self.USERNAME = None
-        self.API_KEY = None
+        self.username = None
+        self.api_key = None
         self.api = None
         self.debug = False
         try:
@@ -180,19 +182,18 @@ class World(object):
         self.shared = {}
 
     def print_connection_info(self):
-        self.USERNAME = os.environ.get('BIGML_USERNAME')
-        self.API_KEY = os.environ.get('BIGML_API_KEY')
-        self.EXTERNAL_CONN = get_env_connection_info()
+        """Prints the variables used for the connection authentication"""
+        self.username = os.environ.get('BIGML_USERNAME')
+        self.api_key = os.environ.get('BIGML_API_KEY')
+        self.external_conn = get_env_connection_info()
 
-        if self.USERNAME is None or self.API_KEY is None:
+        if self.username is None or self.api_key is None:
             assert False, ("Tests use the BIGML_USERNAME and BIGML_API_KEY"
                            " environment variables to authenticate the"
                            " connection, but they seem to be unset. Please,"
                            "set them before testing.")
-        self.api = BigML(self.USERNAME, self.API_KEY, debug=self.debug,
+        self.api = BigML(self.username, self.api_key, debug=self.debug,
                          short_debug=self.short_debug,
-                         organization=None if not hasattr(
-                            self.api, "organization") else organization,
                          storage=(None if not (self.debug or self.short_debug)
                          else "./debug_storage"))
         print("----------------------------------------------------------")
@@ -200,14 +201,13 @@ class World(object):
         print(self.external_connection_info())
         print("----------------------------------------------------------")
 
-
     def external_connection_info(self):
         """Printable string: The information used to connect to a external
         data source
 
         """
         info = "External data connection config:\n%s" % \
-            pprint.pformat(self.EXTERNAL_CONN, indent=4)
+            pprint.pformat(self.external_conn, indent=4)
         return info
 
     def clear(self):
@@ -246,7 +246,7 @@ class World(object):
 
     def delete_resources(self):
         """Deletes the created objects"""
-        keepers = flatten_shared(self.shared)
+        keepers = flatten_shared()
         for resource_type in RESOURCE_TYPES:
             object_list = getattr(self, plural(resource_type))
             object_list.reverse()
@@ -258,9 +258,7 @@ class World(object):
             print(json.dumps(resource["status"], indent=4))
 
     def store_resources(self):
-        """Stores the created objects
-
-        """
+        """Stores the created objects """
 
         for resource_type in RESOURCE_TYPES:
             object_list = set(getattr(self, plural(resource_type)))
@@ -271,7 +269,6 @@ class World(object):
                     resource_type = "source"
                 store_method = self.api.getters[resource_type]
                 for obj_id in object_list:
-                    counter = 0
                     result = store_method(obj_id)
                     self.api.ok(result)
 
@@ -289,6 +286,7 @@ class World(object):
 world = World()
 
 def res_filename(filename):
+    """Returns path to a data filename"""
     directory = pkg_resources.resource_filename('bigml', '__init__.py')
     return os.path.join(os.path.dirname(os.path.dirname(directory)), filename)
 
@@ -316,36 +314,18 @@ def teardown_module():
 
 
 def teardown_fn(force=False):
+    """Operations to be performed after a certain point """
     if not world.debug and not world.short_debug:
         if os.path.exists('./tmp'):
             shutil.rmtree('./tmp')
 
         world.delete_resources()
-        project_stats = world.api.get_project( \
-            world.project_id)['object']['stats']
         if force:
             world.api.delete_project(world.project_id)
             del world.shared["project"]
             world.project_id = None
     else:
         world.store_resources()
-
-
-def teardown_class():
-    """Operations to be performed after each class
-
-    """
-    delet_local()
-
-
-def delete_local():
-    """Delete loca objects and lists of ids
-
-    """
-    world.dataset_ids = []
-    world.local_ensemble = None
-    world.local_model = None
-    world.local_deepnet = None
 
 
 def logged_wait(start, delta, count, res_description, progress=0, status=None):
@@ -363,7 +343,7 @@ def logged_wait(start, delta, count, res_description, progress=0, status=None):
     message = ""
     if status is not None:
         message =" (status: %s, progress: %s)" % (
-            status["code"],
+            status_code,
             progress)
     print("Waiting for %s%s %s secs." % (
         res_description,

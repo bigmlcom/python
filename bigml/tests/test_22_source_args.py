@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import,no-member
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,35 +20,37 @@
 """ Uploading source with structured args
 
 """
-import sys
-
-from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
-from . import create_source_steps as source_create
 from bigml.api_handlers.resourcehandler import get_id
 
-class TestUploadSource(object):
+from .world import world, setup_module, teardown_module, show_doc, \
+    show_method
+from . import create_source_steps as source_create
 
-    def setup_method(self):
+
+class TestUploadSource:
+    """Testing source uploads"""
+
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-
-            Scenario: Successfully uploading source:
-                Given I create a data source uploading a "<data>" file with args "<source_conf>"
-                And I wait until the source is ready less than <source_wait> secs
-                Then the source exists and has args "<source_conf>"
+        Scenario: Successfully uploading source:
+            Given I create a data source uploading a "<data>" file with args "<source_conf>"
+            And I wait until the source is ready less than <source_wait> secs
+            Then the source exists and has args "<source_conf>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "source_conf"]
@@ -55,7 +59,7 @@ class TestUploadSource(object):
             ['data/iris.csv', '30', '{"name": "Testing unicode names: áé"}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file_with_args(
                 self, example["data"], example["source_conf"])
             source_create.the_source_is_finished(self, example["source_wait"])
@@ -63,15 +67,14 @@ class TestUploadSource(object):
 
     def test_scenario2(self):
         """
-
-            Scenario: Successfully creating composite source:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                Then I create a composite from the last two sources
-                And I wait until the source is ready less than <source_wait> secs
-                Then the composite exists and has the previous two sources
+        Scenario: Successfully creating composite source:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            Then I create a composite from the last two sources
+            And I wait until the source is ready less than <source_wait> secs
+            Then the composite exists and has the previous two sources
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait"]
@@ -79,7 +82,7 @@ class TestUploadSource(object):
             ['data/iris.csv', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             sources = []
             source_create.i_upload_a_file(
                 self, example["data"])
@@ -99,18 +102,12 @@ class TestUploadSource(object):
 
     def test_scenario3(self):
         """
-
-            Scenario: Successfully cloning source:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I clone the last source
-                And I wait until the source is ready less than <time_1> secs
-                Then the new source the first one as origin
-
-                Examples:
-                | data             | time_1  |
-                | ../data/iris.csv | 30      |
-
+        Scenario: Successfully cloning source:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <time_1> secs
+            And I clone the last source
+            And I wait until the source is ready less than <time_1> secs
+            Then the new source the first one as origin
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait"]
@@ -118,7 +115,7 @@ class TestUploadSource(object):
             ['data/iris.csv', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

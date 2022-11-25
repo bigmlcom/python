@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2012, 2015-2022 BigML
 #
@@ -15,38 +16,38 @@
 # under the License.
 
 import io
-import os
 import json
 
 import bigml.generators.model as g
 
-
 from bigml.tests.world import res_filename
-from .world import world, eq_
 from bigml.predict_utils.common import extract_distribution
 from bigml.util import utf8
 
+from .world import world, eq_
 
-#@step(r'I translate the tree into IF-THEN rules$')
+
+#pylint: disable=locally-disabled,invalid-name
 def i_translate_the_tree_into_IF_THEN_rules(step):
+    """Step: I translate the tree into IF-THEN rules"""
     output = io.StringIO()
-    g.rules(world.local_model, out=output)
+    g.rules(step.bigml["local_model"], out=output)
     world.output = output.getvalue()
 
-#@step(r'I check data distribution with "(.*)" file$')
-def i_check_the_data_distribution(step, file):
-    distribution = g.get_data_distribution(world.local_model)
+def i_check_the_data_distribution(step, filename):
+    """Step: I check data distribution with <filename> file"""
+    distribution = g.get_data_distribution(step.bigml["local_model"])
 
     distribution_str = ''
     for bin_value, bin_instances in distribution:
         distribution_str += "[%s,%s]\n" % (bin_value, bin_instances)
     world.output = utf8(distribution_str)
-    i_check_if_the_output_is_like_expected_file(step, file)
+    i_check_if_the_output_is_like_expected_file(step, filename)
 
 
-#@step(r'I check the predictions distribution with "(.*)" file$')
-def i_check_the_predictions_distribution(step, file):
-    predictions = g.get_prediction_distribution(world.local_model)
+def i_check_the_predictions_distribution(step, filename):
+    """Step: I check the predictions distribution with <filename> file"""
+    predictions = g.get_prediction_distribution(step.bigml["local_model"])
 
     distribution_str = ''
     for group, instances in predictions:
@@ -54,28 +55,29 @@ def i_check_the_predictions_distribution(step, file):
 
     world.output = utf8(distribution_str)
 
-    i_check_if_the_output_is_like_expected_file(step, file)
+    i_check_if_the_output_is_like_expected_file(step, filename)
 
 
-#@step(r'I check the model summary with "(.*)" file$')
-def i_check_the_model_summary_with(step, file):
+def i_check_the_model_summary_with(step, filename):
+    """Step: I check the model summary with <filename> file"""
     output = io.StringIO()
-    g.summarize( world.local_model, out=output)
+    g.summarize(step.bigml["local_model"], out=output)
     world.output = output.getvalue()
-    i_check_if_the_output_is_like_expected_file(step, file)
+    i_check_if_the_output_is_like_expected_file(step, filename)
 
 
-#@step(r'I check the output is like "(.*)" expected file')
 def i_check_if_the_output_is_like_expected_file(step, expected_file):
-    file = open(res_filename(expected_file), "r")
-    expected_content = file.read()
-    file.close()
+    """Step: I check the output is like <expected_file> expected file"""
+    with open(res_filename(expected_file), "r") as handler:
+        expected_content = handler.read()
     eq_(world.output.strip(), expected_content.strip())
 
-#@step(r'I check the distribution print with "(.*)" file$')
+
 def i_check_print_distribution(step, filename):
+    """Step: I check the distribution print with <filename> file"""
     output = io.StringIO()
-    _, distribution = extract_distribution(world.local_model.root_distribution)
+    _, distribution = extract_distribution(
+        step.bigml["local_model"].root_distribution)
     g.print_distribution(distribution, output)
     world.output = output.getvalue()
     if world.debug:
@@ -84,10 +86,11 @@ def i_check_print_distribution(step, filename):
             bck_file.write(world.output)
     i_check_if_the_output_is_like_expected_file(step, filename)
 
-#@step(r'I check the list fields print with "(.*)" file$')
+
 def i_list_fields(step, filename):
+    """Step: I check the list fields print with <filename> file"""
     output = io.StringIO()
-    g.list_fields(world.local_model, output)
+    g.list_fields(step.bigml["local_model"], output)
     world.output = output.getvalue()
     if world.debug:
         backup = "%s.bck" % filename
@@ -95,9 +98,10 @@ def i_list_fields(step, filename):
             bck_file.write(world.output)
     i_check_if_the_output_is_like_expected_file(step, filename)
 
-#@step(r'I check the tree csv print with "(.*)" file$')
+
 def i_create_tree_csv(step, filename):
-    rows = g.tree_csv(world.local_model)
+    """Step: I check the tree csv print with <filename> file"""
+    rows = g.tree_csv(step.bigml["local_model"])
     world.output = json.dumps(rows)
     if world.debug:
         backup = "%s.bck" % filename
@@ -106,5 +110,6 @@ def i_create_tree_csv(step, filename):
     i_check_if_the_output_is_like_expected_file(step, filename)
 
 def update_content(filename, content):
+    """Step: I check the tree csv print with <filename> file"""
     with open(res_filename(filename), "w") as file_handler:
         file_handler.write(content)

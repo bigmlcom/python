@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member,broad-except
 #
 # Copyright 2014-2022 BigML
 #
@@ -16,21 +17,25 @@
 
 import time
 from datetime import datetime, timedelta
-from .world import world, eq_, ok_
+
 from bigml.api import HTTP_NO_CONTENT, HTTP_OK, HTTP_NOT_FOUND
+
+from .world import world, eq_, ok_
 
 
 def i_delete_the_project(step):
+    """Deleting project"""
     resource = world.api.delete_project(world.project['resource'])
     world.status = resource['code']
     eq_(world.status, HTTP_NO_CONTENT)
 
 
 def wait_until_project_deleted(step, secs):
+    """Waiting for delete """
     start = datetime.utcnow()
     project_id = world.project['resource']
     resource = world.api.get_project(project_id)
-    while (resource['code'] == HTTP_OK):
+    while resource['code'] == HTTP_OK:
         time.sleep(3)
         ok_(datetime.utcnow() - start < timedelta(seconds=int(secs)))
         resource = world.api.get_project(project_id)

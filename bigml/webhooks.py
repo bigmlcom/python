@@ -49,7 +49,7 @@ def compute_signature(msg, secret, encoding="utf-8"):
 
 def check_signature(request, secret):
     """Checks the signature when the webhook has been given one"""
-    sig_header = request.META['HTTP_X_BIGML_SIGNATURE'].replace('sha1=', '')
+    sig_header = request.meta['HTTP_X_BIGML_SIGNATURE'].replace('sha1=', '')
     payload = request.body
     computed_sig = compute_signature(payload, secret)
     if sig_header == computed_sig:

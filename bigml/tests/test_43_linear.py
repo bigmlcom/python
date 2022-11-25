@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2019-2022 BigML
 #
@@ -18,43 +20,44 @@
 """ Creating Linear Regression
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_linear_steps as linear_create
 from . import create_prediction_steps as prediction_create
 from . import create_batch_prediction_steps as batch_pred_create
 
-class TestLinearRegression(object):
+class TestLinearRegression:
+    """Testing Linear Regression methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a linear regression from a dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a linear regression from a dataset
-                And I wait until the linear regression is ready less than <model_wait> secs
-                And I update the linear regression name to "<linear_name>"
-                When I wait until the linear regression is ready less than <model_wait> secs
-                Then the linear regression name is "<linear_name>"
+        Scenario: Successfully creating a linear regression from a dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a linear regression from a dataset
+            And I wait until the linear regression is ready less than <model_wait> secs
+            And I update the linear regression name to "<linear_name>"
+            When I wait until the linear regression is ready less than <model_wait> secs
+            Then the linear regression name is "<linear_name>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -63,7 +66,7 @@ class TestLinearRegression(object):
             ['data/grades.csv', '100', '100', '200', 'my new linear regression name']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -84,15 +87,15 @@ class TestLinearRegression(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully creating a prediction from linear regression:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a pca
-                And I wait until the linear regression is ready less than <model_wait> secs
-                When I create a prediction for "<input_data>"
-                Then the prediction is "<prediction>"
+        Scenario: Successfully creating a prediction from linear regression:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a pca
+            And I wait until the linear regression is ready less than <model_wait> secs
+            When I create a prediction for "<input_data>"
+            Then the prediction is "<prediction>"
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -111,7 +114,7 @@ class TestLinearRegression(object):
              '{"bias": false}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -128,22 +131,19 @@ class TestLinearRegression(object):
             prediction_create.the_prediction_is(
                 self, example["objective_id"], example["prediction"])
 
-        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-
-
     def test_scenario3(self):
         """
-            Scenario: Successfully creating a batch prediction from a linear regression:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a linear regression
-                And I wait until the linear regression is ready less than <model_wait> secs
-                When I create a batch prediction for the dataset with the linear regression
-                And I wait until the batch predictin is ready less than <batch_wait> secs
-                And I download the created predictions file to "<local_file>"
-                Then the batch prediction file is like "<predictions_file>"
+        Scenario: Successfully creating a batch prediction from a linear regression:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a linear regression
+            And I wait until the linear regression is ready less than <model_wait> secs
+            When I create a batch prediction for the dataset with the linear regression
+            And I wait until the batch predictin is ready less than <batch_wait> secs
+            And I download the created predictions file to "<local_file>"
+            Then the batch prediction file is like "<predictions_file>"
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -153,7 +153,7 @@ class TestLinearRegression(object):
              'tmp/batch_predictions.csv', 'data/batch_predictions_linear.csv']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

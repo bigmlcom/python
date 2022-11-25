@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,45 +20,46 @@
 """ Creating model on lists of datasets
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
 from . import create_multimodel_steps as multimodel_create
 from . import compare_predictions_steps as compare_pred
 
-class TestMultimodel(object):
+class TestMultimodel:
+    """Testing the MultiModel class methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a model from a dataset list:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I store the dataset id in a list
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_3> secs
-                And I store the dataset id in a list
-                Then I create a model from a dataset list
-                And I wait until the model is ready less than <time_4> secs
-                And I check the model stems from the original dataset list
+        Scenario: Successfully creating a model from a dataset list:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <time_1> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <time_2> secs
+            And I store the dataset id in a list
+            And I create a dataset
+            And I wait until the dataset is ready less than <time_3> secs
+            And I store the dataset id in a list
+            Then I create a model from a dataset list
+            And I wait until the model is ready less than <time_4> secs
+            And I check the model stems from the original dataset list
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -64,7 +67,7 @@ class TestMultimodel(object):
             ['data/iris.csv', '10', '10', '10']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -84,16 +87,16 @@ class TestMultimodel(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully creating a model from a dataset list and predicting with it using median:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <time_1> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <time_2> secs
-                And I create a model
-                And I wait until the model is ready less than <time_3> secs
-                And I create a local multi model
-                When I create a local multimodel batch prediction using median for <input_data>
-                Then the local prediction is <prediction>
+        Scenario: Successfully creating a model from a dataset list and predicting with it using median:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <time_1> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <time_2> secs
+            And I create a model
+            And I wait until the model is ready less than <time_3> secs
+            And I create a local multi model
+            When I create a local multimodel batch prediction using median for <input_data>
+            Then the local prediction is <prediction>
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -104,7 +107,7 @@ class TestMultimodel(object):
              63.33]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

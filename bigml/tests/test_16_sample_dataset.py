@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,41 +20,43 @@
 """ Creating sample dataset
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_sample_steps as sample_create
 
-class TestSampleDataset(object):
 
-    def setup_method(self):
+class TestSampleDataset:
+    """Test for Sample methods"""
+
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a sample from a dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a sample from a dataset
-                And I wait until the sample is ready less than <sample_wait> secs
-                And I update the sample name to "<sample_name>"
-                When I wait until the sample is ready less than <sample_wait> secs
-                Then the sample name is "<sample_name>"
+        Scenario: Successfully creating a sample from a dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a sample from a dataset
+            And I wait until the sample is ready less than <sample_wait> secs
+            And I update the sample name to "<sample_name>"
+            When I wait until the sample is ready less than <sample_wait> secs
+            Then the sample name is "<sample_name>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "sample_wait",
@@ -61,7 +65,7 @@ class TestSampleDataset(object):
             ['data/iris.csv', '10', '10', '10', 'my new sample name']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"], shared=example["data"])
@@ -78,15 +82,14 @@ class TestSampleDataset(object):
 
     def test_scenario2(self):
         """
-
-            Scenario: Successfully cloning dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I clone the last dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                Then the new dataset is as the origin dataset
+        Scenario: Successfully cloning dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I clone the last dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            Then the new dataset is as the origin dataset
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait"]
@@ -94,7 +97,7 @@ class TestSampleDataset(object):
             ['data/iris.csv', '30', '30']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(self, example["data"])
             source_create.the_source_is_finished(
                 self, example["source_wait"], shared=example["data"])

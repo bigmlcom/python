@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2018-2022 BigML
 #
@@ -18,43 +20,44 @@
 """ Creating PCA
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_pca_steps as pca_create
 from . import create_projection_steps as projection_create
 from . import create_batch_projection_steps as batch_proj_create
 
-class TestPCA(object):
+class TestPCA:
+    """Testing PCA methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a PCA from a dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a PCA from a dataset
-                And I wait until the PCA is ready less than <model_wait> secs
-                And I update the PCA name to "<pca_name>"
-                When I wait until the PCA is ready less than <model_wait> secs
-                Then the PCA name is "<pca_name>"
+        Scenario: Successfully creating a PCA from a dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a PCA from a dataset
+            And I wait until the PCA is ready less than <model_wait> secs
+            And I update the PCA name to "<pca_name>"
+            When I wait until the PCA is ready less than <model_wait> secs
+            Then the PCA name is "<pca_name>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -63,7 +66,7 @@ class TestPCA(object):
             ['data/iris.csv', '10', '10', '40', 'my new pca name']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -83,15 +86,15 @@ class TestPCA(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully creating a projection:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a pca
-                And I wait until the pca is ready less than <model_wait> secs
-                When I create a projection for "<input_data>"
-                Then the projection is "<projection>"
+        Scenario: Successfully creating a projection:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a pca
+            And I wait until the pca is ready less than <model_wait> secs
+            When I create a projection for "<input_data>"
+            Then the projection is "<projection>"
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -102,7 +105,7 @@ class TestPCA(object):
              '"PC6": 0.27284, "PC4": 1.29255, "PC5": 0.75196}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -118,23 +121,19 @@ class TestPCA(object):
             projection_create.the_projection_is(
                 self, example["projection"])
 
-        print("\nEnd of tests in: %s\n-------------------\n" % __name__)
-
-
     def test_scenario3(self):
         """
-            Scenario: Successfully creating a batch projection:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a pca
-                And I wait until the pca is ready less than <model_wait> secs
-                When I create a batch projection for the dataset with the pca
-                And I wait until the batch projection is ready less than <batch_wait> secs
-                And I download the created projections file to "<local_file>"
-                Then the batch projection file is like "<projections_file>"
-
+        Scenario: Successfully creating a batch projection:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a pca
+            And I wait until the pca is ready less than <model_wait> secs
+            When I create a batch projection for the dataset with the pca
+            And I wait until the batch projection is ready less than <batch_wait> secs
+            And I download the created projections file to "<local_file>"
+            Then the batch projection file is like "<projections_file>"
         """
         show_doc(self.test_scenario3)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -144,7 +143,7 @@ class TestPCA(object):
              'tmp/batch_projections.csv', 'data/batch_projections.csv']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(

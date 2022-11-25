@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2016-2022 BigML
 #
@@ -21,7 +23,7 @@
 import sys
 
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_lda_steps as topic_create
@@ -78,27 +80,30 @@ DUMMY_MODEL = {
 }
 
 
-class TestTopicModel(object):
+class TestTopicModel:
+    """Test Topic Model Predictions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario 1: Successfully creating a local Topic Distribution
-                Given I have a block of text and an LDA model
-                And I use the model to predict the topic distribution
-                Then the value of the distribution matches the expected distribution
+        Scenario 1: Successfully creating a local Topic Distribution
+            Given I have a block of text and an LDA model
+            And I use the model to predict the topic distribution
+            Then the value of the distribution matches the expected distribution
         """
         show_doc(self.test_scenario1)
         headers = ["model", "text", "expected_distribution"]
@@ -120,22 +125,22 @@ class TestTopicModel(object):
 
         for ex in examples:
             ex = dict(zip(headers, ex))
-            show_method(self, sys._getframe().f_code.co_name, ex)
+            show_method(self, self.bigml["method"], ex)
             lda_predict.i_make_a_prediction(
                 self, ex["model"], ex["text"], ex["expected_distribution"])
 
     def test_scenario2(self):
         """
-            Scenario 2: Successfully creating Topic Model from a dataset:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create topic model from a dataset
-                And I wait until the topic model is ready less than <model_wait> secs
-                And I update the topic model name to "<topic_model_name>"
-                When I wait until the topic_model is ready less than <model_wait> secs
-                Then the topic model name is "<topic_model_name>"
+        Scenario 2: Successfully creating Topic Model from a dataset:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create topic model from a dataset
+            And I wait until the topic model is ready less than <model_wait> secs
+            And I update the topic model name to "<topic_model_name>"
+            When I wait until the topic_model is ready less than <model_wait> secs
+            Then the topic model name is "<topic_model_name>"
         """
         show_doc(self.test_scenario2)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -144,7 +149,7 @@ class TestTopicModel(object):
             ['data/spam.csv', '100', '100', '100', 'my new topic model name', '{"fields": {"000001": {"optype": "text", "term_analysis": {"case_sensitive": true, "stem_words": true, "use_stopwords": false, "language": "en"}}}}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"])
             source_create.the_source_is_finished(self, example["source_wait"])

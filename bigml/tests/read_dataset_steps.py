@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,no-member
 #
 # Copyright 2012-2022 BigML
 #
@@ -16,25 +17,26 @@
 
 import json
 
-from .world import world, eq_, ok_
-from bigml.api import HTTP_OK
 from bigml.fields import Fields
+from .world import world, eq_, ok_
 
 
-#@step(r'I ask for the missing values counts in the fields')
 def i_get_the_missing_values(step):
+    """Step: I ask for the missing values counts in the fields"""
     resource = world.dataset
     fields = Fields(resource['fields'])
-    world.step_result = fields.missing_counts()
+    step.bigml["result"] = fields.missing_counts()
 
 
-#@step(r'I ask for the error counts in the fields')
 def i_get_the_errors_values(step):
+    """Step: I ask for the error counts in the fields """
     resource = world.dataset
-    world.step_result = world.api.error_counts(resource)
+    step.bigml["result"] = world.api.error_counts(resource)
 
 
-#@step(r'the (missing values counts|error counts) dict is "(.*)"')
-def i_get_the_properties_values(step, text, properties_dict):
+def i_get_the_properties_values(step, properties_dict):
+    """Step: the (missing values counts|error counts) dict
+    is <properties_dict>
+    """
     ok_(properties_dict is not None)
-    eq_(world.step_result, json.loads(properties_dict))
+    eq_(step.bigml["result"], json.loads(properties_dict))

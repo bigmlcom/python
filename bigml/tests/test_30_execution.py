@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2015-2022 BigML
 #
@@ -18,40 +20,41 @@
 """ Creating and updating scripts
 
 """
-import sys
-
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import create_script_steps as script_create
 from . import create_execution_steps as execution_create
 
-class TestExecution(object):
+class TestExecution:
+    """Testing local executions"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario: Successfully creating a whizzml script execution:
-                Given I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <time_1> secs
-                And I create a whizzml script execution from an existing script
-                And I wait until the execution is ready less than <time_2> secs
-                And I update the execution with "<param>", "<param_value>"
-                And I wait until the execution is ready less than <time_3> secs
-                And I create a local execution
-                Then the script id is correct, the value of "<param>" is "<param_value>" and the result is "<result>"
-                And the local execution result is "<result>"
+        Scenario: Successfully creating a whizzml script execution:
+            Given I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <time_1> secs
+            And I create a whizzml script execution from an existing script
+            And I wait until the execution is ready less than <time_2> secs
+            And I update the execution with "<param>", "<param_value>"
+            And I wait until the execution is ready less than <time_3> secs
+            And I create a local execution
+            Then the script id is correct, the value of "<param>" is "<param_value>" and the result is "<result>"
+            And the local execution result is "<result>"
         """
         show_doc(self.test_scenario1)
         headers = ["source_code", "script_wait", "execution_wait", "param",
@@ -61,7 +64,7 @@ class TestExecution(object):
 
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             script_create.i_create_a_script(self, example["source_code"])
             script_create.the_script_is_finished(self, example["script_wait"])
             execution_create.i_create_an_execution(self)
@@ -80,16 +83,16 @@ class TestExecution(object):
 
     def test_scenario2(self):
         """
-            Scenario: Successfully creating a whizzml script execution from a list of scripts:
-                Given I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <script_wait> secs
-                And I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <script_wait> secs
-                And I create a whizzml script execution from the last two scripts
-                And I wait until the execution is ready less than <execution_wait> secs
-                And I update the execution with "<param>", "<param_value>"
-                And I wait until the execution is ready less than <execution_wait> secs
-                Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
+        Scenario: Successfully creating a whizzml script execution from a list of scripts:
+            Given I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <script_wait> secs
+            And I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <script_wait> secs
+            And I create a whizzml script execution from the last two scripts
+            And I wait until the execution is ready less than <execution_wait> secs
+            And I update the execution with "<param>", "<param_value>"
+            And I wait until the execution is ready less than <execution_wait> secs
+            Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
         """
         show_doc(self.test_scenario2)
         headers = ["source_code", "script_wait", "execution_wait", "param",
@@ -98,7 +101,7 @@ class TestExecution(object):
             ['(+ 1 1)', '100', '100', 'name', 'my execution', [2, 2]]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             script_create.i_create_a_script(self, example["source_code"])
             script_create.the_script_is_finished(self, example["script_wait"])
             script_create.i_create_a_script(self, example["source_code"])
@@ -117,16 +120,16 @@ class TestExecution(object):
 
     def test_scenario3(self):
         """
-            Scenario: Successfully creating a whizzml script execution from a local or remote file:
-                Given I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <script_wait> secs
-                And I create a whizzml script from a excerpt of code "<source_code>"
-                And I wait until the script is ready less than <script_wait> secs
-                And I create a whizzml script execution from the last two scripts
-                And I wait until the execution is ready less than <execution_wait> secs
-                And I update the execution with "<param>", "<param_value>"
-                And I wait until the execution is ready less than <execution_wait> secs
-                Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
+        Scenario: Successfully creating a whizzml script execution from a local or remote file:
+            Given I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <script_wait> secs
+            And I create a whizzml script from a excerpt of code "<source_code>"
+            And I wait until the script is ready less than <script_wait> secs
+            And I create a whizzml script execution from the last two scripts
+            And I wait until the execution is ready less than <execution_wait> secs
+            And I update the execution with "<param>", "<param_value>"
+            And I wait until the execution is ready less than <execution_wait> secs
+            Then the script ids are correct, the value of "<param>" is "<param_value>" and the result is "<result>"
         """
         show_doc(self.test_scenario2)
         headers = ["source_code", "script_wait", "execution_wait", "param",
@@ -138,7 +141,7 @@ class TestExecution(object):
              '30', '30', 'name', 'my execution', 2]]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             script_create.i_create_a_script_from_file_or_url(
                 self, example["source_code"])
             script_create.the_script_is_finished(

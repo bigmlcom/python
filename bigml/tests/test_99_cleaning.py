@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import,no-self-use
 #
 # Copyright 2018-2022 BigML
 #
@@ -22,7 +24,8 @@
 from .world import world, teardown_fn, setup_module, ok_
 
 
-class TestCleaningProject(object):
+class TestCleaningProject:
+    """Artifact to clean all the created resources after each test execution"""
 
     def setup_method(self):
         """
@@ -30,7 +33,7 @@ class TestCleaningProject(object):
         """
         print("\nFinal cleaning\n")
 
-    def test_final(step):
+    def test_final(self):
         """Final empty test """
         ok_(True)
 

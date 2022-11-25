@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2018-2022 BigML
 #
@@ -14,25 +15,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-import json
-import requests
-import csv
-import traceback
-from datetime import datetime
-from .world import world, res_filename, eq_, ok_
 
 from bigml.api import HTTP_CREATED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
+from bigml.api import FINISHED, FAULTY
 from bigml.io import UnicodeReader
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, res_filename, eq_, ok_
 
 
-#@step(r'I create a batch projection for the dataset with the PCA$')
 def i_create_a_batch_projection(step):
+    """Step: I create a batch projection for the dataset with the PCA"""
     dataset = world.dataset.get('resource')
     pca = world.pca.get('resource')
     resource = world.api.create_batch_projection(pca, dataset)
@@ -43,29 +36,35 @@ def i_create_a_batch_projection(step):
     world.batch_projections.append(resource['resource'])
 
 
-#@step(r'I wait until the batch projection status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_batch_projection_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the batch projection status code is either <code1>
+    or <code2> less than <secs>
+    """
     world.batch_projection = wait_until_status_code_is(
         code1, code2, secs, world.batch_projection)
 
 
-#@step(r'I wait until the batch projection is ready less than (\d+)')
 def the_batch_projection_is_finished_in_less_than(step, secs):
+    """Step: I wait until the batch projection is ready less than <secs>"""
     wait_until_batch_projection_status_code_is(step, FINISHED, FAULTY, secs)
 
-#@step(r'I download the created projections file to "(.*)"')
+
 def i_download_projections_file(step, filename):
+    """Step: I download the created projections file to <filename>"""
     file_object = world.api.download_batch_projection(
         world.batch_projection, filename=res_filename(filename))
     ok_(file_object is not None)
     world.output = file_object
 
-#@step(r'the batch projection file is like "(.*)"')
+
 def i_check_projections(step, check_file):
+    """Step: the batch projection file is like <check_file>"""
     with UnicodeReader(world.output) as projection_rows:
         with UnicodeReader(res_filename(check_file)) as test_rows:
             check_csv_rows(projection_rows, test_rows)
 
+
 def check_csv_rows(projections, expected):
+    """Checking expected projections"""
     for projection in projections:
         eq_(projection, next(expected))

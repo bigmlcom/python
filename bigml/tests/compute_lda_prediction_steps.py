@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2016-2022 BigML
 #
@@ -19,8 +20,8 @@ from bigml.topicmodel import TopicModel
 from .world import eq_, approx_
 
 
-#@step(r'predict the topic distribution for the text "(.*)"$')
 def i_make_a_prediction(step, model, text, expected):
+    """Step: predict the topic distribution for the text <expected>"""
     topic_model = TopicModel(model)
     distribution = topic_model.distribution(text)
 
@@ -29,5 +30,5 @@ def i_make_a_prediction(step, model, text, expected):
 
     eq_(len(distribution), len(expected), msg=msg)
 
-    for d, e in zip(distribution, expected):
-        approx_(d['probability'], e['probability'], precision=6, msg=msg)
+    for dis, exp in zip(distribution, expected):
+        approx_(dis['probability'], exp['probability'], precision=6, msg=msg)

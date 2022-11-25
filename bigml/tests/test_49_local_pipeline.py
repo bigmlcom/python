@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,line-too-long,attribute-defined-outside-init
+#pylint: disable=locally-disabled,unused-import
 #
 # Copyright 2022 BigML
 #
@@ -18,12 +20,11 @@
 """ Testing local dataset transformations
 
 """
-import sys
 import os
 import json
 
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method, delete_local
+    show_method
 from . import compare_pipeline_steps as pipeline_compare
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
@@ -35,27 +36,30 @@ from . import create_prediction_steps as prediction_create
 from . import compare_predictions_steps as prediction_compare
 
 
-class TestLocalPipeline(object):
+class TestLocalPipeline:
+    """Testing local Pipeline methods"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         """
             Debug information
         """
+        self.bigml = {}
+        self.bigml["method"] = method.__name__
         print("\n-------------------\nTests in: %s\n" % __name__)
 
     def teardown_method(self):
         """
             Debug information
         """
-        delete_local()
         print("\nEnd of tests in: %s\n-------------------\n" % __name__)
+        self.bigml = {}
 
     def test_scenario1(self):
         """
-            Scenario 1: Successfully creating a local pipeline from a model and anomaly detector:
-                Given I expand the zip file "<pipeline_file>" that contain "<models_list>"
-                And I create a local pipeline for "<models_list>" named "<name>"
-                Then the transformed data for "<input_data>" is "<output_data>"
+        Scenario 1: Successfully creating a local pipeline from a model and anomaly detector:
+            Given I expand the zip file "<pipeline_file>" that contain "<models_list>"
+            And I create a local pipeline for "<models_list>" named "<name>"
+            Then the transformed data for "<input_data>" is "<output_data>"
         """
         show_doc(self.test_scenario1)
         headers = ["pipeline_file", "models_list", "name", "input_data",
@@ -72,7 +76,7 @@ class TestLocalPipeline(object):
              ' "prediction": "false", "probability": 0.6586746586746587}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             pipeline_compare.i_expand_file_with_models_list(
                 self, example["pipeline_file"], example["models_list"])
             pipeline_compare.i_create_a_local_pipeline_from_models_list(
@@ -83,12 +87,12 @@ class TestLocalPipeline(object):
 
     def test_scenario2(self):
         """
-            Scenario 2: Successfully creating a local pipeline from two BMLPipelines
-                Given I expand the zip file "<pipeline_file>" that contain "<models_list>"
-                And I create a local pipeline for "<model1>" named "<name1>"
-                And I create a local pipeline for "<model2>" named "<name2>"
-                And I create a local pipeline "<name3>" for both pipelines
-                Then the transformed data for "<input_data>" is "<output_data>"
+        Scenario 2: Successfully creating a local pipeline from two BMLPipelines
+            Given I expand the zip file "<pipeline_file>" that contain "<models_list>"
+            And I create a local pipeline for "<model1>" named "<name1>"
+            And I create a local pipeline for "<model2>" named "<name2>"
+            And I create a local pipeline "<name3>" for both pipelines
+            Then the transformed data for "<input_data>" is "<output_data>"
         """
         show_doc(self.test_scenario2)
         headers = ["pipeline_file", "models_list", "model1", "name1",
@@ -109,7 +113,7 @@ class TestLocalPipeline(object):
              ' "prediction": "false", "probability": 0.6586746586746587}']]
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             pipeline_compare.i_expand_file_with_models_list(
                 self, example["pipeline_file"], example["models_list"])
             pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
@@ -125,19 +129,19 @@ class TestLocalPipeline(object):
 
     def test_scenario3(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for linear regression:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a linear regression
-                And I wait until the linear regression is ready
-                less than <model_wait> secs
-                And I create a local pipeline for the linear regression named "<name>"
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the prediction in the transformed data for "<input_data>" is "<prediction>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for linear regression:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a linear regression
+            And I wait until the linear regression is ready
+            less than <model_wait> secs
+            And I create a local pipeline for the linear regression named "<name>"
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the prediction in the transformed data for "<input_data>" is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "name"]
@@ -164,7 +168,7 @@ class TestLocalPipeline(object):
 
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -176,7 +180,7 @@ class TestLocalPipeline(object):
                 self, shared=example["data"])
             linear_create.the_linear_regression_is_finished_in_less_than(
                 self, example["model_wait"], shared=example["data"])
-            pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
+            pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, [world.linear_regression["resource"]], example["name"])
             prediction_create.i_create_a_linear_prediction(
                 self, example["input_data"])
@@ -188,18 +192,18 @@ class TestLocalPipeline(object):
 
     def test_scenario4(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw date input for deepnet:
-                Given I create a data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a deepnet
-                And I wait until the deepnet is ready less than <model_wait> secs
-                And I create a local pipeline for the deepnet named "<name>"
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the prediction in the transformed data for "<input_data>" is "<prediction>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw date input for deepnet:
+            Given I create a data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a deepnet
+            And I wait until the deepnet is ready less than <model_wait> secs
+            And I create a local pipeline for the deepnet named "<name>"
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the prediction in the transformed data for "<input_data>" is "<prediction>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "name"]
@@ -231,7 +235,7 @@ class TestLocalPipeline(object):
         show_doc(self.test_scenario4)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file(
                 self, example["data"], shared=example["data"])
             source_create.the_source_is_finished(
@@ -244,7 +248,7 @@ class TestLocalPipeline(object):
                 self, shared=deepnet_shared)
             model_create.the_deepnet_is_finished_in_less_than(
                 self, example["model_wait"], shared=deepnet_shared)
-            pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
+            pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, [world.deepnet["resource"]], example["name"])
             prediction_create.i_create_a_deepnet_prediction(
                 self, example["input_data"])
@@ -257,22 +261,22 @@ class TestLocalPipeline(object):
 
     def test_scenario5(self):
         """
-            Scenario: Successfully comparing remote and local predictions
-                      with raw input for deepnets with images:
-                Given I create an annotated images data source uploading a "<data>" file
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create a deepnet with parms <model_conf>
-                And I wait until the deepnet is ready
-                less than <time_3> secs
-                And I create a local pipeline for the deepnet named "<name>"
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective>" is "<prediction>"
-                When I create a prediction for "<input_data>"
-                Then the prediction for "<objective_id>" is "<prediction>"
-                And the prediction in the transformed data for "<input_data>" is "<prediction>"
-                And the probability in the transformed data for "<input_data>" is "<probability>"
+        Scenario: Successfully comparing remote and local predictions
+                  with raw input for deepnets with images:
+            Given I create an annotated images data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create a deepnet with parms <model_conf>
+            And I wait until the deepnet is ready
+            less than <time_3> secs
+            And I create a local pipeline for the deepnet named "<name>"
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective>" is "<prediction>"
+            When I create a prediction for "<input_data>"
+            Then the prediction for "<objective_id>" is "<prediction>"
+            And the prediction in the transformed data for "<input_data>" is "<prediction>"
+            And the probability in the transformed data for "<input_data>" is "<probability>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "model_conf", "image_fields",
@@ -292,7 +296,7 @@ class TestLocalPipeline(object):
         show_doc(self.test_scenario5)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_create_annotated_source(
                 self,
                 example["data"],
@@ -308,13 +312,13 @@ class TestLocalPipeline(object):
                 json.dumps(example["model_conf"]))
             model_create.the_deepnet_is_finished_in_less_than(
                 self, example["model_wait"])
-            pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
+            pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, [world.deepnet["resource"]], example["name"])
             prediction_create.i_create_a_deepnet_prediction(
                 self, example["input_data"], example["image_fields"])
             prediction = world.prediction["output"]
             probability = world.prediction["probability"]
-            pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
+            pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, [world.deepnet["resource"]], example["name"])
             pipeline_compare.the_pipeline_result_key_is(
                 self, example["input_data"], "prediction", prediction,
@@ -325,20 +329,20 @@ class TestLocalPipeline(object):
 
     def test_scenario6(self):
         """
-            Scenario: Successfully comparing remote and local anomaly scores
-                      with raw input for dataset with images:
-                Given I create an annotated images data source uploading a "<data>" file and <extracted_features>
+        Scenario: Successfully comparing remote and local anomaly scores
+                  with raw input for dataset with images:
+            Given I create an annotated images data source uploading a "<data>" file and <extracted_features>
 
-                And I wait until the source is ready less than <source_wait> secs
-                And I create a dataset
-                And I wait until the dataset is ready less than <dataset_wait> secs
-                And I create an anomaly detector
-                And I wait until the anomaly is ready
-                less than <anomaly_wait> secs
-                And I create a local pipeline for the anomaly detector named "<name>"
-                When I create an anomaly score for "<input_data>"
-                Then the anomaly score is "<score>"
-                And the anomaly score in the transformed data for "<input_data>" is "<score>"
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            And I create an anomaly detector
+            And I wait until the anomaly is ready
+            less than <anomaly_wait> secs
+            And I create a local pipeline for the anomaly detector named "<name>"
+            When I create an anomaly score for "<input_data>"
+            Then the anomaly score is "<score>"
+            And the anomaly score in the transformed data for "<input_data>" is "<score>"
         """
         headers = ["data", "extracted_features", "source_wait", "dataset_wait",
                    "anomaly_wait", "input_data", "score", "name"]
@@ -352,7 +356,7 @@ class TestLocalPipeline(object):
         show_doc(self.test_scenario6)
         for example in examples:
             example = dict(zip(headers, example))
-            show_method(self, sys._getframe().f_code.co_name, example)
+            show_method(self, self.bigml["method"], example)
             source_create.i_upload_a_file_with_args(
                 self,
                 example["data"],
@@ -367,7 +371,7 @@ class TestLocalPipeline(object):
             anomaly_create.i_create_an_anomaly(self)
             anomaly_create.the_anomaly_is_finished_in_less_than(
                 self, example["anomaly_wait"])
-            pipe1 = pipeline_compare.i_create_a_local_pipeline_from_models_list(
+            pipeline_compare.i_create_a_local_pipeline_from_models_list(
                 self, [world.anomaly["resource"]], example["name"])
             prediction_create.i_create_an_anomaly_score(
                 self, example["input_data"])

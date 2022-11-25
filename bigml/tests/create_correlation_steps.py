@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2015-2022 BigML
 #
@@ -14,28 +15,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-import json
-import os
-from datetime import datetime
-from .world import world, eq_
-
-from bigml.api import HTTP_CREATED
-from bigml.api import HTTP_ACCEPTED
-from bigml.api import FINISHED
-from bigml.api import FAULTY
-from bigml.api import get_status
+from bigml.api import HTTP_CREATED, HTTP_ACCEPTED
+from bigml.api import FINISHED, FAULTY
 
 from .read_resource_steps import wait_until_status_code_is
+from .world import world, eq_
 
-
-#@step(r'the correlation name is "(.*)"')
 def i_check_correlation_name(step, name):
+    """Step: the correlation name is <name>"""
     correlation_name = world.correlation['name']
     eq_(name, correlation_name)
 
-#@step(r'I create a correlation from a dataset$')
 def i_create_a_correlation_from_dataset(step):
+    """Step: I create a correlation from a dataset"""
     dataset = world.dataset.get('resource')
     resource = world.api.create_correlation(dataset, {'name': 'new correlation'})
     world.status = resource['code']
@@ -45,8 +37,8 @@ def i_create_a_correlation_from_dataset(step):
     world.correlations.append(resource['resource'])
 
 
-#@step(r'I update the correlation name to "(.*)"$')
 def i_update_correlation_name(step, name):
+    """Step: I update the correlation name to <name>"""
     resource = world.api.update_correlation(world.correlation['resource'],
                                             {'name': name})
     world.status = resource['code']
@@ -55,12 +47,14 @@ def i_update_correlation_name(step, name):
     world.correlation = resource['object']
 
 
-#@step(r'I wait until the correlation status code is either (\d) or (-\d) less than (\d+)')
 def wait_until_correlation_status_code_is(step, code1, code2, secs):
+    """Step: I wait until the correlation status code is either <code1>
+    or <code2> less than <secs>
+    """
     world.correlation = wait_until_status_code_is(
         code1, code2, secs, world.correlation)
 
 
-#@step(r'I wait until the correlation is ready less than (\d+)')
 def the_correlation_is_finished_in_less_than(step, secs):
+    """Step: I wait until the correlation is ready less than <secs>"""
     wait_until_correlation_status_code_is(step, FINISHED, FAULTY, secs)

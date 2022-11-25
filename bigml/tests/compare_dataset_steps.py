@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=locally-disabled,unused-argument,no-member
 #
 # Copyright 2022 BigML
 #
@@ -13,29 +14,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
 import json
-import os
-
-from .world import world, res_filename, eq_
-
 
 from bigml.dataset import Dataset
 
+from .world import res_filename, eq_
 
-#@step(r'I create a local dataset from a "(.*)" file$')
+
 def i_create_a_local_dataset_from_file(step, dataset_file):
-    world.local_dataset = Dataset(res_filename(dataset_file))
+    """Step: I create a local dataset from a <dataset_file> file"""
+    step.bigml["local_dataset"] = Dataset(res_filename(dataset_file))
 
 
 def the_transformed_data_is(step, input_data, output_data):
+    """Checking expected transformed data"""
     if input_data is None:
         input_data = "{}"
     if output_data is None:
         output_data = "{}"
     input_data = json.loads(input_data)
     output_data = json.loads(output_data)
-    transformed_data = world.local_dataset.transform([input_data])
+    transformed_data = step.bigml["local_dataset"].transform([input_data])
     for key, value in transformed_data[0].items():
         eq_(output_data.get(key), value)

@@ -19,12 +19,14 @@ from .world import world, ok_
 
 def i_store_dataset_id(step):
     """Step: I store the dataset id in a list"""
-    world.dataset_ids.append(world.dataset['resource'])
+    if step.bigml.get("dataset_ids") is None:
+        step.bigml["dataset_ids"] = []
+    step.bigml["dataset_ids"].append(world.dataset['resource'])
 
 
 def i_check_model_datasets_and_datasets_ids(step):
     """Step: I check the model stems from the original dataset list"""
     model = world.model
-    ok_('datasets' in model and model['datasets'] == world.dataset_ids,
+    ok_('datasets' in model and model['datasets'] == step.bigml["dataset_ids"],
         ("The model contains only %s and the dataset ids are %s" %
-         (",".join(model['datasets']), ",".join(world.dataset_ids))))
+         (",".join(model['datasets']), ",".join(step.bigml["dataset_ids"]))))

@@ -30,9 +30,10 @@ def i_check_anomaly_datasets_and_datasets_ids(step):
     list
     """
     anomaly = world.anomaly
-    ok_('datasets' in anomaly and anomaly['datasets'] == world.dataset_ids,
+    ok_('datasets' in anomaly and
+        anomaly['datasets'] == step.bigml["dataset_ids"],
         ("The anomaly detector contains only %s and the dataset ids are %s" %
-         (",".join(anomaly['datasets']), ",".join(world.dataset_ids))))
+         (",".join(anomaly['datasets']), ",".join(step.bigml["dataset_ids"]))))
 
 
 def i_check_anomaly_dataset_and_datasets_ids(step):
@@ -113,7 +114,8 @@ def i_create_an_anomaly_with_params(step, parms=None):
 
 def i_create_an_anomaly_from_dataset_list(step):
     """Step: I create an anomaly detector from a dataset list"""
-    resource = world.api.create_anomaly(world.dataset_ids, {'seed': 'BigML'})
+    resource = world.api.create_anomaly(step.bigml["dataset_ids"],
+                                        {'seed': 'BigML'})
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

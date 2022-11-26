@@ -79,7 +79,7 @@ def i_create_a_balanced_model(step):
 
 def i_create_a_model_from_dataset_list(step):
     """Step: I create a model from a dataset list"""
-    resource = world.api.create_model(world.dataset_ids,
+    resource = world.api.create_model(step.bigml["dataset_ids"],
                                       args=NO_MISSING_SPLITS)
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)

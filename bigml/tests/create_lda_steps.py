@@ -43,7 +43,7 @@ def i_create_a_topic_model(step):
 
 def i_create_a_topic_model_from_dataset_list(step):
     """Step: I create a topic model from a dataset list"""
-    resource = world.api.create_topic_model(world.dataset_ids)
+    resource = world.api.create_topic_model(step.bigml["dataset_ids"])
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

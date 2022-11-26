@@ -43,7 +43,7 @@ def i_create_a_cluster(step, shared=None):
 
 def i_create_a_cluster_from_dataset_list(step):
     """Step: I create a cluster from a dataset list"""
-    resource = world.api.create_cluster(world.dataset_ids)
+    resource = world.api.create_cluster(step.bigml["dataset_ids"])
     world.status = resource['code']
     eq_(world.status, HTTP_CREATED)
     world.location = resource['location']

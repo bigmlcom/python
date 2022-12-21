@@ -3,6 +3,11 @@
 History
 -------
 
+9.1.3 (2022-12-22)
+------------------
+
+- Changing user's status endpoint retrieval to a lightweight version.
+
 9.1.2 (2022-11-26)
 ------------------
 

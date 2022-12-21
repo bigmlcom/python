@@ -40,7 +40,7 @@ import json
 
 from bigml.bigmlconnection import BigMLConnection
 from bigml.domain import BIGML_PROTOCOL
-from bigml.constants import STORAGE, ALL_FIELDS, TINY_RESOURCE
+from bigml.constants import STORAGE, ALL_FIELDS, TINY_RESOURCE, TASKS_QS
 from bigml.util import is_in_progress, is_image
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.api_handlers.sourcehandler import SourceHandlerMixin
@@ -540,13 +540,11 @@ class BigML(BigMLConnection,ExternalConnectorHandlerMixin,
             info += "    Scope info: %s\n" % \
                 "%s\n                %s" % (self.organization or "",
                                             self.project or "")
-
-
         info += "\nAuthentication string:\n"
         info += "    %s\n" % self.auth[1:]
         return info
 
-    def get_account_status(self):
+    def get_account_status(self, query_string=''):
         """Retrieve the account information: tasks, available_tasks, max_tasks, .
 
         Returns a dictionary with the summarized information about the account
@@ -554,8 +552,9 @@ class BigML(BigMLConnection,ExternalConnectorHandlerMixin,
         """
         if self.organization is not None:
             return self._status(self.status_url,
+                                query_string=query_string,
                                 organization=self.organization)
-        return self._status(self.status_url)
+        return self._status(self.status_url, query_string=query_string)
 
     def get_tasks_status(self):
         """Retrieve the tasks information of the account
@@ -563,11 +562,7 @@ class BigML(BigMLConnection,ExternalConnectorHandlerMixin,
         Returns a dictionary with the summarized information about the tasks
 
         """
-        if self.organization is not None:
-            status = self._status(self.status_url,
-                                  organization=self.organization)
-        else:
-            status = self._status(self.status_url)
+        status = self.get_account_status(query_string=TASKS_QS)
         if status["error"] is None:
             status = status.get("object", {})
             return {

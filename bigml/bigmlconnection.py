@@ -282,7 +282,6 @@ class BigMLConnection():
         self.prediction_base_url = BIGML_URL % (
             self.domain.prediction_protocol, self.domain.prediction_domain, "")
 
-
     def _add_credentials(self, url, organization=False, shared_auth=None):
         """Adding the credentials and project or organization information
         for authentication

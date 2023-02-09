@@ -3,6 +3,12 @@
 History
 -------
 
+9.1.4 (2023-02-10)
+------------------
+
+- Providing local deepnet predictions default for Windows OS that cannot
+  handle images predictions.
+
 9.1.3 (2022-12-22)
 ------------------
 

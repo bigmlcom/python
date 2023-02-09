@@ -204,6 +204,23 @@ class Deepnet(ModelFields):
                         "output_exposition", self.output_exposition)
                     self.preprocess = network.get('preprocess')
                     self.optimizer = network.get('optimizer', {})
+
+                if self.regions:
+                    settings = self.operation_settings or {}
+                    settings.update(IOU_REMOTE_SETTINGS)
+                else:
+                    settings = None
+                if not LAMINAR_VERSION:
+                    try:
+                        self.deepnet = create_model(deepnet,
+                            settings=settings)
+                    except Exception:
+                        # Windows systems can fail to have some libraries
+                        # required to predict complex deepnets with inner
+                        # tree layers. In this case, we revert to the old
+                        # library version iff possible.
+                        LAMINAR_VERSION = True
+
                 if LAMINAR_VERSION:
                     if self.regions:
                         raise ValueError("Failed to find the extra libraries"
@@ -211,21 +228,12 @@ class Deepnet(ModelFields):
                                          "regions. Please, install them by "
                                          "running \n"
                                          "pip install bigml[images]")
-                    self.deepnet = None
                     for _, field in self.fields.items():
                         if field["optype"] == IMAGE:
                             raise ValueError("This deepnet cannot be predicted"
                                              " as some required libraries are "
                                              "not available for this OS.")
-                else:
-                    if self.regions:
-                        settings = self.operation_settings or {}
-                        settings.update(IOU_REMOTE_SETTINGS)
-                    else:
-                        settings = None
-                    self.deepnet = create_model(deepnet,
-                        settings=settings)
-
+                    self.deepnet = None
             else:
                 raise Exception("The deepnet isn't finished yet")
         else:

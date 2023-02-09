@@ -80,37 +80,26 @@ libraries is ``simplejson`` is not found.
 The bindings provide support to use the ``BigML`` platform to create, update,
 get and delete resources, but also to produce local predictions using the
 models created in ``BigML``. Most of them will be actionable with the basic
-installation, but some additional dependencies are needed
-to use local ``Topic Models`` to produce ``Topic Distributions``. These can
-be installed using:
+installation, but some additional dependencies are needed to use local
+``Topic Models`` and Image Processing models. Please, refer to the
+`Installation <#installation>`_ section for details.
 
-.. code-block:: bash
+OS Requirements
+~~~~~~~~~~~~~~~
 
-    pip install bigml[topics]
-
-The bindings also support local predictions for models generated from images.
-To use these models, an additional set of libraries needs to be installed
-using:
-
-.. code-block:: bash
-
-    pip install bigml[images]
-
-The external libraries used in this case exist for the majority of recent
-Operative System versions. Still, some of them might need especific
-compiler versions or dlls, so their installation may require an additional
-setup effort.
-
-The full set of libraries can be installed using
-
-.. code-block:: bash
-
-    pip install bigml[full]
+The basic installation of the bindings is compatible and can be used
+on Linux and Windows based Operating Systems.
+However, the extra options that allow working with
+image processing models (``[images]`` and ``[full]``) are only supported
+and tested on Linux-based Operating Systems.
+For image models, Windows OS is not recommended and cannot be supported out of
+the box, because the specific compiler versions or dlls required are
+unavailable in general.
 
 Installation
 ------------
 
-To install the latest stable release with
+To install the basic latest stable release with
 `pip <http://www.pip-installer.org/>`_, please use:
 
 .. code-block:: bash
@@ -154,21 +143,6 @@ from the Git repository
 .. code-block:: bash
 
     $ pip install -e git://github.com/bigmlcom/python.git#egg=bigml_python
-
-Importing the module
---------------------
-
-To import the module:
-
-.. code-block:: python
-
-    import bigml.api
-
-Alternatively you can just import the BigML class:
-
-.. code-block:: python
-
-    from bigml.api import BigML
 
 Authentication
 --------------
@@ -934,9 +908,8 @@ To use external data connectors:
 Running the Tests
 -----------------
 
-The tests will be run using `nose <https://nose.readthedocs.org/en/latest/>`_
-and `pytest <https://docs.pytest.org/en/7.2.x/>`_ as a transition to pytest
-stardard tests. You'll need to set up your authentication
+The tests will be run using `pytest <https://docs.pytest.org/en/7.2.x/>`_.
+You'll need to set up your authentication
 via environment variables, as explained
 in the authentication section. Also some of the tests need other environment
 variables like ``BIGML_ORGANIZATION`` to test calls when used by Organization

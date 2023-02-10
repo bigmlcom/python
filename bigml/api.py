@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #pylint: disable=too-many-ancestors,non-parent-init-called, unused-import, no-member
 #
-# Copyright 2012-2022 BigML
+# Copyright 2012-2023 BigML
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain

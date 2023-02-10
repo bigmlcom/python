@@ -129,6 +129,8 @@ class Deepnet(ModelFields):
          - regions: bounding_box_threshold, iou_threshold and max_objects
         """
 
+        self.using_laminar = LAMINAR_VERSION
+
         if use_cache(cache_get):
             # using a cache to store the model attributes
             self.__dict__ = load(get_deepnet_id(deepnet), cache_get)
@@ -210,7 +212,8 @@ class Deepnet(ModelFields):
                     settings.update(IOU_REMOTE_SETTINGS)
                 else:
                     settings = None
-                if not LAMINAR_VERSION:
+
+                if not self.using_laminar:
                     try:
                         self.deepnet = create_model(deepnet,
                             settings=settings)
@@ -219,9 +222,9 @@ class Deepnet(ModelFields):
                         # required to predict complex deepnets with inner
                         # tree layers. In this case, we revert to the old
                         # library version iff possible.
-                        LAMINAR_VERSION = True
+                        self.using_laminar = True
 
-                if LAMINAR_VERSION:
+                if self.using_laminar:
                     if self.regions:
                         raise ValueError("Failed to find the extra libraries"
                                          " that are compulsory for predicting "
@@ -283,7 +286,7 @@ class Deepnet(ModelFields):
                 category = unique_terms.get(field_id)
                 if category is not None:
                     category = category[0][0]
-                if LAMINAR_VERSION:
+                if self.using_laminar:
                     columns.append([category])
                 else:
                     columns.append(category)
@@ -301,7 +304,7 @@ class Deepnet(ModelFields):
                         columns.extend([0.0, 1.0])
                 else:
                     columns.append(input_data.get(field_id))
-        if LAMINAR_VERSION:
+        if self.using_laminar:
             return pp.preprocess(columns, self.preprocess)
         return columns
 
@@ -442,10 +445,10 @@ class Deepnet(ModelFields):
 
         """
         if self.regression:
-            if not LAMINAR_VERSION:
+            if not self.using_laminar:
                 y_out = y_out[0]
             return float(y_out)
-        if LAMINAR_VERSION:
+        if self.using_laminar:
             y_out = y_out[0]
         prediction = sorted(enumerate(y_out), key=lambda x: -x[1])[0]
         prediction = {"prediction": self.class_names[prediction[0]],

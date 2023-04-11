@@ -87,10 +87,10 @@ class ConfigurationHandlerMixin(ResourceHandlerMixin):
                             message="A configuration id is needed.")
         return self.update_resource(configuration, changes)
 
-    def delete_configuration(self, configuration):
+    def delete_configuration(self, configuration, query_string=''):
         """Deletes a configuration.
 
         """
         check_resource_type(configuration, CONFIGURATION_PATH,
                             message="A configuration id is needed.")
-        return self.delete_resource(configuration)
+        return self.delete_resource(configuration, query_string=query_string)

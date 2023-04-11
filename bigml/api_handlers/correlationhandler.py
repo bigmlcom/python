@@ -102,10 +102,10 @@ class CorrelationHandlerMixin(ResourceHandlerMixin):
                             message="A correlation id is needed.")
         return self.update_resource(correlation, changes)
 
-    def delete_correlation(self, correlation):
+    def delete_correlation(self, correlation, query_string=''):
         """Deletes a correlation.
 
         """
         check_resource_type(correlation, CORRELATION_PATH,
                             message="A correlation id is needed.")
-        return self.delete_resource(correlation)
+        return self.delete_resource(correlation, query_string=query_string)

@@ -107,10 +107,11 @@ class BatchProjectionHandlerMixin(ResourceHandlerMixin):
                             message="A batch projection id is needed.")
         return self.update_resource(batch_projection, changes)
 
-    def delete_batch_projection(self, batch_projection):
+    def delete_batch_projection(self, batch_projection, query_string=''):
         """Deletes a batch projection.
 
         """
         check_resource_type(batch_projection, BATCH_PROJECTION_PATH,
                             message="A batch projection id is needed.")
-        return self.delete_resource(batch_projection)
+        return self.delete_resource(batch_projection,
+                                    query_string=query_string)

@@ -96,10 +96,10 @@ class EvaluationHandlerMixin(ResourceHandlerMixin):
                             message="An evaluation id is needed.")
         return self.update_resource(evaluation, changes)
 
-    def delete_evaluation(self, evaluation):
+    def delete_evaluation(self, evaluation, query_string=''):
         """Deletes an evaluation.
 
         """
         check_resource_type(evaluation, EVALUATION_PATH,
                             message="An evaluation id is needed.")
-        return self.delete_resource(evaluation)
+        return self.delete_resource(evaluation, query_string=query_string)

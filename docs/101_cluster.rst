@@ -33,6 +33,13 @@ create a cluster and find the centroid associated to a single instance.
     # getting the associated centroid
     centroid = api.create_centroid(cluster, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
+
 If you want to find the centroids for many inputs at once, you can do so by
 creating a `batch_centroid` resource. You can create a `batch_centroid` using
 the same `dataset` that you used to built the `cluster` and this will produce a

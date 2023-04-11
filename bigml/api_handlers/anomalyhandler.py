@@ -103,13 +103,13 @@ class AnomalyHandlerMixin(ResourceHandlerMixin):
                             message="An anomaly detector id is needed.")
         return self.update_resource(anomaly, changes)
 
-    def delete_anomaly(self, anomaly):
+    def delete_anomaly(self, anomaly, query_string=''):
         """Deletes an anomaly detector.
 
         """
         check_resource_type(anomaly, ANOMALY_PATH,
                             message="An anomaly detector id is needed.")
-        return self.delete_resource(anomaly)
+        return self.delete_resource(anomaly, query_string=query_string)
 
     def clone_anomaly(self, anomaly,
                       args=None, wait_time=3, retries=10):

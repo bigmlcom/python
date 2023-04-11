@@ -43,6 +43,12 @@ create a deepnet from an images dataset and produce a single prediction.
     # for the ``image_id`` field in the input data to generate the prediction
     prediction = api.create_prediction(deepnet, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
 
 You can also predict locally using the `Deepnet`
 class in the `deepnet` module. A simple example of that is:

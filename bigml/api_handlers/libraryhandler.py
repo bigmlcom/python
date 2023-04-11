@@ -121,10 +121,10 @@ class LibraryHandlerMixin(ResourceHandlerMixin):
                             message="A library id is needed.")
         return self.update_resource(library, changes)
 
-    def delete_library(self, library):
+    def delete_library(self, library, query_string=''):
         """Deletes a library.
 
         """
         check_resource_type(library, LIBRARY_PATH,
                             message="A library id is needed.")
-        return self.delete_resource(library)
+        return self.delete_resource(library, query_string=query_string)

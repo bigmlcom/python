@@ -105,13 +105,14 @@ class LogisticRegressionHandlerMixin(ResourceHandlerMixin):
                             message="A logistic regression id is needed.")
         return self.update_resource(logistic_regression, changes)
 
-    def delete_logistic_regression(self, logistic_regression):
+    def delete_logistic_regression(self, logistic_regression, query_string=''):
         """Deletes a logistic regression.
 
         """
         check_resource_type(logistic_regression, LOGISTIC_REGRESSION_PATH,
                             message="A logistic regression id is needed.")
-        return self.delete_resource(logistic_regression)
+        return self.delete_resource(logistic_regression,
+                                    query_string=query_string)
 
     def clone_logistic_regression(self, logistic_regression,
                                   args=None, wait_time=3, retries=10):

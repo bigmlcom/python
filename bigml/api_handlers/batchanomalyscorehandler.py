@@ -110,10 +110,11 @@ class BatchAnomalyScoreHandlerMixin(ResourceHandlerMixin):
                             message="A batch anomaly score id is needed.")
         return self.update_resource(batch_anomaly_score, changes)
 
-    def delete_batch_anomaly_score(self, batch_anomaly_score):
+    def delete_batch_anomaly_score(self, batch_anomaly_score, query_string=''):
         """Deletes a batch anomaly score.
 
         """
         check_resource_type(batch_anomaly_score, BATCH_ANOMALY_SCORE_PATH,
                             message="A batch anomaly score id is needed.")
-        return self.delete_resource(batch_anomaly_score)
+        return self.delete_resource(batch_anomaly_score,
+                                    query_string=query_string)

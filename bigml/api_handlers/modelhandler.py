@@ -153,13 +153,13 @@ class ModelHandlerMixin(ResourceHandlerMixin):
                             message="A model id is needed.")
         return self.update_resource(model, changes)
 
-    def delete_model(self, model):
+    def delete_model(self, model, query_string=''):
         """Deletes a model.
 
         """
         check_resource_type(model, MODEL_PATH,
                             message="A model id is needed.")
-        return self.delete_resource(model)
+        return self.delete_resource(model, query_string=query_string)
 
     def clone_model(self, model,
                     args=None, wait_time=3, retries=10):

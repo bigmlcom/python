@@ -115,10 +115,11 @@ class TopicDistributionHandlerMixin(ResourceHandlerMixin):
                             message="A topic distribution id is needed.")
         return self.update_resource(topic_distribution, changes)
 
-    def delete_topic_distribution(self, topic_distribution):
+    def delete_topic_distribution(self, topic_distribution, query_string=''):
         """Deletes a topic distribution.
 
         """
         check_resource_type(topic_distribution, TOPIC_DISTRIBUTION_PATH,
                             message="A topic distribution id is needed.")
-        return self.delete_resource(topic_distribution)
+        return self.delete_resource(topic_distribution,
+                                    query_string=query_string)

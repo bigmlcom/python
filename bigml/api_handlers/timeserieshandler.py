@@ -105,13 +105,13 @@ class TimeSeriesHandlerMixin(ResourceHandlerMixin):
                             message="A time series id is needed.")
         return self.update_resource(time_series, changes)
 
-    def delete_time_series(self, time_series):
+    def delete_time_series(self, time_series, query_string=''):
         """Deletes a time series.
 
         """
         check_resource_type(time_series, TIME_SERIES_PATH,
                             message="A time series id is needed.")
-        return self.delete_resource(time_series)
+        return self.delete_resource(time_series, query_string=query_string)
 
     def clone_time_series(self, time_series,
                           args=None, wait_time=3, retries=10):

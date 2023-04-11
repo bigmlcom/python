@@ -103,13 +103,13 @@ class TopicModelHandlerMixin(ResourceHandlerMixin):
                             message="A topic model id is needed.")
         return self.update_resource(topic_model, changes)
 
-    def delete_topic_model(self, topic_model):
+    def delete_topic_model(self, topic_model, query_string=''):
         """Deletes a Topic Model.
 
         """
         check_resource_type(topic_model, TOPIC_MODEL_PATH,
                             message="A topic model id is needed.")
-        return self.delete_resource(topic_model)
+        return self.delete_resource(topic_model, query_string=query_string)
 
     def clone_topic_model(self, topic_model,
                           args=None, wait_time=3, retries=10):

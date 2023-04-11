@@ -105,13 +105,14 @@ class LinearRegressionHandlerMixin(ResourceHandlerMixin):
                             message="A linear regression id is needed.")
         return self.update_resource(linear_regression, changes)
 
-    def delete_linear_regression(self, linear_regression):
+    def delete_linear_regression(self, linear_regression, query_string=''):
         """Deletes a linear regression.
 
         """
         check_resource_type(linear_regression, LINEAR_REGRESSION_PATH,
                             message="A linear regression id is needed.")
-        return self.delete_resource(linear_regression)
+        return self.delete_resource(linear_regression,
+                                    query_string=query_string)
 
     def clone_linear_regression(self, linear_regression,
                                 args=None, wait_time=3, retries=10):

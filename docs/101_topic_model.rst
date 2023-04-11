@@ -30,6 +30,13 @@ create a topic model and produce a single topic distribution.
     # creating a single topic distribution
     topic_distribution = api.create_topic_distribution(topic_model, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
+
 Remember that your dataset needs to have at least a text field to be able
 to create a topic model.
 If you want to create topic distributions for many new inputs, you can do so by

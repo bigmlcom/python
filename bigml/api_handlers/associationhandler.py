@@ -85,13 +85,13 @@ class AssociationHandlerMixin(ResourceHandlerMixin):
                             message="An association id is needed.")
         return self.update_resource(association, changes)
 
-    def delete_association(self, association):
+    def delete_association(self, association, query_string=''):
         """Deletes an association.
 
         """
         check_resource_type(association, ASSOCIATION_PATH,
                             message="An association id is needed.")
-        return self.delete_resource(association)
+        return self.delete_resource(association, query_string=query_string)
 
     def clone_association(self, association,
                           args=None, wait_time=3, retries=10):

@@ -105,10 +105,10 @@ class OptimlHandlerMixin(ResourceHandlerMixin):
                             message="An optiml id is needed.")
         return self.update_resource(optiml, changes)
 
-    def delete_optiml(self, optiml):
+    def delete_optiml(self, optiml, query_string=''):
         """Deletes an optiml.
 
         """
         check_resource_type(optiml, OPTIML_PATH,
                             message="An optiml id is needed.")
-        return self.delete_resource(optiml)
+        return self.delete_resource(optiml, query_string=query_string)

@@ -109,10 +109,11 @@ class BatchPredictionHandlerMixin(ResourceHandlerMixin):
                             message="A batch prediction id is needed.")
         return self.update_resource(batch_prediction, changes)
 
-    def delete_batch_prediction(self, batch_prediction):
+    def delete_batch_prediction(self, batch_prediction, query_string=''):
         """Deletes a batch prediction.
 
         """
         check_resource_type(batch_prediction, BATCH_PREDICTION_PATH,
                             message="A batch prediction id is needed.")
-        return self.delete_resource(batch_prediction)
+        return self.delete_resource(batch_prediction,
+                                    query_string=query_string)

@@ -115,10 +115,10 @@ class AssociationSetHandlerMixin(ResourceHandlerMixin):
                             message="An association set id is needed.")
         return self.update_resource(association_set, changes)
 
-    def delete_association_set(self, association_set):
+    def delete_association_set(self, association_set, query_string=''):
         """Deletes an association set.
 
         """
         check_resource_type(association_set, ASSOCIATION_SET_PATH,
                             message="An association set id is needed.")
-        return self.delete_resource(association_set)
+        return self.delete_resource(association_set, query_string=query_string)

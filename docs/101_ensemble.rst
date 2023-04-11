@@ -55,6 +55,13 @@ created a `model` following the steps 0 to 5 in the previous snippet.
     api.download_batch_prediction(batch_prediction,
                                   filename='my_dir/my_predictions.csv')
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
+
 The batch prediction output (as well as any of the resources created)
 can be configured using additional arguments in the corresponding create calls.
 For instance, to include all the information in the original dataset in the

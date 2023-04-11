@@ -114,10 +114,10 @@ class CentroidHandlerMixin(ResourceHandlerMixin):
                             message="A centroid id is needed.")
         return self.update_resource(centroid, changes)
 
-    def delete_centroid(self, centroid):
+    def delete_centroid(self, centroid, query_string=''):
         """Deletes a centroid.
 
         """
         check_resource_type(centroid, CENTROID_PATH,
                             message="A centroid id is needed.")
-        return self.delete_resource(centroid)
+        return self.delete_resource(centroid, query_string=query_string)

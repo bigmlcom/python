@@ -32,6 +32,12 @@ create an anomaly detector to produce a single anomaly score.
     # assigning an anomaly score to it
     anomaly_score = api.create_anomaly_score(anomaly, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
 
 If you want to configure some of the attributes of your anomaly detector,
 like the number of top anomalies retrieved,

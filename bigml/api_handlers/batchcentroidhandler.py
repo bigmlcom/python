@@ -107,10 +107,10 @@ class BatchCentroidHandlerMixin(ResourceHandlerMixin):
                             message="A batch centroid id is needed.")
         return self.update_resource(batch_centroid, changes)
 
-    def delete_batch_centroid(self, batch_centroid):
+    def delete_batch_centroid(self, batch_centroid, query_string=''):
         """Deletes a batch centroid.
 
         """
         check_resource_type(batch_centroid, BATCH_CENTROID_PATH,
                             message="A batch centroid id is needed.")
-        return self.delete_resource(batch_centroid)
+        return self.delete_resource(batch_centroid, query_string=query_string)

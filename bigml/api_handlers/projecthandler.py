@@ -85,10 +85,11 @@ class ProjectHandlerMixin(ResourceHandlerMixin):
                             message="A project id is needed.")
         return self.update_resource(project, changes, organization=True)
 
-    def delete_project(self, project):
+    def delete_project(self, project, query_string=''):
         """Deletes a project.
 
         """
         check_resource_type(project, PROJECT_PATH,
                             message="A project id is needed.")
-        return self.delete_resource(project, organization=True)
+        return self.delete_resource(project, query_string=query_string,
+                                    organization=True)

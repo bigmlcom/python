@@ -105,13 +105,13 @@ class DeepnetHandlerMixin(ResourceHandlerMixin):
                             message="A deepnet id is needed.")
         return self.update_resource(deepnet, changes)
 
-    def delete_deepnet(self, deepnet):
+    def delete_deepnet(self, deepnet, query_string=''):
         """Deletes a deepnet.
 
         """
         check_resource_type(deepnet, DEEPNET_PATH,
                             message="A deepnet id is needed.")
-        return self.delete_resource(deepnet)
+        return self.delete_resource(deepnet, query_string=query_string)
 
     def clone_deepnet(self, deepnet,
                       args=None, wait_time=3, retries=10):

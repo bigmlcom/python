@@ -30,6 +30,13 @@ create an association and produce association sets.
     # creating a single association set
     association_set = api.create_association_set(association, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
+
 You can also create association sets locally using the `Association`
 class in the `association` module. A simple example of that is:
 

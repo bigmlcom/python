@@ -115,10 +115,10 @@ class AnomalyScoreHandlerMixin(ResourceHandlerMixin):
                             message="An anomaly_score id is needed.")
         return self.update_resource(anomaly_score, changes)
 
-    def delete_anomaly_score(self, anomaly_score):
+    def delete_anomaly_score(self, anomaly_score, query_string=''):
         """Deletes an anomaly_score.
 
         """
         check_resource_type(anomaly_score, ANOMALY_SCORE_PATH,
                             message="An anomaly_score id is needed.")
-        return self.delete_resource(anomaly_score)
+        return self.delete_resource(anomaly_score, query_string=query_string)

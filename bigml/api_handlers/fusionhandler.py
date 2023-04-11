@@ -105,10 +105,10 @@ class FusionHandlerMixin(ResourceHandlerMixin):
                             message="A fusion id is needed.")
         return self.update_resource(fusion, changes)
 
-    def delete_fusion(self, fusion):
+    def delete_fusion(self, fusion, query_string=''):
         """Deletes a fusion.
 
         """
         check_resource_type(fusion, FUSION_PATH,
                             message="A fusion id is needed.")
-        return self.delete_resource(fusion)
+        return self.delete_resource(fusion, query_string=query_string)

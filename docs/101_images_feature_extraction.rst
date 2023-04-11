@@ -45,8 +45,14 @@ used to train any kind of model.
     # a new source is created for it using the same image_analysis
     # used in the image field, and its ID is used as value
     # for the ``image_id`` field in the input data to generate the prediction
-    prediction = api.create_prediction(anomaly, input_data)
+    anomaly_score = api.create_anomaly_score(anomaly, input_data)
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
 
 You can also create a local anomaly score using the `Anomaly`
 class in the `anomaly` module. A simple example of that is:

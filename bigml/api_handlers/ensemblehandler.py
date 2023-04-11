@@ -99,13 +99,13 @@ class EnsembleHandlerMixin(ResourceHandlerMixin):
                             message="An ensemble id is needed.")
         return self.update_resource(ensemble, changes)
 
-    def delete_ensemble(self, ensemble):
+    def delete_ensemble(self, ensemble, query_string=''):
         """Deletes a ensemble.
 
         """
         check_resource_type(ensemble, ENSEMBLE_PATH,
                             message="An ensemble id is needed.")
-        return self.delete_resource(ensemble)
+        return self.delete_resource(ensemble, query_string=query_string)
 
     def clone_ensemble(self, ensemble,
                        args=None, wait_time=3, retries=10):

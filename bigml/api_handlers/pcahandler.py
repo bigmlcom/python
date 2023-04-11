@@ -103,13 +103,13 @@ class PCAHandlerMixin(ResourceHandlerMixin):
                             message="A PCA id is needed.")
         return self.update_resource(pca, changes)
 
-    def delete_pca(self, pca):
+    def delete_pca(self, pca, query_string=''):
         """Deletes a PCA.
 
         """
         check_resource_type(pca, PCA_PATH,
                             message="A PCA id is needed.")
-        return self.delete_resource(pca)
+        return self.delete_resource(pca, query_string=query_string)
 
     def clone_pca(self, pca,
                   args=None, wait_time=3, retries=10):

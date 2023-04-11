@@ -115,11 +115,13 @@ class BatchTopicDistributionHandlerMixin(ResourceHandlerMixin):
                             message="A batch topic distribution id is needed.")
         return self.update_resource(batch_topic_distribution, changes)
 
-    def delete_batch_topic_distribution(self, batch_topic_distribution):
+    def delete_batch_topic_distribution(self, batch_topic_distribution,
+                                        query_string=''):
         """Deletes a batch topic distribution.
 
         """
         check_resource_type(batch_topic_distribution,
                             BATCH_TOPIC_DISTRIBUTION_PATH,
                             message="A batch topic distribution id is needed.")
-        return self.delete_resource(batch_topic_distribution)
+        return self.delete_resource(batch_topic_distribution,
+                                    query_string=query_string)

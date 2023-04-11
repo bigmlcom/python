@@ -102,13 +102,13 @@ class ClusterHandlerMixin(ResourceHandlerMixin):
                             message="A cluster id is needed.")
         return self.update_resource(cluster, changes)
 
-    def delete_cluster(self, cluster):
+    def delete_cluster(self, cluster, query_string=''):
         """Deletes a cluster.
 
         """
         check_resource_type(cluster, CLUSTER_PATH,
                             message="A cluster id is needed.")
-        return self.delete_resource(cluster)
+        return self.delete_resource(cluster, query_string=query_string)
 
     def clone_cluster(self, cluster,
                       args=None, wait_time=3, retries=10):

@@ -164,10 +164,10 @@ class ScriptHandlerMixin(ResourceHandlerMixin):
                             message="A script id is needed.")
         return self.update_resource(script, changes)
 
-    def delete_script(self, script):
+    def delete_script(self, script, query_string=''):
         """Deletes a script.
 
         """
         check_resource_type(script, SCRIPT_PATH,
                             message="A script id is needed.")
-        return self.delete_resource(script)
+        return self.delete_resource(script, query_string=query_string)

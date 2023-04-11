@@ -3,6 +3,11 @@
 History
 -------
 
+9.2.0 (2023-04-11)
+------------------
+
+- Extending all delete methods to allow additional query strings.
+
 9.1.4 (2023-02-10)
 ------------------
 

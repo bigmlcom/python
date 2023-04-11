@@ -159,13 +159,13 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
                             message="A dataset id is needed.")
         return self.update_resource(dataset, changes)
 
-    def delete_dataset(self, dataset):
+    def delete_dataset(self, dataset, query_string=''):
         """Deletes a dataset.
 
         """
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
-        return self.delete_resource(dataset)
+        return self.delete_resource(dataset, query_string=query_string)
 
     def error_counts(self, dataset, raise_on_error=True):
         """Returns the ids of the fields that contain errors and their number.

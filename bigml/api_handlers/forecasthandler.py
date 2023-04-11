@@ -100,10 +100,10 @@ class ForecastHandlerMixin(ResourceHandlerMixin):
                             message="A forecast id is needed.")
         return self.update_resource(forecast, changes)
 
-    def delete_forecast(self, forecast):
+    def delete_forecast(self, forecast, query_string=''):
         """Deletes a forecast.
 
         """
         check_resource_type(forecast, FORECAST_PATH,
                             message="A forecast id is needed.")
-        return self.delete_resource(forecast)
+        return self.delete_resource(forecast, query_string=query_string)

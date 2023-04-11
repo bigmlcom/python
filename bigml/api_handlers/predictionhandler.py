@@ -125,10 +125,10 @@ class PredictionHandlerMixin(ResourceHandlerMixin):
                             message="A prediction id is needed.")
         return self.update_resource(prediction, changes)
 
-    def delete_prediction(self, prediction):
+    def delete_prediction(self, prediction, query_string=''):
         """Deletes a prediction.
 
         """
         check_resource_type(prediction, PREDICTION_PATH,
                             message="A prediction id is needed.")
-        return self.delete_resource(prediction)
+        return self.delete_resource(prediction, query_string=query_string)

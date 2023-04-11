@@ -118,10 +118,10 @@ class ProjectionHandlerMixin(ResourceHandlerMixin):
                             message="A projection id is needed.")
         return self.update_resource(projection, changes)
 
-    def delete_projection(self, projection):
+    def delete_projection(self, projection, query_string=''):
         """Deletes a projection.
 
         """
         check_resource_type(projection, PROJECTION_PATH,
                             message="A projection id is needed.")
-        return self.delete_resource(projection)
+        return self.delete_resource(projection, query_string=query_string)

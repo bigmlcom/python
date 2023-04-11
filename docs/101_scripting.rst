@@ -34,6 +34,13 @@ existing CSV file that is available in a remote URL:
     # step 3: retrieving the result (e.g. "source/5ce6a55dc984177cf7000891")
     result = execution['object']['execution']['result']
 
+In the previous code, the `api.ok <creating_resources.html>`_
+method is used to wait for the resource
+to be finished before calling the next create method
+or accessing the resource properties.
+In the first case, we could skip that `api.ok`call because the next
+`create` method would internally do the waiting when needed.
+
 In this example. the `url` used is always the same, so no inputs are provided
 to the script. This is not a realistic situation, because usually scripts
 need user-provided inputs. The next example shows how to

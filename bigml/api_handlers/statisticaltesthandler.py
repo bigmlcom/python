@@ -102,10 +102,11 @@ class StatisticalTestHandlerMixin(ResourceHandlerMixin):
                             message="A statistical test id is needed.")
         return self.update_resource(statistical_test, changes)
 
-    def delete_statistical_test(self, statistical_test):
+    def delete_statistical_test(self, statistical_test, query_string=''):
         """Deletes a statistical test.
 
         """
         check_resource_type(statistical_test, STATISTICAL_TEST_PATH,
                             message="A statistical test id is needed.")
-        return self.delete_resource(statistical_test)
+        return self.delete_resource(statistical_test,
+                                    query_string=query_string)

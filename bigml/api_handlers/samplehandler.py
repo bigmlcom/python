@@ -102,10 +102,10 @@ class SampleHandlerMixin(ResourceHandlerMixin):
                             message="A sample id is needed.")
         return self.update_resource(sample, changes)
 
-    def delete_sample(self, sample):
+    def delete_sample(self, sample, query_string=''):
         """Deletes a sample.
 
         """
         check_resource_type(sample, SAMPLE_PATH,
                             message="A sample id is needed.")
-        return self.delete_resource(sample)
+        return self.delete_resource(sample, query_string=query_string)

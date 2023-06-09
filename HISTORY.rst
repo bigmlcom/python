@@ -3,6 +3,11 @@
 History
 -------
 
+9.3.0 (2023-06-09)
+------------------
+
+- Adding a LocalModel class to handle any type of BigML model locally.
+
 9.2.0 (2023-04-11)
 ------------------
 

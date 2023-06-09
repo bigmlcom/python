@@ -2163,6 +2163,44 @@ instantiate the corresponding local object, so that you can use its
     logistic_regression_prediction = local_supervised_1.predict(input_data)
     model_prediction = local_supervised_2.predict(input_data)
 
+
+Local BigML Model
+-----------------
+
+Following the approach of the local SupervisedModel class, the ``LocalModel``
+class will allow you to predict using any BigML model resource,
+either supervised or unsupervised.
+This class provides two methods: ``predict`` and ``batch_predict`` with
+total abstraction as to the result of the predictions
+(real predictions, centroids, anomaly scores, etc.), their parameters and the
+format of the prediction result.
+The ``predict`` method can be used on any type of
+model and delegates to the specific method of each local model class.
+Therefore, it will be the programmers responsibility to provide
+only the parameters accepted in the low level
+method and the response will be a dictionary whose contents will vary depending
+on the type of prediction. Similarly, the ``batch_predict`` method
+accepts a list of inputs and adds the prediction information to each
+element of the list.
+
+The ``LocalModel`` object will retrieve the resource information and
+instantiate the corresponding local object, so that you can use its
+``predict`` method to produce local predictions:
+
+.. code-block:: python
+
+    from bigml.local_model import LocalModel
+    local_model_1 = LocalModel( \
+        "logisticregression/5143a51a37203f2cf7020351")
+    local_model_2 = LocalModel( \
+        "anomaly/5143a51a37203f2cf7020351")
+    input_data = {"petal length": 3, "petal width": 1}
+    logistic_regression_prediction = local_model_1.predict(input_data)
+    # {"prediction": "Iris-setosa", "probability": 0.56}
+    anomaly_prediction = local_model_2.predict(input_data)
+    # {"score": 0.84}
+
+
 Local Pipelines
 ---------------
 

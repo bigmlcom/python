@@ -20,8 +20,10 @@
 """ Comparing remote and local predictions
 
 """
+import json
+
 from .world import world, setup_module, teardown_module, show_doc, \
-    show_method
+    show_method, res_filename
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
@@ -123,6 +125,8 @@ class TestComparePrediction:
             Then the centroid is "<centroid>" with distance "<distance>"
             And I create a local centroid for "<input_data_l>"
             Then the local centroid is "<centroid>" with distance "<distance>"
+            And I create a local bigml model prediction for "<input_data_l>"
+            Then the local centroid is "<centroid>" with distance "<distance>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "model_conf", "input_data_l", "centroid", "distance",
@@ -163,6 +167,12 @@ class TestComparePrediction:
                 self, example["input_data_l"])
             prediction_compare.the_local_centroid_is(
                 self, example["centroid"], example["distance"])
+            prediction_compare.i_create_a_local_bigml_model(self,
+                model_type="cluster")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data_l"], prediction_type="centroid")
+            prediction_compare.the_local_centroid_is(
+                self, example["centroid"], example["distance"])
 
 
     def test_scenario3(self):
@@ -178,6 +188,8 @@ class TestComparePrediction:
             When I create an anomaly score for "<input_data>"
             Then the anomaly score is "<score>"
             And I create a local anomaly score for "<input_data>"
+            Then the local anomaly score is "<score>"
+            And I create a local bigml model prediction for "<input_data>"
             Then the local anomaly score is "<score>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
@@ -224,6 +236,13 @@ class TestComparePrediction:
                 self, example["input_data"])
             prediction_compare.the_local_anomaly_score_is(
                 self, example["score"])
+            prediction_compare.i_create_a_local_bigml_model(self,
+                model_type="anomaly")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data"], prediction_type="anomaly_score")
+            prediction_compare.the_local_bigml_prediction_is(
+                self, float(example["score"]), prediction_type="anomaly_score",
+                key="score", precision=4)
 
     def test_scenario4(self):
         """
@@ -283,6 +302,18 @@ class TestComparePrediction:
                 self, example["input_data"])
             prediction_compare.the_local_topic_distribution_is(
                 self, example["topic_distribution"])
+            prediction_compare.i_create_a_local_bigml_model(self,
+                model_type="topic_model")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data"],
+                prediction_type="topic_distribution")
+            ref_distribution = dict(
+                zip([t["name"] for t in self.bigml["local_model"].topics],
+                    json.loads(example["topic_distribution"])))
+            prediction_compare.the_local_bigml_prediction_is(
+                self, ref_distribution, prediction_type="topic_distribution",
+                precision=4)
+
 
     def test_scenario5(self):
         """
@@ -299,6 +330,8 @@ class TestComparePrediction:
             Then the association set is like the contents of "<association_set_file>"
             And I create a local association set for "<input_data>"
             Then the local association set is like the contents of "<association_set_file>"
+            And I create a local bigml model prediction for "<input_data>"
+            Then the local bigml model prediction is "<association_set_file>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "source_conf", "association_set_file", "input_data"]
@@ -326,6 +359,14 @@ class TestComparePrediction:
                 self, example["input_data"])
             prediction_compare.the_local_association_set_is_like_file(
                 self, example["association_set_file"])
+            prediction_compare.i_create_a_local_bigml_model(self,
+                model_type="association")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data"], prediction_type="rules")
+            with open(res_filename(example["association_set_file"])) as handler:
+                rules = {"rules": json.load(handler)}
+            prediction_compare.the_local_bigml_prediction_is(
+                self, rules, prediction_type="rules", precision=4)
 
 
     def test_scenario6(self):
@@ -525,6 +566,9 @@ class TestComparePrediction:
             And I create a proportional missing strategy local prediction for "<input_data>" with <"operating">
             Then the local prediction is "<prediction>"
             And the local prediction's confidence is "<confidence>"
+            And I create a local bigml model
+            Then the local prediction is "<prediction>"
+            And the local prediction's confidence is "<confidence>"
         """
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "input_data", "objective_id", "prediction", "confidence",
@@ -555,6 +599,11 @@ class TestComparePrediction:
             prediction_create.the_confidence_is(self, example["confidence"])
             prediction_create.create_local_ensemble_proportional_prediction_with_confidence(
                 self, example["input_data"], example["operating"])
+            prediction_compare.the_local_ensemble_prediction_is(
+                self, example["prediction"])
+            prediction_compare.the_local_prediction_confidence_is(
+                self, example["confidence"])
+            ensemble_create.create_local_bigml_ensemble(self)
             prediction_compare.the_local_ensemble_prediction_is(
                 self, example["prediction"])
             prediction_compare.the_local_prediction_confidence_is(

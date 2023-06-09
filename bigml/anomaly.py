@@ -347,6 +347,16 @@ class Anomaly(ModelFields):
                 input_data[field_id] = default_value
         return input_data
 
+    def predict(self, input_data, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the anomaly_score method result. If full is set
+        to True, then the result is returned as a dictionary.
+        """
+        score = self.anomaly_score(input_data)
+        if full:
+            return {DFT_OUTPUTS[0]: score}
+        return score
+
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch anomaly score for a list of inputs using the local
         anomaly detector. Allows to define some output settings to decide the

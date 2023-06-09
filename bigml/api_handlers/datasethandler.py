@@ -197,6 +197,7 @@ class DatasetHandlerMixin(ResourceHandlerMixin):
         """Donwloads dataset contents to a csv file or file object
 
         """
+        print("***", dataset, DATASET_PATH)
         check_resource_type(dataset, DATASET_PATH,
                             message="A dataset id is needed.")
         return self._download_resource(dataset,

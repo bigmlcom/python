@@ -646,6 +646,15 @@ class Cluster(ModelFields):
                     out.write("%s%s: %s\n" % (INDENT * 2, measure, result))
                 out.write("\n")
 
+    def predict(self, input_data, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the centroid method result. The full parameter has
+        no effect in this case because the original centroid information is
+        already a complete dictionary. Is kept to mimic the interface of the
+        general method.
+        """
+        return self.centroid(input_data)
+
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch centroid for a list of inputs using the local
         cluster model. Allows to define some output settings to

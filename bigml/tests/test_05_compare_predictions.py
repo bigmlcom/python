@@ -25,12 +25,8 @@ from .world import world, setup_module, teardown_module, show_doc, \
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_model_steps as model_create
-from . import create_association_steps as association_create
-from . import create_cluster_steps as cluster_create
-from . import create_anomaly_steps as anomaly_create
 from . import create_prediction_steps as prediction_create
 from . import compare_predictions_steps as prediction_compare
-from . import create_lda_steps as topic_create
 
 
 class TestComparePrediction:

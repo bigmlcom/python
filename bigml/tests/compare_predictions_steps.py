@@ -31,6 +31,7 @@ from bigml.topicmodel import TopicModel
 from bigml.deepnet import Deepnet
 from bigml.linear import LinearRegression
 from bigml.supervised import SupervisedModel
+from bigml.local_model import LocalModel
 from bigml.fusion import Fusion
 from bigml.pca import PCA
 
@@ -105,13 +106,44 @@ def i_create_a_local_fusion(step):
     step.bigml["local_model"] = Fusion(world.fusion['resource'])
     step.bigml["local_ensemble"] = None
 
+
 def i_create_a_local_supervised_model(step, model_type=None):
     """Step: I create a local supervised model"""
     if model_type is None:
-        model = world.model
-    else:
-        model = getattr(world, model_type)
+        model_type = "model"
+    model = getattr(world, model_type)
     step.bigml["local_model"] = SupervisedModel(model)
+
+
+def i_create_a_local_bigml_model(step, model_type=None):
+    """Step: I create a local BigML model"""
+    if model_type is None:
+        model_type = "model"
+    model = getattr(world, model_type)
+    step.bigml["local_model"] = LocalModel(model)
+
+
+def i_create_a_local_bigml_model_prediction(step, data=None,
+    prediction_type=None, **kwargs):
+    """Step: I create a local prediction for <data>"""
+    if data is None:
+        data = "{}"
+    data = json.loads(data)
+    if prediction_type is None:
+        prediction_type = "prediction"
+    if kwargs is None:
+        kwargs = {}
+    kwargs.update({"full": True})
+    step.bigml["local_%s" % prediction_type] = step.bigml[
+        "local_model"].predict(data, **kwargs)
+
+
+def the_local_bigml_prediction_is(step, value, prediction_type=None, key=None,
+    precision=None):
+    prediction = step.bigml["local_%s" % prediction_type]
+    if key is not None:
+        prediction = prediction[key]
+    eq_(value, prediction, precision=precision)
 
 
 def i_create_a_local_prediction_with_confidence(step, data=None,

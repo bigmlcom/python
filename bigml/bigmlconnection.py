@@ -765,6 +765,10 @@ class BigMLConnection():
                 return file_object
         try:
             code = response.status_code
+            print("*** response headers ****", response.headers)
+            print("***")
+            print("*** request ")
+            print(response.request.__dict__)
             if code == HTTP_OK:
                 # starting the dataset export procedure
                 if response.headers.get("content-type") == JSON_TYPE:

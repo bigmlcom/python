@@ -30,7 +30,7 @@ from bigml.association import Association
 api = BigML()
 
 association = Association('association/5026966515526876630001b2')
-association.rules()
+association.association_set()
 
 """
 
@@ -489,6 +489,16 @@ class Association(ModelFields):
                         break
             out.write("\n".join(out_rules))
         out.write("\n")
+
+    def predict(self, input_data, k=DEFAULT_K, score_by=None, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the association_set method result. If full is set
+        to True, then the result is returned as a dictionary.
+        """
+        rules = self.association_set(input_data, k=k, score_by=score_by)
+        if full:
+            return {"rules": rules}
+        return rules
 
     def data_transformations(self):
         """Returns the pipeline transformations previous to the modeling

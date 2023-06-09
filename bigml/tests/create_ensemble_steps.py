@@ -24,6 +24,7 @@ from bigml.ensemble import Ensemble
 from bigml.ensemblepredictor import EnsemblePredictor
 from bigml.model import Model
 from bigml.supervised import SupervisedModel
+from bigml.local_model import LocalModel
 
 from .read_resource_steps import wait_until_status_code_is
 from .world import world, res_filename, eq_
@@ -87,12 +88,19 @@ def create_local_ensemble(step, path=None):
         step.bigml["local_model"] = step.bigml[
             "local_ensemble"].multi_model.models[0]
 
+
 def create_local_supervised_ensemble(step):
     """Step: I create a local Ensemble"""
     step.bigml["local_ensemble"] = SupervisedModel(world.ensemble_id, world.api)
     step.bigml["local_model"] = Model(step.bigml[
         "local_ensemble"].model_ids[0], world.api)
 
+
+def create_local_bigml_ensemble(step):
+    """Step: I create a local Ensemble"""
+    step.bigml["local_ensemble"] = LocalModel(world.ensemble_id, world.api)
+    step.bigml["local_model"] = Model(step.bigml[
+        "local_ensemble"].model_ids[0], world.api)
 
 def create_local_ensemble_predictor(step, directory):
     """Step: I create a local EnsemblePredictor from <directory>"""

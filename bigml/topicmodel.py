@@ -79,6 +79,18 @@ CODE_TO_NAME = {
     "tr": 'turkish'
 }
 
+
+def distribution_to_dict(distribution):
+    """Returns a dictionary as topic_name: probability for the
+    topic distribution.
+    """
+    prediction_dict = {}
+    for topic_info in distribution:
+        prediction_dict.update({topic_info["name"]:
+            topic_info["probability"]})
+    return prediction_dict
+
+
 class TopicModel(ModelFields):
     """ A lightweight wrapper around a Topic Model.
 
@@ -388,6 +400,12 @@ class TopicModel(ModelFields):
         return [(sample_counts[k] + self.alpha) / normalizer
                 for k in range(self.ntopics)]
 
+    def predict(self, input_data, full=False):
+        distribution = self.distribution(input_data)
+        if full:
+            return distribution_to_dict(distribution)
+        return distribution
+
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch prediction for a list of inputs using the local
         supervised model. Allows to define some output settings to
@@ -421,10 +439,7 @@ class TopicModel(ModelFields):
         inner_data_list = get_formatted_data(input_data_list, INTERNAL)
         for index, input_data in enumerate(inner_data_list):
             prediction = self.distribution(input_data, **kwargs)
-            prediction_dict = {}
-            for topic_distribution in prediction:
-                prediction_dict.update({topic_distribution["name"]:
-                    topic_distribution["probability"]})
+            prediction_dict = distribution_to_dict(prediction)
             for ikey, key in enumerate(new_fields):
                 inner_data_list[index][new_headers[ikey]] = prediction_dict[
                     key]

@@ -523,6 +523,13 @@ class TestComparePrediction:
                 self, example["input_data"], example["operating_kind"])
             prediction_compare.the_local_prediction_is(
                 self, example["prediction"])
+            prediction_compare.i_create_a_local_bigml_model(
+                self, model_type="logistic_regression")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data"], prediction_type="prediction",
+                operating_kind=example["operating_kind"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
 
     def test_scenario10(self):
         """

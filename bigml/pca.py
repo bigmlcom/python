@@ -322,6 +322,14 @@ class PCA(ModelFields):
 
         return input_array, missings, input_mask
 
+    def predict(self, input_data, max_components=None,
+                variance_threshold=None, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the projection method result.
+        """
+        return self.projection(input_data, max_components=max_components,
+            variance_threshold=variance_threshold, full=full)
+
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch projection for a list of inputs using the local
         topic model. Allows to define some output settings to

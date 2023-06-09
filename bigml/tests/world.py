@@ -130,7 +130,7 @@ def eq_(*args, msg=None, precision=None):
     if isinstance(args[0], dict):
         assert isinstance(args[1], dict)
         for index, arg in enumerate(new_args):
-            new_args[index] = list(arg.values())
+            new_args[index] = list(dict(sorted(arg.items())).values())
     if precision is not None:
         if isinstance(new_args[0], list):
             assert all(len(new_args[0]) == len(b) for b in new_args[1:]), msg

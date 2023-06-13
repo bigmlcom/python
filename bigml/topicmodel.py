@@ -401,6 +401,9 @@ class TopicModel(ModelFields):
                 for k in range(self.ntopics)]
 
     def predict(self, input_data, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the distribution method result.
+        """
         distribution = self.distribution(input_data)
         if full:
             return distribution_to_dict(distribution)

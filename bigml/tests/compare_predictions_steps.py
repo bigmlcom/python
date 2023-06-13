@@ -140,6 +140,8 @@ def i_create_a_local_bigml_model_prediction(step, data=None,
 
 def the_local_bigml_prediction_is(step, value, prediction_type=None, key=None,
     precision=None):
+    """Step: the local BigML model prediction is
+    """
     prediction = step.bigml["local_%s" % prediction_type]
     if key is not None:
         prediction = prediction[key]

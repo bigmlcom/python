@@ -3,6 +3,12 @@
 History
 -------
 
+9.4.0 (2023-06-14)
+------------------
+
+- Extending LocalModel class to handle Time Series locally.
+
+
 9.3.0 (2023-06-09)
 ------------------
 

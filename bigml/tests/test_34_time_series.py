@@ -20,12 +20,15 @@
 """ Creating time series forecasts
 
 """
+import json
+
 from .world import world, setup_module, teardown_module, show_doc, \
     show_method
 from . import create_source_steps as source_create
 from . import create_dataset_steps as dataset_create
 from . import create_time_series_steps as time_series_create
 from . import create_forecast_steps as forecast_create
+from . import compare_predictions_steps as prediction_compare
 
 
 class TestTimeSeries:
@@ -91,3 +94,10 @@ class TestTimeSeries:
             forecast_create.i_create_a_forecast(
                 self, example["input_data"])
             forecast_create.the_forecast_is(self, example["forecast_points"])
+            prediction_compare.i_create_a_local_bigml_model(self,
+                model_type="time_series")
+            prediction_compare.i_create_a_local_bigml_model_prediction(
+                self, example["input_data"], prediction_type="forecast")
+            forecast_points = json.loads(example["forecast_points"])
+            prediction_compare.the_local_bigml_prediction_is(
+                self, {"forecast": forecast_points}, prediction_type="forecast")

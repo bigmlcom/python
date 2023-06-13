@@ -124,6 +124,17 @@ def flatten_shared():
     return ids_list
 
 
+def sort_dict(item):
+    """
+    Sort nested dict
+    """
+    if isinstance(item, list):
+        return [sort_dict(v) for v in item]
+    if not isinstance(item, dict):
+        return item
+    return {k: sort_dict(v) for k, v in sorted(item.items())}
+
+
 def eq_(*args, msg=None, precision=None):
     """Wrapper to assert. If precision is set, previous rounding"""
     new_args = list(args)
@@ -133,15 +144,26 @@ def eq_(*args, msg=None, precision=None):
             new_args[index] = list(dict(sorted(arg.items())).values())
     if precision is not None:
         if isinstance(new_args[0], list):
+            if msg is None:
+                msg = "Comparing: %s" % new_args
             assert all(len(new_args[0]) == len(b) for b in new_args[1:]), msg
             pairs = zip(new_args[0], new_args[1])
+            if msg is None:
+                msg = "Comparing: %s" % new_args
             assert all(float_round(a, precision) == float_round(b, precision)
                 for a, b in pairs), msg
         else:
             for index, arg in enumerate(new_args):
                 new_args[index] = float_round(arg, precision)
+            if msg is None:
+                msg = "Comparing: %s" % new_args
             assert all(new_args[0] == b for b in new_args[1:]), msg
     else:
+        if isinstance(new_args[0], (dict, list)):
+            for index, arg in enumerate(new_args):
+                new_args[index] = sort_dict(new_args[index])
+        if msg is None:
+            msg = "expected: %s, got: %s" % (new_args[0], new_args[1])
         assert new_args[0] == new_args[1], msg
 
 

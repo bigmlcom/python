@@ -49,6 +49,7 @@ from bigml.api import get_status, get_api_connection, get_time_series_id
 from bigml.util import utf8, use_cache, load
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
+from bigml.constants import DECIMALS
 from bigml.tssubmodels import SUBMODELS
 from bigml.tsoutconstants import SUBMODELS_CODE, TRIVIAL_MODEL, \
     SEASONAL_CODE, FORECAST_FUNCTION, USAGE_DOC
@@ -78,7 +79,8 @@ def compute_forecasts(submodels, horizon):
 
         forecasts.append( \
             {"model": name,
-             "point_forecast": SUBMODELS[trend](*args)})
+             "point_forecast": [round(value, DECIMALS) for value in
+                                SUBMODELS[trend](*args)]})
     return forecasts
 
 
@@ -257,6 +259,15 @@ class TimeSeries(ModelFields):
                 norm_input_data[field_id]["horizon"])
 
         return forecasts
+
+    def predict(self, input_data, full=False):
+        """Method to homogeneize the local models interface for all BigML
+        models. It returns the forecast method result.
+        """
+        forecast = self.forecast(input_data)
+        if full:
+            return {"forecast": forecast}
+        return forecast
 
     def filter_objectives(self, input_data,
                           full=False):

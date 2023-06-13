@@ -57,6 +57,7 @@ from bigml.fusion import Fusion
 from bigml.cluster import Cluster
 from bigml.anomaly import Anomaly
 from bigml.association import Association
+from bigml.timeseries import TimeSeries
 try:
     from bigml.topicmodel import TopicModel
     TOPIC_ENABLED = True
@@ -83,9 +84,11 @@ MODEL_CLASSES = {
     "cluster": Cluster,
     "anomaly": Anomaly,
     "association": Association,
-    "topicmodel": TopicModel,
-    "pca": PCA}
+    "pca": PCA,
+    "timeseries": TimeSeries}
 MODEL_CLASSES.update(SUPERVISED_CLASSES)
+if TOPIC_ENABLED:
+    MODEL_CLASSES.update({"topicmodel": TopicModel})
 
 
 def extract_id(model, api):
@@ -139,7 +142,7 @@ def extract_id(model, api):
 class LocalModel(BaseModel):
     """ A lightweight wrapper around any BigML model.
 
-    Uses any BigML remote supervised model to build a local version
+    Uses any BigML remote model to build a local version
     that can be used to generate predictions locally.
 
     """
@@ -179,7 +182,7 @@ class LocalModel(BaseModel):
 
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch prediction for a list of inputs using the local
-        supervised model. Allows to define some output settings to
+        BigML model. Allows to define some output settings to
         decide the fields to be added to the input_data (prediction,
         probability, etc.) and the name that we want to assign to these new
         fields. The outputs argument accepts a dictionary with keys
@@ -196,8 +199,9 @@ class LocalModel(BaseModel):
         :rtype: list or Panda's dataframe depending on the input type in
                 input_data_list
         """
-        if isinstance(self.local_model, Association):
-            raise("The method is not available for Associations.")
+        if isinstance(self.local_model, (Association, TimeSeries)):
+            raise ValueError("The method is not available for Associations or "
+                  "TimeSeries.")
         if self.supervised:
             if outputs is None:
                 outputs = {}
@@ -220,9 +224,8 @@ class LocalModel(BaseModel):
             if data_format != INTERNAL:
                 return format_data(inner_data_list, out_format=data_format)
             return inner_data_list
-        else:
-            return self.local_model.batch_predict(input_data_list,
-                outputs=outputs, **kwargs)
+        return self.local_model.batch_predict(input_data_list,
+            outputs=outputs, **kwargs)
 
     #pylint: disable=locally-disabled,arguments-differ
     def dump(self, **kwargs):

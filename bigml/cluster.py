@@ -648,12 +648,12 @@ class Cluster(ModelFields):
 
     def predict(self, input_data, full=False):
         """Method to homogeneize the local models interface for all BigML
-        models. It returns the centroid method result. The full parameter has
-        no effect in this case because the original centroid information is
-        already a complete dictionary. Is kept to mimic the interface of the
-        general method.
+        models. It returns the centroid method result.
         """
-        return self.centroid(input_data)
+        centroid = self.centroid(input_data)
+        if not full:
+            return {"centroid_name": centroid["name"]}
+        return centroid
 
     def batch_predict(self, input_data_list, outputs=None, **kwargs):
         """Creates a batch centroid for a list of inputs using the local

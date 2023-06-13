@@ -213,6 +213,7 @@ class Deepnet(ModelFields):
                 else:
                     settings = None
 
+                #pylint: disable=locally-disabled,broad-except
                 if not self.using_laminar:
                     try:
                         self.deepnet = create_model(deepnet,

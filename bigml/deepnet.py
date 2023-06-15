@@ -397,6 +397,8 @@ class Deepnet(ModelFields):
             if not isinstance(prediction, dict):
                 prediction = {"prediction": round(prediction, DECIMALS)}
             prediction.update({"unused_fields": unused_fields})
+            if "probability" in prediction:
+                prediction["confidence"] = prediction.get("probability")
         else:
             if isinstance(prediction, dict):
                 prediction = prediction["prediction"]
@@ -489,6 +491,16 @@ class Deepnet(ModelFields):
             return [category['probability'] for category in distribution]
         return distribution
 
+    def predict_confidence(self, input_data, compact=False):
+        """Uses probability as a confidence
+        """
+        if compact or self.regression:
+            return self.predict_probability(input_data, compact=compact)
+        return [{"category": pred["category"],
+                 "confidence": pred["probability"]}
+                for pred in self.predict_probability(input_data,
+                                                     compact=compact)]
+
     #pylint: disable=locally-disabled,invalid-name
     def _sort_predictions(self, a, b, criteria):
         """Sorts the categories in the predicted node according to the
@@ -516,6 +528,8 @@ class Deepnet(ModelFields):
         prediction = predictions[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
+        if "probability" in prediction:
+            prediction["confidence"] = prediction.get("probability")
         return prediction
 
     def predict_operating(self, input_data, operating_point=None):
@@ -543,6 +557,8 @@ class Deepnet(ModelFields):
                 prediction = prediction[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
+        if "probability" in prediction:
+            prediction["confidence"] = prediction.get("probability")
         return prediction
 
     def data_transformations(self):

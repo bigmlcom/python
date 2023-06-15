@@ -51,6 +51,7 @@ from bigml.basemodel import get_resource_dict
 from bigml.multivotelist import MultiVoteList
 from bigml.util import cast, check_no_missing_numerics, use_cache, load, \
     dump, dumps, NUMERIC
+from bigml.constants import DECIMALS
 from bigml.supervised import SupervisedModel
 from bigml.modelfields import ModelFields
 from bigml.tree_utils import add_distribution
@@ -248,7 +249,7 @@ class Fusion(ModelFields):
         each possible output class, based on input values.  The input
         fields must be a dictionary keyed by field name or field ID.
 
-        For regressions, the output is a single element list
+        For regressions, the output is a single element
         containing the prediction.
 
         :param input_data: Input data to be predicted
@@ -264,6 +265,7 @@ class Fusion(ModelFields):
         if not self.missing_numerics:
             check_no_missing_numerics(input_data, self.model_fields)
 
+        weights = []
         for models_split in self.models_splits:
             models = []
             for model in models_split:
@@ -287,35 +289,34 @@ class Fusion(ModelFields):
                     continue
                 if self.regression:
                     prediction = prediction[0]
-                    if self.weights is not None:
-                        prediction = self.weigh(prediction, model.resource_id)
-                else:
-                    if self.weights is not None:
-                        prediction = self.weigh( \
-                            prediction, model.resource_id)
-                    # we need to check that all classes in the fusion
-                    # are also in the composing model
-                    if not self.regression and \
-                            self.class_names != model.class_names:
-                        try:
-                            prediction = rearrange_prediction( \
-                                model.class_names,
-                                self.class_names,
-                                prediction)
-                        except AttributeError:
-                            # class_names should be defined, but just in case
-                            pass
+                if self.weights is not None:
+                    weights.append(1 if not self.weights else self.weights[
+                        self.model_ids.index(model.resource_id)])
+                    prediction = self.weigh(prediction, model.resource_id)
+                # we need to check that all classes in the fusion
+                # are also in the composing model
+                if not self.regression and \
+                        self.class_names != model.class_names:
+                    try:
+                        prediction = rearrange_prediction( \
+                            model.class_names,
+                            self.class_names,
+                            prediction)
+                    except AttributeError:
+                        # class_names should be defined, but just in case
+                        pass
                 votes_split.append(prediction)
             votes.extend(votes_split)
         if self.regression:
-            total_weight = len(votes.predictions) if self.weights is None \
-                else sum(self.weights)
-            prediction = sum(votes.predictions) / float(total_weight)
+            prediction = 0
+            total_weight = sum(weights)
+            for index, pred in enumerate(votes.predictions):
+                prediction += pred # the weight is already considered in pred
+            prediction /= float(total_weight)
             if compact:
                 output = [prediction]
             else:
                 output = {"prediction": prediction}
-
         else:
             output = votes.combine_to_distribution(normalize=True)
             if not compact:
@@ -324,6 +325,97 @@ class Fusion(ModelFields):
                           for class_name, probability in
                           zip(self.class_names, output)]
 
+        return output
+
+    def predict_confidence(self, input_data,
+                           missing_strategy=LAST_PREDICTION,
+                           compact=False):
+
+        """For classification models, Predicts a confidence for
+        each possible output class, based on input values.  The input
+        fields must be a dictionary keyed by field name or field ID.
+
+        For regressions, the output is a single element
+        containing the prediction and the associated confidence.
+
+        WARNING: Only decision-tree based models in the Fusion object will
+        have an associated confidence, so the result for fusions that don't
+        contain such models can be None.
+
+        :param input_data: Input data to be predicted
+        :param missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy
+                                 for missing fields
+        :param compact: If False, prediction is returned as a list of maps, one
+                        per class, with the keys "prediction" and "confidence"
+                        mapped to the name of the class and it's confidence,
+                        respectively.  If True, returns a list of confidences
+                        ordered by the sorted order of the class names.
+        """
+        if not self.missing_numerics:
+            check_no_missing_numerics(input_data, self.model_fields)
+
+        predictions = []
+        weights = []
+        for models_split in self.models_splits:
+            models = []
+            for model in models_split:
+                model_type = get_resource_type(model)
+                if model_type == "fusion":
+                    models.append(Fusion(model, api=self.api))
+                else:
+                    models.append(SupervisedModel(model, api=self.api))
+            votes_split = []
+            for model in models:
+                try:
+                    kwargs = {"compact": False}
+                    if model_type in ["model", "ensemble", "fusion"]:
+                        kwargs.update({"missing_strategy": missing_strategy})
+                    prediction = model.predict_confidence( \
+                        input_data, **kwargs)
+                except Exception as exc:
+                    # logistic regressions can raise this error if they
+                    # have missing_numerics=False and some numeric missings
+                    # are found and Linear Regressions have no confidence
+                    continue
+                predictions.append(prediction)
+                weights.append(1 if not self.weights else self.weights[
+                    self.model_ids.index(model.resource_id)])
+                if self.regression:
+                    prediction = prediction["prediction"]
+        if self.regression:
+            prediction = 0
+            confidence = 0
+            total_weight = sum(weights)
+            for index, pred in enumerate(predictions):
+                prediction += pred.get("prediction")  * weights[index]
+                confidence += pred.get("confidence")
+            prediction /= float(total_weight)
+            confidence /= float(len(predictions))
+            if compact:
+                output = [prediction, confidence]
+            else:
+                output = {"prediction": prediction, "confidence": confidence}
+        else:
+            output = self._combine_confidences(predictions)
+            if not compact:
+                output = [{'category': class_name,
+                           'confidence': confidence}
+                          for class_name, confidence in
+                          zip(self.class_names, output)]
+        return output
+
+    def _combine_confidences(self, predictions):
+        """Combining the confidences per class of classification models"""
+        output = []
+        count = float(len(predictions))
+        for class_name in self.class_names:
+            confidence = 0
+            for prediction in predictions:
+                for category_info in prediction:
+                    if category_info["category"] == class_name:
+                        confidence += category_info.get("confidence")
+                        break
+            output.append(round(confidence / count, DECIMALS))
         return output
 
     def weigh(self, prediction, model_id):
@@ -421,16 +513,28 @@ class Fusion(ModelFields):
                 missing_strategy=missing_strategy,
                 operating_point=operating_point)
             return prediction
-
         result = self.predict_probability( \
+            input_data,
+            missing_strategy=missing_strategy,
+            compact=False)
+        confidence_result = self.predict_confidence( \
             input_data,
             missing_strategy=missing_strategy,
             compact=False)
 
         if not self.regression:
+            try:
+                for index, value in enumerate(result):
+                    result[index].update(
+                        {"confidence": confidence_result[index]["confidence"]})
+            except Exception as exc:
+                pass
             result = sorted(result, key=lambda x: - x["probability"])[0]
             result["prediction"] = result["category"]
             del result["category"]
+        else:
+            result.update(
+                {"confidence": confidence_result["confidence"]})
 
         # adding unused fields, if any
         if unused_fields:

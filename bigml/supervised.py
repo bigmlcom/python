@@ -154,6 +154,16 @@ class SupervisedModel(BaseModel):
             del new_kwargs["missing_strategy"]
             return self.local_model.predict_probability(*args, **new_kwargs)
 
+    def predict_confidence(self, *args, **kwargs):
+        """Delegating method to local model object"""
+        new_kwargs = {}
+        new_kwargs.update(kwargs)
+        try:
+            return self.local_model.predict_confidence(*args, **new_kwargs)
+        except TypeError:
+            del new_kwargs["missing_strategy"]
+            return self.local_model.predict_confidence(*args, **new_kwargs)
+
     def data_transformations(self):
         """Returns the pipeline transformations previous to the modeling
         step as a pipeline, so that they can be used in local predictions.

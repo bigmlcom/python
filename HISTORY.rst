@@ -3,11 +3,15 @@
 History
 -------
 
+9.5.0 (2023-06-16)
+------------------
+
+- Extending Local Fusions output to include confidence.
+
 9.4.0 (2023-06-14)
 ------------------
 
 - Extending LocalModel class to handle Time Series locally.
-
 
 9.3.0 (2023-06-09)
 ------------------

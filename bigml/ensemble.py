@@ -860,6 +860,8 @@ class Ensemble(ModelFields):
                     set(prediction.get("unused_fields", [])))
             if not isinstance(result, dict):
                 result = {"prediction": round(result, DECIMALS)}
+            if "probability" in result and "confidence" not in result:
+                result["confidence"] = result["probability"]
             result['unused_fields'] = list(unused_fields)
 
         return result

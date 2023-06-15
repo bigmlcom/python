@@ -252,17 +252,18 @@ class TestOptimlFusion:
             And I create a local fusion prediction for "<input_data>"
             Then the local fusion prediction is "<prediction>"
             And the local fusion probability for the prediction is "<probability>"
+            And the local fusion confidence for the prediction is "<confidence>"
         """
         show_doc(self.test_scenario4)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "fusion_wait", "model_conf", "tag", "input_data",
-                   "objective_id", "prediction", "probability"]
+                   "objective_id", "prediction", "probability", "confidence"]
         examples = [
             ['data/iris.csv', '10', '10', '30', '30',
              '{"tags":["my_fusion_4_tag"], "missing_numerics": true}',
              'my_fusion_4_tag',
              '{"petal width": 1.75, "petal length": 2.45}', "000004",
-             "Iris-setosa", '0.4726']]
+             "Iris-setosa", '0.4726', '0.4726']]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, self.bigml["method"], example)
@@ -299,6 +300,8 @@ class TestOptimlFusion:
                 self, example["prediction"])
             compare_pred.the_local_probability_is(
                 self, example["probability"])
+            compare_pred.the_local_confidence_is(
+                self, example["confidence"])
 
     def test_scenario5(self):
         """

@@ -264,6 +264,17 @@ class LogisticRegression(ModelFields):
             return [category['probability'] for category in distribution]
         return distribution
 
+    def predict_confidence(self, input_data, compact=False):
+        """For logistic regressions we assume that probability can be used
+        as confidence.
+        """
+        if compact:
+            return self.predict_probability(input_data, compact=compact)
+        return [{"category": pred["category"],
+                 "confidence": pred["probability"]}
+                for pred in self.predict_probability(input_data,
+                                                     compact=compact)]
+
     def predict_operating(self, input_data,
                           operating_point=None):
         """Computes the prediction based on a user-given operating point.
@@ -290,6 +301,7 @@ class LogisticRegression(ModelFields):
                 prediction = prediction[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
+        prediction['confidence'] = prediction['probability']
         return prediction
 
     def predict_operating_kind(self, input_data,
@@ -310,6 +322,7 @@ class LogisticRegression(ModelFields):
         prediction = predictions[0]
         prediction["prediction"] = prediction["category"]
         del prediction["category"]
+        prediction['confidence'] = prediction['probability']
         return prediction
 
     #pylint: disable=locally-disabled,consider-using-dict-items
@@ -422,7 +435,8 @@ class LogisticRegression(ModelFields):
                              for category, probability in predictions]}
 
         if full:
-            result.update({'unused_fields': unused_fields})
+            result.update({'unused_fields': unused_fields, 'confidence':
+                           result['probability']})
         else:
             result = result["prediction"]
 

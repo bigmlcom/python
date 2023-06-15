@@ -474,6 +474,14 @@ def the_local_probability_is(step, probability):
     eq_(local_probability, probability, precision=4)
 
 
+def the_local_confidence_is(step, confidence):
+    """Step: the local confidence is <confidence>"""
+    local_confidence = step.bigml["local_prediction"]["confidence"]
+    if isinstance(confidence, str):
+        confidence = float(confidence)
+    eq_(local_confidence, confidence, precision=4)
+
+
 def eq_local_and_remote_probability(step):
     """Step: check local and remote probability"""
     local_probability = round(step.bigml["local_prediction"]["probability"], 3)

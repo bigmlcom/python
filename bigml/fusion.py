@@ -104,6 +104,8 @@ def get_models_weight(models_info):
         else:
             model_ids = models_info
             weights = None
+        if weights is None:
+            weights = [1] * len(model_ids)
         return model_ids, weights
     except KeyError:
         raise ValueError("Failed to find the models in the fusion info.")
@@ -289,10 +291,9 @@ class Fusion(ModelFields):
                     continue
                 if self.regression:
                     prediction = prediction[0]
-                if self.weights is not None:
-                    weights.append(1 if not self.weights else self.weights[
-                        self.model_ids.index(model.resource_id)])
-                    prediction = self.weigh(prediction, model.resource_id)
+                weights.append(self.weights[self.model_ids.index(
+                    model.resource_id)])
+                prediction = self.weigh(prediction, model.resource_id)
                 # we need to check that all classes in the fusion
                 # are also in the composing model
                 if not self.regression and \
@@ -312,7 +313,8 @@ class Fusion(ModelFields):
             total_weight = sum(weights)
             for index, pred in enumerate(votes.predictions):
                 prediction += pred # the weight is already considered in pred
-            prediction /= float(total_weight)
+            if total_weight > 0:
+                prediction /= float(total_weight)
             if compact:
                 output = [prediction]
             else:
@@ -378,8 +380,8 @@ class Fusion(ModelFields):
                     # are found and Linear Regressions have no confidence
                     continue
                 predictions.append(prediction)
-                weights.append(1 if not self.weights else self.weights[
-                    self.model_ids.index(model.resource_id)])
+                weights.append(self.weights[self.model_ids.index(
+                    model.resource_id)])
                 if self.regression:
                     prediction = prediction["prediction"]
         if self.regression:
@@ -389,8 +391,9 @@ class Fusion(ModelFields):
             for index, pred in enumerate(predictions):
                 prediction += pred.get("prediction")  * weights[index]
                 confidence += pred.get("confidence")
-            prediction /= float(total_weight)
-            confidence /= float(len(predictions))
+            if total_weight > 0:
+                prediction /= float(total_weight)
+                confidence /= float(len(predictions))
             if compact:
                 output = [prediction, confidence]
             else:

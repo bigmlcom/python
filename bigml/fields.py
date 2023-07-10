@@ -45,6 +45,13 @@ import sys
 import json
 import csv
 import random
+import numpy as np
+
+try:
+    from pandas import DataFrame
+    PANDAS_READY = True
+except ImportError:
+    PANDAS_READY = False
 
 
 from bigml.util import invert_dictionary, python_map_type, find_locale
@@ -52,7 +59,7 @@ from bigml.util import DEFAULT_LOCALE
 from bigml.api_handlers.resourcehandler import get_resource_type, get_fields
 from bigml.constants import (
     SOURCE_PATH, DATASET_PATH, SUPERVISED_PATHS, FUSION_PATH,
-    RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS, REGIONS)
+    RESOURCES_WITH_FIELDS, DEFAULT_MISSING_TOKENS, REGIONS, CATEGORICAL)
 from bigml.io import UnicodeReader, UnicodeWriter
 
 LIST_LIMIT = 10
@@ -191,6 +198,32 @@ def get_new_fields(output_fields):
         names = output_field.get("names")
         new_fields.append({"field": sexp, "names": names})
     return new_fields
+
+
+def one_hot_code(value, field, decode=False):
+    """Translating into codes categorical values. The codes are the index
+    of the value in the list of categories read from the fields summary.
+    Decode set to True will cause the code to be translated to the value"""
+
+    try:
+        categories = [cat[0] for cat in field["summary"]["categories"]]
+    except KeyError:
+        raise KeyError("Failed to find the categories list. Check the field"
+                       " information.")
+
+    if decode:
+        try:
+            result = categories[int(value)]
+        except KeyError:
+            raise KeyError("Code not found in the categories list. %s" %
+                           categories)
+    else:
+        try:
+            result = categories.index(value)
+        except ValueError:
+            raise ValueError("The '%s' value is not found in the categories "
+                             "list: %s" % (value, categories))
+    return result
 
 
 class Fields():
@@ -482,6 +515,77 @@ class Fields():
         field_id = self.field_id(field_name)
         summary = self.fields[field_id].get('summary', {})
         return summary
+
+    def objective_field_info(self):
+        """Returns the fields structure for the objective field"""
+        if self.objective_field is None:
+            return None
+        objective_id = self.field_id(self.objective_field)
+        return {objective_id: self.fields[objective_id]}
+
+    def sorted_field_ids(self, objective=False):
+        """List of field IDs ordered by column number. If objective is
+        set to False, the objective field will be excluded.
+        """
+        fields = {}
+        fields.update(self.fields_by_column_number)
+        if not objective and self.objective_field is not None:
+            del(fields[self.objective_field])
+        field_ids = fields.values()
+        return field_ids
+
+    def to_numpy(self, input_data_list, objective=False):
+        """Transforming input data to numpy syntax. Fields are sorted
+        in the dataset order and categorical fields are one-hot encoded.
+        If objective set to False, the objective field will not be included"""
+        if PANDAS_READY and isinstance(input_data_list, DataFrame):
+            inner_data_list = input_data_list.to_dict('records')
+        else:
+            inner_data_list = input_data_list
+        field_ids = self.sorted_field_ids(objective=objective)
+        np_input_list = np.empty(shape=(len(input_data_list),
+                                        len(field_ids)))
+        for index, input_data in enumerate(inner_data_list):
+            np_input = np.array([])
+            for field_id in field_ids:
+                field_input = input_data.get(field_id,
+                    input_data.get(self.field_name(field_id)))
+                field = self.fields[field_id]
+                if field["optype"] == CATEGORICAL:
+                    field_input = one_hot_code(field_input, field)
+                np_input = np.append(np_input, field_input)
+            np_input_list[index] = np_input
+        return np_input_list
+
+    def from_numpy(self, np_data_list, objective=False, by_name=True):
+        """Transforming input data from numpy syntax. Fields are sorted
+        in the dataset order and categorical fields are one-hot encoded."""
+        input_data_list = []
+        field_ids = self.sorted_field_ids(objective=objective)
+        for np_data in np_data_list:
+            if len(np_data) != len(field_ids):
+                raise ValueError("Wrong number of features in data: %s"
+                " found, %s expected" % (len(np_data), len(field_ids)))
+            input_data = {}
+            for index, field_id in enumerate(field_ids):
+                field_input = None if np.isnan(np_data[index]) else \
+                    np_data[index]
+                field = self.fields[field_id]
+                if field["optype"] == CATEGORICAL:
+                    field_input = one_hot_code(field_input, field, decode=True)
+                if by_name:
+                    field_id = self.fields[field_id]["name"]
+                input_data.update({field_id: field_input})
+            input_data_list.append(input_data)
+        return input_data_list
+
+    def one_hot_codes(self, field_name):
+        """Returns the codes used for every category in a categorical field"""
+        field = self.fields[self.field_id(field_name)]
+        if field["optype"] != CATEGORICAL:
+            raise ValueError("Only categorical fields are encoded")
+        categories = [cat[0] for cat in field["summary"]["categories"]]
+        return dict(zip(categories, range(0, len(categories))))
 
     def summary_csv(self, filename=None):
         """Summary of the contents of the fields

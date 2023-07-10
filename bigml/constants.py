@@ -332,9 +332,11 @@ OUT_NEW_FIELDS = "output_fields"
 OUT_NEW_HEADERS = "output_headers"
 
 # input data allowed formats in batch predictions
+NUMPY = "numpy"
 DATAFRAME = "dataframe"
 INTERNAL = "list_of_dicts"
 
+CATEGORICAL = "categorical"
 
 IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'tiff', 'tif', 'bmp',
                     'webp', 'cur', 'ico', 'pcx', 'psd', 'psb']

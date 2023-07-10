@@ -68,14 +68,14 @@ try:
     import tensorflow as tf
     tf.autograph.set_verbosity(0)
     LAMINAR_VERSION = False
-except ModuleNotFoundError:
+except Exception:
     LAMINAR_VERSION = True
 
 try:
     from sensenet.models.wrappers import create_model
     from bigml.images.utils import to_relative_coordinates
     from bigml.constants import IOU_REMOTE_SETTINGS
-except ModuleNotFoundError:
+except Exception:
     LAMINAR_VERSION = True
 
 LOGGER = logging.getLogger('BigML')

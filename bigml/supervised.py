@@ -170,7 +170,8 @@ class SupervisedModel(BaseModel):
         """
         return self.local_model.data_transformations()
 
-    def batch_predict(self, input_data_list, outputs=None, **kwargs):
+    def batch_predict(self, input_data_list, outputs=None, all_fields=True,
+                      **kwargs):
         """Creates a batch prediction for a list of inputs using the local
         supervised model. Allows to define some output settings to
         decide the fields to be added to the input_data (prediction,
@@ -185,6 +186,8 @@ class SupervisedModel(BaseModel):
         :type input_data_list: list or Panda's dataframe
         :param dict outputs: properties that define the headers and fields to
                              be added to the input data
+        :param boolean all_fields: whether all the fields in the input data
+                                   should be part of the response
         :return: the list of input data plus the predicted values
         :rtype: list or Panda's dataframe depending on the input type in
                 input_data_list
@@ -199,17 +202,22 @@ class SupervisedModel(BaseModel):
             new_headers = new_headers[0: len(new_fields)]
         data_format = get_data_format(input_data_list)
         inner_data_list = get_formatted_data(input_data_list, INTERNAL)
+        predictions_list = []
+        kwargs.update({"full": True})
         for input_data in inner_data_list:
-            kwargs.update({"full": True})
             prediction = self.predict(input_data, **kwargs)
+            prediction_data = {}
+            if all_fields:
+                prediction_data.update(input_data)
             for index, key in enumerate(new_fields):
                 try:
-                    input_data[new_headers[index]] = prediction[key]
+                    prediction_data[new_headers[index]] = prediction[key]
                 except KeyError:
                     pass
+            predictions_list.append(prediction_data)
         if data_format != INTERNAL:
-            return format_data(inner_data_list, out_format=data_format)
-        return inner_data_list
+            return format_data(predictions_list, out_format=data_format)
+        return predictions_list
 
     #pylint: disable=locally-disabled,arguments-differ
     def dump(self, **kwargs):

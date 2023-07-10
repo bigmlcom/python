@@ -723,6 +723,7 @@ def get_data_format(input_data_list):
     raise ValueError("Data is expected to be provided as a list of "
                      "dictionaries or Pandas' DataFrame.")
 
+
 #pylint: disable=locally-disabled,comparison-with-itself
 def format_data(input_data_list, out_format=None):
     """Transforms the input data format to the one expected """

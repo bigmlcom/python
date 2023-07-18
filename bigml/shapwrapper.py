@@ -42,6 +42,7 @@ class ShapWrapper():
         objective_id = getattr(self.local_model, "objective_id", None)
         self.fields = Fields(self.local_model.fields,
                              objective_field=objective_id)
+        self.objective_categories = self.local_model.objective_categories
         self.x_headers = [self.fields.field_name(field_id) for field_id in
                           self.fields.sorted_field_ids()]
         self.y_header = self.fields.field_name(self.fields.objective_field)
@@ -64,8 +65,10 @@ class ShapWrapper():
             raise ValueError("This method is only available for classification"
                              " models.")
         input_data_list = self.fields.from_numpy(x_test)
-        predictions = np.ndarray([])
-        for input_data in inner_data_list:
-            prediction = self.predict_probability(input_data, compact=True)
-            np.append(predictions, np.ndarray(prediction))
-        return predictions
+        np_list = np.empty(shape=(len(input_data_list),
+                                  len(self.objective_categories)))
+        for index, input_data in enumerate(input_data_list):
+            prediction = self.local_model.predict_probability(
+                input_data, compact=True)
+            np_list[index] = np.asarray([prediction])
+        return np_list

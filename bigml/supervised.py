@@ -139,6 +139,8 @@ class SupervisedModel(BaseModel):
         self.local_model = local_model
         self.regression = resource_type == "linearregression" or \
             self.local_model.regression
+        if not self.regression:
+            self.objective_categories = self.local_model.objective_categories
         self.name = self.local_model.name
         self.description = self.local_model.description
 

@@ -450,7 +450,6 @@ class Model(BaseModel):
                 else:
                     self.tree_type = CLASSIFICATION
                     self.offsets = c.OFFSETS[str(self.weighted)]
-
             else:
                 raise Exception("Cannot create the Model instance."
                                 " Only correctly finished models can be"

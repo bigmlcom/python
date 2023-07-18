@@ -34,6 +34,7 @@ from bigml.supervised import SupervisedModel
 from bigml.local_model import LocalModel
 from bigml.fusion import Fusion
 from bigml.pca import PCA
+from bigml.shapwrapper import ShapWrapper
 
 
 from .create_prediction_steps import check_prediction
@@ -94,6 +95,11 @@ def i_create_a_local_supervised_model_from_file(step, model_file):
     step.bigml["local_model"] = SupervisedModel(res_filename(model_file))
 
 
+def i_create_a_local_shap_wrapper_from_file(step, model_file):
+    """Step: I create a local ShapWrapper from a <model_file> file"""
+    step.bigml["local_model"] = ShapWrapper(res_filename(model_file))
+
+
 def i_create_a_local_model(step, pre_model=False):
     """Step: I create a local model"""
     step.bigml["local_model"] = Model(world.model)
@@ -148,6 +154,7 @@ def the_local_bigml_prediction_is(step, value, prediction_type=None, key=None,
     eq_(value, prediction, precision=precision)
 
 
+
 def i_create_a_local_prediction_with_confidence(step, data=None,
                                                 pre_model=None):
     """Step: I create a local prediction for <data> with confidence"""
@@ -158,6 +165,14 @@ def i_create_a_local_prediction_with_confidence(step, data=None,
         input_data = pre_model.transform([input_data])[0]
     step.bigml["local_prediction"] = step.bigml["local_model"].predict(
         input_data, full=True)
+
+
+def i_create_a_shap_local_prediction(step, data=None):
+    """Step: I create a local prediction for <numpy_input>"""
+    if data is None:
+        data = "[]"
+    step.bigml["local_prediction"] = step.bigml["local_model"].predict(
+        data).tolist()[0]
 
 
 def i_create_a_local_prediction(step, data=None, pre_model=None):
@@ -211,6 +226,13 @@ def i_create_local_probabilities(step, data=None):
     model = step.bigml["local_model"]
     step.bigml["local_probabilities"] = model.predict_probability(
         data, compact=True)
+
+
+def i_create_shap_local_probabilities(step, data=None):
+    """Step: I create shap local probabilities for <data>"""
+    model = step.bigml["local_model"]
+    step.bigml["local_probabilities"] = model.predict_proba(
+        data).tolist()[0]
 
 
 def i_create_a_local_ensemble_prediction(step, data=None):
@@ -449,6 +471,14 @@ def the_local_probabilities_are(step, prediction):
     expected_probabilities = [float(p) for p in json.loads(prediction)]
 
     for local, expected in zip(local_probabilities, expected_probabilities):
+        approx_(local, expected, precision=4)
+
+
+def the_local_proba_prediction_is(step, proba_prediction):
+    """Step: the local probabilities prediction is <proba_prediction>"""
+    local_probabilities = step.bigml["local_probabilities"]
+
+    for local, expected in zip(local_probabilities, proba_prediction):
         approx_(local, expected, precision=4)
 
 

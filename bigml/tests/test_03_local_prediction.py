@@ -175,7 +175,10 @@ class TestLocalPrediction:
         examples = [
             ['data/imgs_deepnet.zip', "data/images/cats/pexels-pixabay-33358.jpg",
              {"region_score_threshold": 0.7},
-             '{"prediction": [{"box": [0.68164, 0.30469, 0.79688, 0.36979], "label": "eye", "score": 0.79633}, {"box": [0.38086, 0.27865, 0.50391, 0.36068], "label": "eye", "score": 0.74563}]}']]
+             ('{"prediction": [{"box": [0.68164, 0.30469, 0.79688, 0.36979], '
+              '"label": "eye", "score": 0.79633}, '
+              '{"box": [0.38086, 0.27865, 0.50391, 0.36068], '
+              '"label": "eye", "score": 0.74563}]}')]]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, self.bigml["method"], example)
@@ -186,3 +189,32 @@ class TestLocalPrediction:
                 self, example["input_data"])
             prediction_compare.the_local_regions_prediction_is(
                 self, example["prediction"])
+
+    def test_scenario6(self):
+        """
+        Scenario 6: Successfully creating a prediction from a ShapWrapper of a model in a json file:
+            Given I create a local model using ShapWrapper from a "<model>" file
+            When I create a local prediction for "<numpy_input>"
+            Then the local prediction is "<prediction>"
+            When I create a local probabilities prediction for "<numpy_input>"
+            Then the local probabilities prediction is "<proba_prediction>"
+        """
+        import numpy as np
+        show_doc(self.test_scenario6)
+        headers = ["file_path", "numpy_input", "prediction", "proba_prediction"]
+        examples = [
+            ['data/iris_model.json', np.asarray([np.asarray([0.5,1.0,1.0])]),
+             0., [0.9818, 0.00921, 0.00899]]]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, self.bigml["method"], example)
+            prediction_compare.i_create_a_local_shap_wrapper_from_file(
+                self, example["file_path"])
+            prediction_compare.i_create_a_shap_local_prediction(
+                self, example["numpy_input"])
+            prediction_compare.the_local_prediction_is(
+                self, example["prediction"])
+            prediction_compare.i_create_shap_local_probabilities(
+                self, example["numpy_input"])
+            prediction_compare.the_local_proba_prediction_is(
+                self, example["proba_prediction"])

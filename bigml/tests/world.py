@@ -179,9 +179,8 @@ def approx_(number_a, number_b, msg=None, precision=5):
     """Wrapper for pytest approx function"""
     epsilon = math.pow(0.1, precision)
     if msg is None:
-        assert number_a == pytest.approx(number_b, abs=epsilon)
-    else:
-        assert number_a == pytest.approx(number_b, abs=epsilon), msg
+        msg = "%s != %s" % (repr(number_a), repr(number_b))
+    assert number_a == pytest.approx(number_b, abs=epsilon), msg
 
 
 class World:

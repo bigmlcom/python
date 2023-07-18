@@ -15,11 +15,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 from bigml.api import HTTP_CREATED
 from bigml.api import FINISHED, FAULTY
+from bigml.evaluation import Evaluation
 
 from .read_resource_steps import wait_until_status_code_is
-from .world import world, eq_, ok_
+from .world import world, eq_, ok_, res_filename, approx_
 
 def i_create_an_evaluation(step, shared=None):
     """Step: I create an evaluation for the model with the dataset"""
@@ -105,5 +108,18 @@ def the_measured_measure_is_value(step, measure, value):
 
 
 def the_measured_measure_is_greater_value(step, measure, value):
-    """#@step(r'the measured <measure> is greater than <value>"""
+    """Step: the measured <measure> is greater than <value>"""
     ok_(float(world.evaluation['result']['model'][measure]) > float(value))
+
+def i_create_a_local_evaluation(step, filename):
+    """Step: I create an Evaluation from the JSON file"""
+    filename = res_filename(filename)
+    with open(filename) as handler:
+        evaluation = json.load(handler)
+    local_evaluation = Evaluation(evaluation)
+    step.bigml["local_evaluation"] = local_evaluation
+
+def the_local_metric_is_value(step, metric, value):
+    """Step: The metric in the local evaluation is <value> """
+    approx_(getattr(step.bigml["local_evaluation"], metric), value,
+            precision=4)

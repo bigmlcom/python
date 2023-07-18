@@ -26,7 +26,7 @@ from bigml.api import get_api_connection, ID_GETTERS
 from bigml.basemodel import retrieve_resource, get_resource_dict
 
 CLASSIFICATION_METRICS = [
-    "accuracy", "precision", "recall", "phi" "phi_coefficient",
+    "accuracy", "precision", "recall", "phi", "phi_coefficient",
     "f_measure", "confusion_matrix", "per_class_statistics"]
 
 REGRESSION_METRICS = ["mean_absolute_error", "mean_squared_error", "r_squared"]
@@ -35,6 +35,7 @@ REGRESSION_METRICS = ["mean_absolute_error", "mean_squared_error", "r_squared"]
 class ClassificationEval():
     """A class to store the classification metrics """
     def __init__(self, name, per_class_statistics):
+
         self.name = name
         for statistics in per_class_statistics:
             if statistics["class_name"] == name:

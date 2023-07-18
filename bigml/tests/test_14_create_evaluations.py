@@ -214,3 +214,29 @@ class TestEvaluation:
                 self, example["evaluation_wait"])
             evaluation_create.the_measured_measure_is_value(
                 self, example["metric"], example["value"])
+
+    def test_scenario5(self):
+        """
+        Scenario5: Successfully instantiating Evaluation:
+            Given a stored evaluation "<data>" file
+            When I create an Evaluation for the JSON
+            Then the measured "<metric>" is <value>
+        """
+        show_doc(self.test_scenario5)
+        headers = ["data", "metric", "value"]
+        examples = [
+            ['data/classification_evaluation.json', 'phi',
+             0.64837],
+            ['data/classification_evaluation.json', 'accuracy',
+             0.91791],
+            ['data/classification_evaluation.json', 'precision',
+             0.86639],
+            ['data/regression_evaluation.json', 'r_squared',
+             0.9288]]
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, self.bigml["method"], example)
+            evaluation_create.i_create_a_local_evaluation(
+                self, example["data"])
+            evaluation_create.the_local_metric_is_value(
+                self, example["metric"], example["value"])

@@ -137,6 +137,8 @@ class SupervisedModel(BaseModel):
         for attr, value in list(local_model.__dict__.items()):
             setattr(self, attr, value)
         self.local_model = local_model
+        self.regression = resource_type == "linearregression" or \
+            self.local_model.regression
         self.name = self.local_model.name
         self.description = self.local_model.description
 

@@ -21,6 +21,7 @@
 import numpy as np
 
 from bigml.supervised import SupervisedModel, extract_id
+from bigml.fusion import Fusion
 from bigml.fields import Fields
 from bigml.api import get_resource_type, get_api_connection
 
@@ -35,7 +36,8 @@ class ShapWrapper():
         self.api = get_api_connection(api)
         resource_id, model = extract_id(model, self.api)
         resource_type = get_resource_type(resource_id)
-        self.local_model = SupervisedModel(model, api=api, cache_get=cache_get,
+        model_class = Fusion if resource_type == "fusion" else SupervisedModel
+        self.local_model = model_class(model, api=api, cache_get=cache_get,
             operation_settings=operation_settings)
         objective_id = getattr(self.local_model, "objective_id", None)
         self.fields = Fields(self.local_model.fields,
@@ -55,3 +57,15 @@ class ShapWrapper():
         pred_fields = Fields(objective_field)
         return pred_fields.to_numpy(batch_prediction,
                                     objective=True).reshape(-1)
+
+    def predict_proba(self, x_test):
+        """Prediction method that interfaces with the Shap library"""
+        if self.local_model.regression:
+            raise ValueError("This method is only available for classification"
+                             " models.")
+        input_data_list = self.fields.from_numpy(x_test)
+        predictions = np.ndarray([])
+        for input_data in inner_data_list:
+            prediction = self.predict_probability(input_data, compact=True)
+            np.append(predictions, np.ndarray(prediction))
+        return predictions

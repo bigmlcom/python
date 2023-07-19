@@ -2490,6 +2490,74 @@ to cover the particulars of the functions to be used in the generation of
 new fields.
 
 
+Local Evaluations
+-----------------
+
+You can instantiate a local version of an evaluation that will contain the
+main evaluation metrics.
+
+.. code-block:: python
+
+    from bigml.evaluation import Evaluation
+    local_evaluation = Evaluation('evaluation/502fdbff15526876610003215')
+
+This will retrieve the remote evaluation information, using an implicitly built
+``BigML()`` connection object (see the `Authentication <#authentication>`_
+section for more
+details on how to set your credentials) and return a Dataset object
+that will be stored in the ``./storage`` directory. If you want to use a
+specific connection object for the remote retrieval or a different storage
+directory, you can set it as second parameter:
+
+.. code-block:: python
+
+    from bigml.evaluation import Evaluation
+    from bigml.api import BigML
+
+    local_evaluation = Evaluation('evaluation/502fdbff15526876610003215',
+                                  api=BigML(my_username,
+                                            my_api_key,
+                                            storage="my_storage"))
+
+or even use the remote evaluation information previously retrieved to build the
+local evaluation object:
+
+.. code-block:: python
+
+    from bigml.evaluation import Evaluation
+    from bigml.api import BigML
+    api = BigML()
+    evaluation = api.get_evaluation('evaluation/502fdbff15526876610003215')
+
+    local_evaluation = Evaluation(evaluation)
+
+You can also build a local evaluation from a previously retrieved and
+stored evaluation JSON file:
+
+.. code-block:: python
+
+    from bigml.evaluation import Evaluation
+    local_evaluation = Evaluation('./my_dataset.json')
+
+The Evaluation attributes depend on whether it belongs to a regression or a
+classification. Regression evaluations will contain ``r_square``,
+``mean_absolute_error``, ``mean_squared_error``. Classification evaluations
+will contain ``accuracy``, ``precision``, ``recall``, ``phi`` and ``f_measure``
+besides the ``confusion_matrix`` and a ``-full`` attribute that will contain
+the entire set of metrics as downloaded from the API.
+
+.. code-block:: python
+
+    from bigml.evaluation import Evaluation
+    local_evaluation = Evaluation('evaluation/502fdbff15526876610003215')
+    local_evaluation.full # entire model evaluation metrics
+    if local_evaluation.regression:
+        local_evaluation.r_squared # r-squared metric value
+    else:
+        local_evaluation.confusion_matrix # confusion matrix
+        local_evaluation.accuracy
+
+
 Local batch predictions
 -----------------------
 
@@ -2601,6 +2669,27 @@ and the result would be like the one below:
     199            2             155  ...          false      0.51737
 
     [200 rows x 11 columns]
+
+
+Local Shap Wrapper
+------------------
+
+The Shap library accepts customized predict functions as long as they provide
+a particular input/output interface that uses numpy arrays. The previously
+described local models can be used to generate such an predict funcion.
+The ``ShapWrapper`` class has been created to help users connect the
+Shap library to BigML supervised models and provides the ``.predict`` and
+``.predict_proba`` functions especially built to be used with that libary.
+
+.. code-block:: python
+
+    from bigml.shapwrapper import ShapWrapper
+    shap_wrapper = ShapWrapper("model/5143a51a37203f2cf7027551")
+    # computing the Explainer on the X_test numpy array
+    explainer = shap.Explainer(shap_wrapper.predict,
+                               X_test, algorithm='partition',
+                               feature_names=shap_wrapper.x_headers)
+    shap_values = explainer(X_test)
 
 
 Local predictions with shared models

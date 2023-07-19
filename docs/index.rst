@@ -796,6 +796,29 @@ using a csv file as input:
         input_data = fields.pair([float(val) for val in row], objective_field)
         prediction = local_model.predict(input_data)
 
+If you are interfacing with numpy-based libraries, you'll probably want to
+generate or read the field values as a numpy array. The ``Fields`` object
+offers the ``.from_numpy`` and ``.to_numpy`` methods to that end. In both,
+categorial fields will be one-hot encoded automatically by assigning the
+indices of the categories as presented in the corresponding field summary.
+
+.. code-block:: python
+
+    from bigml.api import BigML
+    from bigml.fields import Fields
+    api = BigML()
+    model = api.get_model("model/5143a51a37203f2cf7000979")
+    fields = Fields(model)
+    # creating a numpy array for the following input data
+    np_inputs = fields.to_numpy({"petal length": 1})
+    # creating an input data dictionary from a numpy array
+    input_data = fields.from_numpy(np_inputs)
+
+The numpy output of ``.to_numpy`` can be used in the
+`ShapWrapper <local_resources.html#local-shap-wrapper>`_ object or other
+functions that expect numpy arrays as inputs and the ``.from_numpy``
+output can be used in BigML local predictions as input.
+
 If missing values are present, the ``Fields`` object can return a dict
 with the ids of the fields that contain missing values and its count. The
 following example:

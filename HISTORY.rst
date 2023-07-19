@@ -3,6 +3,14 @@
 History
 -------
 
+9.6.0 (2023-07-20)
+------------------
+
+- Adding ShapWrapper to enable local Shap values computation with the Shap
+  library.
+- Adding Evaluation object.
+- Improving Field class to allow field values encoding as numpy arrays.
+
 9.5.0 (2023-06-16)
 ------------------
 

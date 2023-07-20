@@ -63,7 +63,7 @@ class Evaluation():
 
         try:
             self.resource_id, evaluation = get_resource_dict( \
-                evaluation, "evaluation", self.api)
+                evaluation, "evaluation", self.api, no_check_fields=True)
         except ValueError as resource:
             try:
                 evaluation = json.loads(str(resource))

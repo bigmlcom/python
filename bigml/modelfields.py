@@ -241,7 +241,6 @@ class ModelFields:
                     self.fields[field_id]["summary"]["categories"]:
                 self.categories[field_id] = [category for \
                     [category, _] in field['summary']['categories']]
-                # del self.fields[field_id]["summary"]["categories"]
             if field['optype'] == 'datetime' and \
                     hasattr(self, "coeff_ids"):
                 self.coeff_id = [coeff_id for coeff_id in self.coeff_ids \

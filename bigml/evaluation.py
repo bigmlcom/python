@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""An local Evaluation object.
+"""A local Evaluation object.
 
 This module defines a local class to handle the results of an evaluation
 

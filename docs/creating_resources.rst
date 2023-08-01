@@ -1360,8 +1360,8 @@ Existing deepnets can also be cloned:
 .. code-block:: python
     from bigml.api import BigML
     api = BigML()
-    deepnets = "deepnets/526fc344035d071ea3031d76"
-    cloned_deepnets = api.clone_deepnets(deepnets)
+    deepnet = "deepnet/526fc344035d071ea3031d76"
+    cloned_deepnet = api.clone_deepnet(deepnet)
 
 
 Creating PCAs
@@ -1508,3 +1508,45 @@ PCA to compute the projection that corresponds to each input data instance:
         pca, dataset, {
         "name": "my batch pca", "all_fields": True,
         "header": True})
+
+Cloning Resources
+~~~~~~~~~~~~~~~~~
+
+In the previous sections, you've been able to see that sources,
+datasets and models can be cloned using the corresponding
+``clone_[resource_type]` method.
+
+.. code-block:: python
+    from bigml.api import BigML
+    api = BigML()
+    logistic_regression = "logisticregression/526fc344035d071ea3031d76"
+    cloned_logistic_regression = api.clone_logistic_regression(
+        logistic_regression)
+
+Usually, cloning is applied when someone
+shares a resources with us and we need to use it in our account. In that case
+the link to the shared resource contains a shared hash, which is at the end
+of the URL. That shared ID can be used as input to clone it.
+
+.. code-block:: python
+    from bigml.api import BigML
+    api = BigML()
+    shared_deepnets = "shared/deepnet/s2KQBFQHMeIrbaTF5uncNsM8HKB"
+    cloned_deepnet = api.clone_deepnet(shared_deepnet)
+
+Sharing and cloning can be especially useful to useres that belong to
+one ``Organization``. For privacy reasons, the projects created inside the
+``Organization`` are not visible from the private user account environment and
+vice versa. If those users create a resource in their private account and then
+want to share it in a project that belongs to the organization, they can
+create the corresponding secret link and use it to clone it in the
+organization's project. That will, of course, need the connection to be
+pointing to that specific project.
+
+.. code-block:: python
+    from bigml.api import BigML
+    org_project = "project/526fc344035d071ea3031436"
+    # Creating a connection to the organization's project
+    api = BigML(project=org_project)
+    shared_model = "shared/model/s2KQBFQHMeIrbaTF5uncNsM8HKB"
+    cloned_model = api.clone_model(model)

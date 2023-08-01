@@ -151,10 +151,14 @@ def model_from_public_url(step):
     eq_(get_status(world.model)['code'], FINISHED)
 
 
-def make_the_model_shared(step):
+def make_the_model_shared(step, cloneable=False):
     """Step: I make the model shared"""
+    shared = {'shared': True}
+    if cloneable:
+        shared.update({"shared_clonable": True})
     resource = world.api.update_model(world.model['resource'],
-                                      {'shared': True})
+                                      shared)
+    world.api.ok(resource)
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
     world.location = resource['location']
@@ -643,6 +647,7 @@ def clone_model(step, model):
     world.model = resource['object']
     # save reference
     world.models.append(resource['resource'])
+
 
 def the_cloned_model_is(step, model):
     """Checking the model is a clone"""

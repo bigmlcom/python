@@ -62,7 +62,11 @@ class TestCloning:
             And I wait until the dataset is ready less than <dataset_wait> secs
             And I create a model
             And I wait until the model is ready less than <model_wait> secs
+            And I clone the model
             Then the origin model is the previous model
+            And I share and clone the shared model
+            Then the origin model is the previous model
+
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait"]
@@ -80,9 +84,13 @@ class TestCloning:
                 self, example["dataset_wait"], shared=example["data"])
             model_create.i_create_a_model(self, shared=example["data"])
             model_create.the_model_is_finished_in_less_than(
-                self, example["model_wait"], shared=example["data"])
+                self, example["model_wait"])
             model = world.model["resource"]
+            model_create.make_the_model_shared(self, cloneable=True)
+            model_hash = "shared/model/%s" % world.model["shared_hash"]
             model_create.clone_model(self, model)
+            model_create.the_cloned_model_is(self, model)
+            model_create.clone_model(self, model_hash)
             model_create.the_cloned_model_is(self, model)
 
     def test_scenario2(self):

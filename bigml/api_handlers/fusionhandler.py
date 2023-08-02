@@ -105,6 +105,18 @@ class FusionHandlerMixin(ResourceHandlerMixin):
                             message="A fusion id is needed.")
         return self.update_resource(fusion, changes)
 
+    def clone_fusion(self, fusion,
+                     args=None, wait_time=3, retries=10):
+        """Creates a cloned fusion from an existing `fusion`
+
+        """
+        create_args = self._set_clone_from_args(
+            fusion, "fusion", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.fusion_url, body)
+
     def delete_fusion(self, fusion, query_string=''):
         """Deletes a fusion.
 

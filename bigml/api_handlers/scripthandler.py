@@ -164,6 +164,18 @@ class ScriptHandlerMixin(ResourceHandlerMixin):
                             message="A script id is needed.")
         return self.update_resource(script, changes)
 
+    def clone_script(self, script,
+                     args=None, wait_time=3, retries=10):
+        """Creates a cloned script from an existing `script`
+
+        """
+        create_args = self._set_clone_from_args(
+            script, "script", args=args, wait_time=wait_time,
+            retries=retries)
+
+        body = json.dumps(create_args)
+        return self._create(self.script_url, body)
+
     def delete_script(self, script, query_string=''):
         """Deletes a script.
 

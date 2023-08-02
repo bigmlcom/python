@@ -3,6 +3,12 @@
 History
 -------
 
+9.6.2 (2023-08-02)
+------------------
+
+- Extending cloning to all available models and WhizzML scripts.
+- Fixing shared resources cloning.
+
 9.6.1 (2023-08-01)
 ------------------
 

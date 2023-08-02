@@ -119,7 +119,7 @@ from bigml.constants import (
     LINEAR_REGRESSION_PATH, LINEAR_REGRESSION_RE, SCRIPT_PATH, SCRIPT_RE,
     EXECUTION_PATH, EXECUTION_RE, LIBRARY_PATH, LIBRARY_RE, STATUS_PATH,
     IRREGULAR_PLURALS, RESOURCES_WITH_FIELDS, FIELDS_PARENT,
-    EXTERNAL_CONNECTOR_PATH, EXTERNAL_CONNECTOR_RE)
+    EXTERNAL_CONNECTOR_PATH, EXTERNAL_CONNECTOR_RE, CLONABLE_PATHS)
 
 from bigml.api_handlers.resourcehandler import (
     get_resource, get_resource_type, check_resource_type, get_source_id,
@@ -405,6 +405,11 @@ class BigML(BigMLConnection,ExternalConnectorHandlerMixin,
                 resource_type, resource_type))
             self.listers[resource_type] = getattr(self,
                                                   "list_%s" % method_name)
+        self.cloners = {}
+        for resource_type in CLONABLE_PATHS:
+            method_name = RENAMED_RESOURCES.get(resource_type, resource_type)
+            self.cloners[resource_type] = getattr(self,
+                                                  "clone_%s" % method_name)
 
     def prepare_image_fields(self, model_info, input_data):
         """Creating a source for each image field used by the model

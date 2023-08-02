@@ -80,9 +80,12 @@ MODELS_PATHS = [
     ASSOCIATION_PATH,
     TOPIC_MODEL_PATH,
     TIME_SERIES_PATH,
-    FUSION_PATH
+    FUSION_PATH,
+    PCA_PATH
 ]
 
+CLONABLE_PATHS = [SOURCE_PATH, DATASET_PATH, SCRIPT_PATH]
+CLONABLE_PATHS.extend(MODELS_PATHS)
 
 PMML_MODELS = [
     MODEL_PATH,
@@ -95,7 +98,8 @@ PMML_MODELS = [
 ID_PATTERN = '[a-f0-9]{24}'
 SHARED_PATTERN = '[a-zA-Z0-9]{24,30}'
 ID_RE = re.compile(r'^%s$' % ID_PATTERN)
-SOURCE_RE = re.compile(r'^%s/%s$' % (SOURCE_PATH, ID_PATTERN))
+SOURCE_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % (SOURCE_PATH, ID_PATTERN,
+    SOURCE_PATH, SHARED_PATTERN))
 DATASET_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
     DATASET_PATH, ID_PATTERN, DATASET_PATH, SHARED_PATTERN))
 MODEL_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % (
@@ -146,8 +150,8 @@ FORECAST_RE = re.compile(r'^%s/%s$' % \
     (FORECAST_PATH, ID_PATTERN))
 DEEPNET_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (DEEPNET_PATH, ID_PATTERN, DEEPNET_PATH, SHARED_PATTERN))
-OPTIML_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
-    (OPTIML_PATH, ID_PATTERN, OPTIML_PATH, SHARED_PATTERN))
+OPTIML_RE = re.compile(r'^%s/%s$' % \
+    (OPTIML_PATH, ID_PATTERN))
 FUSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (FUSION_PATH, ID_PATTERN, FUSION_PATH, SHARED_PATTERN))
 PCA_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
@@ -158,7 +162,7 @@ BATCH_PROJECTION_RE = re.compile(r'^%s/%s$' % (BATCH_PROJECTION_PATH,
 LINEAR_REGRESSION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (LINEAR_REGRESSION_PATH, ID_PATTERN,
      LINEAR_REGRESSION_PATH, SHARED_PATTERN))
-SCRIPT_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
+SCRIPT_RE = re.compile(r'^(public/)?%s/%s$|^shared/%s/%s$' % \
     (SCRIPT_PATH, ID_PATTERN, SCRIPT_PATH, SHARED_PATTERN))
 EXECUTION_RE = re.compile(r'^%s/%s|^shared/%s/%s$' % \
     (EXECUTION_PATH, ID_PATTERN, EXECUTION_PATH, SHARED_PATTERN))

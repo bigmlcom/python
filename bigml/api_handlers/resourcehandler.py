@@ -850,7 +850,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
         if args is not None:
             create_args.update(args)
 
-        if origin["object"].get("shared_hash"):
+        if isinstance(origin, dict) and origin["object"].get("shared_hash"):
             attr = "shared_hash"
             origin_id = origin["object"][attr]
         else:

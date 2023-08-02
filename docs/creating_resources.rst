@@ -1514,7 +1514,7 @@ Cloning Resources
 
 In the previous sections, you've been able to see that sources,
 datasets and models can be cloned using the corresponding
-``clone_[resource_type]` method.
+``clone_[resource_type]`` method.
 
 .. code-block:: python
     from bigml.api import BigML
@@ -1524,7 +1524,7 @@ datasets and models can be cloned using the corresponding
         logistic_regression)
 
 Usually, cloning is applied when someone
-shares a resources with us and we need to use it in our account. In that case
+shares a resource with us and we need to use it in our account. In that case
 the link to the shared resource contains a shared hash, which is at the end
 of the URL. That shared ID can be used as input to clone it.
 

@@ -30,7 +30,7 @@ version = re.search("__version__ = '([^']+)'",
                     open(version_py_path).read()).group(1)
 
 TOPIC_MODELING_DEPENDENCIES = ["cython", "pystemmer==2.0.1"]
-IMAGES_DEPENDENCIES = ["bigml-sensenet==0.7.0"]
+IMAGES_DEPENDENCIES = ["bigml-sensenet==0.7.1"]
 
 # Concatenate files into the long description
 file_contents = []
@@ -51,7 +51,7 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['pytest'],
     install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-        "requests-toolbelt", "msgpack", "numpy>=1.22,<1.24", "scipy",
+        "requests-toolbelt", "msgpack", "numpy>=1.24,<1.25", "scipy",
         "javascript"],
     extras_require={"images": IMAGES_DEPENDENCIES,
                     "topics": TOPIC_MODELING_DEPENDENCIES,

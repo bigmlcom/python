@@ -3,6 +3,11 @@
 History
 -------
 
+9.7.0 (2023-09-07)
+------------------
+
+- Upgrading libraries to avoid failures in Apple M1 machines.
+
 9.6.2 (2023-08-02)
 ------------------
 

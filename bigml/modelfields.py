@@ -290,7 +290,8 @@ class ModelFields:
         """
         if isinstance(value, str) and not isinstance(value, str):
             value = str(value, "utf-8")
-        return None if value in self.missing_tokens else value
+        return None if hasattr(self, "missing_tokens") and \
+            value in self.missing_tokens else value
 
     def fill_numeric_defaults(self, input_data):
         """Fills the value set as default for numeric missing fields if user

@@ -7,6 +7,7 @@ History
 ------------------
 
 - Upgrading libraries to avoid failures in Apple M1 machines.
+- Fixing local predictions input data preprocessing for missings.
 
 9.6.2 (2023-08-02)
 ------------------

@@ -46,7 +46,7 @@ import os
 from functools import cmp_to_key
 
 # avoiding tensorflow info logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 from bigml.api import FINISHED

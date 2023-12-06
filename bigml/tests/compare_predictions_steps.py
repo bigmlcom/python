@@ -52,7 +52,7 @@ def i_retrieve_a_list_of_remote_models(step, tag):
     """Step: I retrieve a list of remote models tagged with <tag>"""
     world.list_of_models = [ \
         world.api.get_model(model['resource']) for model in
-        world.api.list_models(query_string="project=%s;tags__in=%s" % \
+        world.api.list_models(query_string="project=%s&tags__in=%s" % \
             (world.project_id, tag))['objects']]
 
 
@@ -63,7 +63,7 @@ def i_retrieve_a_list_of_remote_logistic_regressions(step, tag):
     world.list_of_models = [ \
         world.api.get_logistic_regression(model['resource']) for model in
         world.api.list_logistic_regressions( \
-            query_string="project=%s;tags__in=%s" % \
+            query_string="project=%s&tags__in=%s" % \
                 (world.project_id, tag))['objects']]
 
 
@@ -72,7 +72,7 @@ def i_retrieve_a_list_of_remote_linear_regressions(step, tag):
     world.list_of_models = [ \
         world.api.get_linear_regression(model['resource']) for model in
         world.api.list_linear_regressions( \
-            query_string="project=%s;tags__in=%s" % \
+            query_string="project=%s&tags__in=%s" % \
                 (world.project_id, tag))['objects']]
 
 

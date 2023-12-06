@@ -42,12 +42,9 @@ deepnet.predict({"petal length": 3, "petal width": 1})
 """
 import logging
 import os
+import warnings
 
 from functools import cmp_to_key
-
-# avoiding tensorflow info logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
@@ -65,7 +62,11 @@ import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
 
 try:
+    # avoiding tensorflow info logging
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     import tensorflow as tf
+    tf.get_logger().setLevel('ERROR')
     tf.autograph.set_verbosity(0)
     LAMINAR_VERSION = False
 except Exception:

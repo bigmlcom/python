@@ -20,6 +20,7 @@ Class to store Dataset transformations based on the Dataset API response
 """
 import os
 import logging
+import warnings
 
 from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
@@ -29,13 +30,13 @@ from bigml.constants import FINISHED
 from bigml.flatline import Flatline
 from bigml.featurizer import Featurizer
 
-# avoiding tensorflow info logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
-
 #pylint: disable=locally-disabled,bare-except,ungrouped-imports
 try:
+    # avoiding tensorflow info logging
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     import tensorflow as tf
+    tf.get_logger().setLevel('ERROR')
     tf.autograph.set_verbosity(0)
     from bigml.images.featurizers import ImageFeaturizer as Featurizer
 except:

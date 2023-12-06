@@ -19,6 +19,7 @@
 
 """
 import os
+import sys
 import re
 import shutil
 import time
@@ -27,8 +28,6 @@ import pprint
 import json
 import math
 import pytest
-
-import pkg_resources
 
 from bigml.api import BigML
 from bigml.api import HTTP_NO_CONTENT, HTTP_NOT_FOUND
@@ -318,8 +317,8 @@ world = World()
 
 def res_filename(filename):
     """Returns path to a data filename"""
-    directory = pkg_resources.resource_filename('bigml', '__init__.py')
-    return os.path.join(os.path.dirname(os.path.dirname(directory)), filename)
+    directory = os.path.dirname(sys.modules['bigml'].__file__)
+    return os.path.join(os.path.dirname(directory), filename)
 
 
 def setup_module():

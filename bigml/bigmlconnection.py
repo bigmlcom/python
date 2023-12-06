@@ -24,6 +24,8 @@ import locale
 import io
 import logging
 
+from urllib import parse
+
 try:
     import simplejson as json
 except ImportError:
@@ -143,7 +145,7 @@ def patch_requests(short_debug):
                 json.dumps(json.loads(response.content), indent=4)
         except Exception:
             response_content = response.content
-        response_content = response_content[0:256] if short_debug else \
+        response_content = response_content[0: 256] if short_debug else \
         response_content
         logging.debug("Response: %s\n", response_content)
         return response
@@ -232,13 +234,17 @@ class BigMLConnection():
                                          " your environment")
 
         self.username = username
-        self.auth = "?username=%s;api_key=%s;" % (username, api_key)
+        self.api_key = api_key
+        self.qs_params = {"username": self.username, "api_key": self.api_key}
+        self.auth = "?" + parse.urlencode(self.qs_params)
         self.project = None
         self.organization = None
         if project is not None:
             self.project = project
+            self.qs_params.update({"project": self.project})
         if organization is not None:
             self.organization = organization
+
         self.debug = debug
         self.short_debug = short_debug
         self.domain = None
@@ -254,18 +260,10 @@ class BigMLConnection():
             locale.setlocale(locale.LC_ALL, DEFAULT_LOCALE)
         self.storage = assign_dir(storage)
 
-    def _set_api_urls(self, dev_mode=False, domain=None):
+    def _set_api_urls(self, domain=None):
         """Sets the urls that point to the REST api methods for each resource
 
-        dev_mode` has been deprecated. Now all resources coexist in the
-        same production environment. Existing resources generated in
-        development mode have been archived under a special project and
-        are now accessible in production mode.
-
         """
-        if dev_mode:
-            LOGGER.warning("Development mode is deprecated and the dev_mode"
-                           " flag will be removed soon.")
         if domain is None:
             domain = Domain()
         elif isinstance(domain, str):
@@ -282,7 +280,8 @@ class BigMLConnection():
         self.prediction_base_url = BIGML_URL % (
             self.domain.prediction_protocol, self.domain.prediction_domain, "")
 
-    def _add_credentials(self, url, organization=False, shared_auth=None):
+    def _add_credentials(self, qs_params,
+                         organization=False, shared_auth=None):
         """Adding the credentials and project or organization information
         for authentication
 
@@ -291,17 +290,25 @@ class BigMLConnection():
         the organization ID is used to access the projects and tasks in an
         organization. If false, a particular project ID must be used.
 
-        The shared_auth string provides the alternative credentials for
+        The shared_auth dictionary provides the alternative credentials for
         shared resources.
 
         """
-        auth = self.auth if shared_auth is None else shared_auth
-        auth = auth if "?" not in url else ";%s" % auth[1:]
-        return "%s%s%s" % (url, auth,
-                           "organization=%s;" % self.organization if
-                           organization and self.organization
-                           else "project=%s;" % self.project if self.project
-                           else "")
+        if qs_params is None:
+            qs_params = {}
+        params = {}
+        params.update(qs_params)
+        if shared_auth is None:
+            params.update(self.qs_params)
+        else:
+            params.update(share_auth)
+        if organization and self.organization:
+            try:
+                del params["project"]
+            except KeyError:
+                pass
+            params.update({"organization": self.organization})
+        return params
 
     def _add_project(self, payload, include=True):
         """Adding project id as attribute when it has been set in the
@@ -348,14 +355,14 @@ class BigMLConnection():
         code = HTTP_ACCEPTED
         if verify is None:
             verify = self.domain.verify
-
-        url = self._add_credentials(url, organization=organization)
+        qs_params = self._add_credentials({}, organization=organization)
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         body = self._add_project(body, not organization)
         while code == HTTP_ACCEPTED:
             if GAE_ENABLED:
                 try:
                     req_options = {
-                        'url': url,
+                        'url': url + qs_str,
                         'method': urlfetch.POST,
                         'headers': SEND_JSON,
                         'payload': body,
@@ -371,6 +378,7 @@ class BigMLConnection():
             else:
                 try:
                     response = requests.post(url,
+                                             params=qs_params,
                                              headers=SEND_JSON,
                                              data=body, verify=verify)
                 except (requests.ConnectionError,
@@ -429,21 +437,21 @@ class BigMLConnection():
             "status": {
                 "code": HTTP_INTERNAL_SERVER_ERROR,
                 "message": "The resource couldn't be retrieved"}}
-        auth = (self.auth if shared_username is None
-                else "?username=%s;api_key=%s" % (
-                    shared_username, shared_api_key))
 
         kwargs = {"organization": organization}
         if shared_username is not None and shared_api_key is not None:
-            kwargs.update({"shared_auth": auth})
+            kwargs.update({"shared_auth":  {"username": shared_username,
+                                            "api_key": shared_api_key}})
 
-        url = self._add_credentials(url, **kwargs) + query_string
+        qs_params = self._add_credentials({}, **kwargs)
         if shared_ref is not None:
-            url = "%sshared_ref=%s" % (url, shared_ref)
+            qs_params.update({"shared_ref": shared_ref})
+        qs_params.update(dict(parse.parse_qsl(query_string)))
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': url + qs_str,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.domain.verify
@@ -457,7 +465,8 @@ class BigMLConnection():
                                   location, resource, error)
         else:
             try:
-                response = requests.get(url, headers=ACCEPT_JSON,
+                response = requests.get(url, params = qs_params,
+                                        headers=ACCEPT_JSON,
                                         verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
@@ -523,12 +532,13 @@ class BigMLConnection():
                 "code": code,
                 "message": "The resource couldn't be listed"}}
 
-        url = self._add_credentials(url, organization=organization) + \
-            query_string
+        qs_params = self._add_credentials({}, organization=organization)
+        qs_params.update(dict(parse.parse_qsl(query_string)))
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': url + qs_str,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.domain.verify
@@ -545,7 +555,8 @@ class BigMLConnection():
                     'error': error}
         else:
             try:
-                response = requests.get(url, headers=ACCEPT_JSON,
+                response = requests.get(url, params=qs_params,
+                                        headers=ACCEPT_JSON,
                                         verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
@@ -605,12 +616,13 @@ class BigMLConnection():
                 "code": code,
                 "message": "The resource couldn't be updated"}}
 
-        url = self._add_credentials(url, organization=organization)
+        qs_params = self._add_credentials({}, organization=organization)
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         body = self._add_project(body, not organization)
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': url + qs_str,
                     'method': urlfetch.PUT,
                     'headers': SEND_JSON,
                     'payload': body,
@@ -626,6 +638,7 @@ class BigMLConnection():
         else:
             try:
                 response = requests.put(url,
+                                        params=qs_params,
                                         headers=SEND_JSON,
                                         data=body, verify=self.domain.verify)
             except (requests.ConnectionError,
@@ -672,13 +685,13 @@ class BigMLConnection():
             "status": {
                 "code": code,
                 "message": "The resource couldn't be deleted"}}
-
-        url = self._add_credentials(url, organization=organization) + \
-            query_string
+        qs_params = self._add_credentials({}, organization=organization)
+        qs_params.update(dict(parse.parse_qsl(query_string)))
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': url + qs_str,
                     'method': urlfetch.DELETE,
                     'validate_certificate': self.domain.verify
                 }
@@ -693,7 +706,8 @@ class BigMLConnection():
                     'error': error}
         else:
             try:
-                response = requests.delete(url, verify=self.domain.verify)
+                response = requests.delete(url, params=qs_params,
+                                           verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,
                     requests.RequestException) as exc:
@@ -740,11 +754,12 @@ class BigMLConnection():
         if counter > 2 * retries:
             LOGGER.error("Retries exhausted trying to download the file.")
             return file_object
-
+        qs_params = self._add_credentials({})
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': self._add_credentials(url),
+                    'url': url + qs_str,
                     'method': urlfetch.GET,
                     'validate_certificate': self.domain.verify
                 }
@@ -755,7 +770,7 @@ class BigMLConnection():
                 return file_object
         else:
             try:
-                response = requests.get(self._add_credentials(url),
+                response = requests.get(url, params=qs_params,
                                         verify=self.domain.verify,
                                         stream=True)
             except (requests.ConnectionError,
@@ -856,13 +871,14 @@ class BigMLConnection():
             "status": {
                 "code": code,
                 "message": "Failed to obtain the account status info"}}
+        qs_params = self._add_credentials({}, organization=organization)
+        qs_params.update(dict(parse.parse_qsl(query_string)))
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
 
-        url = self._add_credentials(url, organization=organization) \
-            + query_string
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': url + qs_str,
                     'method': urlfetch.GET,
                     'headers': ACCEPT_JSON,
                     'validate_certificate': self.domain.verify
@@ -877,7 +893,8 @@ class BigMLConnection():
                     'error': error}
         else:
             try:
-                response = requests.get(url, headers=ACCEPT_JSON,
+                response = requests.get(url, params=qs_params,
+                                        headers=ACCEPT_JSON,
                                         verify=self.domain.verify)
             except (requests.ConnectionError,
                     requests.Timeout,

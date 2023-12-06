@@ -24,6 +24,9 @@
 import sys
 import os
 import numbers
+
+from urllib import parse
+
 try:
     #added to allow GAE to work
     from google.appengine.api import urlfetch
@@ -183,13 +186,13 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 file_handler = file_name
         except IOError:
             sys.exit("ERROR: cannot read training set")
-
-        url = self._add_credentials(self.source_url)
+        qs_params = self._add_credentials({})
+        qs_str = "?%s" % parse.urlencode(qs_params) if qs_params else ""
         create_args = self._add_project(create_args, True)
         if GAE_ENABLED:
             try:
                 req_options = {
-                    'url': url,
+                    'url': self.source_url + qs_str,
                     'method': urlfetch.POST,
                     'headers': SEND_JSON,
                     'data': create_args,
@@ -210,7 +213,8 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 files.update(create_args)
                 multipart = MultipartEncoder(fields=files)
                 response = requests.post( \
-                    url,
+                    self.source_url,
+                    params=qs_params,
                     headers={'Content-Type': multipart.content_type},
                     data=multipart, verify=self.domain.verify)
             except (requests.ConnectionError,

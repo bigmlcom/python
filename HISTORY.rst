@@ -3,6 +3,11 @@
 History
 -------
 
+9.7.0 (2023-12-06)
+------------------
+
+- Changing query string separator in internall API calls.
+
 9.6.2 (2023-08-02)
 ------------------
 

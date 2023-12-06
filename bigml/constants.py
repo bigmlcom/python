@@ -266,7 +266,7 @@ TINY_RESOURCE = "full=false"
 TASKS_QS = "include=subscription,tasks"
 
 # Minimum query string to get model image fields and status
-IMAGE_FIELDS_FILTER = ("optype=image;exclude=summary,objective_summary,"
+IMAGE_FIELDS_FILTER = ("optype=image&exclude=summary,objective_summary,"
                        "input_fields,importance,model_fields")
 
 # Default storage folder

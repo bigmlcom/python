@@ -45,8 +45,8 @@ LOGGER = logging.getLogger('BigML')
 # remove them when we use only_model=true so we will set it to
 # false until the problem in apian is fixed
 
-ONLY_MODEL = 'only_model=false;limit=-1;'
-EXCLUDE_FIELDS = 'exclude=fields;'
+ONLY_MODEL = 'only_model=false&limit=-1&'
+EXCLUDE_FIELDS = 'exclude=fields&'
 
 
 def retrieve_resource(api, resource_id, query_string=ONLY_MODEL,

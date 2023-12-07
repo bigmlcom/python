@@ -45,7 +45,7 @@ TINY_RESOURCE = "full=false"
 # Resource types that are composed by other resources
 COMPOSED_RESOURCES = ["ensemble", "fusion"]
 
-LIST_LAST = "limit=1;full=yes;tags=%s"
+LIST_LAST = "limit=1&full=yes&tags=%s"
 
 PMML_QS = "pmml=yes"
 
@@ -948,7 +948,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                                      "text and items fields cannot be "
                                      "exported to PMML.")
                 if kwargs.get("query_string"):
-                    kwargs["query_string"] += ";%s" % PMML_QS
+                    kwargs["query_string"] += "&%s" % PMML_QS
                 else:
                     kwargs["query_string"] = PMML_QS
 
@@ -1018,9 +1018,9 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
         if tags is not None and tags != '':
             query_string = LIST_LAST % tags
             if project is not None:
-                query_string += ";project=%s" % project
+                query_string += "&project=%s" % project
 
-            kwargs.update({'query_string': "%s;%s" % \
+            kwargs.update({'query_string': "%s&%s" % \
                 (query_string, kwargs.get('query_string', ''))})
 
             response = self._list("%s%s" % (self.url, resource_type),

@@ -646,7 +646,8 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
             return self._delete("%s%s" % (self.url, resource_id), **kwargs)
         return None
 
-    def _download_resource(self, resource, filename, retries=10):
+    def _download_resource(self, resource, filename, retries=10,
+                           download_suffix=None):
         """Download CSV information from downloadable resources
 
         """
@@ -656,7 +657,7 @@ class ResourceHandlerMixin(metaclass=abc.ABCMeta):
                             "resources can be downloaded. Please, check "
                             "the resource status. %s" % (resource_id, error))
         return self._download("%s%s%s" % (self.url, resource_id,
-                                          DOWNLOAD_DIR),
+                                          download_suffix or DOWNLOAD_DIR),
                               filename=filename,
                               retries=retries)
 

@@ -63,7 +63,8 @@ from bigml.bigmlconnection import (
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_source_id, get_id
-from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS
+from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS, \
+    IMAGE_DOWNLOAD_SUFFIX
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
 from bigml.fields import Fields
 
@@ -561,6 +562,27 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 self.ok(source)
 
         return source
+
+    def download_composite_images(self, source, output_dir=None, retries=10):
+        """Downloads the images inside a composite
+
+        """
+        check_resource_type(source, SOURCE_PATH,
+                            message="A source id is needed.")
+        resource_id, error = self.final_resource(source, retries=retries)
+        if error or resource_id is None:
+            raise Exception("Failed to download %s. Only correctly finished "
+                            "resources can be downloaded. Please, check "
+                            "the resource status. %s" % (resource_id, error))
+        composite = self.retrieve_resource(resource_id)
+        sources = composite.get("object", {}).get("sources")
+
+        if sources:
+            for source in sources:
+                self._download_resource(os.path.join(SOURCE_PATH, source),
+                                        os.path.join(output_dir, source),
+                                        retries=retries,
+                                        download_suffix=IMAGE_DOWNLOAD_SUFFIX)
 
     def get_source(self, source, query_string=''):
         """Retrieves a remote source.

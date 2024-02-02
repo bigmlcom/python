@@ -358,3 +358,4 @@ DATETIME = "datetime"
 IOU_REMOTE_SETTINGS = {"iou_threshold": 0.2}
 TEMP_DIR = "/tmp"
 TOP_IMAGE_SIZE = 512
+IMAGE_DOWNLOAD_SUFFIX = "/image/raw"

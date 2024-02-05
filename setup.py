@@ -51,7 +51,7 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['pytest'],
     install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
-        "requests-toolbelt", "msgpack", "numpy>=1.25,<1.26", "scipy",
+        "requests-toolbelt", "msgpack", "numpy>=1.22", "scipy",
         "javascript"],
     extras_require={"images": IMAGES_DEPENDENCIES,
                     "topics": TOPIC_MODELING_DEPENDENCIES,

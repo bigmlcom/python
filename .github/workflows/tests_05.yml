@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.10]
+        python: [3.11]
     env:
         BIGML_USERNAME: ${{ secrets.BIGML_USERNAME }}
         BIGML_API_KEY: ${{ secrets.BIGML_API_KEY }}

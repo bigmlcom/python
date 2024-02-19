@@ -3,8 +3,8 @@
 History
 -------
 
-9.8.0 (2024-01-09)
-------------------
+9.8.0.dev (2024-02-19)
+----------------------
 
 - Upgrading libraries to avoid failures in Apple M1 machines.
 - Fixing local predictions input data preprocessing for missings.

@@ -3,7 +3,7 @@
 History
 -------
 
-9.8.0 (2024-01-09)
+a9.8.0 (2024-02-19)
 ------------------
 
 - Upgrading libraries to avoid failures in Apple M1 machines.

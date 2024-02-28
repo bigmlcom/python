@@ -22,7 +22,7 @@ jobs:
         BIGML_EXTERNAL_CONN_DB: ${{ secrets.BIGML_EXTERNAL_CONN_DB }}
         BIGML_EXTERNAL_CONN_USER: ${{ secrets.BIGML_EXTERNAL_CONN_USER }}
         BIGML_EXTERNAL_CONN_PWD: ${{ secrets.BIGML_EXTERNAL_CONN_PWD }}
-        BIGML_DELTA: ${{ env.BIGML_DELTA }}
+        BIGML_DELTA: ${{ vars.BIGML_DELTA }}
     steps:
     - name: Install packages
       uses: actions/checkout@v3

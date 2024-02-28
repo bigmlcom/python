@@ -70,18 +70,18 @@ class TestComparePrediction:
                    "input_data", "forecast", "model_conf"]
         examples = [
 
-            ['data/grades.csv', '30', '30', '120',
+            ['data/grades.csv', '30', '30', '300',
              '{"000005": {"horizon": 5}}',
              '{"000005": [{"point_forecast": [73.96192, 74.04106, 74.12029, '
              '74.1996, 74.27899], "model": "M,M,N"}]}',
              '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '30', '30', '120',
+            ['data/grades.csv', '30', '30', '300',
              '{"000005": {"horizon": 5, "ets_models": {"names": ["M,N,A"], '
              '"criterion": "aic", "limit": 3}}}',
              '{"000005": [{"point_forecast":  [67.43222, 68.24468, '
              '64.14437, 67.5662, 67.79028], "model": "M,N,A"}]}',
              '{"objective_fields": ["000001", "000005"], "period": 12}'],
-            ['data/grades.csv', '30', '30', '120',
+            ['data/grades.csv', '30', '30', '300',
              '{"000005": {"horizon": 5, "ets_models": {"names": ["A,A,A"], '
              '"criterion": "aic", "limit": 3}}}',
              '{"000005": [{"point_forecast": [74.73553, 71.6163, 71.90264, '

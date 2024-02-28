@@ -21,6 +21,7 @@ Class to store Dataset transformations based on the Dataset API response
 import os
 import logging
 import warnings
+import subprocess
 
 from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
@@ -29,6 +30,13 @@ from bigml.util import DEFAULT_LOCALE, use_cache, cast, load, dump, dumps
 from bigml.constants import FINISHED
 from bigml.flatline import Flatline
 from bigml.featurizer import Featurizer
+
+process = subprocess.Popen(['node -v'], stdout=subprocess.PIPE, shell=True)
+out = process.stdout.read()
+FLATLINE_READY = out.startswith(b"v")
+if FLATLINE_READY:
+    from bigml.flatline import Flatline
+
 
 #pylint: disable=locally-disabled,bare-except,ungrouped-imports
 try:
@@ -211,6 +219,10 @@ class Dataset:
         rows = [self._input_array(input_data) for input_data in
             input_data_list]
         if self.transformations:
+            if not FLATLINE_READY:
+                raise ValueError("Nodejs should be installed to handle this"
+                                 " dataset's transformations. Please, check"
+                                 " the bindings documentation for details.")
             out_headers, out_arrays = self._transform(rows)
             rows = [dict(zip(out_headers, row)) for row
                 in out_arrays]

@@ -2218,7 +2218,9 @@ the existing BigML objects and create the prediction pipeline.
 The first obvious goal that we may have is reproducing the same feature
 extraction and transformations that were used when training our data to create
 our model. That is achieved by using a ``BMLPipeline`` object built
-on the training dataset.
+on the training dataset. Note that, if your datasets contain features derived
+from the original fields in your data, ``Nodejs`` has to be previously
+installed for the transformations to work locally.
 
 .. code-block:: python
 
@@ -2488,7 +2490,6 @@ and libraries. A new data transformer can be created by deriving the
 ``DataTransformer`` class and customizing its ``.data_transform`` method
 to cover the particulars of the functions to be used in the generation of
 new fields.
-
 
 Local Evaluations
 -----------------

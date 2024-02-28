@@ -3,6 +3,11 @@
 History
 -------
 
+9.8.0.dev1 (2024-02-28)
+-----------------------
+
+- Documenting and removing partially the need for Node.js in Pipelines.
+
 9.8.0.dev (2024-02-19)
 ----------------------
 

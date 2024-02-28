@@ -77,6 +77,11 @@ The bindings will also use ``simplejson`` if you happen to have it
 installed, but that is optional: we fall back to Python's built-in JSON
 libraries is ``simplejson`` is not found.
 
+`Node.js <https://nodejs.org/en>`_ is not installed by default, but will be
+needed for `Local Pipelines <local_resources.html#local-pipelines` to work
+when datasets containing new added features are part of the transformation
+workflow.
+
 The bindings provide support to use the ``BigML`` platform to create, update,
 get and delete resources, but also to produce local predictions using the
 models created in ``BigML``. Most of them will be actionable with the basic

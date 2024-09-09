@@ -135,8 +135,9 @@ def get_leaves(model, path=None, filter_function=None):
 
     offsets = model.offsets
 
-    def get_tree_leaves(tree, fields, path, leaves, filter_function=None):
+    def get_tree_leaves(tree, fields, path, filter_function=None):
 
+        leaves = []
         node = get_node(tree)
         predicate = get_predicate(tree)
         if isinstance(predicate, list):
@@ -149,10 +150,12 @@ def get_leaves(model, path=None, filter_function=None):
 
         if children:
             for child in children:
+
                 leaves += get_tree_leaves(child, fields,
-                                          path[:], leaves,
+                                          path[:],
                                           filter_function=filter_function)
         else:
+            print("id:", node[offsets["id"]])
             leaf = {
                 'id': node[offsets["id"]],
                 'confidence': node[offsets["confidence"]],
@@ -171,7 +174,7 @@ def get_leaves(model, path=None, filter_function=None):
                     or filter_function(leaf)):
                 leaves += [leaf]
         return leaves
-    return get_tree_leaves(model.tree, model.fields, path, leaves,
+    return get_tree_leaves(model.tree, model.fields, path,
                            filter_function)
 
 

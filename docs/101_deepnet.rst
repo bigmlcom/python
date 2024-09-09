@@ -1,8 +1,8 @@
 .. toctree::
    :hidden:
 
-BigML Bindings: 101 - Using a Deepnet Model
-===========================================
+101 - Deepnet usage
+===================
 
 Following the schema described in the `prediction workflow <api_sketch.html>`_,
 document, this is the code snippet that shows the minimal workflow to

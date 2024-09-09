@@ -66,17 +66,18 @@ class TestLocalFromFile:
             When I create a local model from the file "<exported_file>"
             Then the model ID and the local model ID match
             And the prediction for "<input_data>" is "<prediction>"
+            And the number of leaves is "<leaves#>"
         """
         show_doc(self.test_scenario1)
         headers = ["data", "source_wait", "dataset_wait", "model_wait",
                    "pmml", "exported_file", "input_data", "prediction",
-                   "model_conf"]
+                   "model_conf", 'leaves#']
         examples = [
             ['data/iris.csv', '10', '10', '10', False,
-             './tmp/model.json', {}, "Iris-setosa", '{}'],
+             './tmp/model.json', {}, "Iris-setosa", '{}', 9],
             ['data/iris.csv', '10', '10', '10', False,
              './tmp/model_dft.json', {}, "Iris-versicolor",
-             '{"default_numeric_value": "mean"}']]
+             '{"default_numeric_value": "mean"}', 9]]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, self.bigml["method"], example)
@@ -97,6 +98,7 @@ class TestLocalFromFile:
             model_create.check_model_id_local_id(self)
             model_create.local_model_prediction_is(
                 self, example["input_data"], example["prediction"])
+            model_create.check_leaves_number(self, example["leaves#"])
 
     def test_scenario2(self):
         """

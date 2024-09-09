@@ -30,6 +30,66 @@ that can be used to filter out or limit the attributes obtained:
                   query_string="exclude=root")
 
 
+Public and shared resources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The previous examples use resources that were created by the same user
+that asks for their retrieval or modification. If a user wants to share one
+of her resources, she can make them public or share them. Declaring a resource
+public means that anyone can see the resource. This can be applied to datasets
+and models. To turn a dataset public, just update its ``private`` property:
+
+.. code-block:: python
+
+    api.update_dataset('dataset/5143a51a37203f2cf7000972', {'private': false})
+
+and any user will be able to download it using its id prepended by ``public``:
+
+.. code-block:: python
+
+    api.get_dataset('public/dataset/5143a51a37203f2cf7000972')
+
+In the models' case, you can also choose if you want the model to be fully
+downloadable or just accesible to make predictions. This is controlled with the
+``white_box`` property. If you want to publish your model completely, just
+use:
+
+.. code-block:: python
+
+    api.update_model('model/5143a51a37203f2cf7000956', {'private': false,
+                     'white_box': true})
+
+Both public models and datasets, will be openly accessible for anyone,
+registered or not, from the web
+gallery.
+
+Still, you may want to share your models with other users, but without making
+them public for everyone. This can be achieved by setting the ``shared``
+property:
+
+.. code-block:: python
+
+    api.update_model('model/5143a51a37203f2cf7000956', {'shared': true})
+
+Shared models can be accessed using their share hash (propery ``shared_hash``
+in the original model):
+
+.. code-block:: python
+
+    api.get_model('shared/model/d53iw39euTdjsgesj7382ufhwnD')
+
+or by using their original id with the creator user as username and a specific
+sharing api_key you will find as property ``sharing_api_key`` in the updated
+model:
+
+.. code-block:: python
+
+    api.get_model('model/5143a51a37203f2cf7000956', shared_username='creator',
+                  shared_api_key='c972018dc5f2789e65c74ba3170fda31d02e00c3')
+
+Only users with the share link or credentials information will be able to
+access your shared models.
+
 Listing Resources
 -----------------
 
@@ -178,63 +238,3 @@ Name of predictions ordered by name.
 
     [prediction['name'] for prediction in
       api.list_predictions("order_by=name")['objects']]
-
-Public and shared resources
----------------------------
-
-The previous examples use resources that were created by the same user
-that asks for their retrieval or modification. If a user wants to share one
-of her resources, she can make them public or share them. Declaring a resource
-public means that anyone can see the resource. This can be applied to datasets
-and models. To turn a dataset public, just update its ``private`` property:
-
-.. code-block:: python
-
-    api.update_dataset('dataset/5143a51a37203f2cf7000972', {'private': false})
-
-and any user will be able to download it using its id prepended by ``public``:
-
-.. code-block:: python
-
-    api.get_dataset('public/dataset/5143a51a37203f2cf7000972')
-
-In the models' case, you can also choose if you want the model to be fully
-downloadable or just accesible to make predictions. This is controlled with the
-``white_box`` property. If you want to publish your model completely, just
-use:
-
-.. code-block:: python
-
-    api.update_model('model/5143a51a37203f2cf7000956', {'private': false,
-                     'white_box': true})
-
-Both public models and datasets, will be openly accessible for anyone,
-registered or not, from the web
-gallery.
-
-Still, you may want to share your models with other users, but without making
-them public for everyone. This can be achieved by setting the ``shared``
-property:
-
-.. code-block:: python
-
-    api.update_model('model/5143a51a37203f2cf7000956', {'shared': true})
-
-Shared models can be accessed using their share hash (propery ``shared_hash``
-in the original model):
-
-.. code-block:: python
-
-    api.get_model('shared/model/d53iw39euTdjsgesj7382ufhwnD')
-
-or by using their original id with the creator user as username and a specific
-sharing api_key you will find as property ``sharing_api_key`` in the updated
-model:
-
-.. code-block:: python
-
-    api.get_model('model/5143a51a37203f2cf7000956', shared_username='creator',
-                  shared_api_key='c972018dc5f2789e65c74ba3170fda31d02e00c3')
-
-Only users with the share link or credentials information will be able to
-access your shared models.

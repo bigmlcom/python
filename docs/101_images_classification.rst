@@ -1,8 +1,8 @@
 .. toctree::
    :hidden:
 
-BigML Bindings: 101 - Images Classification
-===========================================
+101 - Images Classification
+===========================
 
 Following the schema described in the `prediction workflow <api_sketch.html>`_,
 document, this is the code snippet that shows the minimal workflow to

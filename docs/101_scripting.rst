@@ -1,8 +1,8 @@
 .. toctree::
    :hidden:
 
-BigML Bindings: 101 - Creating and executing scripts
-====================================================
+101 - Creating and executing scripts
+====================================
 
 The bindings offer methods to create and execute `WhizzML <https://bigml.com/whizzml>`_
 scripts in the platform.

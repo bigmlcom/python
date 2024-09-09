@@ -3,6 +3,12 @@
 History
 -------
 
+9.8.0 (2024-09-09)
+------------------
+
+- Fixing the get_leaves function for local decision trees.
+- Changing documentation templates.
+
 9.8.0.dev1 (2024-02-28)
 -----------------------
 

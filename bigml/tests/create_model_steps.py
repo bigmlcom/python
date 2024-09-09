@@ -31,6 +31,7 @@ from bigml.linear import LinearRegression
 from bigml.deepnet import Deepnet
 from bigml.fusion import Fusion
 from bigml.ensemble import Ensemble
+from bigml.generators.model import get_leaves
 
 
 from .read_resource_steps import wait_until_status_code_is
@@ -690,3 +691,8 @@ def the_cloned_logistic_regression_is(step, logistic_regression):
 def check_deepnet_id_local_id(step):
     """Checking that deepnet ID and local deepnet ID match"""
     eq_(world.deepnet["resource"], step.bigml["local_deepnet"].resource_id)
+
+
+def check_leaves_number(step, leaves_number):
+    """Checking the number of leaves in a tree local model"""
+    eq_(len(get_leaves(step.bigml["local_model"])), leaves_number)

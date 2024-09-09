@@ -1,8 +1,8 @@
 .. toctree::
    :hidden:
 
-BigML Bindings: 101 - Images Feature Extraction
-===============================================
+101 - Images Feature Extraction
+===============================
 
 Following the schema described in the `prediction workflow <api_sketch.html>`_,
 document, this is the code snippet that shows the minimal workflow to

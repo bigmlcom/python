@@ -214,7 +214,6 @@ class Ensemble(ModelFields):
                 # avoid checking fields because of old ensembles
                 ensemble = retrieve_resource(self.api, self.resource_id,
                                              no_check_fields=True)
-
             self.parent_id = ensemble.get('object', {}).get('dataset')
             self.name = ensemble.get('object', {}).get('name')
             self.description = ensemble.get('object', {}).get('description')

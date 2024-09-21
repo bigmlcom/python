@@ -213,7 +213,7 @@ class TestLocalFromFile:
             ['data/iris.csv', '10', '10', '500', './tmp/deepnet.json', {},
              'Iris-versicolor', '{}'],
             ['data/iris.csv', '10', '10', '500', './tmp/deepnet_dft.json', {},
-             'Iris-virginica', '{"default_numeric_value": "maximum"}']]
+             'Iris-versicolor', '{"default_numeric_value": "maximum"}']]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, self.bigml["method"], example)

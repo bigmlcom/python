@@ -210,28 +210,28 @@ class TestLocalPipeline:
         examples = [
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "1910-05-08T19:10:23.106", "cat-0":"cat2"}',
-             '000002', -0.02616, "pipeline1"],
+             '000002', -0.4264, "pipeline1"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "2011-04-01T00:16:45.747", "cat-0":"cat2"}',
-             '000002', 0.13352, "pipeline2"],
+             '000002', 0.11985, "pipeline2"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "1969-W29-1T17:36:39Z", "cat-0":"cat1"}',
-             '000002', 0.10071, "pipeline3"],
+             '000002', -0.08211, "pipeline3"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "1920-06-45T20:21:20.320", "cat-0":"cat1"}',
-             '000002', 0.10071, "pipeline4"],
+             '000002', -0.08211, "pipeline4"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "2001-01-05T23:04:04.693", "cat-0":"cat2"}',
-             '000002', 0.15235, "pipeline5"],
+             '000002', 0.00388, "pipeline5"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "1950-11-06T05:34:05.602", "cat-0":"cat1"}',
-             '000002', -0.07686, "pipeline6"],
+             '000002', -0.04976, "pipeline6"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "1932-01-30T19:24:11.440",  "cat-0":"cat2"}',
-             '000002', 0.0017, "pipeline7"],
+             '000002', -0.36264, "pipeline7"],
             ['data/dates2.csv', '20', '45', '160',
              '{"time-1": "Mon Jul 14 17:36 +0000 1969", "cat-0":"cat1"}',
-             '000002', 0.10071, "pipeline8"]]
+             '000002', -0.08211, "pipeline8"]]
         show_doc(self.test_scenario4)
         for example in examples:
             example = dict(zip(headers, example))

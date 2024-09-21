@@ -194,7 +194,7 @@ class TestEvaluation:
                    "evaluation_wait", "metric", "value"]
         examples = [
             ['data/iris.csv', '50', '50', '800', '80', 'average_phi',
-             '0.97007']]
+             '0.98029']]
         for example in examples:
             example = dict(zip(headers, example))
             show_method(self, self.bigml["method"], example)

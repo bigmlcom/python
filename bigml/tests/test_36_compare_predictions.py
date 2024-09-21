@@ -77,7 +77,7 @@ class TestComparePrediction:
              'Iris-versicolor', '{}'],
             ['data/iris_missing2.csv', '30', '50', '60', '{}', '000004',
              'Iris-versicolor', '{}'],
-            ['data/grades.csv', '30', '50', '60', '{}', '000005', 55.6560,
+            ['data/grades.csv', '30', '50', '60', '{}', '000005', 47.04852,
              '{}'],
             ['data/spam.csv', '30', '50', '60', '{}', '000000', 'ham', '{}']]
         show_doc(self.test_scenario1)

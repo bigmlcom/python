@@ -155,7 +155,6 @@ def get_leaves(model, path=None, filter_function=None):
                                           path[:],
                                           filter_function=filter_function)
         else:
-            print("id:", node[offsets["id"]])
             leaf = {
                 'id': node[offsets["id"]],
                 'confidence': node[offsets["confidence"]],

@@ -3,12 +3,12 @@ BigML Python Bindings
 
 `BigML <https://bigml.com>`_ makes machine learning easy by taking care
 of the details required to add data-driven decisions and predictive
-power to your company. Unlike other machine learning services, BigML
+power to your applications. Unlike other machine learning services, BigML
 creates
 `beautiful predictive models <https://bigml.com/gallery/models>`_ that
 can be easily understood and interacted with.
 
-These BigML Python bindings allow you to interact with BigML.io, the API
+These BigML Python bindings allow you interacting with BigML.io, the API
 for BigML. You can use it to easily create, retrieve, list, update, and
 delete BigML resources (i.e., sources, datasets, models and,
 predictions).

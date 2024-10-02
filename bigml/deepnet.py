@@ -62,20 +62,15 @@ import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
 
 try:
-    # avoiding tensorflow info logging
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    logging.disable(logging.WARNING)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
     import tensorflow as tf
-    tf.get_logger().setLevel('ERROR')
     tf.autograph.set_verbosity(0)
-    LAMINAR_VERSION = False
-except Exception:
-    LAMINAR_VERSION = True
-
-try:
     from sensenet.models.wrappers import create_model
     from bigml.images.utils import to_relative_coordinates
     from bigml.constants import IOU_REMOTE_SETTINGS
+    LAMINAR_VERSION = False
 except Exception:
     LAMINAR_VERSION = True
 

@@ -30,7 +30,7 @@ version = re.search("__version__ = '([^']+)'",
                     open(version_py_path).read()).group(1)
 
 TOPIC_MODELING_DEPENDENCIES = ["cython", "pystemmer==2.2.0.1"]
-IMAGES_DEPENDENCIES = ["bigml-sensenet==0.7.4"]
+IMAGES_DEPENDENCIES = ["bigml-sensenet==0.7.5"]
 
 # Concatenate files into the long description
 file_contents = []
@@ -50,7 +50,7 @@ setuptools.setup(
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['pytest'],
-    install_requires = ["unidecode", "bigml-chronos>=0.4.3", "requests",
+    install_requires = ["setuptools==69.0.0", "unidecode", "bigml-chronos>=0.4.3", "requests",
         "requests-toolbelt", "msgpack", "numpy>=1.22", "scipy",
         "javascript"],
     extras_require={"images": IMAGES_DEPENDENCIES,

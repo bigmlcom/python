@@ -20,7 +20,6 @@ Class to store Dataset transformations based on the Dataset API response
 """
 import os
 import logging
-import warnings
 import subprocess
 
 from bigml.fields import Fields, sorted_headers, get_new_fields
@@ -40,12 +39,13 @@ if FLATLINE_READY:
 
 #pylint: disable=locally-disabled,bare-except,ungrouped-imports
 try:
-    # avoiding tensorflow info logging
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    # bigml-sensenet should be installed for image processing
+    logging.disable(logging.WARNING)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     import tensorflow as tf
-    tf.get_logger().setLevel('ERROR')
     tf.autograph.set_verbosity(0)
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    import sensenet
     from bigml.images.featurizers import ImageFeaturizer as Featurizer
 except:
     pass

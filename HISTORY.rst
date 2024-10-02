@@ -7,6 +7,7 @@ History
 ------------------
 
 - Fixing the get_leaves function for local decision trees.
+- Fixing setup issues in Python3.12
 - Changing documentation templates.
 
 9.8.0.dev1 (2024-02-28)

@@ -748,6 +748,7 @@ def get_formatted_data(input_data_list, out_format=None):
         inner_data_list = input_data_list.copy()
     return inner_data_list
 
+
 #pylint: disable=locally-disabled,import-outside-toplevel
 def get_data_transformations(resource_id, parent_id):
     """Returns the pipeline that contains the tranformations and derived
@@ -760,3 +761,13 @@ def get_data_transformations(resource_id, parent_id):
                          "pipeline.")
     from bigml.pipeline.pipeline import BMLPipeline
     return BMLPipeline("dt-%s" % resource_id, [parent_id])
+
+
+def sensenet_logging():
+    """Removes warnings unnecessary logging when using sensenet"""
+    logging.disable(logging.WARNING)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    os.environ["TF_USE_LEGACY_KERAS"] = "1"
+    import tensorflow as tf
+    tf.autograph.set_verbosity(0)
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)

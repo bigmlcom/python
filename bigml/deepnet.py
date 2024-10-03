@@ -49,7 +49,7 @@ from functools import cmp_to_key
 from bigml.api import FINISHED
 from bigml.api import get_status, get_api_connection, get_deepnet_id
 from bigml.util import cast, use_cache, load, get_data_transformations, \
-    PRECISION
+    PRECISION, sensenet_logging
 from bigml.basemodel import get_resource_dict, extract_objective
 from bigml.modelfields import ModelFields
 from bigml.laminar.constants import NUMERIC
@@ -62,11 +62,7 @@ import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
 
 try:
-    logging.disable(logging.WARNING)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    logging.getLogger("tensorflow").setLevel(logging.ERROR)
-    import tensorflow as tf
-    tf.autograph.set_verbosity(0)
+    sensenet_logging()
     from sensenet.models.wrappers import create_model
     from bigml.images.utils import to_relative_coordinates
     from bigml.constants import IOU_REMOTE_SETTINGS

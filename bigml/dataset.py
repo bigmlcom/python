@@ -25,7 +25,8 @@ import subprocess
 from bigml.fields import Fields, sorted_headers, get_new_fields
 from bigml.api import get_api_connection, get_dataset_id, get_status
 from bigml.basemodel import get_resource_dict
-from bigml.util import DEFAULT_LOCALE, use_cache, cast, load, dump, dumps
+from bigml.util import DEFAULT_LOCALE, use_cache, cast, load, dump, dumps, \
+    sensenet_logging
 from bigml.constants import FINISHED
 from bigml.flatline import Flatline
 from bigml.featurizer import Featurizer
@@ -40,11 +41,7 @@ if FLATLINE_READY:
 #pylint: disable=locally-disabled,bare-except,ungrouped-imports
 try:
     # bigml-sensenet should be installed for image processing
-    logging.disable(logging.WARNING)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    import tensorflow as tf
-    tf.autograph.set_verbosity(0)
-    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    sensenet_logging()
     import sensenet
     from bigml.images.featurizers import ImageFeaturizer as Featurizer
 except:

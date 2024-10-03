@@ -40,7 +40,6 @@ deepnet = Deepnet('deepnet/5026965515526876630001b2')
 deepnet.predict({"petal length": 3, "petal width": 1})
 
 """
-import logging
 import os
 import warnings
 
@@ -56,7 +55,7 @@ from bigml.laminar.constants import NUMERIC
 from bigml.model import parse_operating_point, sort_categories
 from bigml.constants import REGIONS, REGIONS_OPERATION_SETTINGS, \
     DEFAULT_OPERATION_SETTINGS, REGION_SCORE_ALIAS, REGION_SCORE_THRESHOLD, \
-    IMAGE, DECIMALS
+    IMAGE, DECIMALS, IOU_REMOTE_SETTINGS
 
 import bigml.laminar.numpy_ops as net
 import bigml.laminar.preprocess_np as pp
@@ -65,12 +64,10 @@ try:
     sensenet_logging()
     from sensenet.models.wrappers import create_model
     from bigml.images.utils import to_relative_coordinates
-    from bigml.constants import IOU_REMOTE_SETTINGS
     LAMINAR_VERSION = False
 except Exception:
     LAMINAR_VERSION = True
 
-LOGGER = logging.getLogger('BigML')
 
 MEAN = "mean"
 STANDARD_DEVIATION = "stdev"

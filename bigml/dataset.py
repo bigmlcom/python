@@ -19,7 +19,6 @@ Class to store Dataset transformations based on the Dataset API response
 
 """
 import os
-import logging
 import subprocess
 
 from bigml.fields import Fields, sorted_headers, get_new_fields

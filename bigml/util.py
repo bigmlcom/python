@@ -28,6 +28,7 @@ import math
 import random
 import ast
 import datetime
+import logging
 
 from urllib.parse import urlparse
 from unidecode import unidecode

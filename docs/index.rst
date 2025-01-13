@@ -44,7 +44,7 @@ This module is licensed under the `Apache License, Version
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Resouce Management
+   :caption: Resource Management
 
    ml_resources
    creating_resources

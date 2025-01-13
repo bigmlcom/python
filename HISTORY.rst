@@ -3,6 +3,11 @@
 History
 -------
 
+9.8.1 (2025-01-14)
+------------------
+
+- Fixing annotations update in images composite sources.
+
 9.8.0 (2024-10-02)
 ------------------
 

@@ -650,7 +650,6 @@ class BigMLConnection():
                                   location, resource, error)
         try:
             code = response.status_code
-
             if code == HTTP_ACCEPTED:
                 resource = json_load(response.content)
                 resource_id = resource['resource']

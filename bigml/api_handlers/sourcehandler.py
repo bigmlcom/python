@@ -553,8 +553,9 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 pass
 
         # we need to limit the amount of changes per update
-        for offset in range(0, int(len(changes) / MAX_CHANGES) + 1):
-            new_batch = changes[offset: offset + MAX_CHANGES]
+        batches_number = int(len(changes) / MAX_CHANGES)
+        for offset in range(0, batches_number + 1):
+            new_batch = changes[offset * MAX_CHANGES: (offset + 1) * MAX_CHANGES]
             if new_batch:
                 source = self.update_source(source,
                                             {"row_values": new_batch})

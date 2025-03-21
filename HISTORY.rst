@@ -3,6 +3,12 @@
 History
 -------
 
+9.8.2 (2025-03-21)
+------------------
+
+- Retrying annotations update to avoid temporary concurrency issues in
+  source composites updates.
+
 9.8.1 (2025-01-14)
 ------------------
 

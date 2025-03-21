@@ -24,6 +24,8 @@
 import sys
 import os
 import numbers
+import time
+import logging
 
 from urllib import parse
 
@@ -67,8 +69,13 @@ from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS
 from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
 from bigml.fields import Fields
 
+LOG_FORMAT = '%(asctime)-15s: %(message)s'
+LOGGER = logging.getLogger('BigML')
+CONSOLE = logging.StreamHandler()
+CONSOLE.setLevel(logging.WARNING)
+LOGGER.addHandler(CONSOLE)
 
-MAX_CHANGES = 500
+MAX_CHANGES = 5
 
 
 def compact_regions(regions):
@@ -508,6 +515,8 @@ class SourceHandlerMixin(ResourceHandlerMixin):
             try:
                 _ = file_list.index(filename)
             except ValueError:
+                LOGGER.error("WARNING: Could not find annotated file (%s)"
+                             " in the composite's sources list", filename)
                 continue
             for key in annotation.keys():
                 if key == "file":
@@ -550,16 +559,33 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                              "value": value,
                              "components": [source_id]})
             except Exception:
+                LOGGER.error("WARNING: Problem adding annotation to %s (%s)",
+                             field, values)
                 pass
 
         # we need to limit the amount of changes per update
         batches_number = int(len(changes) / MAX_CHANGES)
         for offset in range(0, batches_number + 1):
-            new_batch = changes[offset * MAX_CHANGES: (offset + 1) * MAX_CHANGES]
+            new_batch = changes[
+                offset * MAX_CHANGES: (offset + 1) * MAX_CHANGES]
             if new_batch:
                 source = self.update_source(source,
                                             {"row_values": new_batch})
-                self.ok(source)
+                if source["error"] is not None:
+                    # retrying in case update is temporarily unavailable
+                    time.sleep(1)
+                    source = self.get_source(source)
+                    self.ok(source)
+                    source = self.update_source(source,
+                                                {"row_values": new_batch})
+                    if source["error"] is not None:
+                        LOGGER.error("WARNING: Some annotations were not"
+                                     " updated (%s)",
+                                      new_batch)
+                if not self.ok(source):
+                    raise Exception(
+                        f"Failed to update {len(new_batch)} annotations.")
+                time.sleep(0.1)
 
         return source
 

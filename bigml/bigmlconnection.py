@@ -406,7 +406,7 @@ class BigMLConnection():
                     error = json_load(response.content)
                     LOGGER.error(self.error_message(error, method='create'))
                 elif code != HTTP_ACCEPTED:
-                    LOGGER.error("Unexpected error (%s)", code)
+                    LOGGER.error("CREATE Unexpected error (%s)", code)
                     code = HTTP_INTERNAL_SERVER_ERROR
             except ValueError as exc:
                 LOGGER.error("Malformed response: %s", str(exc))
@@ -489,7 +489,7 @@ class BigMLConnection():
                 LOGGER.error(self.error_message(error, method='get',
                              resource_id=resource_id))
             else:
-                LOGGER.error("Unexpected error (%s)", code)
+                LOGGER.error("GET Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
 
         except ValueError as exc:
@@ -582,7 +582,7 @@ class BigMLConnection():
                           HTTP_TOO_MANY_REQUESTS]:
                 error = json_load(response.content)
             else:
-                LOGGER.error("Unexpected error (%s)", code)
+                LOGGER.error("LIST Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
         except ValueError as exc:
             LOGGER.error("Malformed response: %s", str(exc))
@@ -662,7 +662,7 @@ class BigMLConnection():
                 LOGGER.error(self.error_message(error, method='update',
                              resource_id=resource_id))
             else:
-                LOGGER.error("Unexpected error (%s)", code)
+                LOGGER.error("UPDATE Unexpected error (%s)", code)
                 code = HTTP_INTERNAL_SERVER_ERROR
         except ValueError:
             LOGGER.error("Malformed response")

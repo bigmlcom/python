@@ -76,7 +76,7 @@ CONSOLE.setLevel(logging.WARNING)
 LOGGER.addHandler(CONSOLE)
 
 MAX_CHANGES = 5
-
+MAX_RETRIES = 5
 
 def compact_regions(regions):
     """Returns the list of regions in the compact value used for updates """
@@ -573,18 +573,20 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 offset * MAX_CHANGES: (offset + 1) * MAX_CHANGES]
             if new_batch:
                 source = self.update_source(source,
-                                            {"row_values": new_batch})
-                if source["error"] is not None:
+                                            {"row_values": new_batch})+
+                counter = 0
+                while source["error"] is not None and counter < MAX_RETRIES:
                     # retrying in case update is temporarily unavailable
-                    time.sleep(1)
+                    counter += 1
+                    time.sleep(counter)
                     source = self.get_source(source)
                     self.ok(source)
                     source = self.update_source(source,
                                                 {"row_values": new_batch})
-                    if source["error"] is not None:
-                        LOGGER.error("WARNING: Some annotations were not"
-                                     " updated (%s)",
-                                      new_batch)
+                if source["error"] is not None:
+                    LOGGER.error("WARNING: Some annotations were not"
+                                 " updated (%s)",
+                                  new_batch)
                 if not self.ok(source):
                     raise Exception(
                         f"Failed to update {len(new_batch)} annotations.")

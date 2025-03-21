@@ -573,7 +573,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                 offset * MAX_CHANGES: (offset + 1) * MAX_CHANGES]
             if new_batch:
                 source = self.update_source(source,
-                                            {"row_values": new_batch})+
+                                            {"row_values": new_batch})
                 counter = 0
                 while source["error"] is not None and counter < MAX_RETRIES:
                     # retrying in case update is temporarily unavailable

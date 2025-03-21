@@ -1,0 +1,2 @@
+[{"file": "f1/fruits1f.png", "my_regions": "[[\"region1\" 0.2 0.2 0.4 0.4]]"},
+ {"file": "f1/fruits1.png", "my_regions": "[[\"region2\" 0.3 0.3 0.5 0.5] [\"region1\" 0.6 0.6 0.8 0.8]]"}]

@@ -25,6 +25,7 @@ from bigml.api_handlers.resourcehandler import get_id
 from .world import world, setup_module, teardown_module, show_doc, \
     show_method
 from . import create_source_steps as source_create
+from . import create_dataset_steps as dataset_create
 
 
 class TestUploadSource:
@@ -125,3 +126,38 @@ class TestUploadSource:
             source_create.the_source_is_finished(
                 self, example["source_wait"])
             source_create.the_cloned_source_origin_is(self, source)
+            
+    def test_scenario4(self):
+        """
+        Scenario: Successfully adding annotatations to composite source:
+            Given I create an annotated images data source uploading a "<data>" file
+            And I wait until the source is ready less than <source_wait> secs
+            And I create a dataset
+            And I wait until the dataset is ready less than <dataset_wait> secs
+            Then the new dataset has <annotations_num> annotations in the <annotations_field> field
+        """
+        headers = ["data", "source_wait", "dataset_wait", "annotations_num",
+                   "annotations_field"]
+        examples = [
+            ['data/images/metadata.json', '500', '500', '12',
+             '100002'],
+            ['data/images/metadata_compact.json', '500', '500', '3',
+             '100003']]
+        show_doc(self.test_scenario4)
+        for example in examples:
+            example = dict(zip(headers, example))
+            show_method(self, self.bigml["method"], example)
+            source_create.i_create_annotated_source(
+                self,
+                example["data"],
+                args={"image_analysis": {"enabled": False,
+                                         "extracted_features": []}})
+            source_create.the_source_is_finished(
+                self, example["source_wait"])
+            dataset_create.i_create_a_dataset(self)
+            dataset_create.the_dataset_is_finished_in_less_than(
+                self, example["dataset_wait"])
+            dataset_create.check_annotations(self, 
+                                             example["annotations_field"],
+                                             example["annotations_num"])
+

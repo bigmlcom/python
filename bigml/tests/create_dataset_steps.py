@@ -222,3 +222,16 @@ def clone_dataset(step, dataset):
 def the_cloned_dataset_is(step, dataset):
     """Checking the dataset is a clone"""
     eq_(world.dataset["origin"], dataset)
+
+
+def check_annotations(step, annotations_field, annotations_num):
+    """Checking the dataset contains a number of annotations"""
+    annotations_num = int(annotations_num)
+    field = world.dataset["fields"][annotations_field]
+    if field["optype"] == "regions":
+        count = field["summary"]["regions"]["sum"]
+    else:
+        count = 0
+        for _, num in field["summary"]["categories"]:
+            count += num
+    eq_(count, annotations_num)

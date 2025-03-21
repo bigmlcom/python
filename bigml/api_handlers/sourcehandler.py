@@ -548,9 +548,12 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                                     "components": source_ids})
                 elif optype == "regions":
                     for value, source_id in values:
+                        if isinstance(value, dict):
+                            # dictionary should contain the bigml-coco format
+                            value = compact_regions(value)
                         changes.append(
                             {"field": field,
-                             "value": compact_regions(value),
+                             "value": value,
                              "components": [source_id]})
                 else:
                     for value, source_id in values:

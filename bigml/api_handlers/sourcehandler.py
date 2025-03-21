@@ -584,9 +584,10 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                     source = self.update_source(source,
                                                 {"row_values": new_batch})
                 if source["error"] is not None:
-                    LOGGER.error("WARNING: Some annotations were not"
-                                 " updated (%s)",
-                                  new_batch)
+                    err_str = json.dumps(source["error"])
+                    v_str = json.dumps(new_batch)
+                    LOGGER.error("WARNING: Some annotations were not updated "
+                                 f" (error: {err_str}, values: {v_str})")
                 if not self.ok(source):
                     raise Exception(
                         f"Failed to update {len(new_batch)} annotations.")

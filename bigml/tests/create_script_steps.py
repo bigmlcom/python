@@ -63,6 +63,7 @@ def i_update_a_script(step, param, param_value):
                                       {param: param_value})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
+    world.api.ok(resource)
     world.location = resource['location']
     world.script = resource['object']
 

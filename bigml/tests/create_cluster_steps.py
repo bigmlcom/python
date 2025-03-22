@@ -93,6 +93,7 @@ def make_the_cluster_shared(step):
                                       {'shared': True})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
+    world.api.ok(resource)
     world.location = resource['location']
     world.cluster = resource['object']
 

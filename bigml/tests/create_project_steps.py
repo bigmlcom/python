@@ -44,6 +44,7 @@ def i_update_project_name_with(step, name=""):
                                         {"name": name})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
+    world.api.ok(resource)
     world.project = resource['object']
 
 

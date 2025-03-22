@@ -210,6 +210,7 @@ def i_update_source_with(step, data="{}"):
     resource = world.api.update_source(world.source.get('resource'), json.loads(data))
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
+    world.api.ok(resource)
 
 
 def source_has_args(step, args="{}"):

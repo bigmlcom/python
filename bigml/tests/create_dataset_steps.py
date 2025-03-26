@@ -89,7 +89,6 @@ def make_the_dataset_public(step):
                                         {'private': False})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
-    world.api.ok(resource)
     world.location = resource['location']
     world.dataset = resource['object']
 

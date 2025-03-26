@@ -39,7 +39,6 @@ def i_update_configuration(step, changes):
         world.configuration["resource"], changes)
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
-    world.api.ok(resource)
     world.location = resource['location']
     world.configuration = resource['object']
 

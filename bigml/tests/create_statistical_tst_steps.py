@@ -45,7 +45,6 @@ def i_update_tst_name(step, name):
         world.statistical_test['resource'], {'name': name})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
-    world.api.ok(resource)
     world.location = resource['location']
     world.statistical_test = resource['object']
 

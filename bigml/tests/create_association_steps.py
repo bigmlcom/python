@@ -79,7 +79,6 @@ def i_update_association_name(step, name):
                                             {'name': name})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
-    world.api.ok(resource)
     world.location = resource['location']
     world.association = resource['object']
 

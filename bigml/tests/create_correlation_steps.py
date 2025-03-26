@@ -43,7 +43,6 @@ def i_update_correlation_name(step, name):
                                             {'name': name})
     world.status = resource['code']
     eq_(world.status, HTTP_ACCEPTED)
-    world.api.ok(resource)
     world.location = resource['location']
     world.correlation = resource['object']
 

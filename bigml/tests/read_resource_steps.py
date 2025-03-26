@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
 
 from datetime import datetime
 
@@ -46,6 +47,7 @@ def wait_until_status_code_is(code1, code2, secs, resource_info):
     if status['code'] == int(code2):
         world.errors.append(resource_info)
     eq_(status['code'], int(code1))
+    time.sleep(0.1) # added to avoid synch mongo issues
     return i_get_the_resource(resource_info)
 
 

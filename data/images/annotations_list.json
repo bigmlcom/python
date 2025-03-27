@@ -1,0 +1,2 @@
+[{"file": "f1/fruits1f.png", "my_regions": [{"label": "region1", "xmin": 0.2, "ymin": 0.2, "xmax": 0.4, "ymax": 0.4}]},
+ {"file": "f1/fruits1.png", "my_regions": [{"label": "region2", "xmin": 0.2, "ymin": 0.2, "xmax": 0.4, "ymax": 0.4}, {"label": "region1", "xmin": 0.5, "ymin": 0.5, "xmax": 0.7, "ymax": 0.7}]}]

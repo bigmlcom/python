@@ -3,6 +3,11 @@
 History
 -------
 
+9.8.3 (2025-03-27)
+------------------
+
+- Fixing annotations update for regions as lists.
+
 9.8.2 (2025-03-21)
 ------------------
 

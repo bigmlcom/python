@@ -61,19 +61,14 @@ from bigml.bigmlconnection import (
     HTTP_CREATED, HTTP_BAD_REQUEST,
     HTTP_UNAUTHORIZED, HTTP_PAYMENT_REQUIRED, HTTP_NOT_FOUND,
     HTTP_TOO_MANY_REQUESTS,
-    HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON)
+    HTTP_INTERNAL_SERVER_ERROR, GAE_ENABLED, SEND_JSON, LOGGER)
 from bigml.bigmlconnection import json_load
 from bigml.api_handlers.resourcehandler import check_resource_type, \
     resource_is_ready, get_source_id, get_id
 from bigml.constants import SOURCE_PATH, IMAGE_EXTENSIONS
-from bigml.api_handlers.resourcehandler import ResourceHandlerMixin, LOGGER
+from bigml.api_handlers.resourcehandler import ResourceHandlerMixin
 from bigml.fields import Fields
 
-LOG_FORMAT = '%(asctime)-15s: %(message)s'
-LOGGER = logging.getLogger('BigML')
-CONSOLE = logging.StreamHandler()
-CONSOLE.setLevel(logging.WARNING)
-LOGGER.addHandler(CONSOLE)
 
 MAX_CHANGES = 5
 MAX_RETRIES = 5
@@ -548,7 +543,7 @@ class SourceHandlerMixin(ResourceHandlerMixin):
                                     "components": source_ids})
                 elif optype == "regions":
                     for value, source_id in values:
-                        if isinstance(value, dict):
+                        if isinstance(value, list):
                             # dictionary should contain the bigml-coco format
                             value = compact_regions(value)
                         changes.append(

@@ -1,0 +1,5 @@
+{"description": "Fruit images to test colour distributions with regions",
+ "images_file": "./fruits_hist.zip",
+ "new_fields": [{"name": "my_regions", "optype": "regions"}],
+ "source_id": null,
+ "annotations": "./annotations_list.json"}

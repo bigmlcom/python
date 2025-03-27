@@ -50,7 +50,7 @@ from bigml.domain import DEFAULT_DOMAIN
 
 LOG_FORMAT = '%(asctime)-15s: %(message)s'
 LOGGER = logging.getLogger('BigML')
-CONSOLE = logging.StreamHandler()
+CONSOLE = logging.StreamHandler(sys.stdout)
 CONSOLE.setLevel(logging.WARNING)
 LOGGER.addHandler(CONSOLE)
 
@@ -138,7 +138,7 @@ def patch_requests(short_debug):
 
         """
         response = original_request(method, url, **kwargs)
-        logging.debug("Data: %s", response.request.body)
+        LOGGER.debug("Data: %s", response.request.body)
         try:
             response_content = "Download status is %s" % response.status_code \
                 if "download" in url else \
@@ -147,7 +147,7 @@ def patch_requests(short_debug):
             response_content = response.content
         response_content = response_content[0: 256] if short_debug else \
         response_content
-        logging.debug("Response: %s\n", response_content)
+        LOGGER.debug("Response: %s\n", response_content)
         return response
 
     original_request = requests.api.request
@@ -213,9 +213,8 @@ class BigMLConnection():
                 # when using GAE will fail
                 pass
 
-        logging.basicConfig(format=LOG_FORMAT,
-                            level=logging_level,
-                            stream=sys.stdout)
+        LOGGER.forma = LOG_FORMAT,
+        LOGGER.level = logging_level
 
         if username is None:
             try:

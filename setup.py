@@ -50,7 +50,7 @@ setuptools.setup(
     download_url="https://github.com/bigmlcom/python",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     setup_requires = ['pytest'],
-    install_requires = ["setuptools==70.0.0", "unidecode",
+    install_requires = ["setuptools==78.1.1", "unidecode",
         "bigml-chronos>=0.4.3", "requests",
         "requests-toolbelt", "msgpack", "numpy>=1.22", "scipy",
         "javascript"],

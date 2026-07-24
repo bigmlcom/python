@@ -1,6 +1,6 @@
 [build-system]
 requires=[
-  "setuptools==69.0.0"
+  "setuptools==83.0.0"
 ]
 
 [tool.black]
